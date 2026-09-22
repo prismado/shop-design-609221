@@ -1,0 +1,44 @@
+name: shop-design-609221
+
+services:
+  web-shop-design-609221:
+    container_name: shop-design-609221
+    hostname: kubernetes.docker.internal
+    image: algonetic/deb12-mason:latest
+    volumes:
+      - $HOME/shop-design-609221/public:/var/www/html
+      - $HOME/shop-design-609221/opt/lib:/opt/lib
+      - $HOME/shop-design-609221/opt/bin:/opt/bin
+    ports:      
+      - "80:80"
+    environment:
+      - DB_HOST=db-host-shop-design-609221
+      - DB_NAME=db_shop_design
+      - DB_USER=apache
+      - DB_PASS=geHeimXX
+      - DB_ROOT_PASS=geHeimXX
+      - NODE_ENV=development
+    networks: 
+      - default
+    restart: no
+
+  db-host-shop-design-609221:
+    container_name: shop-design-609221-db
+    image: mariadb:10.11
+    volumes:
+      - db-data-609221:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: db_shop_design
+      MYSQL_USER: apache
+      MYSQL_ROOT_PASSWORD: geHeimXX
+      TZ: "Europe/Zurich"
+    networks: 
+      - default
+
+networks:
+  default:
+    external: true
+    name: local-network
+
+volumes:
+  db-data-609221:
