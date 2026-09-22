@@ -1,0 +1,212 @@
+@import "tailwindcss";
+@plugin "daisyui";
+@config "../tailwind.config.js";
+
+@theme {
+  --font-sans: Inter, system-ui, sans-serif;
+}
+
+@layer base {
+	a {
+		@apply text-blue-500 hover:text-blue-200;
+	}
+
+	h2 {
+		@apply text-2xl font-bold mt-4 mb-3;
+	}
+
+	h3 {
+		@apply text-xl font-semibold mb-3;
+	}
+
+	h4 {
+		@apply text-lg font-semibold mt-3 mb-1;
+	}
+
+	code {
+		@apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm;
+	}
+
+	p {
+		@apply mt-4;
+	}
+
+	ol {
+		 @apply mt-3 list-decimal list-outside pl-6;
+	}
+
+	ol li {
+		@apply mt-2;
+	}
+
+	ul {
+		@apply mt-3 list-disc ml-4;
+	}
+
+	.x-modified {
+		@apply text-teal-500;
+	}
+
+	input[type="checkbox"] {
+		@apply h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500
+	}
+
+	input[type="text"],
+	input[type="email"],
+	input[type="password"] {
+		@apply
+      w-full
+      rounded-md
+      border border-gray-300
+      bg-white
+      px-3 py-2
+      text-gray-900
+      shadow-sm
+
+      placeholder:text-gray-400
+
+      focus:border-blue-500
+      focus:ring-2
+      focus:ring-blue-500/20
+      focus:outline-none
+
+      disabled:bg-gray-100
+      disabled:text-gray-500
+      disabled:cursor-not-allowed
+
+      dark:bg-gray-800
+      dark:border-gray-700
+      dark:text-gray-100
+      dark:placeholder:text-gray-500
+
+      dark:focus:border-blue-400
+      dark:focus:ring-blue-400/20;
+	}
+
+	/* tt { @apply text-gray-600 text-base font-semibold; } */
+
+	/* ── Design-System-Grundlagen ── */
+	html { scroll-behavior: smooth; overflow-x: hidden; }
+	body {
+		background: var(--bg);
+		color: var(--txt);
+		-webkit-font-smoothing: antialiased;
+		overflow-x: hidden;
+	}
+	::-webkit-scrollbar { width: 4px; }
+	::-webkit-scrollbar-track { background: var(--bg); }
+	::-webkit-scrollbar-thumb { background: var(--border); }
+	::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+}
+
+/* ── Design-System-Variablen (gelten projektübergreifend) ── */
+:root {
+	--bg:       #FAFAFA;
+	--bg-card:  #FFFFFF;
+	--bg-hover: #F0F0F0;
+	--border:   #E2E2E2;
+	--accent:   #CC1B1B;
+	--txt:      #111111;
+	--txt-2:    #4A4A4A;
+	--txt-3:    #888888;
+}
+
+@layer components {
+	/* ── Schriftfamilien-Helfer ── */
+	.d { font-family: 'Barlow Condensed', sans-serif; }
+	.u { font-family: 'Barlow', sans-serif; }
+	.s { font-family: 'Source Serif 4', serif; }
+
+	/* ── Badge ── */
+	.badge {
+		display: inline-block;
+		font-family: 'Barlow', sans-serif;
+		font-size: .65rem; font-weight: 700;
+		letter-spacing: .1em; text-transform: uppercase;
+		padding: 3px 9px;
+		background: var(--accent); color: #000;
+	}
+	.badge-o { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+
+	/* ── Abschnitts-Label mit Akzentlinie ── */
+	.lbl {
+		font-family: 'Barlow', sans-serif;
+		font-size: .7rem; font-weight: 700;
+		letter-spacing: .18em; text-transform: uppercase;
+		color: var(--txt-3);
+	}
+	.lbl::after {
+		content: ''; display: block;
+		width: 40px; height: 2px;
+		background: var(--accent); margin-top: 10px;
+	}
+
+	/* ── Navbar-Link ── */
+	.nav-a {
+		font-family: 'Barlow', sans-serif;
+		font-size: .78rem; font-weight: 600;
+		letter-spacing: .07em; text-transform: uppercase;
+		color: var(--txt-2); text-decoration: none;
+		transition: color .18s;
+	}
+	.nav-a:hover { color: var(--txt); }
+
+	/* ── Karten-Hover ── */
+	.ch { transition: background .2s, border-color .2s; }
+	.ch:hover { background: var(--bg-hover); }
+
+	/* ── Bild-Zoom ── */
+	.iz { overflow: hidden; }
+	.iz img { transition: transform .55s ease; display: block; }
+	.iz:hover img { transform: scale(1.06); }
+
+	/* ── Hero-Titel ── */
+	.hero-h {
+		font-family: 'Barlow Condensed', sans-serif;
+		font-size: clamp(3rem, 6vw, 5.8rem);
+		font-weight: 900; line-height: 1;
+		letter-spacing: .01em; text-transform: uppercase;
+	}
+
+	/* ── Artikel-Zeilennummer ── */
+	.art-n {
+		font-family: 'Barlow Condensed', sans-serif;
+		font-size: 3.2rem; font-weight: 800;
+		color: var(--border); line-height: 1; transition: color .2s;
+	}
+	.art-row:hover .art-n { color: var(--accent); }
+
+	/* ── CTA-Button ── */
+	.btn {
+		font-family: 'Barlow', sans-serif;
+		font-size: .76rem; font-weight: 700;
+		letter-spacing: .1em; text-transform: uppercase;
+		background: var(--accent); color: #000;
+		padding: 12px 22px; border: none; cursor: pointer;
+		transition: opacity .18s; text-decoration: none;
+		display: inline-block; white-space: nowrap;
+	}
+	.btn:hover { opacity: .82; }
+
+	/* ── Newsletter-Eingabefeld ── */
+	.inp {
+		background: var(--bg-card); border: 1px solid var(--border);
+		color: var(--txt); font-family: 'Barlow', sans-serif;
+		font-size: .9rem; padding: 12px 16px;
+		outline: none; transition: border-color .18s; width: 100%;
+	}
+	.inp:focus { border-color: var(--accent); }
+	.inp::placeholder { color: var(--txt-3); }
+
+	/* ── Tag-Chip ── */
+	.chip {
+		font-family: 'Barlow', sans-serif;
+		font-size: .67rem; font-weight: 600;
+		letter-spacing: .07em; text-transform: uppercase;
+		color: var(--txt-2); background: var(--bg-card);
+		border: 1px solid var(--border);
+		padding: 6px 12px; text-decoration: none;
+		transition: border-color .18s, color .18s;
+	}
+	.chip:hover { border-color: var(--accent); color: var(--accent); }
+}
