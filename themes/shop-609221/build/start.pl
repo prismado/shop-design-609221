@@ -27,12 +27,12 @@ if ($type eq 'main') {
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
 
 	my \@products = ();
-	my %p1 = ( title => 't1', price => 9.55 );
-	my %p2 = ( title => 't2', price => 3.20 );
-	my %p3 = ( title => 't3', price => 4.20 );
-	push(\@products, \\%p1);
-	push(\@products, \\%p2);
-	push(\@products, \\%p3);
+	for my \$i (1 .. 12) {
+		push \@products, {
+			title => "t\$i",
+			price => 9 + int(rand(492))
+		};
+	}
 
 	my %v = (
 		daily_609231 => 'Tagesangebote am Mittwoch',
