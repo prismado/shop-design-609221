@@ -32,4 +32,8 @@ sub component ($) {
 
 	closedir(D);
 	print "\n";
+
+	# XXX my $cmd = "./shop-609221/build/start.pl $theme";
+	my $cmd = "./$theme/build/start.pl $theme";
+	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
 }
