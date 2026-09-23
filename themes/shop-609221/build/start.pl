@@ -19,6 +19,12 @@ my $exists = -e $dir ? 1 : 0;
 
 print "XX $dir ($exists)\n";
 
+my $in_file  = $dir;
+my $out_file = "../../public/$comp";
+
+print "In:  $in_file\n";
+print "Out: $out_file\n";
+
 exit(0); # XX
 
 opendir(D, $dir) or ($errstr = $!);
