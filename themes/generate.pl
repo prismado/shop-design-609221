@@ -11,7 +11,6 @@ print "===== 🚀 $theme =====\n\n";
 &component('index');
 &component('index/partials');
 &component('product_full');
-# XXX &component('partials');
 
 sub component ($) {
 	my $component = $_[0];
