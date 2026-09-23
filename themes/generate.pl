@@ -18,17 +18,15 @@ while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
 	if (-d "$theme/public/$fn") {
 		print "$fn is a dir!!\n";
-		&read_dir("$theme/public/$fn");
+		&sub_dir("$theme/public/$fn");
+		next;
 	}
 	my $cmd = "./$theme/build/start.pl $theme $fn";
-	print "- ..........$cmd\n";
+	print "- $cmd\n";
 }
 closedir(D);
 
-&component('public');
-# XX &component('index');
-# XX &component('index/partials');
-# XX &component('product_full');
+# XX &component('public');
 
 sub component ($) {
 	my $component = $_[0];
@@ -59,7 +57,12 @@ sub component ($) {
 	print "\n";
 }
 
-sub read_dir($) {
+sub sub_dir($) {
+	my @elems     = split /\//, $_[0];
+	my $last_elem = $elems[$#elems];
+
+	print "[sub_dir] - $_[0] ... $last_elem ...\n";
+
 	my $errstr = '';
 	opendir(DIR, $_[0]) or ($errstr = $!);
 	if ($errstr) {
@@ -67,7 +70,10 @@ sub read_dir($) {
 	}
 	while(my $fn = readdir(DIR)) {
 		next if $fn =~ /^\./;
-		print "[read_dir] - $fn\n";
+		print "[sub_dir] - fn: $fn\n";
+		next if -d "$_[0]/$fn";
+		my $cmd = "./$theme/build/start.pl $theme $last_elem/$fn";
+		print "- $cmd\n";
 	}
 	closedir(DIR);
 }
