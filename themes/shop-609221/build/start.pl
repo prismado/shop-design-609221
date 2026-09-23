@@ -16,7 +16,6 @@ my $pwd = `pwd`;
 my $errstr = '';
 
 my $dir = "./$theme/$comp";
-# XXX my $dir = "./$theme/public/$comp";
 
 opendir(D, $dir) or ($errstr = $!);
 
@@ -36,15 +35,13 @@ while(my $fn = readdir(D)) {
 	my @elems = split /\//, $comp;
 	print "✈  [special - $comp] ...... $fn - " . ($#elems + 1) . "\n";
 
-	my $out_file = "../public/zz_trash_$fn";
-	# my $out_file = "../public/$fn";
+	my $out_file = "../public/$fn";
 
 	if ($#elems + 1 > 1) {
 		my $updir = $elems[1];
 		my $subfn = (split /\t/, $fn)[0];
 		print "XX updir is $updir / subfn is $subfn\n";
-		$out_file = "../public/$updir/zz_trash_$subfn";
-		# $out_file = "../public/$updir/$subfn";
+		$out_file = "../public/$updir/$subfn";
 	}
 
 	print "- IN:  $dir/$fn\n";
