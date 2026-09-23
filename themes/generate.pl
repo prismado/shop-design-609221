@@ -37,7 +37,7 @@ sub component ($) {
 	print "\n";
 
 	my $cmd = "./$theme/build/start.pl $theme $component";
-	print "XX $cmd\n";
-	# system($cmd) && print STDERR "Err E609230 $! $cmd\n";
+	# XX print "XX $cmd\n";
+	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
 	print "\n";
 }
