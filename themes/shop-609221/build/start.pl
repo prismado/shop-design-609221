@@ -11,18 +11,11 @@ my $comp  = $ARGV[1] || 'start';
 
 print "$0 $theme $comp\n";
 
-my $pwd    = `pwd`;
-my $errstr = '';
-my $dir    = "./$theme/public/$comp";
-
-my $in_file  = $dir;
+my $in_file  = "./$theme/public/$comp";
 my $out_file = "../public/$comp";
 
-# XXX my $in_exists  = -e $dir ?      1 : 0;
-# XXX my $out_exists = -e $out_file ? 1 : 0;
-
-print "In:  $in_file\n";
-print "Out: $out_file\n";
+print "- In:  $in_file\n";
+print "- Out: $out_file\n";
 
 open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
 open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
@@ -40,8 +33,3 @@ while(my $line = <IN>) {
 
 close(IN);
 close(OUT);
-
-__END__
-
-/home/retos/shop-design-609221/themes/shop-609221/build/
-/home/retos/shop-design-609221/themes/shop-609221/public/start/
