@@ -45,7 +45,14 @@
 <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
 
 <& partials/left_nav.html, v => \%v, C => $C &>
-<& partials/index_products.html, v => \%v, C => $C &>
+
+<!-- Produkte (Mitte, ca. 70%) -->                                                                                      <section>
+    <div class="flex items-end justify-between mb-5">                                                                         <h1 class="text-xl md:text-2xl font-bold text-gray-900">IT-Marken zum Top-Preis.</h1>
+      <span class="text-sm text-gray-400">12 Artikel</span>                                                                 </div>                                                                                                              
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+	<& partials/index_products.html, v => \%v, C => $C &>
+    </div>
+</section>
 
   <!-- Tagesangebote (rechts, ca. 15%) -->
   <aside id="tagesangebote" class="mt-10 lg:mt-0 scroll-mt-24">
