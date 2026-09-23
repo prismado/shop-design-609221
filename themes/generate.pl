@@ -17,7 +17,8 @@ if ($errstr) {
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
 	if (-d "$theme/public/$fn") {
-		print "XX is a dir!!\n";
+		print "$fn is a dir!!\n";
+		&read_dir("$theme/public/$fn");
 	}
 	my $cmd = "./$theme/build/start.pl $theme $fn";
 	print "- ..........$cmd\n";
@@ -56,4 +57,17 @@ sub component ($) {
 	print "XX $cmd\n";
 	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
 	print "\n";
+}
+
+sub read_dir($) {
+	my $errstr = '';
+	opendir(DIR, $_[0]) or ($errstr = $!);
+	if ($errstr) {
+		print STDERR "Err $errstr ($_[0])\n";
+	}
+	while(my $fn = readdir(DIR)) {
+		next if $fn =~ /^\./;
+		print "[read_dir] - $fn\n";
+	}
+	closedir(DIR);
 }
