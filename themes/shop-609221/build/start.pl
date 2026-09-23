@@ -27,8 +27,19 @@ if ($errstr) {
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
 	print "✈  [special - $comp] ...... $fn\n";
-	my $out_dir = "../public/$fn";
-	print "XX $out_dir ...\n";
+	my $out_file = "../public/zz_trash_$fn";
+	print "XX $out_file ...\n";
+
+	open(IN, "$dir/$fn") or print STDERR "Err E609231-33 $!\n";
+	while(my $line = <IN>) {
+		chomp $line;
+		# XX print "----- $line\n";
+	}
+	close(IN);
+
+	open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
+	# ......
+	close(OUT);
 }
 
 closedir(D);
