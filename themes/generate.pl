@@ -8,9 +8,10 @@ my $theme = $ARGV[0] // 'shop-609221';
 
 print "===== 🚀 $theme =====\n\n";
 
-&component('index');
-&component('index/partials');
-&component('product_full');
+&component('public');
+# XX &component('index');
+# XX &component('index/partials');
+# XX &component('product_full');
 
 sub component ($) {
 	my $component = $_[0];
@@ -19,10 +20,11 @@ sub component ($) {
 
 	my $errstr = '';
 
-	opendir(D, "$theme/public/$component") or ($errstr = $!);
+	# XXX opendir(D, "$theme/public/$component") or ($errstr = $!);
+	opendir(D, "$theme/$component") or ($errstr = $!);
 
 	if ($errstr) {
-		print STDERR "Error $errstr ($component)\n";
+		print STDERR "Error E609231-25 $errstr ($component)\n";
 		exit(1);
 	}
 
@@ -36,6 +38,7 @@ sub component ($) {
 	print "\n";
 
 	my $cmd = "./$theme/build/start.pl $theme $component";
-	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
+	print "XX $cmd\n";
+	# system($cmd) && print STDERR "Err E609230 $! $cmd\n";
 	print "\n";
 }

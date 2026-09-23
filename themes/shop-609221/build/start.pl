@@ -41,7 +41,6 @@ while(my $fn = readdir(D)) {
 		my $updir = $elems[1];
 		my $subfn = (split /\t/, $fn)[0];
 		print "XX updir is $updir / subfn is $subfn\n";
-# XXX print "XXX .................................. $updir/$subfn\n";
 		$out_file = "../public/$updir/$subfn";
 	}
 
