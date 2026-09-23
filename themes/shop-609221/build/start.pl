@@ -26,9 +26,28 @@ if ($errstr) {
 
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
-	print "✈  [special - $comp] ...... $fn\n";
+
+	if (-d "$dir/$fn") {
+		print "- Skipping $fn (directory)\n";
+		next;
+	}
+
+	my @elems = split /\//, $comp;
+	print "✈  [special - $comp] ...... $fn - " . ($#elems + 1) . "\n";
+
 	my $out_file = "../public/$fn";
-	print "XX $out_file ...\n";
+
+	if ($#elems + 1 > 1) {
+		my $updir = $elems[1];
+		my $subfn = (split /\t/, $fn)[0];
+		print "XX updir is $updir / subfn is $subfn\n";
+print "XXX .................................. $updir/$subfn\n";
+		$out_file = "../public/$updir/$subfn";
+	}
+
+	# XXX my $out_file = "../public/$fn";
+	print "- IN:  $dir/$fn\n";
+	print "- OUT: $out_file ...\n";
 
 	open(IN, "$dir/$fn") or print STDERR "Err E609231-33 $!\n";
 	open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
