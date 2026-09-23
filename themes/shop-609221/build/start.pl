@@ -33,10 +33,14 @@ while(my $fn = readdir(D)) {
 	open(IN, "$dir/$fn") or print STDERR "Err E609231-33 $!\n";
 	open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
 
+	print OUT qq~<%init>
+	my \$foo = 2+3;
+</%init>
+~;
+
 	while(my $line = <IN>) {
 		chomp $line;
 		print OUT "$line\n";
-		# XX print "----- $line\n";
 	}
 
 	close(IN);
