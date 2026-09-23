@@ -8,12 +8,14 @@ use strict;
 print "$0\n";
 
 my $theme = $ARGV[0] || 'shop-609221';
+my $comp  = $ARGV[1] || 'start';
 
 my $pwd = `pwd`;
 
 my $errstr = '';
 
-my $dir = "./$theme/public/start";
+my $dir = "./$theme/public/$comp";
+# XXX my $dir = "./$theme/public/start";
 
 opendir(D, $dir) or ($errstr = $!);
 
@@ -24,7 +26,7 @@ if ($errstr) {
 
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
-	print "[special] ...... $fn\n";
+	print "[special - $comp] ...... $fn\n";
 }
 
 closedir(D);

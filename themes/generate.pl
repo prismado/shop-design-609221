@@ -6,7 +6,7 @@ use open qw(:std :encoding(UTF-8));
 
 my $theme = $ARGV[0] // 'shop-609221';
 
-print "----- 🚀 $theme -----\n\n";
+print "===== 🚀 $theme =====\n\n";
 
 &component('start');
 &component('product_full');
