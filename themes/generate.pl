@@ -8,6 +8,18 @@ my $theme = $ARGV[0] // 'shop-609221';
 
 print "===== 🚀 $theme =====\n\n";
 
+my $errstr = '';
+opendir(D, "$theme/public") or ($errstr = $!);
+if ($errstr) {
+	print STDERR "Error E609232-13 $errstr\n";
+	exit(1);
+}
+while(my $fn = readdir(D)) {
+	next if $fn =~ /^\./;
+	print "- ............... $fn\n";
+}
+closedir(D);
+
 &component('public');
 # XX &component('index');
 # XX &component('index/partials');
@@ -37,7 +49,7 @@ sub component ($) {
 	print "\n";
 
 	my $cmd = "./$theme/build/start.pl $theme $component";
-	# XX print "XX $cmd\n";
+	print "XX $cmd\n";
 	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
 	print "\n";
 }
