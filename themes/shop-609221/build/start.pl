@@ -29,11 +29,12 @@ if ($type eq 'main') {
 	my \@products = ();
 	my %p1 = ( title => 't1', price => 9.55 );
 	my %p2 = ( title => 't2', price => 3.20 );
-	push(\@products, \%p1);
-	push(\@products, \%p2);
+	push(\@products, \\%p1);
+	push(\@products, \\%p2);
 
 	my %v = (
-		daily_609231 => 'Tagesangebote am Mittwoch'
+		daily_609231 => 'Tagesangebote am Mittwoch',
+		products     => \\\@products
 	);
 
 	my \$title = \$C->{CONFIG}->{site_title};
