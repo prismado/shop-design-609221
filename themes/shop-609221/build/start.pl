@@ -21,7 +21,19 @@ print "- Out: $out_file\n";
 open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
 open(OUT, ">$out_file") or print STDERR "Err E609231-32 $! ($out_file)\n";
 
-if ($type eq 'main') {
+if ($in_file =~ /partials\/product\.html$/) {
+	print OUT qq~<%init>
+	my \%args = \$m->caller_args(0);
+
+	my \$C = \$args{C};
+	my \$v = \$args{v};
+	# ----- spez
+
+	my \$title = \$C->{CONFIG}->{site_title};
+</%init>
+~;
+}
+elsif ($type eq 'main') {
 	print OUT qq~<%init>
 	use ScreenPoint::Core;
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
