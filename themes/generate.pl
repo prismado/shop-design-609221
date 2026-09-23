@@ -16,6 +16,9 @@ if ($errstr) {
 }
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
+	if (-d "$theme/public/$fn") {
+		print "XX is a dir!!\n";
+	}
 	my $cmd = "./$theme/build/start.pl $theme $fn";
 	print "- ..........$cmd\n";
 }
