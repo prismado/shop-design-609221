@@ -2,11 +2,11 @@
 	use ScreenPoint::Core;
 	my $C = ScreenPoint::Core->new($r, $m);
 
-	my @prod_titles = qw('Foo' 'Bar');
+	my @prod_titles = ('Foo 1', 'Bar 2');
 	my @products = ();
 	for my $i (0 .. 11) {
 		push @products, {
-			title => $prod_titles[$i] . $i,
+			title => $prod_titles[$i],
 			price => 9 + int(rand(492))
 		};
 	}
