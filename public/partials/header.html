@@ -1,5 +1,8 @@
 <%init>
-	my $title = "tbd v2";
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	my $title = $C->{CONFIG}->{site_title};
 </%init>
 <!-- ===== HEADER ===== -->
 <header class="sticky top-0 z-40 shadow-md">
