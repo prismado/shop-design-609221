@@ -2,6 +2,7 @@
 
 use utf8;
 use strict;
+use open qw(:std :encoding(UTF-8));
 
 my $theme = $ARGV[0] // 'shop-609221';
 
