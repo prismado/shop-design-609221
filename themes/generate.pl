@@ -17,7 +17,7 @@ if ($errstr) {
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
 	if (-d "$theme/public/$fn") {
-		print "$fn is a dir!!\n";
+		print "💡 $fn is a dir!!\n";
 		&sub_dir("$theme/public/$fn");
 		next;
 	}
@@ -28,8 +28,7 @@ while(my $fn = readdir(D)) {
 closedir(D);
 
 sub component ($) {
-	my $component = $_[0];
-	# XX print "----- 💡 Component: \"$component\" ... -----\n";
+	# XXX my $component = $_[0];
 }
 
 sub sub_dir($) {
@@ -48,7 +47,7 @@ sub sub_dir($) {
 		print "[sub_dir] - fn: $fn\n";
 		next if -d "$_[0]/$fn";
 		my $cmd = "./$theme/build/start.pl $theme \"$last_elem/$fn\" sub";
-		print "[sub_dir] - $cmd\n";
+		print "[sub_dir] - 🚀 $cmd\n";
 		system($cmd) && print STDERR "Err E609231-77 $! $cmd\n";
 	}
 	closedir(DIR);
