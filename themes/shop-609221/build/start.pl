@@ -38,7 +38,7 @@ elsif ($type eq 'main') {
 	use ScreenPoint::Core;
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
 
-	my \@prod_titles = ('Foo 1', 'Bar 2');
+	my \@prod_titles = ('UltraBook Pro 14&Prime;', 'Foo Bar');
 	my \@products = ();
 	for my \$i (0 .. 11) {
 		push \@products, {
