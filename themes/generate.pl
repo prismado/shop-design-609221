@@ -14,7 +14,7 @@ print "----- 🚀 $theme -----\n\n";
 sub component ($) {
 	my $component = $_[0];
 
-	print "Component: \"$component\" ...\n";
+	print "----- Component: \"$component\" ... -----\n";
 
 	my $errstr = '';
 
@@ -25,7 +25,7 @@ sub component ($) {
 		exit(1);
 	}
 
-	print "----- Files -----\n";
+	print "----- Files of $component -----\n";
 	while(my $fn = readdir(D)) {
 		next if $fn =~ /^\./;
 		print "- $fn\n";

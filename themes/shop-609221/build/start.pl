@@ -24,7 +24,7 @@ if ($errstr) {
 
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
-	print "...... $fn\n";
+	print "[special] ...... $fn\n";
 }
 
 closedir(D);
