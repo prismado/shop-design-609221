@@ -8,7 +8,7 @@ my $theme = $ARGV[0] // 'shop-609221';
 
 print "===== 🚀 $theme =====\n\n";
 
-&component('start');
+&component('index');
 &component('product_full');
 &component('partials');
 
