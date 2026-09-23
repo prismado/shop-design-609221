@@ -21,7 +21,10 @@ open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
 open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
 
 print OUT qq~<%init>
-	my \$title = "tbd v2";
+	use ScreenPoint::Core;
+	my \$C = ScreenPoint::Core->new(\$r, \$m);
+
+	my \$title = \$C->{CONFIG}->{site_title};
 </%init>
 ~;
 
