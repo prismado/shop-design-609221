@@ -15,15 +15,20 @@ my $pwd    = `pwd`;
 my $errstr = '';
 my $dir    = "./$theme/public/$comp";
 
-my $exists = -e $dir ? 1 : 0;
-
-print "XX $dir ($exists)\n";
-
 my $in_file  = $dir;
-my $out_file = "../../public/$comp";
+my $out_file = "../public/$comp";
 
-print "In:  $in_file\n";
-print "Out: $out_file\n";
+my $in_exists  = -e $dir ?      1 : 0;
+my $out_exists = -e $out_file ? 1 : 0;
+
+print "In:  $in_file ($in_exists)\n";
+print "Out: $out_file ($out_exists) - $pwd\n";
+
+open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
+# open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
+
+close(IN);
+# close(OUT);
 
 exit(0); # XX
 
