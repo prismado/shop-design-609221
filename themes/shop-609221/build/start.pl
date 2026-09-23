@@ -15,7 +15,6 @@ my $pwd = `pwd`;
 my $errstr = '';
 
 my $dir = "./$theme/public/$comp";
-# XXX my $dir = "./$theme/public/start";
 
 opendir(D, $dir) or ($errstr = $!);
 
