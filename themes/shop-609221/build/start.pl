@@ -38,10 +38,11 @@ elsif ($type eq 'main') {
 	use ScreenPoint::Core;
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
 
+	my \@prod_titles = qw('Foo' 'Bar');
 	my \@products = ();
-	for my \$i (1 .. 12) {
+	for my \$i (0 .. 11) {
 		push \@products, {
-			title => "t\$i",
+			title => \$prod_titles[\$i] . \$i,
 			price => 9 + int(rand(492))
 		};
 	}
