@@ -40,6 +40,7 @@ while(my $fn = readdir(D)) {
 
 	while(my $line = <IN>) {
 		chomp $line;
+		$line =~ s/\[%(.+)%\]/<%$1%>/g;
 		print OUT "$line\n";
 	}
 
