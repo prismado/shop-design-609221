@@ -9,8 +9,9 @@ my $theme = $ARGV[0] // 'shop-609221';
 print "===== 🚀 $theme =====\n\n";
 
 &component('index');
+&component('index/partials');
 &component('product_full');
-&component('partials');
+# XXX &component('partials');
 
 sub component ($) {
 	my $component = $_[0];
