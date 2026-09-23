@@ -26,18 +26,7 @@ if ($in_file =~ /partials\/product\.html$/) {
 	open(CODE, "./$theme/build/partials/product.mc") or print STDERR "*** Error $!\n";
 	my $code = <CODE>;
 	close(CODE);
-
 	print OUT "$code\n";
-	print OUT qq~<%init>
-	my \%args = \$m->caller_args(0);
-
-	my \$C = \$args{C};
-	my \$v = \$args{v};
-	my \$count = \$args{count};
-
-	my \$title = \$C->{CONFIG}->{site_title};
-</%init>
-~ if 1==2;
 }
 elsif ($type eq 'main') {
 	print OUT qq~<%init>
