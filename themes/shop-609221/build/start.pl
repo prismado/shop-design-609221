@@ -22,6 +22,12 @@ open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
 open(OUT, ">$out_file") or print STDERR "Err E609231-32 $! ($out_file)\n";
 
 if ($in_file =~ /partials\/product\.html$/) {
+	local $/ = undef;
+	open(CODE, "./$theme/build/partials/product.mc") or print STDERR "*** Error $!\n";
+	my $code = <CODE>;
+	close(CODE);
+
+	print OUT "$code\n";
 	print OUT qq~<%init>
 	my \%args = \$m->caller_args(0);
 
@@ -31,7 +37,7 @@ if ($in_file =~ /partials\/product\.html$/) {
 
 	my \$title = \$C->{CONFIG}->{site_title};
 </%init>
-~;
+~ if 1==2;
 }
 elsif ($type eq 'main') {
 	print OUT qq~<%init>
