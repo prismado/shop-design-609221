@@ -6,10 +6,10 @@ use strict;
 use utf8;
 use open qw(:std :encoding(UTF-8));
 
-print "$0\n";
-
 my $theme = $ARGV[0] || 'shop-609221';
 my $comp  = $ARGV[1] || 'start';
+
+print "$0 $theme $comp\n";
 
 my $pwd = `pwd`;
 
