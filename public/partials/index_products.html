@@ -7,7 +7,7 @@
 	my $title = $C->{CONFIG}->{site_title};
 </%init>
 
-% for (1 .. 2) {
+% for (my $i=0; $i < 2; $i++) {
 	<& product.html, v => $v, C => $C &>
 % }
 

@@ -60,6 +60,7 @@ while(my $line = <IN>) {
 	$line =~ s/\[%(.+)%\]/<%$1%>/g;
 	$line =~ s/<& partials\/(.+)\.html &>/<& partials\/$1\.html, v => \\%v, C => \$C &>/;
 	$line =~ s/<& (.+)\.html &>/<& $1\.html, v => \$v, C => \$C &>/;
+	$line =~ s/<& products\.html &>/<& products\.html, count => \$i, v => \$v, C => \$C &>/;
 	print OUT "$line\n";
 }
 
