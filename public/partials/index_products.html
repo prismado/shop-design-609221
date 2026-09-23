@@ -1,0 +1,350 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $v = $args{v};
+
+	my $title = $C->{CONFIG}->{site_title};
+</%init>
+  <!-- Produkte (Mitte, ca. 70%) -->
+  <section>
+    <div class="flex items-end justify-between mb-5">
+      <h1 class="text-xl md:text-2xl font-bold text-gray-900">IT-Marken zum Top-Preis.</h1>
+      <span class="text-sm text-gray-400">12 Artikel</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
+      <!-- Produkt 1 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="UltraBook Pro 14" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-24%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4.5 h-4.5 w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">UltraBook Pro 14&Prime;</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Schlankes Ultrabook mit brillantem Display, ganztägiger Akkulaufzeit und flüsterleisem Betrieb. Ideal für Büro, Studium und unterwegs. Generalüberholt und geprüft.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 899.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 679.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 2 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="SmartPhone X12" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-15%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">SmartPhone X12</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Leistungsstarkes Smartphone mit Triple-Kamera, hellem OLED-Display und schnellem Laden. Ohne Vertrag, sofort einsatzbereit.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 549.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 469.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 3 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="AirSound Kopfhörer" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Wireless Kopfhörer AirSound</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Aktive Geräuschunterdrückung, bis zu 30 Stunden Akkulaufzeit und satter Klang für Musik, Podcasts und Calls.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 invisible">.</span>
+              <span class="block text-lg font-bold text-gray-900">CHF 149.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 4 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="VisionMax 55 Smart-TV" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-20%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">4K Smart-TV VisionMax 55&Prime;</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Gestochen scharfes 4K-HDR-Bild, integriertes Smart-TV-System und schlankes Design für dein Wohnzimmer.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 799.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 639.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 5 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="AirPad 10 Tablet" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Tablet AirPad 10</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Leichtes 10-Zoll-Tablet mit brillantem Display, perfekt für Streaming, Lesen und Notizen mit Stift-Unterstützung.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 invisible">.</span>
+              <span class="block text-lg font-bold text-gray-900">CHF 329.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 6 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="TitanForce 16 Gaming-Laptop" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-18%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Gaming-Laptop TitanForce 16</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Highend-Gaming-Laptop mit schnellem Prozessor, dedizierter Grafikkarte und 165-Hz-Display für flüssiges Gaming.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 1699.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 1399.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 7 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="PulseFit 5 Smartwatch" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Smartwatch PulseFit 5</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Fitness-Tracking, Herzfrequenzmessung und Benachrichtigungen am Handgelenk mit bis zu 7 Tagen Akkulaufzeit.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 invisible">.</span>
+              <span class="block text-lg font-bold text-gray-900">CHF 179.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 8 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="BoomBox Mini Lautsprecher" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-30%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Bluetooth-Lautsprecher BoomBox Mini</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Kompakter, wasserdichter Lautsprecher mit kraftvollem Sound und 12 Stunden Akkulaufzeit für unterwegs.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 79.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 55.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 9 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="PhotoMaster Z2 Digitalkamera" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Digitalkamera PhotoMaster Z2</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Spiegellose Kamera mit Wechselobjektiv, 4K-Video und schnellem Autofokus für Foto- und Videobegeisterte.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 invisible">.</span>
+              <span class="block text-lg font-bold text-gray-900">CHF 749.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 10 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="GameSphere X Spielekonsole" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-10%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Spielekonsole GameSphere X</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Nächste Konsolen-Generation mit Ultra-HD-Grafik, blitzschnellen Ladezeiten und riesiger Spielebibliothek.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 549.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 495.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 11 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="BrewMatic Deluxe Kaffeemaschine" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Kaffeemaschine BrewMatic Deluxe</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Vollautomat mit integriertem Mahlwerk, Milchaufschäumer und intuitiver Bedienung für perfekten Kaffee auf Knopfdruck.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 invisible">.</span>
+              <span class="block text-lg font-bold text-gray-900">CHF 399.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Produkt 12 -->
+      <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+        <div class="relative overflow-hidden">
+          <img src="https://placehold.co/250x250?text=Produkte-\nBild" alt="CleanBot 360 Staubsaugerroboter" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-22%</span>
+          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">Staubsaugerroboter CleanBot 360</h3>
+          <p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">Automatische Raumkartierung, starke Saugkraft und App-Steuerung für mühelos saubere Böden im ganzen Zuhause.</p>
+          <div class="flex items-end justify-between mt-auto pt-2">
+            <div>
+              <span class="block text-xs text-gray-400 line-through">CHF 349.00</span>
+              <span class="block text-lg font-bold text-red-600">CHF 272.00</span>
+            </div>
+            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5 rounded-full transition shadow" aria-label="In den Warenkorb">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
