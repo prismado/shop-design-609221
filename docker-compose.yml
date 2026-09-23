@@ -9,6 +9,7 @@ services:
       - $HOME/shop-design-609221/public:/var/www/html
       - $HOME/shop-design-609221/opt/lib:/opt/lib
       - $HOME/shop-design-609221/opt/bin:/opt/bin
+      - $HOME/themes/shop-609221/public:/var/www/html/__theme
     ports:      
       - "80:80"
     environment:
