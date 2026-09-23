@@ -18,11 +18,11 @@ my $dir    = "./$theme/public/$comp";
 my $in_file  = $dir;
 my $out_file = "../public/$comp";
 
-my $in_exists  = -e $dir ?      1 : 0;
-my $out_exists = -e $out_file ? 1 : 0;
+# XXX my $in_exists  = -e $dir ?      1 : 0;
+# XXX my $out_exists = -e $out_file ? 1 : 0;
 
-print "In:  $in_file ($in_exists)\n";
-print "Out: $out_file ($out_exists) - $pwd\n";
+print "In:  $in_file\n";
+print "Out: $out_file\n";
 
 open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
 open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
@@ -40,9 +40,6 @@ while(my $line = <IN>) {
 
 close(IN);
 close(OUT);
-
-# XXX opendir(D, $dir) or ($errstr = $!);
-# XXX closedir(D);
 
 __END__
 
