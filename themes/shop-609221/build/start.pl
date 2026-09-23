@@ -27,7 +27,7 @@ if ($in_file =~ /partials\/product\.html$/) {
 
 	my \$C = \$args{C};
 	my \$v = \$args{v};
-	# ----- spez
+	my \$i = \$args{i};
 
 	my \$title = \$C->{CONFIG}->{site_title};
 </%init>
