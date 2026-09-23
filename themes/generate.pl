@@ -3,26 +3,28 @@ use strict;
 
 my $theme = $ARGV[0] // 'shop-609221';
 
-print "----- $theme -----\n";
+print "----- $theme -----\n\n";
 
-&component('tbd');
+&component('start');
+&component('product_full');
 
 sub component ($) {
 	print "Component $_[0] ...\n";
 
 	my $errstr = '';
 
-	opendir(D, "$theme/public/start") or ($errstr = $!);
+	opendir(D, "$theme/public/$_[0]") or ($errstr = $!);
 
 	if ($errstr) {
-		print STDERR "Error $errstr\n";
+		print STDERR "Error $errstr ($_[0])\n";
 		exit(1);
 	}
 
 	while(my $fn = readdir(D)) {
 		next if $fn =~ /^\./;
-		print "$fn\n";
+		print "- $fn\n";
 	}
 
 	closedir(D);
+	print "\n";
 }
