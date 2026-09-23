@@ -23,6 +23,7 @@ while(my $fn = readdir(D)) {
 	}
 	my $cmd = "./$theme/build/start.pl $theme $fn";
 	print "- $cmd\n";
+	system($cmd) && print STDERR "Err E609231-26 $! $cmd\n";
 }
 closedir(D);
 
@@ -74,6 +75,7 @@ sub sub_dir($) {
 		next if -d "$_[0]/$fn";
 		my $cmd = "./$theme/build/start.pl $theme $last_elem/$fn";
 		print "- $cmd\n";
+		system($cmd) && print STDERR "Err E609231-77 $! $cmd\n";
 	}
 	closedir(DIR);
 }

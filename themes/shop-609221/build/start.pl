@@ -17,6 +17,8 @@ my $errstr = '';
 
 my $dir = "./$theme/$comp";
 
+exit(0); # XX
+
 opendir(D, $dir) or ($errstr = $!);
 
 if ($errstr) {
