@@ -59,6 +59,7 @@ while(my $line = <IN>) {
 	chomp $line;
 	$line =~ s/\[%(.+)%\]/<%$1%>/g;
 	$line =~ s/<& partials\/(.+)\.html &>/<& partials\/$1\.html, v => \\%v, C => \$C &>/;
+	$line =~ s/<& (.+)\.html &>/<& $1\.html, v => \$v, C => \$C &>/;
 	print OUT "$line\n";
 }
 
