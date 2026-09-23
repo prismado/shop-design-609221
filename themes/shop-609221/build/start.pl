@@ -26,6 +26,12 @@ if ($type eq 'main') {
 	use ScreenPoint::Core;
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
 
+	my \@products = ();
+	my %p1 = ( title => 't1', price => 9.55 );
+	my %p2 = ( title => 't2', price => 3.20 );
+	push(\@products, \%p1);
+	push(\@products, \%p2);
+
 	my %v = (
 		daily_609231 => 'Tagesangebote am Mittwoch'
 	);
