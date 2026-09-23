@@ -11,17 +11,20 @@ print "----- 🚀 $theme -----\n\n";
 &component('product_full');
 
 sub component ($) {
-	print "Component $_[0] ...\n";
+	my $component = $_[0];
+
+	print "Component: \"$component\" ...\n";
 
 	my $errstr = '';
 
-	opendir(D, "$theme/public/$_[0]") or ($errstr = $!);
+	opendir(D, "$theme/public/$component") or ($errstr = $!);
 
 	if ($errstr) {
-		print STDERR "Error $errstr ($_[0])\n";
+		print STDERR "Error $errstr ($component)\n";
 		exit(1);
 	}
 
+	print "----- Files -----\n";
 	while(my $fn = readdir(D)) {
 		next if $fn =~ /^\./;
 		print "- $fn\n";
