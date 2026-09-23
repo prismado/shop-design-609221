@@ -8,8 +8,9 @@ use open qw(:std :encoding(UTF-8));
 
 my $theme = $ARGV[0] || 'shop-609221';
 my $comp  = $ARGV[1] || 'start';
+my $type  = $ARGV[2]; # -- sub / main
 
-print "$0 $theme $comp\n";
+print "$0 $theme $comp (type: $type)\n";
 
 my $in_file  = "./$theme/public/$comp";
 my $out_file = "../public/$comp";
@@ -18,15 +19,27 @@ print "- In:  $in_file\n";
 print "- Out: $out_file\n";
 
 open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
-open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
+open(OUT, ">$out_file") or print STDERR "Err E609231-32 $! ($out_file)\n";
 
-print OUT qq~<%init>
+if ($type eq 'main') {
+	print OUT qq~<%init>
 	use ScreenPoint::Core;
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
 
 	my \$title = \$C->{CONFIG}->{site_title};
 </%init>
 ~;
+}
+else {
+	print OUT qq~<%init>
+	my \%args = \$m->caller_args(0);
+
+	my \$C = \$args{C};
+
+	my \$title = \$C->{CONFIG}->{site_title};
+</%init>
+~;
+}
 
 while(my $line = <IN>) {
 	chomp $line;
