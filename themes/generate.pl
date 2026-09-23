@@ -21,7 +21,7 @@ while(my $fn = readdir(D)) {
 		&sub_dir("$theme/public/$fn");
 		next;
 	}
-	my $cmd = "./$theme/build/start.pl $theme $fn";
+	my $cmd = "./$theme/build/start.pl $theme $fn main";
 	print "- $cmd\n";
 	system($cmd) && print STDERR "Err E609231-26 $! $cmd\n";
 }
@@ -48,7 +48,7 @@ sub sub_dir($) {
 		next if $fn =~ /^\./;
 		print "[sub_dir] - fn: $fn\n";
 		next if -d "$_[0]/$fn";
-		my $cmd = "./$theme/build/start.pl $theme $last_elem/$fn";
+		my $cmd = "./$theme/build/start.pl $theme \"$last_elem/$fn\" sub";
 		print "[sub_dir] - $cmd\n";
 		system($cmd) && print STDERR "Err E609231-77 $! $cmd\n";
 	}
