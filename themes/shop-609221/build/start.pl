@@ -1,17 +1,35 @@
 #!/usr/bin/perl -w
+
+# -- shop-609221/build/start.pl
+
+use utf8;
 use strict;
+
+print "$0\n";
+
+my $theme = $ARGV[0] || 'shop-609221';
+
+my $pwd = `pwd`;
 
 my $errstr = '';
 
-opendir(D, '../public/start') or ($errstr = $!);
+my $dir = "./$theme/public/start";
+
+opendir(D, $dir) or ($errstr = $!);
 
 if ($errstr) {
-	print STDERR "Error $errstr\n";
+	print STDERR "Error E609230-13 $errstr at $0 - dir: $dir - $pwd\n";
 	exit(1);
 }
 
 while(my $fn = readdir(D)) {
-	print "$fn\n";
+	next if $fn =~ /^\./;
+	print "...... $fn\n";
 }
 
 closedir(D);
+
+__END__
+
+/home/retos/shop-design-609221/themes/shop-609221/build/
+/home/retos/shop-design-609221/themes/shop-609221/public/start/
