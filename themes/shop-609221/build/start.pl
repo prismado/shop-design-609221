@@ -25,10 +25,21 @@ print "In:  $in_file ($in_exists)\n";
 print "Out: $out_file ($out_exists) - $pwd\n";
 
 open(IN, $in_file)      or print STDERR "Err E609231-33 $!\n";
-# open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
+open(OUT, ">$out_file\_zz_trash_tbd") or print STDERR "Err E609231-32 $!\n";
+
+print OUT qq~<%init>
+	my \$foo = 3+5;
+</%init>
+~;
+
+while(my $line = <IN>) {
+	chomp $line;
+	$line =~ s/\[%(.+)%\]/<%$1%>/g;
+	print OUT "$line\n";
+}
 
 close(IN);
-# close(OUT);
+close(OUT);
 
 exit(0); # XX
 
@@ -41,24 +52,11 @@ if ($errstr) {
 
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
-
 	if (-d "$dir/$fn") {
 		print "- Skipping $fn (directory)\n";
-		next;
+		# XXX next;
 	}
-
-	my $out_file = "$theme/$fn/tbd";
-
-	print "- IN:  $dir/$fn\n";
-	print "- OUT: $out_file ...\n";
-
-	# open(IN, "$dir/$fn") or print STDERR "Err E609231-33 $!\n";
-	# open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
-
-	# print OUT qq~<%init>my \$foo = 3+5; </%init> ~;
-
-	# close(IN);
-	# close(OUT);
+	# XXX my $out_file = "$theme/$fn/tbd";
 }
 
 closedir(D);
