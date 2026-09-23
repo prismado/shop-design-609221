@@ -22,15 +22,14 @@ while(my $fn = readdir(D)) {
 		next;
 	}
 	my $cmd = "./$theme/build/start.pl $theme $fn main";
-	print "- $cmd\n";
+	print "- 🚀 $cmd\n";
 	system($cmd) && print STDERR "Err E609231-26 $! $cmd\n";
 }
 closedir(D);
 
-# XX &component('public');
 sub component ($) {
 	my $component = $_[0];
-	print "----- 💡 Component: \"$component\" ... -----\n";
+	# XX print "----- 💡 Component: \"$component\" ... -----\n";
 }
 
 sub sub_dir($) {
