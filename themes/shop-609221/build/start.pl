@@ -26,6 +26,10 @@ if ($type eq 'main') {
 	use ScreenPoint::Core;
 	my \$C = ScreenPoint::Core->new(\$r, \$m);
 
+	my %v = (
+		daily_609231 => 'tbd adsf'
+	);
+
 	my \$title = \$C->{CONFIG}->{site_title};
 </%init>
 ~;
@@ -35,6 +39,7 @@ else {
 	my \%args = \$m->caller_args(0);
 
 	my \$C = \$args{C};
+	my \$v = \$args{v};
 
 	my \$title = \$C->{CONFIG}->{site_title};
 </%init>
@@ -44,8 +49,7 @@ else {
 while(my $line = <IN>) {
 	chomp $line;
 	$line =~ s/\[%(.+)%\]/<%$1%>/g;
-	$line =~ s/<& partials\/(.+)\.html &>/<& partials\/$1\.html, C => \$C &>/;
-	# XX $line =~ s/<& partials\/header.html &>/<& partials\/header.html, C => \$C &>/;
+	$line =~ s/<& partials\/(.+)\.html &>/<& partials\/$1\.html, v => \\%v, C => \$C &>/;
 	print OUT "$line\n";
 }
 
