@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# -- shop-609221/build/start.pl
+# -- themes/shop-609221/build/start.pl
 
 use utf8;
 use strict;
