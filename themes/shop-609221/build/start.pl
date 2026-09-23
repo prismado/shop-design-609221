@@ -27,6 +27,8 @@ if ($errstr) {
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
 	print "✈  [special - $comp] ...... $fn\n";
+	my $out_dir = "../public/$fn";
+	print "XX $out_dir ...\n";
 }
 
 closedir(D);
