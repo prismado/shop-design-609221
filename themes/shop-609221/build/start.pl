@@ -2,8 +2,9 @@
 
 # -- themes/shop-609221/build/start.pl
 
-use utf8;
 use strict;
+use utf8;
+use open qw(:std :encoding(UTF-8));
 
 print "$0\n";
 
@@ -25,7 +26,7 @@ if ($errstr) {
 
 while(my $fn = readdir(D)) {
 	next if $fn =~ /^\./;
-	print "[special - $comp] ...... $fn\n";
+	print "✈  [special - $comp] ...... $fn\n";
 }
 
 closedir(D);
