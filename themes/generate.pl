@@ -20,7 +20,6 @@ sub component ($) {
 
 	my $errstr = '';
 
-	# XXX opendir(D, "$theme/public/$component") or ($errstr = $!);
 	opendir(D, "$theme/$component") or ($errstr = $!);
 
 	if ($errstr) {
