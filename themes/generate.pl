@@ -10,6 +10,7 @@ print "===== 🚀 $theme =====\n\n";
 
 &component('start');
 &component('product_full');
+&component('partials');
 
 sub component ($) {
 	my $component = $_[0];
