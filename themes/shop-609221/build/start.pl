@@ -41,23 +41,8 @@ while(my $line = <IN>) {
 close(IN);
 close(OUT);
 
-exit(0); # XX
-
-opendir(D, $dir) or ($errstr = $!);
-
-if ($errstr) {
-	print STDERR "Error E609230-13 $errstr at $0 - dir: $dir - $pwd\n";
-	exit(1);
-}
-
-while(my $fn = readdir(D)) {
-	next if $fn =~ /^\./;
-	if (-d "$dir/$fn") {
-		# XXX print "- Skipping $fn (directory)\n";
-	}
-}
-
-closedir(D);
+# XXX opendir(D, $dir) or ($errstr = $!);
+# XXX closedir(D);
 
 __END__
 
