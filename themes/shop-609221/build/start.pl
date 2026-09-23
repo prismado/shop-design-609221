@@ -44,6 +44,8 @@ else {
 while(my $line = <IN>) {
 	chomp $line;
 	$line =~ s/\[%(.+)%\]/<%$1%>/g;
+	# XXX <& partials/header.html &>
+	$line =~ s/<& partials\/header.html &>/<& partials\/header.html, C => \$C &>/;
 	print OUT "$line\n";
 }
 
