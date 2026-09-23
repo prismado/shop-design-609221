@@ -14,7 +14,7 @@ print "===== 🚀 $theme =====\n\n";
 sub component ($) {
 	my $component = $_[0];
 
-	print "----- Component: \"$component\" ... -----\n";
+	print "----- 💡 Component: \"$component\" ... -----\n";
 
 	my $errstr = '';
 
@@ -34,6 +34,7 @@ sub component ($) {
 	closedir(D);
 	print "\n";
 
-	my $cmd = "./$theme/build/start.pl $theme";
+	my $cmd = "./$theme/build/start.pl $theme $component";
 	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
+	print "\n";
 }
