@@ -13,9 +13,11 @@ print "$0 $theme $comp\n";
 
 my $pwd    = `pwd`;
 my $errstr = '';
-my $dir    = "./$theme/$comp";
+my $dir    = "./$theme/public/$comp";
 
-print "XX $dir\n";
+my $exists = -e $dir ? 1 : 0;
+
+print "XX $dir ($exists)\n";
 
 exit(0); # XX
 
