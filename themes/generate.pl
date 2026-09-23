@@ -28,34 +28,9 @@ while(my $fn = readdir(D)) {
 closedir(D);
 
 # XX &component('public');
-
 sub component ($) {
 	my $component = $_[0];
-
 	print "----- 💡 Component: \"$component\" ... -----\n";
-
-	my $errstr = '';
-
-	opendir(D, "$theme/$component") or ($errstr = $!);
-
-	if ($errstr) {
-		print STDERR "Error E609231-25 $errstr ($component)\n";
-		exit(1);
-	}
-
-	print "----- Files of $component -----\n";
-	while(my $fn = readdir(D)) {
-		next if $fn =~ /^\./;
-		print "- $fn\n";
-	}
-
-	closedir(D);
-	print "\n";
-
-	my $cmd = "./$theme/build/start.pl $theme $component";
-	print "XX $cmd\n";
-	system($cmd) && print STDERR "Err E609230 $! $cmd\n";
-	print "\n";
 }
 
 sub sub_dir($) {
@@ -74,7 +49,7 @@ sub sub_dir($) {
 		print "[sub_dir] - fn: $fn\n";
 		next if -d "$_[0]/$fn";
 		my $cmd = "./$theme/build/start.pl $theme $last_elem/$fn";
-		print "- $cmd\n";
+		print "[sub_dir] - $cmd\n";
 		system($cmd) && print STDERR "Err E609231-77 $! $cmd\n";
 	}
 	closedir(DIR);

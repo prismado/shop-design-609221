@@ -11,11 +11,11 @@ my $comp  = $ARGV[1] || 'start';
 
 print "$0 $theme $comp\n";
 
-my $pwd = `pwd`;
-
+my $pwd    = `pwd`;
 my $errstr = '';
+my $dir    = "./$theme/$comp";
 
-my $dir = "./$theme/$comp";
+print "XX $dir\n";
 
 exit(0); # XX
 
@@ -34,37 +34,18 @@ while(my $fn = readdir(D)) {
 		next;
 	}
 
-	my @elems = split /\//, $comp;
-	print "✈  [special - $comp] ...... $fn - " . ($#elems + 1) . "\n";
-
-	my $out_file = "../public/$fn";
-
-	if ($#elems + 1 > 1) {
-		my $updir = $elems[1];
-		my $subfn = (split /\t/, $fn)[0];
-		print "XX updir is $updir / subfn is $subfn\n";
-		$out_file = "../public/$updir/$subfn";
-	}
+	my $out_file = "$theme/$fn/tbd";
 
 	print "- IN:  $dir/$fn\n";
 	print "- OUT: $out_file ...\n";
 
-	open(IN, "$dir/$fn") or print STDERR "Err E609231-33 $!\n";
-	open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
+	# open(IN, "$dir/$fn") or print STDERR "Err E609231-33 $!\n";
+	# open(OUT, ">$out_file") or print STDERR "Err E609231-32 $!\n";
 
-	print OUT qq~<%init>
-	my \$foo = 3+5;
-</%init>
-~;
+	# print OUT qq~<%init>my \$foo = 3+5; </%init> ~;
 
-	while(my $line = <IN>) {
-		chomp $line;
-		$line =~ s/\[%(.+)%\]/<%$1%>/g;
-		print OUT "$line\n";
-	}
-
-	close(IN);
-	close(OUT);
+	# close(IN);
+	# close(OUT);
 }
 
 closedir(D);
