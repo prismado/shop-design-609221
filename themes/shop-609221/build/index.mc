@@ -12,7 +12,7 @@
 	}
 
 	my %v = (
-		daily_609231 => 'Tagesangebote am Mittwoch',
+		daily_609231 => 'Tagesangebote am Donnerstag',
 		products     => \@products
 	);
 
