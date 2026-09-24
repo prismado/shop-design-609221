@@ -1,12 +1,20 @@
 <%init>
 	use ScreenPoint::Core;
+
 	my $C = ScreenPoint::Core->new($r, $m);
 
+	my $prodcat = {
+		0 => { title => 'Foo 0', price => 123.45 },
+		1 => { title => 'Bar 1', price =>  55.45 }
+	};
+
 	my @prod_titles = ('UltraBook Pro 14&Prime;', 'Foo Bar');
+
 	my @products = ();
+
 	for my $i (0 .. 11) {
 		push @products, {
-			title => $prod_titles[$i],
+			title => $prodcat->{$i}->{title},
 			price => 9 + int(rand(492))
 		};
 	}
