@@ -4,8 +4,8 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 
 	my $prodcat = {
-		0 => { title => 'Foo 0', price => 123.45 },
-		1 => { title => 'Bar 1', price =>  55.45 }
+		0 => { title => 'UltraBook Pro 14&Prime;', price => 123.45 },
+		1 => { title => 'Ultrabook Ultra',         price => 955.45 }
 	};
 
 	my @prod_titles = ('UltraBook Pro 14&Prime;', 'Foo Bar');
