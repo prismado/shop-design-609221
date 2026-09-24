@@ -26,14 +26,14 @@ if ($in_file =~ /partials\/product\.html$/) {
 	open(CODE, "./$theme/build/partials/product.mc") or print STDERR "*** Error $!\n";
 	my $code = <CODE>;
 	close(CODE);
-	print OUT "$code\n";
+	print OUT "<%init>\n$code\n</%init>\n";
 }
 elsif ($in_file =~ /\/public\/index.html$/) {
 	local $/ = undef;
 	open(CODE, "./$theme/build/index.mc") or print STDERR "*** Error $!\n";
 	my $code = <CODE>;
 	close(CODE);
-	print OUT $code;
+	print OUT "<%init>\n$code\n</%init>\n";
 }
 elsif ($type eq 'main') {
 	print OUT qq~<%init>

@@ -1,4 +1,3 @@
-<%init>
 	use ScreenPoint::Core;
 
 	my $C = ScreenPoint::Core->new($r, $m);
@@ -23,4 +22,3 @@
 	);
 
 	my $title = $C->{CONFIG}->{site_title};
-</%init>
