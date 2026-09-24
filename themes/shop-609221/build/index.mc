@@ -8,14 +8,14 @@
 		1 => { title => 'Ultrabook Ultra',         price => 955.45 }
 	};
 
-	my @prod_titles = ('UltraBook Pro 14&Prime;', 'Foo Bar');
+	# XXX my @prod_titles = ('UltraBook Pro 14&Prime;', 'Foo Bar');
 
 	my @products = ();
 
 	for my $i (0 .. 11) {
 		push @products, {
 			title => $prodcat->{$i}->{title},
-			price => 9 + int(rand(492))
+			price => $prodcat->{$i}->{price}
 		};
 	}
 
