@@ -1,0 +1,132 @@
+<%init>
+	use utf8;
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $perm = $C->get_user_perm();
+</%init>
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anmelden | <% $C->{CONFIG}->{site_title} %></title>
+    <link rel="shortcut icon" href="assets/images/icons/favicon-128x128.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/dist/output.css" rel="stylesheet">
+    <style>
+        .d { font-family: 'Barlow Condensed', sans-serif; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center bg-[var(--bg)] text-[var(--txt)] antialiased px-4 py-16">
+
+<div class="w-full max-w-sm">
+
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2.5 mb-10 no-underline">
+        <img src="/assets/images/logos/logo_prismado_400x400_transp.gif" alt="Logo" class="h-7 w-auto"
+             onerror="this.style.display='none'">
+        <span class="d text-2xl font-black uppercase tracking-wide text-[var(--txt)]">
+            Serviceportal<span class="text-[var(--accent)]">Help</span>
+        </span>
+    </a>
+
+    <h1 class="d text-4xl font-black uppercase tracking-wide leading-none mb-2">Anmelden</h1>
+    <p class="text-sm text-[var(--txt-3)] mb-8">Willkommen zurück. Bitte melde dich an.</p>
+    <div class="h-px bg-[var(--border)] mb-8"></div>
+
+%   if ($perm->{uid} > 0) {
+    <div class="text-center py-12">
+        <p class="text-sm text-[var(--txt-2)] mb-5">Du bist bereits angemeldet.</p>
+        <a href="/_logout"
+           class="inline-block text-xs font-bold uppercase tracking-widest px-6 py-2.5 border border-[var(--accent)] text-[var(--accent)] no-underline hover:bg-[var(--accent)] hover:text-black transition-colors">
+            Abmelden
+        </a>
+    </div>
+%   }
+%   else {
+    <form method="post" action="/_authen" class="space-y-5">
+        <div>
+            <label for="user" class="block text-xs font-bold uppercase tracking-widest text-[var(--txt-3)] mb-2">
+                Benutzername
+            </label>
+            <input type="text" id="user" name="user"
+                   placeholder="Benutzername" autocomplete="username">
+        </div>
+
+        <div>
+            <label for="pass" class="block text-xs font-bold uppercase tracking-widest text-[var(--txt-3)] mb-2">
+                Passwort
+            </label>
+            <input type="password" id="pass" name="pass"
+                   placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <div class="flex items-center gap-3">
+            <input type="checkbox" id="stay" name="stay_logged_in" value="1">
+            <label for="stay" class="text-sm text-[var(--txt-2)] cursor-pointer select-none">
+                Angemeldet bleiben
+            </label>
+        </div>
+
+        <button type="submit" name="Login"
+                class="w-full bg-[var(--txt)] text-white rounded-md text-xs font-bold uppercase tracking-widest py-3.5 border-none cursor-pointer transition-opacity hover:opacity-75">
+            Anmelden
+        </button>
+    </form>
+%	# -------------------------------------------- MS SSO
+	<a href="/auth/oidc"
+		class="mt-2 w-full inline-flex items-center justify-center gap-3 border border-zinc-300
+			bg-white px-4 py-3 text-sm font-semibold text-zinc-700
+			hover:bg-zinc-50 transition-colors no-underline"
+		aria-label="Mit Microsoft Business Account anmelden">
+
+		<svg class="h-5 w-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21"
+		     fill="none" stroke="none" aria-hidden="true">
+			<rect x="1"  y="1"  width="9" height="9" fill="#f25022"></rect>
+			<rect x="1"  y="11" width="9" height="9" fill="#00a4ef"></rect>
+			<rect x="11" y="1"  width="9" height="9" fill="#7fba00"></rect>
+			<rect x="11" y="11" width="9" height="9" fill="#ffb900"></rect>
+		</svg>
+
+		<span>Mit Microsoft anmelden</span>
+	</a>
+%	# -------------------------------------------- /MS SSO
+%   }
+
+    <a href="/" class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--txt-3)] hover:text-[var(--txt-2)] mt-7 no-underline transition-colors">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Zurück zur Startseite
+    </a>
+
+%   if ( $perm->{is_devel} ) {
+    <div class="mt-12 p-5 border border-[var(--border)] text-xs text-[var(--txt-3)]">
+        <strong class="text-[var(--txt-2)]">DB Edit:</strong>
+        <a href="/adm_db_edit?table=properties&wcl=`key`%3D%27site_company_de%27" class="text-[var(--accent)]">Company</a> &ndash;
+        <a href="/adm_db_edit?table=properties&wcl=`key`%3D%27site_addr_de%27" class="text-[var(--accent)]">Addr</a> &ndash;
+        <a href="/adm_db_edit?table=properties&wcl=`key`%3D%27site_email_de%27" class="text-[var(--accent)]">E-Mail</a><br>
+        Safe-property: <a href="/adm_db_edit?table=config_prod_feat&wcl=featkey%3D%27fw_chat_id_1%27" class="text-[var(--accent)]">fw_chat_id_1</a>
+        <table class="mt-3 w-full border-collapse">
+%           foreach (sort keys %$perm) {
+            <tr>
+                <td class="pr-3 py-0.5 text-neutral-400 whitespace-nowrap"><% $_ %></td>
+                <td class="py-0.5">= <% $perm->{$_} %></td>
+            </tr>
+%           }
+        </table>
+    </div>
+%   }
+
+</div>
+
+<footer class="fixed bottom-0 left-0 right-0 border-t border-[var(--border)] bg-[var(--bg)] py-3.5 px-6 flex justify-between items-center">
+    <span class="text-[0.68rem] text-[var(--txt-3)] tracking-wide">© 2026 <% $C->txt('site_company') %> | Zürich</span>
+    <span class="text-[0.68rem] text-[var(--txt-3)] tracking-wide">Moussonstrasse 66 · CH-8044 Zürich</span>
+</footer>
+
+</body>
+</html>
