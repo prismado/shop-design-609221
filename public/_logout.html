@@ -1,0 +1,14 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	$C->authen(action => 'logout');
+
+	if ( $C->getSessData('signin_sso') ) {
+		$m->redirect("https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=https://$C->{CONFIG}->{HTTP_HOST}/");
+	}
+	else {
+		$m->redirect('/');
+	}
+</%init>

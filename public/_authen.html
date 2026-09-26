@@ -1,0 +1,45 @@
+<%init>
+	use ScreenPoint::Core;
+	use Data::Dumper;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $user   = $cgi->param('user');
+	my $pass   = $cgi->param('pass');
+	my $action = $cgi->param('action');
+
+	my ($rc, $msg) = $C->authen2(user=>$user, pass=>$pass, action=>$action);
+
+	if ($rc) {
+		$m->redirect("/signin?rc=$rc");
+	}
+	else {
+		$m->redirect('/');
+	}
+
+	my $cookies = $C->get_cookies_simple();
+
+	$r->content_type('text/html; charset=utf-8');
+</%init>
+<div style="font-family:Roboto;">
+
+&larr; <a href="z_cookie.html">Back</a> | <a href="/dashboard/">Dashboard</a><br><br>
+
+UID = <% $C->getUID2() %> / action = "<% $action %>"<br>
+UID = <% $C->getUID() %><br>
+SID = <% $C->getSID() %>
+<br>
+
+% if ($rc) {
+	<p>
+		RC <% $rc %> <% $msg || '*** Fehler ***' %>
+	</p>
+% }
+<hr />
+% foreach (keys %{$cookies} ){
+	&bull; [Cookie] <b><%$_%></b> = "<% $cookies->{$_} %>"<br>
+% }
+
+</div>
