@@ -1,0 +1,149 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $dbattr  = $args{dbattr};
+	my $C       = $args{C};
+	my $db_inf  = $args{db_inx};
+	my $perm    = $args{perm};
+	my $appmsgs = $args{appmsgs};
+	my $appmsg2 = $args{appmsg2};
+
+	my %v = %$dbattr;
+
+	my $app_msg = join '<br>', @{$appmsgs};
+	my $app_ms2 = join '<br>', @{$appmsg2};
+</%init>
+<div class="row">
+	<div class="col-md-12 pl-5 pr-5">
+			<div class="float-right">
+				<a href="<% $args{referer} %>"><% $args{referer} %></a>
+				<% $db_inf->{table_comment} %>
+			</div>
+			<h2 style="font-size:1.75rem">&#9999; DB Edit &ndash; [ <% $args{table} %> ] &middot; <span style="font-size:0.5em"><% $C->time_now(1) %></span></h2>
+			<h5>Where &rarr; <code><b><% $args{wcl} %></b></code></h5>
+
+%		if ($args{special}->{EXT_TOP}) {
+% #			<p>XX <% $args{special}->{EXT_TOP} %></p>
+%		}
+%		if ($args{res_top}->{out}) {
+			<p><% $args{res_top}->{out} %></p>
+%		}
+
+		<form method="post" name="f402131">
+		<input type="hidden" name="table" value="<% $args{table} %>">
+		<input type="hidden" name="wcl"   value="<% $args{wcl} %>">
+		<input type="hidden" name="s_token" value="<% $args{s_token} %>">
+
+		<table class="table table-sm table-striped table-hover mt-3">
+%		foreach my $data (@{ $db_inf->{data} }) {
+%			my $label = ucfirst $data->{column};
+%			   $label = uc $label if length($label) < 4;
+%			my $special = $C->get_cmd_param(str=>$data->{comment}, p_split=>'\|\|', k_split=>':=');
+%			   $special->{STYLE} = 'background-color:#f0f0f0; font-family:Courier; font-weight:bold; width:200px; border-color:#f0f0f0'
+%				if $data->{column} eq 'id';
+%			my $placeholder = $data->{default};
+%			(my $val_enc = $v{$data->{column}}) =~ s/\&/\&amp;/g;
+%			    $val_enc =~ s/"/\&quot;/g; # -- 12Feb2024
+			<tr>
+			<td nowrap><b><% $label %></b> <% $data->{is_nullable} eq 'NO' ? '*' : '' %></td>
+			<td style="font-size:0.9rem" nowrap><code><% ucfirst $data->{type} %></code>
+%				if ($data->{type} eq 'timestamp') {
+					<a href="#" onclick="document.f402131.db_<% $data->{column} %>.value='<% $C->now(1) %>'">NOW</a>
+%				}
+				<% $data->{length} %></td>
+			<td style="width:75%">
+%			    if ($data->{extra} =~ /GENERATED/i) {
+				<% $data->{extra} %>
+%			    }
+%			    else {
+%				if ($data->{length} > 255) {
+					<textarea class="form-control font-weight-bold"
+			style="<% $special->{STYLE} %>; font-family:Consolas; min-height:<% 650 + int(length($v{$data->{column}})/9) %>px; line-height:130%; font-size:0.88rem; color:black; background-color:#DFFF00"
+						name="db_<% $data->{column} %>" spellcheck="false"><% $val_enc %></textarea>
+%				}
+%				elsif ($data->{type} =~ /int$/i) {
+					<input type="text" class="form-control" name="db_<% $data->{column} %>" style="<% $special->{STYLE} %>"
+						value="<% $v{$data->{column}} %>" <% $special->{READONLx} %> style="width:13vw">
+%				}
+%				else {
+					<input type="text" class="form-control" style="<% $special->{STYLE} %>" placeholder="<% $placeholder %>"
+						name="db_<% $data->{column} %>" <% $special->{READONLx} %> value="<% $val_enc %>">
+%				}
+%			    }
+			</td>
+			<td class="float-right" nowrap>
+				<small><% $special->{READONLY} %></small>
+				<% $data->{key} ? "&#128273; $data->{key}" : '' %>
+%				my $special_count = 0;
+%				foreach (sort keys %$special) {
+%				    if ($args{debug}) {
+%					next unless length( $special->{$_} );
+					&bull; <b>"<% $_ %>"</b> = "<% $special->{$_} %>"<br>
+%				    }
+%					$special_count++;
+%				}
+%				foreach (sort keys %$data) {
+%					next if $_ eq 'column' or $_ eq 'length' or $_ eq 'type' or $_ eq 'position' or $_ eq 'is_nullable'
+%						or $_ eq 'default' or $_ eq 'comment' or $_ eq 'key' or $_ eq 'extra';
+%					next unless length( $data->{$_} );
+					&bull; <b><% $_ %></b> = "<% $data->{$_} %>"<br />
+%				}
+%				if (length( $data->{comment} ) && $special_count == 0) {
+					<i><% $data->{comment} %></i>
+%				}
+%				elsif (length( $special->{REM}) ) {
+					<i><% $special->{REM} %></i>
+%				}
+				<span style="color:goldenrod">[<% length( $v{$data->{column}} ) || 0 %>]</span>
+			</td>
+			</tr>
+%		}
+		</table>
+
+		<input type="submit" class="btn btn-primary" name="bUpdate" value="Update" style="margin-right:10px">
+%		if ($perm->{is_devel}) {
+		<input type="submit" class="btn btn-info" name="bDuplicate" value="Duplicate" style="margin-right:10px">
+%		}
+%		if ($args{bDel}) {
+			<input type="submit" class="btn btn-danger" name="bDelNow" value="Del!">
+%		}
+%		else {
+			<input type="submit" class="btn btn-warning" name="bDel" value="Delete...">
+%		}
+
+		<input type="button" value="Back" class="btn ml-3" onclick="document.location='adm_config.html'">
+
+		</form>
+
+%		if ($app_msg) {
+			<br />
+			<% $C->bootstrap_alert($app_msg, $app_msg =~ /^ERR/ ? 'danger' : 'success') %>
+			<br />
+%		}
+
+		<p class="mt-3"><small>*) Mandatory field</small></p>
+
+%		if ($app_ms2) {
+			<h5>Devel Info</h5>
+			<% $C->bootstrap_alert($app_ms2, 'warning') %>
+			<br />
+%		}
+
+%		if ($args{debug}) {
+			<div class="well" style="background-color:#f0f0f0; padding:10px; border-style:dotted; border-color:black">
+				Column Comment:<br>
+				<code>REM:=remarks || READONLY:=readonly || STYLE:=font-family:Times; font-weight:bold</code><br><br>
+
+				Table Comment:<br>
+				<code>REM:=remarks || EXT_TOP:=tbd_1 || EXT_BOTTOM:=tbd_2</code>
+			</div><br>
+%			foreach (sort keys %$perm) {
+				X -- <b><% $_ %></b> = <% $perm->{$_} %><br>
+%			}
+%		}
+
+	</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,145 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	my $perm = $C->get_user_perm();
+	my $cgi  = $C->{CGI};
+
+	my @appmsgs = my @appmsg2 = ();
+
+	my $table      = $cgi->param('table');
+	my $wcl        = $cgi->param('wcl');
+	my $bUpdate    = $cgi->param('bUpdate');
+	my $bDel       = $cgi->param('bDel');
+	my $bDuplicate = $cgi->param('bDuplicate');
+	my $bDelNow    = $cgi->param('bDelNow');
+	my $s_token    = $cgi->param('s_token'); # -- Security Access Token
+	my $debug      = $cgi->param('debug');
+
+	my $db_inx     = $C->get_table_schema(table=>$table, schema=>$ENV{db_name});
+	my $whoami     = $C->whoami();
+	my $md5_secret = $C->md5_secret($table);
+
+	my $md5chk  = $C->md5str("$table$wcl");
+	my $referer = $C->getSessData("ref_$md5chk") || $ENV{HTTP_REFERER} || '/';
+	$C->saveSessData("ref_$md5chk", $referer);
+
+	if ($perm->{is_devel} or $perm->{is_admin}) {
+		push(@appmsg2, "s_token: <code>$md5_secret</code>");
+	}
+	else {
+		$C->redir('/not_auth.html') unless $perm->{uid} > 0;
+		$C->redir('/not_auth.html') if $md5_secret ne $s_token;
+	}
+
+	my %dbattr = my @all_cols = my @all_cols_v = ();
+
+	foreach my $data (@{ $db_inx->{data} }) {
+		push(@all_cols, "`$data->{column}`");
+		push(@all_cols_v, "\$dbattr{'$data->{column}'}");
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @all_cols) . " FROM $table WHERE $wcl";
+
+	my $sql_update = '';
+	if ($bUpdate) {
+		my @update_vals = ();
+		foreach ($cgi->all_parameters) {
+			next unless /^db_(.+)/;
+			my $k = $1;
+			(my $val = $cgi->param($_)) =~ s/'/''/g;
+			push(@update_vals, "`$k`='$val'");
+		}
+		$sql_update = "UPDATE $table SET " . (join ', ', @update_vals) . " WHERE $wcl;";
+		my $errstr = '';
+		if ($wcl) {
+			$C->{dbh}->do($sql_update) or (push(@appmsgs, "ERR $DBI::errstr"));
+			push(@appmsgs, "Updated with $wcl at " . $C->now(6));
+			push(@appmsg2, 'DN54: <code>' . $C->pretty_stmt($sql_update) . '</code>');
+			$C->log(msg=>"UPDATED $table $wcl by UID $perm->{uid}", service=>'adm_db_edit', importance=>1) unless $perm->{is_devel};
+		}
+	}
+	elsif ($bDuplicate) {
+		my @update_vals = my @db_keys = ();
+		foreach ($cgi->all_parameters) {
+			next unless /^db_(.+)/;
+			next if $_ eq 'db_id'; # -- Skip primary key to prevent duplicate key error
+			my $k = $1;
+			push(@db_keys, "`$k`");
+			(my $val = $cgi->param($_)) =~ s/'/''/g;
+			push(@update_vals, "'$val'");
+		}
+		my $stmt = "insert into $table (" . (join ', ', @db_keys) . ') values (' . (join ', ', @update_vals) . ');';
+		$C->{dbh}->do($stmt);
+		my $last_ins_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+		push(@appmsgs, "Duplicate: $wcl &rarr; $last_ins_id");
+		push(@appmsg2, $stmt);
+	}
+	elsif ($bDelNow) {
+		$C->{dbh}->do("delete from $table WHERE $wcl");
+		$C->log(msg=>"Deleted from $table $wcl by UID $perm->{uid}!", service=>'adm_db_edit', importance=>1) unless $perm->{is_devel};
+		$m->redirect($referer); # -- 27Feb2024
+	}
+	elsif ($bDel) {
+		push(@appmsgs, '<b>WARNING!!!</b> This operation cannot be undone!');
+	}
+
+	my $special = $C->get_cmd_param(str=>$db_inx->{table_comment}, p_split=>'\|\|', k_split=>':=');
+	foreach (sort keys %$special) {
+		push(@appmsg2, "X -- <b>$_</b> = <code>\"$special->{$_}\"</code>");
+	}
+
+	my %dbdat = ();
+	my $all_vars = join ', ', @all_cols_v;
+	my $code = qq~($all_vars) = \@{\$C->query("$stmt")};~;
+	my $errstr = '';
+	eval ( $code ) or ($errstr = $@);
+	push(@appmsgs, "ERROR $errstr") if $errstr;
+
+	my $res_top;
+	if ($special->{EXT_TOP}) {
+		$res_top = $C->exec(comp_file=>$special->{EXT_TOP}, id=>$dbattr{id}, table=>$table, theme=>'default', dir=>'config')
+			if -e "$C->{CONFIG}->{DOCUMENT_ROOT}/custom/default/config/$special->{EXT_TOP}";
+		push(@appmsg2, "Extension at Top: <code>$special->{EXT_TOP}</code>");
+	}
+
+	$r->content_type('text/html; charset=utf-8');
+</%init>
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<title>DB <% $table %> id <% $dbattr{id} %> | <% $C->{CONFIG}->{site_title} %></title>
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<meta name="theme-color" content="#377dff">
+	</head>
+	<body>
+		<div class="row ml-0 mr-0">
+		  <div class="col-12">
+			<h4 class="mt-1 ml-2"><% $C->{CONFIG}->{site_title} %></h4>
+			<p class="ml-2 mb-3">
+				<a href="__dashboard.html">Dashboard</a> &mdash; <a href="adm_config.html">Config</a> &mdash; <% $whoami %>
+			</p>
+		  </div>
+		</div>
+
+		<div class="row ml-0 mr-0">
+			<div class="col-12">
+				<& partials/adm_db_edit.html, table=>$table, debug=>$debug, wcl=>$wcl, s_token=>$s_token, referer=>$referer,
+					bUpdate=>$bUpdate, bDel=>$bDel, bDelNow=>$bDelNow, dbattr=>\%dbattr, db_inx=>$db_inx, perm=>$perm,
+						appmsgs=>\@appmsgs, appmsg2=>\@appmsg2, res_top=>$res_top, special=>$special, C=>$C &>
+			</div>
+		</div>
+	</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>
