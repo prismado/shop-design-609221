@@ -63,6 +63,7 @@ else {
 	my \%args = \$m->caller_args(0);
 
 	my \$C = \$args{C};
+	my \$A = \$args{A};
 	my \$v = \$args{v};
 
 	my \$title = \$C->{CONFIG}->{site_title};
@@ -73,9 +74,9 @@ else {
 while(my $line = <IN>) {
 	chomp $line;
 	$line =~ s/\[%(.+)%\]/<%$1%>/g;
-	$line =~ s/<& product\.html &>/<& product\.html, count => \$i, v => \$v, C => \$C &>/;
-	$line =~ s/<& partials\/(.+)\.html &>/<& partials\/$1\.html, v => \\%v, C => \$C &>/;
-	$line =~ s/<& (.+)\.html &>/<& $1\.html, v => \$v, C => \$C &>/;
+	$line =~ s/<& product\.html &>/<& product\.html, count => \$i, v => \$v, A => \$A, C => \$C &>/;
+	$line =~ s/<& partials\/(.+)\.html &>/<& partials\/$1\.html, v => \\%v, A => \$A, C => \$C &>/;
+	$line =~ s/<& (.+)\.html &>/<& $1\.html, v => \$v, A => \$A, C => \$C &>/;
 	print OUT "$line\n";
 }
 
