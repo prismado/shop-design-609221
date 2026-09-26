@@ -14,7 +14,7 @@
 <!-- Produkt 1 -->
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
         <div class="relative overflow-hidden">
-	<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products">
+	<a href="/adm_db_edit?wcl=product_id%3D<% $count + 1 %>&table=products_desc">
           <img src="https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild" alt="UltraBook Pro 14"
 		class="w-full aspect-square object-cover group-hover:scale-105
 			transition-transform duration-500" loading="lazy">
@@ -30,9 +30,7 @@
         </div>
         <div class="p-4 flex flex-col flex-1">
 		<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
-% # XXX			<% $v->{products}->[$count]->{title} %>
 			<% $prod->{title} %>
-% #			UltraBook Pro 14&Prime;
 		</h3>
 		<p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">
 			Schlankes Ultrabook mit brillantem Display, ganztägiger Akkulaufzeit und flüsterleisem Betrieb. Ideal für Büro, Studium und unterwegs. Generalüberholt und geprüft.
