@@ -7,4 +7,4 @@
 
 	my $title = $C->{CONFIG}->{site_title};
 
-	my $prod = $A->get_product($count);
+	my $prod = $A->get_product($count + 1);
