@@ -1,6 +1,8 @@
 use ScreenPoint::Core;
+use ScreenPoint::Auctionline;
 
 my $C = ScreenPoint::Core->new($r, $m);
+my $A = ScreenPoint::Auctionline->new($C);
 
 my $prodcat = {
 	0 => { title => 'UltraBook Pro 14&Prime;',  price => 799 },
