@@ -24,7 +24,7 @@
 	my $referer = $C->getSessData("ref_$md5chk") || $ENV{HTTP_REFERER} || '/';
 	$C->saveSessData("ref_$md5chk", $referer);
 
-	if ($perm->{is_devel} or $perm->{is_admin}) {
+	if ($perm->{is_devel}) {
 		push(@appmsg2, "s_token: <code>$md5_secret</code>");
 	}
 	else {
