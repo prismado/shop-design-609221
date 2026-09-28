@@ -5,15 +5,14 @@ use ScreenPoint::Auctionline;
 my $C = ScreenPoint::Core->new($r, $m);
 my $A = ScreenPoint::Auctionline->new($C);
 
-# XXX my $prodcat = { };
-
-# XXX my @products = ();
-
 my %v = (
 	daily_609231 => 'Tagesangebote am Montag'
 );
 
-my $title = $C->{CONFIG}->{site_title};
+my $cgi = $C->{CGI};
+my $debug = $cgi->param('debug');
+
+# XXX my $title = $C->{CONFIG}->{site_title};
 
 </%init>
 <!DOCTYPE html>
@@ -21,7 +20,7 @@ my $title = $C->{CONFIG}->{site_title};
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ElectroNova <% $title %> – Elektronik & Occasion-Geräte online kaufen</title>
+<title>ElectroNova <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -57,6 +56,7 @@ my $title = $C->{CONFIG}->{site_title};
 			tbd text text text tbd text text text tbd text text text tbd text text text
 			tbd text text text tbd text text text tbd text text text tbd text text text
 			tbd text text text tbd text text text tbd text text text tbd text text text
+			tbd text text text tbd text text text tbd text text text tbd text text text
 			</p>
 		</div>
 	</div>
@@ -65,7 +65,7 @@ my $title = $C->{CONFIG}->{site_title};
     <div class="flex items-end justify-between mb-5">                                                                         <h1 class="text-xl md:text-2xl font-bold text-gray-900">IT-Marken zum Top-Preis.</h1>
       <span class="text-sm text-gray-400">12 Artikel</span>                                                                 </div>                                                                                                              
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-	<& partials/index_products.html, v => \%v, A => $A, C => $C &>
+	<& partials/index_products.html, v => \%v, A => $A, C => $C, debug => $debug &>
     </div>
 </section>
 

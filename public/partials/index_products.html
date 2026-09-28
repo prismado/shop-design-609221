@@ -5,12 +5,13 @@
 	my $C = $args{C};
 	my $A = $args{A};
 	my $v = $args{v};
+	my $debug = $args{debug};
 
-	my $title = $C->{CONFIG}->{site_title};
+	# XXX my $title = $C->{CONFIG}->{site_title};
 </%init>
 
 % for (my $i=0; $i < 8; $i++) {
-	<& product.html, count => $i, v => $v, A => $A, C => $C &>
+	<& product.html, count => $i, v => $v, A => $A, C => $C, debug => $debug &>
 % }
 
       <!-- Produkt 9 -->

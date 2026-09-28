@@ -5,8 +5,9 @@
 	my $A     = $args{A};
 	my $v     = $args{v};
 	my $count = $args{count};
+	my $debug = $args{debug};
 
-	my $title = $C->{CONFIG}->{site_title};
+	# XXX my $title = $C->{CONFIG}->{site_title};
 
 	my $prod = $A->get_product($count + 1);
 
@@ -30,6 +31,9 @@
         </div>
         <div class="p-4 flex flex-col flex-1">
 		<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
+%			if ($debug) {
+				Debug -
+%			}
 			<% $prod->{title} %>
 		</h3>
 		<p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">
