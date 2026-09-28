@@ -77,7 +77,8 @@
 			<p>CHF <% $prod->{price_incl_vat} %></p>
 %		}
 		<p class="mt-6"><% $prod->{count_product} %> Stk. verfügbar</p>
-% # XXX		<p>Artikel-Nr. <% $prod->{art_no} %></p>
+
+		<& partials/inc_prod_spec.html &>
 
 %		if ($perm->{is_devel}) {
 		<ul class="mt-4">
