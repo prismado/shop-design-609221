@@ -43,7 +43,8 @@
 	<div>
               <span class="block text-xs text-gray-400 line-through">CHF 899.00</span>
 		<span class="block text-lg font-bold text-red-600">CHF
-			<% sprintf('%.2f', $v->{products}->[$count]->{price}) %>
+			<% $prod->{price_incl_vat} %>
+% # XXX			<% sprintf('%.2f', $v->{products}->[$count]->{price}) %>
 		</span>
 	</div>
 
