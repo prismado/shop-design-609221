@@ -1,19 +1,17 @@
 <%init>
-use ScreenPoint::Core;
-use ScreenPoint::Auctionline;
+	use utf8;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
 
-my $C = ScreenPoint::Core->new($r, $m);
-my $A = ScreenPoint::Auctionline->new($C);
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
 
-my %v = (
-	daily_609231 => 'Tagesangebote am Montag'
-);
+	my %v = (
+		daily_609231 => 'Tagesangebote am Montag'
+	);
 
-my $cgi = $C->{CGI};
-my $debug = $cgi->param('debug');
-
-# XXX my $title = $C->{CONFIG}->{site_title};
-
+	my $cgi = $C->{CGI};
+	my $debug = $cgi->param('debug');
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
