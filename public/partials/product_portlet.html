@@ -42,10 +42,16 @@
           <div class="flex items-end justify-between mt-auto pt-2">
 
 	<div>
+%	  if ($prod->{discount_perc}) {
               <span class="block text-xs text-gray-400 line-through">CHF <% $prod->{price_orig_incl_vat} %></span>
 		<span class="block text-lg font-bold text-red-600">CHF
 			<% $prod->{price_incl_vat} %>
 		</span>
+%	  }
+%	  else {
+		<span class="block text-xs text-gray-400 invisible">.</span>
+		<span class="block text-lg font-bold text-gray-900">CHF <% $prod->{price_incl_vat} %></span>
+%	  }
 	</div>
 
             <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5
