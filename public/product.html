@@ -6,9 +6,9 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	my %v = (
-		daily_609231 => 'Tagesangebote am Montag'
-	);
+	my $perm = $C->get_user_perm();
+
+	my %v = (daily_609231 => 'Tagesangebote am Montag');
 
 	my $cgi = $C->{CGI};
 	my $id    = $cgi->param('id') + 0;
@@ -78,13 +78,16 @@
 %		}
 		<p><% $prod->{count_product} %> Stk. verfügbar</p>
 		<p>Artikel-Nr. <% $prod->{art_no} %></p>
+
+%		if ($perm->{is_devel}) {
 		<ul class="mt-4">
 %		foreach (sort keys %$prod) {
-%		next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or /^price/
-%			or $_ eq 'brand' or /^count/ or /^art_no/;
-		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
+%			next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or /^price/
+%				or $_ eq 'brand' or /^count/ or /^art_no/;
+			<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %		}
 		</ul>
+%		}
 	</div>
 
 </section>
