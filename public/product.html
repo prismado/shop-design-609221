@@ -69,13 +69,14 @@
 
 	<div clasx="items-start">
 		<p>CHF <% $prod->{price_incl_vat} %> anstatt <% $prod->{price_orig_incl_vat} %></p>
-	<ul class="mt-4">
-%	foreach (sort keys %$prod) {
+		<p><% $prod->{count_product} %> Stk. verfügbar</p>
+		<ul class="mt-4">
+%		foreach (sort keys %$prod) {
 %		next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or /^price/
-%			or $_ eq 'brand';
+%			or $_ eq 'brand' or /^count/;
 		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
-%	}
-	</ul>
+%		}
+		</ul>
 	</div>
 
 </section>
