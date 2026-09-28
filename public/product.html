@@ -55,13 +55,7 @@
 			<h1 class="text-xl md:text-2xl font-bold text-gray-900">Aktuell.</h1>
 			<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc">Edit desc.</a> &ndash;
 			<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_discount">Edit disc.</a>
-			<p class="mt-3 text-sm text-gray-600">
-			tbd text text text tbd text text text tbd text text text tbd text text text
-			tbd text text text tbd text text text tbd text text text tbd text text text<br><br>
-
-			tbd text text text tbd text text text tbd text text text tbd text text text
-			tbd text text text tbd text text text tbd text text text tbd text text text
-			</p>
+			<p class="mt-3 text-sm text-gray-600"><% $prod->{desc_long} %></p>
 		</div>
 	</div>
 	<hr class="mb-5 border-gray-200" />
@@ -74,6 +68,7 @@
 	<div clasx="items-start">
 	<ul>
 %	foreach (sort keys %$prod) {
+%		next if $_ eq 'desc_long';
 		<li>X -- <% $_ %> = <% $prod->{$_} %></li>
 %	}
 	</ul>
