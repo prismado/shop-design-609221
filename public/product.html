@@ -52,7 +52,7 @@
 			class="w-full sm:w-[55%] md:w-[45%] flex-shrink-0 rounded-xl object-cover"
 			loading="lazy">
 		<div>
-			<h1 class="text-xl md:text-2xl font-bold text-gray-900">Aktuell.</h1>
+			<h1 class="text-xl md:text-2xl font-bold text-gray-900"><% $prod->{title} %></h1>
 			<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc">Edit desc.</a> &ndash;
 			<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_discount">Edit disc.</a>
 			<p class="mt-3 text-sm text-gray-600"><% $prod->{desc_long} %></p>
@@ -68,7 +68,7 @@
 	<div clasx="items-start">
 	<ul>
 %	foreach (sort keys %$prod) {
-%		next if $_ eq 'desc_long' or $_ eq 'description';
+%		next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang';
 		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %	}
 	</ul>
