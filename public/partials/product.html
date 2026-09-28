@@ -8,9 +8,8 @@
 	my $debug = $args{debug};
 
 	my $prod = $A->get_product($count + 1);
-
 </%init>
-<!-- Produkt 1 -->
+
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
         <div class="relative overflow-hidden">
 	<a href="/adm_db_edit?wcl=product_id%3D<% $count + 1 %>&table=products_desc">
@@ -28,11 +27,11 @@
           </button>
         </div>
         <div class="p-4 flex flex-col flex-1">
+%		if ($debug) {
+			<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products"><span
+				class="text-red-500 text-xs">Debug</span></a>
+%		}
 		<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
-%			if ($debug) {
-				<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products"><span
-					class="text-red-500 text-xs">Debug -</span></a>
-%			}
 			<% $prod->{title} %>
 		</h3>
 		<p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">
@@ -44,7 +43,6 @@
               <span class="block text-xs text-gray-400 line-through">CHF 899.00</span>
 		<span class="block text-lg font-bold text-red-600">CHF
 			<% $prod->{price_incl_vat} %>
-% # XXX			<% sprintf('%.2f', $v->{products}->[$count]->{price}) %>
 		</span>
 	</div>
 
