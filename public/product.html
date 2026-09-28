@@ -69,7 +69,7 @@
 	<ul>
 %	foreach (sort keys %$prod) {
 %		next if $_ eq 'desc_long';
-		<li>X -- <% $_ %> = <% $prod->{$_} %></li>
+		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %	}
 	</ul>
 	</div>
