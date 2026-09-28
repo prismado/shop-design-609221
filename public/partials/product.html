@@ -30,7 +30,8 @@
         <div class="p-4 flex flex-col flex-1">
 		<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
 %			if ($debug) {
-				Debug -
+				<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products"><span
+					class="text-red-500">Debug -</span></a>
 %			}
 			<% $prod->{title} %>
 		</h3>
