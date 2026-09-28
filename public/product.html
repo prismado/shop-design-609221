@@ -63,15 +63,15 @@
 	<hr class="mb-5 border-gray-200" />
 
     <div class="flex items-end justify-between mb-5">                                                                         
-	<h1 class="text-xl md:text-2xl font-bold text-gray-900">tbd.</h1>
+	<h1 class="text-xl md:text-2xl font-bold text-gray-900">Preis</h1>
       <span class="text-sm text-gray-400">12 Artikel</span>
     </div>
 
 	<div clasx="items-start">
-		<p>CHF <% $prod->{price_incl_vat} %></p>
+		<p>CHF <% $prod->{price_incl_vat} %> anstatt <% $prod->{price_orig_incl_vat} %></p>
 	<ul class="mt-4">
 %	foreach (sort keys %$prod) {
-%		next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or $_ eq 'price_incl_vat'
+%		next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or /^price/
 %			or $_ eq 'brand';
 		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %	}
