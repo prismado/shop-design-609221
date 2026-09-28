@@ -64,20 +64,20 @@
 
     <div class="flex items-end justify-between mb-5">                                                                         
 	<h1 class="text-xl md:text-2xl font-bold text-gray-900">Preis</h1>
-      <span class="text-sm text-gray-400">12 Artikel</span>
+      <span class="text-sm text-gray-400">Artikelnummer <% $prod->{art_no} %></span>
     </div>
 
 	<div clasx="items-start">
 %		if ($prod->{discount_perc}) {
-			<p>CHF <% $prod->{price_incl_vat} %> anstatt <% $prod->{price_orig_incl_vat} %>
+			<p><b>CHF <% $prod->{price_incl_vat} %></b> anstatt <s><% $prod->{price_orig_incl_vat} %></s>
 				&rarr; <% $prod->{discount_perc} %> % Rabatt
 			</p>
 %		}
 %		else {
 			<p>CHF <% $prod->{price_incl_vat} %></p>
 %		}
-		<p><% $prod->{count_product} %> Stk. verfügbar</p>
-		<p>Artikel-Nr. <% $prod->{art_no} %></p>
+		<p class="mt-6"><% $prod->{count_product} %> Stk. verfügbar</p>
+% # XXX		<p>Artikel-Nr. <% $prod->{art_no} %></p>
 
 %		if ($perm->{is_devel}) {
 		<ul class="mt-4">
