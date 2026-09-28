@@ -68,12 +68,20 @@
     </div>
 
 	<div clasx="items-start">
-		<p>CHF <% $prod->{price_incl_vat} %> anstatt <% $prod->{price_orig_incl_vat} %></p>
+%		if ($prod->{discount_perc}) {
+			<p>CHF <% $prod->{price_incl_vat} %> anstatt <% $prod->{price_orig_incl_vat} %>
+				&rarr; <% $prod->{discount_perc} %> % Rabatt
+			</p>
+%		}
+%		else {
+			<p>CHF <% $prod->{price_incl_vat} %></p>
+%		}
 		<p><% $prod->{count_product} %> Stk. verfügbar</p>
+		<p>Artikel-Nr. <% $prod->{art_no} %></p>
 		<ul class="mt-4">
 %		foreach (sort keys %$prod) {
 %		next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or /^price/
-%			or $_ eq 'brand' or /^count/;
+%			or $_ eq 'brand' or /^count/ or /^art_no/;
 		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %		}
 		</ul>
