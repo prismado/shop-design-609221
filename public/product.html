@@ -68,7 +68,7 @@
 	<div clasx="items-start">
 	<ul>
 %	foreach (sort keys %$prod) {
-%		next if $_ eq 'desc_long';
+%		next if $_ eq 'desc_long' or $_ eq 'description';
 		<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %	}
 	</ul>
