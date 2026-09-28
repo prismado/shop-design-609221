@@ -69,11 +69,15 @@
     <div class="flex items-end justify-between mb-5">                                                                         
 	<h1 class="text-xl md:text-2xl font-bold text-gray-900">IT-Marken zum Top-Preis.</h1>
       <span class="text-sm text-gray-400">12 Artikel</span>
-
-%	foreach (sort keys %$prod) {
-		XX <% $_ %> = <% $prod->{$_} %><br>
-%	}
     </div>
+
+	<div clasx="items-start">
+	<ul>
+%	foreach (sort keys %$prod) {
+		<li>X -- <% $_ %> = <% $prod->{$_} %></li>
+%	}
+	</ul>
+	</div>
 
 </section>
 
