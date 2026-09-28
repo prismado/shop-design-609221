@@ -13,6 +13,8 @@
 	my $cgi = $C->{CGI};
 	my $id    = $cgi->param('id') + 0;
 	my $debug = $cgi->param('debug');
+
+	my $prod = $A->get_product($id);
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -67,6 +69,10 @@
     <div class="flex items-end justify-between mb-5">                                                                         
 	<h1 class="text-xl md:text-2xl font-bold text-gray-900">IT-Marken zum Top-Preis.</h1>
       <span class="text-sm text-gray-400">12 Artikel</span>
+
+%	foreach (sort keys %$prod) {
+		XX <% $_ %> = <% $prod->{$_} %><br>
+%	}
     </div>
 
 </section>
