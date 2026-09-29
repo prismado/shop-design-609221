@@ -3,9 +3,13 @@
 
 	my $C = ScreenPoint::Core->new($r, $m);
 
-	# -- Geplant:
-	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	my $cgi = $C->{CGI};
 
+	my $id = $cgi->param('id') + 0;
+
+	$C->log(msg => "XX Add to basket prod-id $id");
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('text/plain; charset=utf-8');
 </%init>
 {
