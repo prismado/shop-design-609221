@@ -1,0 +1,77 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $A         = $args{A};
+	my $sth       = $args{sth};
+	my $info_page = $args{info_page};
+	my $debug     = $args{debug};
+	my $perm      = $args{perm};
+	my $track_tag = $args{track_tag};
+
+	my $sort_chk_p1 = $C->md5_secret('price ASC');
+	my $sort_chk_p2 = $C->md5_secret('price DESC');
+	my $sort_chk_r  = $C->md5_secret('1 DESC');
+	my $sort_chk_br = $C->md5_secret('brand');
+
+	my @sort_opt = ();
+	push(@sort_opt, {sort => 'price ASC',  label => 'Preis niedrig'});
+	push(@sort_opt, {sort => 'price DESC', label => 'Preis hoch'   });
+	push(@sort_opt, {sort => 'brand',      label => 'Marke'   });
+	my @sort_nav = ();
+	foreach my $s (@sort_opt) {
+		my $chk = $C->md5_secret($s->{sort});
+		(my $sort_enc = $s->{sort}) =~ tr/ /\+/;
+		if ($s->{sort} eq $args{sort_by}) {
+			push(@sort_nav, qq~<span class="text-dark font-weight-bold">$s->{label}</span>~);
+		}
+		else {
+			push(@sort_nav, qq~<a class="text-gray-600" href="/_sub.html?action=prod_sort&sort=$sort_enc&chk=$chk">$s->{label}</a>~);
+		}
+	}
+
+	my $count = $sth->rows();
+</%init>
+<div class="portlet-header border-bottom">
+	<div class="float-right">
+%		if ($perm->{is_admin}) {
+			<span class="float-end">
+				<a target="_blank" href="/custom/algonetic/html/category-print.html?id=<% $args{id} %>"><i class="fi fi-print"></i></a>
+			</span>
+%		}
+%	foreach (keys %$info_page) {
+		<a class="link-muted mr-5" href="/article-<% $_ %>-info.html"><% $info_page->{$_} %></a>
+%	}
+		<span class="fs--13"><span class="mr-2">Sortieren nach:</span> <% join ' &nbsp;&middot;&nbsp; ', @sort_nav %></span>
+	</div>
+	<span><% $count || '' %> Produkte auf Lager</span>
+</div>
+
+<div class="portlet-body">
+
+%	if ($debug > 1) {
+		<code>_includes/category.html</code><br />
+		<% $C->pretty_stmt( $args{stmt} ) %><br />
+%	}
+
+%	if ($count) {
+		<div class="row">
+% while(my $r = $sth->fetch()) {
+%	my ($id, $condition, $price, $campaign_id) = @{$r};
+	<& ../include/inc_render_prod.html, id=>$id, campaign_id=>$campaign_id, show_count=>1, SID=>$args{SID}, A=>$A, C=>$C, debug=>$debug &>
+% }
+		</div>
+%	}
+%	else {
+		<% $C->prp('sold_out_hint') %>
+%	}
+%	if ($debug) {
+%		if ($track_tag->{rows}) {
+			<p class="mt-3"><% $track_tag->{rows} %> Tracking Tags</p>
+			<p>Aktueller Tag: <b><% $track_tag->{tags}->[0]->{tag} %></b></p>
+%		}
+%	}
+
+</div>
+
+<& ../include/inc_add2basket_js.html &>

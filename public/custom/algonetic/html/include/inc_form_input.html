@@ -1,0 +1,22 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $write = defined $args{write} ? $args{write} : 1;
+
+	(my $value_enc = $args{value_enc}) =~ s/[\n\r]//g;
+	    $value_enc =~ s/'/\\'/g;
+</%init>
+<& inc_text_input.html,
+	label     => $C->txt($args{name}),
+	value_enc => $C->getSessData("frm_$args{name}"),
+	name      => "frm_$args{name}",
+	tx_class  => 'font-weight-bold fs--17 text-dark',
+	write     => $write,
+	input_args=> $args{input_args},
+	id        => "frm_$args{name}"
+&>
+<%doc>
+	Created: 17Jan2024
+</%doc>

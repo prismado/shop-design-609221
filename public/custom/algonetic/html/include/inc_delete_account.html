@@ -1,0 +1,77 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C       = $args{C};
+	my $lang    = $args{lang};
+	my $custinf = $args{custinf};
+
+	# XXX my $left2 = substr($args{whoami}, 0, 2);
+</%init>
+<div class="clearfix mt--60">
+
+			<div class="text-align-end">
+			<a href="#account_deactivate_confirm" class="text-gray-500 text-decoration-none font-light collapsed" data-toggle="collapse" aria-expanded="false" onclick="jQuery('#user_password_current, #user_password_new').val('');">
+				<span class="group-icon fs--13">
+				<i class="fi fi-arrow-down"></i>
+				<i class="fi fi-close"></i>
+				</span>
+
+				<span class="pl-2 pr-2">
+				delete my account
+				</span>
+			</a>
+			</div>
+
+			<div id="account_deactivate_confirm" class="collapse" style="">
+
+			<div class="alert b-0 bg-danger-soft mt-3 mb-5 p-4 clearfix">
+				<p>
+				NOTE: There is no way to restore a deleted account! 
+				Your account will be permanently deleted from our system. 
+				Please, make sure that this is what you want.
+				</p>
+
+				<p class="m-0 fs--13">
+				For security reasons, your account will be deactivated and permanently deleted within 30 days.
+				Deletion progress will be canceled if you sign back to your account.
+				</p>
+				
+				<i class="arrow arrow-lg arrow-bottom arrow-center border-danger-soft"></i>
+			</div>
+
+			<div class="row mb--60">
+
+				<div class="col-12 offset-lg-2 col-lg-7">
+
+				<div class="input-group-over">
+				<div class="form-label-group mb-1">
+				<input placeholder="Current Password" id="account_del_current_password" name="account_current_password" type="password" class="form-control">
+				<label for="account_del_current_password">Current Password</label>
+				</div>
+
+				<!-- `SOW : Form Advanced` plugin used -->
+				<a href="account-sign-password.html" class="btn fs--12 btn-password-type-toggle" data-target="#account_del_current_password">
+				<span class="group-icon">
+					<i class="fi fi-eye m-0"></i>
+					<i class="fi fi-close m-0"></i>
+				</span>
+				</a>
+				</div>
+
+				<div class="mt--7 fs--13 text-muted mb--30">
+				For security reasons, your current password is needed.
+				</div>
+
+
+				<div class="form-label-group mb-1">
+				<textarea rows="5" placeholder="Feedback" id="account_deactivate_feedback" name="account_deactivate_feedback" class="form-control"></textarea>
+				<label for="account_deactivate_feedback">Feedback</label>
+				</div>
+
+				</div>
+
+			</div>
+
+			</div>
+
+</div>

@@ -1,0 +1,131 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	# XXX my %addr_label = ( 1 => $prop->{"bill_addr$l"}, 2 => $prop->{"deliv_addr$l"} );
+	my %addr_label = (
+		1 => 'Rechnungsadresse',
+		2 => 'Lieferadresse'
+	);
+
+	my $diff_billing_addr = $C->prp('diff_billing_addr');
+
+	$C->saveSessData('flag_anon_buy', 1);
+</%init>
+<div id="adressblocks" class="adressonetimeBox ps-checkout-forms">
+	<div class="no-more-tables-responsive">
+		<table class="table">
+		<thead data-title="<% $C->prop('adress_input') %>" class="well">
+		<tr>
+		<th colspan="2"><% $C->prop('adress_input') %> <small><% $C->prop('fillout_all') %></small></th>
+		</tr>
+		</thead>
+		<tr>
+		<td style="padding-left: 10px !important;">
+			<label class="input_tag" for="email"><% $C->prop('emailadress') %><em>*</em></label>
+			 <input class="required" type="text" name="email" required="required" id="email" value="">
+         </td>
+		<td style="padding-left: 10px !important;">
+	           <label class="input_tag" for="phone"><% $C->prop('telephone') %><em>*</em></label>
+			  <input class="required input-large"  required="required" type="text" value="" name="phone_2" id="phone">
+		</td>
+		</tr>
+		</table>
+	</div>
+
+% for (my $i = 2; $i > 0; $i--) {
+%	my $addr = $A->get_address($i);
+	<% $i == 1 ? qq~<input type="button" class="btn btn-grey" style="height:50px!important;width:auto!important;" id="show_rech" name="show_rech" value="$diff_billing_addr" onClick="expandIt(invoice_addr);"><div id="invoice_addr">~ : '' %>
+
+	<div class="no-more-tables">
+		<table class="table">
+		<thead data-title="<%$addr_label{$i}%>" class="well">
+		<tr><th colspan="2"><%$addr_label{$i}%></th></tr>
+		</thead>
+
+		<tr>
+		<td colspan="2"> <label class="input_tag"  for="gender_<%$i%>"><%$C->prop('gender')%> <em>*</em></label>
+		<select name="gender_<%$i%>" class="input-large">
+		<option value="1"><% $C->prop('male') %></option>
+		<option value="2"><% $C->prop('female') %></option>
+		<option value="0"><% $C->prop('company') %></option>
+		</select>
+		</td>
+		</tr>
+
+		<tr>
+		<td><label class="input_tag"  for="firstname_<%$i%>"><% $C->prop('surname') %> <em><%$i==2 ? '*' : ''%></em></label>
+		<input class="<%$i== 2 ? 'required' : ''%>" id="firstname_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="firstname_<%$i%>" value="<%$addr->{firstname}%>"></td>
+		<td><label class="input_tag"  for="lastname_<%$i%>"><% $C->prop('lastname') %> <em><%$i==2 ? '*' : ''%></em></label>
+			<input class="<%$i== 2 ? 'required' : ''%>" id="lastname_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="lastname_<%$i%>" value="<%$addr->{lastname}%>"></td>
+		</tr>
+		<tr>
+		<td><label class="input_tag"  for="company_<%$i%>"><% $C->prop('company') %></label>
+	  	      <input  type="text" id="company_<% $i %>" value="<% $addr->{company} %>" name="company_<% $i %>"></td>
+		<td>
+		<label  class="input_tag"  for="street_<%$i%>"><% $C->prop('adress') %> <em><%$i==2 ? '*' : ''%></em></label>
+		<input class="<%$i== 2 ? 'required' : ''%>" id="street_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="street_<%$i%>" value="<%$addr->{street}%>"></td>
+		</tr>
+		<tr>
+		<td><label class="input_tag"  for="zip_<%$i%>"><% $C->prop('postcode') %> <em><%$i==2 ? '*' : ''%></em></label>
+	  		<input class="<%$i== 2 ? 'half required' : 'half'%>" id="ip_<%$i%>" street_<%$i%><%$i==2 ? 'required="required"' : ''%> type="text"
+			name="zip_<%$i%>" value="<%$addr->{zip}%>"></td>
+		<td>
+		<label class="input_tag"   for="city_<%$i%>"><% $C->prop('city') %> <em><%$i==2 ? '*' : ''%></em></label>
+	   		<input class="<%$i== 2 ? 'half required' : 'half'%>" id="city_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="city_<%$i%>" value="<%$addr->{city}%>"></td>
+		</tr>
+		<tr>
+		<td>
+	 	    <label class="input_tag"  for="country_<%$i%>"><% $C->prop('country') %></label>
+	  		<select class="<%$i== 2 ? 'required' : ''%>" id="country_<%$i%>" name="country_<%$i%>" <%$i==2 ? 'required="required"' : ''%> tabindex="1">
+                      <option value="">Bitte Wählen..</option>
+                      <option value="CH" selected >Schweiz</option>
+                      <option value="LI">Lichtenstein</option>
+                    </select>
+		</td>
+		</tr>
+		</table>
+		<% $i == 1 ? '</div>' : '' %>
+	</div> <!-- end  no-more-tables-->
+% }
+</div> <!-- end id="adressblocks"  -->
+
+% # -----  BUTTONS  ----- # %
+
+
+<div class="bottomWrap">
+<div class="checkbox checkbox-custom checkbox-circle">
+
+ <input type="checkbox" id="agb_check" id="checkbox" name="agb_check" value="accept">
+ <label for="agb_check"><span><% $C->prop('agb_info') %> <a target="_blanc" href="info_agb.html"><% $C->prop('agbs_long') %></a><span></label>
+<br><br>
+</div>
+
+	<input id="submit_summary" class="btn btn-checkout" type="submit" name="submit_summary" value="<% $C->prp('btn_continue') %>">
+	<input id="return" class="btn btn-grey" type="button" name="return"  onclick="javascript:history.back()" value="Cancel">
+</div>
+
+% if ($C->is_devel() or $C->getPermaSessData('debug')) {
+	<&debug.html, CORE=>$C&>
+% }
+
+</div>
+<script language="JavaScript">
+  invoice_addr.style.display = "none";
+  function expandIt(whichEl) {
+	whichEl.style.display = (whichEl.style.display == "none" ) ? "" : "none";
+     show_rech.style.display = "none";
+      }
+  function dynCollapse() {
+	elTwo.style.display = "none";
+  }
+</script>

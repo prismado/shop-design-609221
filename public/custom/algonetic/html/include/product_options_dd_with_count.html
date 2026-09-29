@@ -1,0 +1,68 @@
+<%init>
+	# -- Type 1 -- #
+
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $id = $args{id}; # -- Product ID
+	my $lang = $args{lang} || 'de';
+	my $debug = $args{debug};
+
+	my $res = $A->get_options($id, $lang);
+
+	my $C = $A->{C};
+	my $cur_sel = '';
+
+	my $missing_feat_id = 0;
+	if ($args{msg} =~ /Missing mandatory feature ID \[(\d+)\]$/) {
+		$missing_feat_id = $1;
+	}
+</%init>
+% if ($debug) {
+	<%$C->html_debug(qq~Type: <b>$args{type}</b> | $#{$res} Options Total~, 'product_options_dd_with_count')%>
+	<%$C->html_debug("XX $missing_feat_id")%>
+% }
+<style type="text/css">#rundrum {border:1px solid #f00;}</style>
+%
+% my $opt_id_before = 0;
+<!-- ============================================================================================ -->
+% foreach (@{$res}) {
+%	my ($opt_id, $style, $label, $desc, $val, $amount, $count) = split /\t/;
+%	next unless $count; # -- Not product with that feature not available right now
+%	next unless $style == $args{type};
+%	$amount *= (1 + $C->{CONFIG}->{vat} / 100);
+%	my $warn_style = $opt_id == $missing_feat_id ? ' id="rundrum"' : '';
+%	unless ($opt_id == $opt_id_before) {
+%		$cur_sel = $C->getSessData("prod_id_$id\_$opt_id");
+%		$label =~ s/\[.+\]$//;
+		<% $opt_id_before ? '</select><br></div>' : '' %>
+		  <div class="pull-left">
+		<b style="<%$warn_style ? 'color:red' : ''%>"><%$label%></b><br>
+		<select<%$warn_style%> style='width:139px' name="opt_<%$opt_id%>"
+		onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$id%>&opt_id=<%$opt_id%>&rnd=<%rand()%>');">
+		<option value=''>&middot;  <% $C->prop('choose') %></option>
+%	}
+	<option value="<%$val%>"<%$val eq $cur_sel ? ' selected' : ''%>><%$desc || $label%>
+%		if ($amount) {
+			&mdash; <%$A->{C}->{CONFIG}->{'default_curr'}%> <%sprintf('%.2f', $amount)%>
+%		}
+	</option>
+%	$opt_id_before = $opt_id;
+% }
+
+<% $opt_id_before ? '</select></div>' : '' %>
+<!-- ============================================================================================ -->
+<div id='ajx_1'></div>
+% if ($debug > 1) {
+%	foreach (@{$res}) {
+%		my ($opt_id, $style, $label, $desc, $val, $amount, $count) = split /\t/;
+%		next unless $style == $args{type};
+		<%$C->html_debug(qq~$opt_id (S$style) $val, Count: $count~)%>
+%	}
+% }
+
+<%doc>
+	<select clasx="detailform" name="opt_<% $opt_id %>"
+	onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$id%>&opt_id=<%$opt_id%>&rnd=<%$$%>');">
+
+	Uncaught ReferenceError: dynTotal is not defined
+</%doc>

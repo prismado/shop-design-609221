@@ -1,0 +1,43 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this   = $C->this();
+	# my $SID  = $C->getSID();
+	# my $perm = $C->get_user_perm(); # -- $perm->{uid}
+	my $cgi    = $C->{CGI};
+
+	my $order_id = $cgi->param('order_id') + 0;
+	my $css_id   = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	# my $sig    = $C->md5_secret($SID);
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Add Order Detail to O-ID <% $order_id %></h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" ZZaria-hidden="true">
+	<form method="post" name="f308281" action="/_sub.html">
+% #	<input type="hidden" name="sig"    value="<% $sig %>">
+	<input type="hidden" name="key_70" value="<% $order_id %>">
+	<input type="hidden" name="action" value="adm_add_order_detail">
+
+% #	<p>Adsf <% $C->now(2) %> / <span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span></p>
+
+	<& ../include/inc_text_edit.html, label=>'Key',   value_enc=>'', write=>1, id=>80 &>
+	<& ../include/inc_text_edit.html, label=>'Value', value_enc=>'', write=>1, id=>98 &>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft w--120" data-dismiss="modal">
+				<i class="fi fi-close"></i> Cancel
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft w--120" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> Save
+			</button>
+		</div>
+
+	</form>
+</div>

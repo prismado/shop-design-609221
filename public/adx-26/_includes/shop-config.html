@@ -1,0 +1,170 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+
+	# -- Erstellt: 26Jul2026
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $curcfg = $args{curcfg};
+
+	my %help = my %hlp_title = ();
+
+	$help{501160} = q~mnemonic LIKE 'edi\_%'~;  $hlp_title{501160} = 'EDI-Hilfe';
+	$help{501161} = q~mnemonic LIKE '%\_data'~; $hlp_title{501161} = 'Daten-Hilfe';
+
+	my $next_order_id = $C->query(qq~SELECT AUTO_INCREMENT FROM information_schema.TABLES
+						WHERE TABLE_SCHEMA='$ENV{db_name}' AND TABLE_NAME='orders'~)->[0];
+	my $max_order_id = $C->query('select max(id) from orders')->[0];
+
+	my $env = $C->get_webenv();
+
+	my %x_env = ();
+	foreach (split /[\n\r]/, `env|grep -i '^x\_'`) {
+		my ($key, $val) = split /\=/;
+		$x_env{$key} = $val;
+	}
+
+	my $app_jobs = $C->get_app_jobs();
+
+	my $ok_symb   = '✅';
+	my $fail_symb = '❌';
+</%init>
+<div class="portlet-header border-bottom">
+	<span class="float-end">
+		<span id="ajx_402171_19"></span>
+		<span class="text-blue-600 cursor-pointer" onclick="JavaScript:loadModal402171_19(1)">Online-Hilfe</span>
+		&middot; <span class="text-blue-600 cursor-pointer" onclick="JavaScript:loadModal402171_19(2)">(2)</span>
+%		if ($perm->{is_devel}) {
+			&middot; <a href="/app/config">Config <sup>2026</sup></a>
+			<% $ENV{db_name} %> @ <% $ENV{db_host} %>
+%		}
+	</span>
+	<span>Konfiguration</span>
+</div>
+
+<div class="portlet-body">
+
+	<p class="mt-3">
+		Aktueller Modus: <abbr 
+			title="production / preproduction / stage / development / local"><% $C->get_safe_property('SHOP_CONFIG_ENV', 'sys') %></abbr>
+			<a href="/adm_safe_properties.html?lang=sys&filter=SHOP_CONFIG_"><i class="fi fi-pencil"></i></a>
+	</p>
+
+	<table class="table table-sm table-hover mt-5">
+		<tr><td class="w--200"><b>NODE_ENV</b></td><td><% $ENV{NODE_ENV} // 'n/a' %></td><td><% $ok_symb %></td></tr>
+		<tr><td><b>Webserver</b></td><td><% $ENV{SERVER_SOFTWARE} // 'n/a' %> &mdash;
+			HTTP_HOST: <% $C->{CONFIG}->{HTTP_HOST} %> <a href="special_keys.html?area=HTTP"><i class="fi fi-pencil ml-1"></i></a>
+			</td><td>
+%			if ($ENV{SERVER_SOFTWARE} ne 'Apache' && $ENV{NODE_ENV} ne 'development') {
+				<% $fail_symb %>
+%			}
+%			else {
+				<% $ok_symb %>
+%			}
+		</td></tr>
+		<tr><td><b>IP / OS / Hostname</b></td><td><% $x_env{x_server_ip} || $ENV{SERVER_ADDR} %> &middot;
+			<% $env->{os} %> &middot; <% $env->{hostname} %></td><td>
+%			if ($env->{hostname} eq $C->{CONFIG}->{HTTP_HOST}) {
+				<% $ok_symb %>
+%			}
+%			else {
+				<% $fail_symb %>
+%			}
+		</td></tr>
+		<tr><td><b>DB Host</b></td><td><% $ENV{db_host} // 'n/a' %></td><td><% $ok_symb %></td></tr>
+		<tr><td><b>Datenbank</b></td><td><% $ENV{db_name} // 'n/a' %></td><td><% $ok_symb %></td></tr>
+		<tr><td><b>Order-ID</b></td><td><% $max_order_id %>
+			&rarr; n&auml;chste Order-ID <% $next_order_id %> <a href="/adx/manage-property.html?area=cfg"><i 
+					class="fi fi-pencil ml-1"></i></a></td>
+			<td><% $ok_symb %></td>
+		</tr>
+		<tr>
+			<td><b>App Jobs</b><br><br><a href="/adx/show.html?macro=prism_sys_jobs&q=edi">EDI Jobs</a></td>
+			<td>
+				<table style="width:100%;">
+%				foreach my $d (@$app_jobs) {
+%					my $job_style = $d->{is_active} ? 'font-weight:bold;' : 'text-decoration: line-through; color:#b1b1b1;';
+					<tr>
+						<td style="width:55%; <% $job_style %>">
+							<a href="/adm_job.html?id=<% $d->{id} %>"><i class="fi fi-pencil mr-1"></i></a>
+							<% $d->{title} %>
+						</td>
+						<td>
+							<% $d->{path} %><br>
+%							foreach (sort keys %$d) {
+%								next if $_ eq 'title' or $_ eq 'id' or $_ eq 'path' or $_ eq 'is_active';
+								XX <% $_ %> = <% $d->{$_} %><br>
+%							}
+						</td>
+					</tr>
+%				}
+				</table>
+			</td>
+			<td><% $ok_symb %></td>
+		</tr>
+		<tr><td><b>Webseiten-Titel</b></td><td><% $C->{CONFIG}->{site_title} %></td><td><% $ok_symb %></td></tr>
+		<tr><td><b>Entra / SSO</b></td><td><a href="/adx/special_keys.html?area=sso">Konfiguration</a></td><td><% $ok_symb %></td></tr>
+
+		<tr><td><b>Google Shopping Feed</b></td><td><a href="/de/google-shopping.xml?rem=Hauptfeed">Hauptfeed</a> (XML) <a 
+			href="/adx/show.html?macro=prism_sys_jobs&q=google"><i class="fi fi-pencil"></i></a>
+%			unless (-e "$C->{CONFIG}->{DOCUMENT_ROOT}/de/google-shopping.xml") {
+				<b style="color:red;">X existiert nicht!</b>
+%			}
+			&mdash; <a href="/adx/manage-property.html?area=google_shopping_categ">Kategorien f&uuml;r Shopping-Feed</a>
+		</td><td><% $ok_symb %></td>
+		</tr>
+	</table>
+
+	<p class="mt-5">
+		<h2 class="h5">Dokploy: Scheduled Tasks Produktivbetrieb</h2>
+		<img class="img-fluid" src="https://ops.zspace.ch/upload/screenshot-prod-jobs_607261.avif">
+	</p>
+
+	<ul class="list-group list-group-flush rounded overflow-hidden mt-3 col-11">
+
+		<& inc_aero_list_item.html, label=>'Shop-Konfiguration', url=>'/adx/manage-property.html?area=cfg',
+			info=>qq~Sys-Properties, spezielle Shop-Einstellungen, Speicher-Pfade &middot;
+				<a href="/adx/special_keys.html?area=default">Default-Werte</a> &mdash;
+					<a href="/adm_safe_properties.html?lang=sys&filter=SHOP\_CONFIG\_">SHOP CONFIG</a> &mdash;
+					<a href="/adx/categs.html">Tagesangebote</a>: Kat-ID $curcfg->{daily_offer}->{id}~,
+					badge=>'fi fi-cart-5', badge_type=>'danger', C=>$C &>
+
+<%perl>
+		my $xtra_inf_sysconf = '';
+		if ($perm->{is_devel}) {
+			$xtra_inf_sysconf = '&mdash; <a href="/adm_safe_properties.html?lang=sys">Safe-Properties</a>';
+		}
+</%perl>
+		<& inc_aero_list_item.html, label=>"System-Konfiguration", url=>'special_keys.html',
+			info=>qq~CONFIG-Werte: Hostname, Document Root usw. &mdash;
+				<a href="/_systex/install/help/de/12/7/">EDI-Konfiguration</a> $xtra_inf_sysconf~,
+				badge=>'fi fi-cog', badge_type=>'danger', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"System Jobs", url=>'show.html?macro=prism_sys_jobs',
+			info=>'Periodische automatische Verarbeitungen', badge=>'fi fi-cog-full', badge_type=>'danger', C=>$C &>
+	</ul>
+
+	<h3 class="mt-5 fs--19">Siehe auch</h3>
+%	foreach my $hlp (sort keys %help) {
+		&bull; <a href="help.html?fil=<% $C->uri_esc($help{$hlp}) %>&chk=<% substr($C->md5_secret($help{$hlp}), 0, 6) %>"><% $hlp_title{$hlp} %></a><br>
+%	}
+</div>
+
+<script>
+function loadModal402171_19(area) {
+  $.ajax({
+    url: '/adx/_ajax/modal_online_help.html?css_id=402171_19&area=' + area,
+    type: 'GET',
+    dataType: 'html',
+    success: function(response) {
+     $('#ajx_402171_19').html(response);
+	$('#402171_19').modal('show');
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+}
+</script>

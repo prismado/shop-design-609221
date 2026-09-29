@@ -1,0 +1,44 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $m2    = $args{m2};
+	my $to    = $args{to};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Testing / Parsing</span>
+</div>
+
+<div class="portlet-body">
+
+	<p>
+		<a href="/adm_safe_property.html?id=<% $args{unicode_id} %>"><i class="fi fi-pencil"></i></a> <% $args{cart_symb} %>
+		<code>_mail_templates/confirm_merchant_inc.html</code>
+	</p>
+
+	<form method="post">
+		<& ../../custom/algonetic/html/include/inc_text_edit.html,
+			label=>'Template-Makro', value_enc=>$args{macro}, info=>'_foo.html', id=>99 &>
+
+		<& ../../custom/algonetic/html/include/inc_text_edit.html,
+			label=>'Empf&auml;nger', value_enc=>$args{to}, info=>'', id=>96 &>
+
+		<input type="submit" class="btn btn-primary" value="Execute" name="bDo">
+		<input type="submit" class="btn btn-secondary" value="Als E-Mail Senden" name="bMail">
+		<input type="submit" class="btn" value="Cancel">
+	</form>
+
+%	if ($args{msg}) {
+		<div class="alert alert-info mt-3">
+			<% $args{msg} %>
+		</div>
+%	}
+
+	<hr />
+	<% $m2->{out} %>
+	<hr />
+
+</div>

@@ -1,0 +1,55 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $this    = 'macros/create_sections_json';
+	my $outfile = $s{outfile};
+
+	my $sth = $C->{dbh}->prepare(qq~
+		SELECT	id, mnemonic, title, area_ids, created, auth_req, url, url_help, xdesc
+		FROM	sys_sections
+		ORDER	by 1 desc
+	~);
+	$sth->execute();
+
+	$C->create_toast_note(body=>qq~<center>
+				Eintraege exportiert<br><br>
+
+				Bitte auf "Download" klicken, um diese herunterzuladen.</center>~,
+		style => '.toast, .max-w-300 { max-width: 580px !important; opacity: 0.85; }',
+		title => 'Hinweis - H405012-26',
+		delay => 1000);
+
+	my @json = ();
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $mnemonic, $title, $area_ids, $created, $auth_req, $url, $url_help, $xdesc) = @{$r};
+		(my $desc_enc = $xdesc) =~ tr/[\n\r]/ /;
+		push(@json, qq~	{
+		"mnemonic": "s-$id",
+		"title": "$title",
+		"desc": "$desc_enc",
+		"url": "$url"
+	}~);
+	}
+</%init>
+<% $sth->rows() %> tbd<br>
+Datum / Zeit: <b><% $C->now(2) %></b>
+<hr />
+
+<pre class="line-numbers" data-start="101"><code class="language-json">{
+        "createdAt": "29Apr2024",
+        "configSections": [
+<% join ",\n", @json %>
+    ]
+}</code></pre>
+
+% if ($s{debug}) {
+	<p>[ <% $this %> ] &middot; Outfile is <code class="fs--18 font-weight-bold"><% $outfile %></code></p>
+% }
+
+<%doc>
+	Created: 01May2024
+</%doc>

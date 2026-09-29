@@ -1,0 +1,58 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $perm    = $s{perm};
+	my $cgi     = $C->{CGI};
+	my $debug   = $cgi->param('debug') || 0;
+	my $bShow   = $cgi->param('bShow404261_10');
+	my $bNoPromo= $cgi->param('bNoPromo'); # -- 26Jul2025
+
+	my $tpl;
+	my $outfile = '';
+	if ($bShow) {
+		$outfile = "upload/zz_trash_product_export$$\.xls";
+		$tpl = $C->exec(
+			comp_file => 'products_list_no_gtin.html', outfile=>$outfile,
+			theme=>'algonetic', dir=>'macros', A=>$A, debug=>$debug
+		);
+	}
+	elsif ($bNoPromo) {
+		$tpl = $C->exec(
+			comp_file => 'products_list_no_promo.html', XXXoutfile=>$outfile,
+			theme=>'algonetic', dir=>'macros', A=>$A, debug=>$debug
+		);
+	}
+</%init>
+% if ($perm->{is_devel}) {
+	<div class="float-end">
+		<a href="/adx/show.html?macro=products-export&debug=2">Debug 2</a> &ndash;
+		<a href="/adx/show.html?macro=products-export">Debug off</a> &ndash;
+		[ <code>macros/export_products.html</code> ]
+	</div>
+% }
+
+% # XXX	<a href="/adx/show.html?macro=products&bShow404261_10=1<% $debug ? "&debug=$debug" : '' %>" class="btn btn-sm btn-primary mb-3 w--300">
+	<a href="/adx/products.html?bShow404261_10=1<% $debug ? "&debug=$debug" : '' %>" class="btn btn-sm btn-primary mb-3 w--300">
+		<i class="fi fi-arrow-download m-0-md"></i>
+			<span class="d-none d-lg-inline-block">Produkte ohne GTIN-Nr</span>
+	</a>
+
+% if ($bShow or $bNoPromo) {
+	<br />
+	<% $tpl->{out} %>
+% }
+
+% if ($debug) {
+	<br />
+%	foreach (sort keys %s) {
+%		next if $s{$_} =~ /^ScreenPoint\:\:.+/ or /^perm$/ or /^dir$/;
+		[ S ] &middot; <b><% $_ %></b> = <code><% $s{$_} %></code><br>
+%	}
+
+%	foreach ($cgi->all_parameters) {
+		[ CGI ] &middot; <% $_ %> = "<% $cgi->param($_) %>"<br>
+%	}
+% }

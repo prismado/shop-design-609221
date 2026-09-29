@@ -1,0 +1,17 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $lang = $args{lang} || 'de';
+
+	my $HOST = $C->{CONFIG}->{HTTP_HOST} || $ENV{HTTP_HOST};
+</%init>
+<!-- includes/company_signature / V 309171 -->
+<p>
+	<% $C->web_enc($C->get_property('closing_greeting', '_global', $lang)) %><br>
+
+	<% $C->web_enc($C->render_property('contact_adress', $lang)) %>
+
+	<a href="https://<%$HOST%>" target="_blank"><%$HOST%></a>
+</p>

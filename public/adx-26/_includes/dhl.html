@@ -1,0 +1,16 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $dt_ver= $args{dt_ver} + 0;
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>DHL</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<& inc_datatable_dhl.html, dt_ver=>$dt_ver, debug=>$debug, C=>$C &>
+</div>

@@ -1,0 +1,70 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $docu_loc = 'https://d0.algonetic.com/layout/Documentation/Revolution_Slider';
+
+	my $slide1 = '/produkte/p304_orig.jpg';
+	my $slide2 = '/produkte/p293_orig.jpg';
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Beispiel Slider</span>
+</div>
+
+<div class="portlet-body">
+
+
+
+
+<!-- START REVOLUTION SLIDER 5.0 -->
+<div class="rev_slider_wrapper floax-left" style="max-width:500px; margin:auto">
+ <div id="slider1" class="rev_slider"  data-version="5.0">
+
+  <ul> 
+%  # -- fade / notransition
+   <li data-transition="notransition"> 
+	<img src="<% $slide1 %>" alt="">
+<%doc>
+     <!-- LAYER NR. 1 -->
+     <div class="tp-caption News-Title" 
+	data-x="left" data-hoffset="80" 
+	data-y="top" data-voffset="450" 
+	data-whitespace="normal"
+	data-transform_idle="o:1;" 
+	data-transform_in="o:0" 
+	data-transform_out="o:0" 
+	data-start="500"><!-- DISCOVER THE WILD --></div>
+</%doc>
+   </li>
+ 
+   <li data-transition="notransition"> 
+     <img src="<% $slide2 %>"  alt=""  width="1920" height="1280">
+<%doc>
+     <!-- LAYER NR. 2 -->
+     <div class="tp-caption News-Title" 
+	data-x="left" data-hoffset="80" 
+	data-y="top" data-voffset="450" 
+	data-whitespace="normal"
+	data-transform_idle="o:1;" 
+	data-transform_in="o:0" 
+	data-transform_out="o:0" 
+	data-start="500"><!-- DISCOVER THE WILD --></div>
+</%doc>
+   </li>
+  </ul> 
+
+ </div><!-- END REVOLUTION SLIDER -->
+</div><!-- END OF SLIDER WRAPPER -->
+
+
+
+
+	<p class="mt-5">
+		&bull; <a href="<% $docu_loc %>/4.x/Documentation/documentation.html">Documentation Revolution Slider 4.x</a><br />
+		&bull; <a href="<% $docu_loc %>/5.x/Documentation/documentation_pages/get-started.html#introduction">Revolution Slider 5.x</a><br />
+		&bull; <a href="https://revolution.themepunch.com/jquery/jquery-cover-flow-gallery/">jquery-cover-flow-gallery</a>
+	</p>
+</div>

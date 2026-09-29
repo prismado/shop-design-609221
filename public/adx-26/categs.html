@@ -1,0 +1,100 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $lang           = $cgi->param('lang') || 'de';
+	my $show_all       = $cgi->param('show_all');
+	my $bAddCat        = $cgi->param('bAddCat');
+	my $bAddMeta       = $cgi->param('bAddMeta');
+	my $id             = $cgi->param('id') + 0;
+
+	my $show_invisible = $cgi->param('show_invisible') + 0;
+	   $show_invisible = '' if $show_all;
+
+	# XXX my $debug = $C->getSessData('debug') || 0;
+	my $debug = 0; # -- 07Sep2026
+	my $perm  = $C->get_user_perm();
+	my $appenv= $C->get_safe_property('SHOP_CONFIG_ENV', 'sys'); # -- 07Sep2026
+
+	if ($bAddCat) {
+		(my $label_de = $cgi->param('label_de')) =~ s/'/''/g;
+		(my $label_en = $cgi->param('label_en')) =~ s/'/''/g;
+		(my $label_fr = $cgi->param('label_fr')) =~ s/'/''/g;
+		my $max_id = $C->query('select MAX(id)+1 from categories')->[0];
+		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'de', '$label_de')~);
+		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'en', '$label_en')~);
+		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'fr', '$label_fr')~);
+		$C->create_toast_note(body=>"Neue Kategorie ID $max_id<br>$label_de<br>$label_en<br>$label_fr");
+	}
+	elsif ($bAddMeta) {
+		$C->{dbh}->do(qq~insert into categ_meta (cat_id, xkey, lang) values ($id, 'new$$', '$lang')~);
+		# $C->create_toast_note(body=>"Hinzugef&uuml;gt: Cat-ID $id - [$lang]");
+		$m->redirect("/adm_categ.html?id=$id");
+	}
+
+	 my $cats = $A->get_categories(lang=>$lang, show_invisible=>$show_invisible, lang_meta=>'sys');
+
+	my @breadcrumb = ();
+	my @bc1 = ('Kategorien', '.');
+	push(@breadcrumb, \@bc1);
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Kategorien | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="manifest" href="assets/images/manifest/manifest.json">
+	<meta name="theme-color" content="#377dff">
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm => $perm, C => $C, A => $A, appenv => $appenv &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm => $perm, C => $C, appenv => $appenv &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><% $cats->{rows} %> Kategorien</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& _includes/categs.html, lang=>$lang, cats=>$cats, show_invisible=>$show_invisible, show_all=>$show_all,
+								A=>$A, C=>$C, perm=>$perm, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+
+	</body>
+</html>

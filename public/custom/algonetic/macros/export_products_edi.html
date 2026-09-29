@@ -1,0 +1,144 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	use utf8; # -- 28Jan2026
+
+	my $this    = 'macros/export_products';
+	my $outfile = $s{outfile};
+	my $extra   = $s{x_extra} + 0;
+	my $batch   = $s{x_batch}; # -- 1=Started as automated background process, do not create pop-ups
+
+	(my $NOW_esc = $C->now(1)) =~ tr/[ \:]/\-/;
+
+	my $xtra_ids = $C->mquery(stmt=>q~SELECT DISTINCT product_id FROM products_feat where featkey LIKE 'EDI\_%' order by 1 DESC LIMIT 9999~);
+	my $edi_ids  = join ', ', @{$xtra_ids->{mrows}};
+
+	my @wclause = ();
+
+	if ($xtra_ids->{query_rows}) {
+		push(@wclause, "((`count` > 0) OR (id IN ($edi_ids)))")
+	}
+	else {
+		push(@wclause, "`count` > 0");
+	}
+
+	push(@wclause, "campaign_id=0 and lang='de'");
+	push(@wclause, "extra=$extra") if $s{x_extra};
+
+	my $where = join ' AND ', @wclause;
+
+	$C->create_toast_note(body=>"X -- $where");
+
+	my $stmt = qq~
+		select	DISTINCT id, instime, brand, title, getProdFeat(id,'GTIN'), `count`, extra, price, getProdFeat(id,'EDI_RESTOCK_DATE')
+		from	vproducts
+		where	$where
+		order	by title
+		limit	9999
+	~;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	$sth->execute() or do { $C->create_toast_note(
+		body=>qq~$DBI::errstr<br><br>$stmt~, type=>'error', width=>'600px', delay=>30000
+	) };
+	my $logmsg = 'N502131-45: ' . $sth->rows() . " Artikel exportiert f. galaxus_products2dg, `count` > 0 AND campaign_id=0 and lang='de' AND extra=$extra";
+	$C->log(msg => substr($logmsg, 0, 511), service=>'export_products');
+
+	my %map_extra = ( 1=>'NEW', 2=>'REFURB' );
+
+	my $exp_count = 0;
+	binmode(F, ":utf8"); # -- 28Jan2026
+	open(F, ">$C->{CONFIG}->{DOCUMENT_ROOT}/$outfile");
+	# XXX print F "ProviderKey\tRestockDate\tBrand\tModel\tGTIN\tQuantityOnStock\tCondition\tSuggestedRetailPriceExclVat_CHF\tVatRatePercentage\tProductCategory\tEnergyLabel\tLongDescription_de\tImg_1\tImg_2\tImg_3\n";
+	print F "ProviderKey\tRestockDate\tBrand\tModel\tGTIN\tQuantityOnStock\tCondition\tSuggestedRetailPriceExclVat_CHF\tVatRatePercentage\tProductCategory\tEnergyLabel\tLongDescription_de\tMainImageURL\tImageURL_1\tImageURL_2\n";
+
+	while(my $r = $sth->fetch()) {
+		my %d = ();
+		($d{id}, $d{instime}, $d{brand}, $d{title}, $d{gtin}, $d{count}, $d{extra}, $d{price}, $d{restock_date}) = @{$r};
+		next unless length( $d{gtin} );
+
+		my $skip = $C->query("select `description`+0 from products_feat where product_id=$d{id} and featname='_exclude' and featkey='EDI_SKIP'")->[0];
+		next if $skip;
+
+		my $grade = $C->query("select substr(`description`, 1, 1) from products_feat where product_id=$d{id} AND featkey='GRADE' limit 1")->[0];
+		next if !$grade && $d{extra} != 1;
+
+		$d{instime} = $d{restock_date} if $d{restock_date};
+
+		my $age = $C->age_of_timestamp_day($d{instime});	
+		$C->log(msg=>"N502131-67: Prod-ID $d{id}: Age of Restock Date $d{instime}: $age days", service=>'export_products_edi', importance=>3);
+		if ($age > 2 && $d{count} > 3) {
+			$d{instime} = $C->now(1, 259200); # -- 13Feb2025
+			$C->log(msg=>"N502131-70: Prod-ID $d{id}: Adjusted to $d{instime}", service=>'export_products_edi', importance=>3);
+		}
+
+		$exp_count++;
+		my $prd  = $A->get_product_v2(id=>$d{id}, public=>1);
+		$d{price_orig_excl_vat} = sprintf('%.2f', $prd->{price_orig});
+		$d{price_incl_vat}      = sprintf('%.2f', $prd->{price_incl_vat});
+		my $price_excl_vat      = $prd->{price_incl_vat} / 1.081;
+		$d{condition}           = $grade || $map_extra{$d{extra}}; # -- ex 'REFURB'
+		$d{title_enc}           = $prd->{title_enc};
+		$d{instime}             = $C->trans_date_short_nt( $d{instime} );
+		($d{title}              = $C->trim( $d{title} )) =~ tr/[\t,]/ /;
+		$d{title_2}             = $prd->{pfeat}->{"-001\t_exclude\ttitle"} || $d{title};
+		$d{img_1}               = "https://$C->{CONFIG}->{HTTP_HOST}$prd->{image}->{url}";
+
+		my $xtra_imgs = $A->get_product_extra_imgs(id=>$d{id});
+		my $img_ptr = 1;
+		foreach my $ximg (sort @{ $xtra_imgs->{pics} }) {
+			$img_ptr++;
+			$d{"img_$img_ptr"} = "https://$C->{CONFIG}->{HTTP_HOST}/$ximg";
+		}
+		$d{img_2} ||= ''; $d{img_3} ||= '';
+		$d{gtin}    =~ s/\D//g;
+		$d{brand}   =~ s/\t//g;
+		$d{title_2} =~ s/\t//g;
+
+		if ($d{title_2} =~ /"/) {
+			$d{title_2} =~ s/"/""/g;
+			$d{title_2} = qq~"$d{title_2}"~;
+		}
+
+		my $categ = my $long_desc = my $energylabel = '';
+		if ($grade) {
+			$d{brand}    = 'Auctionline.ch';
+			my $cat_name = (split /,/, ($prd->{cat_names} || $prd->{cat_name}))[0];
+			   $cat_name = $prd->{cat_name} if $cat_name =~ /^Zubeh.+/; # -- 20Mar2025
+			$categ       = "$cat_name Refurbished";
+			$energylabel = $C->query("select `description` from products_feat where product_id=$d{id} and featkey='ENERGY_CLASS_URL'")->[0] || '';
+			if ($s{debug}) {
+				$C->log(msg=>"DN-411141-103: Grade $grade at Prod-ID $d{id} $cat_name", importance=>1, service=>'macros/export_products_edi');
+			}
+			$long_desc   = $C->query(
+				"select `description` from products_feat where product_id=$d{id} AND featkey='LONG_DESC' and lang='de' limit 1")->[0] || '';
+			next unless $long_desc; # -- 13Oct2024
+			$long_desc =~ tr/[\t\;]/ /;
+			$long_desc =~ s/"/""/g;
+		}
+
+		print STDERR "N601091: Debug: Product-ID $d{id}\n" if $s{debug}; # -- 09Jan2026
+
+		$long_desc = $C->toUTF( $long_desc ); # -- 09Jan2026
+		print F "$d{id}\t$d{instime}\t$d{brand}\t$d{title_2}\t$d{gtin}\t$d{count}\t$d{condition}\t$price_excl_vat\t8.1\t$categ\t$energylabel\t\"$long_desc\"\t$d{img_1}?t=$NOW_esc\t$d{img_2}\t$d{img_3}\n";
+	}
+	close(F);
+
+	foreach (sort keys %s) {
+		next unless /^x\_.+/;
+		$C->create_toast_note(body=>"X -- $_ = $s{$_}") unless $batch;
+	}
+	$C->create_toast_note(body=>qq~<center>[ EDI ] &ndash; $exp_count Produkte exportiert</center>~,
+		style => '.toast, .max-w-300 { max-width: 590px !important; opacity: 0.85; }',
+		delay => 30000) unless $batch;
+</%init>
+<% $sth->rows() %> Datens&auml;tze<br>
+Datum / Zeit: <b><% $C->now(2) %></b>
+<hr />
+
+% if ($s{debug}) {
+	<p>[ <% $this %> ] &middot; Outfile is <code class="fs--18 font-weight-bold"><% $outfile %></code></p>
+% }

@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $class      = $args{class} || 'btn btn-sm btn-outline-secondary btn-pill mb-1';
+	my $group_icon = $args{group_icon}; # -- e.g. fi fi-search
+	my $href       = $args{href} || 'modal_staff_detail_filter.html?id=1234';
+	my $size       = $args{size} || 'xl'; # -- full
+</%init>
+
+		<a href="#" stylx="color:#717171" aria-label="Filtex" class="js-ajax-modal <% $class %>"
+			data-href="<% $href %>"
+			data-ajax-modal-size="modal-<% $size %>"
+			data-ajax-modal-centered="true"
+			data-ajax-modal-backdrop="static">
+%		    if ($group_icon) {
+			<span class="group-icon">
+				<i class="<% $group_icon %>"></i>
+			</span>
+%		    }
+			<span><% $args{label} %></span>
+		</a>
+
+<%doc>
+	Created: 20Apr2022
+</%doc>

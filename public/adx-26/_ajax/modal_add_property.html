@@ -1,0 +1,48 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $sig    = $C->md5_secret($SID);
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Property Hinzuf&uuml;gen</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+
+	<form method="get" name="f308281" action="manage-property.html">
+% #	<input type="hidden" name="sig"    value="<% $sig %>">
+% #	<input type="hidden" name="action" value="tbd">
+
+% #	<p>Adsf <% $C->now(2) %> / <span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span></p>
+
+	<p>
+		Bereich
+	</p>
+
+	<& ../../custom/algonetic/html/include/inc_text_input.html, name=>'area', label=>'Property Name (Kleinbuchstaben)', value_enc=>'', write=>1, id=>401151 &>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Cancel
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> Hinzuf&uuml;gen
+			</button>
+		</div>
+
+	</form>
+
+</div>
+<%doc>
+	Created: 15Jan2024
+</%doc>

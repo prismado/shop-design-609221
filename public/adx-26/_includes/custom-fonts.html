@@ -1,0 +1,71 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $debug    = $args{debug};
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+	my $font_3 = $C->txt('sys_font_3_family', 'sys');
+</%init>
+<div class="portlet-body">
+
+	<p class="float-end mr-1">
+		<a href="/_systex/install/help/de/17/1/"><i class="fi fi-round-question-full"></i></a>
+	</p>
+
+	<h3 class="fs--25">Font / Layout-Einstellungen</h3>
+
+	<table class="table ZZtable-sm mt-3 table-hover border">
+
+	<tr>
+		<td>Allgemein</td>
+		<td>Eingestellte Werte</td>
+		<td><a class="float-end" href="manage-property.html?area=sys">Properties</a></td>
+	</tr>
+
+	<tr>
+		<td>Font 1</td>
+		<td><code class="fs--17 font-weight-bold"><% $font_1 %></code>
+			&middot; <a href="https://x.prismado.com/lab/web-fonts/?font=<% $C->uri_esc($font_1) %>">Vorschau</a>
+		</td>
+		<td><a class="float-end" href="manage-property.html?area=sys_font_1"><i class="fi fi-pencil"></i></a></td>
+	</tr>
+
+	<tr>
+		<td>Font 2</td>
+		<td><code class="fs--17 font-weight-bold"><% $font_2 %></code>
+			&middot; <a href="https://x.prismado.com/lab/web-fonts/?font=<% $C->uri_esc($font_2) %>">Vorschau</a>
+		</td>
+		<td><a class="float-end" href="manage-property.html?area=sys_font_2"><i class="fi fi-pencil"></i></a></td>
+	</tr>
+
+	<tr>
+		<td>Font 3</td>
+		<td><code class="fs--17 font-weight-bold"><% $font_3 %></code>
+%			if (length($font_3) > 1) {
+				&middot; <a href="https://x.prismado.com/lab/web-fonts/?font=<% $C->uri_esc($font_3) %>">Vorschau</a>
+				&mdash; <small>(Bindestrich "-" f&uuml;r keine 3. Schriftart)</small>
+%			}
+		</td>
+		<td><a class="float-end" href="manage-property.html?area=sys_font_3"><i class="fi fi-pencil"></i></a></td>
+	</tr>
+
+	</table>
+
+	<p>
+		Empfehlung: Font 1: <b>Source Sans Pro</b> / Font 2: <b>PT Sans</b>
+	</p>
+
+	<p>
+		Siehe auch <a href="https://x.prismado.com/lab/web-fonts/">Web Fonts</a>
+	</p>
+
+	<hr class="mt-5" />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a> |
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-theme">Themes</a>
+	</p>
+
+</div>

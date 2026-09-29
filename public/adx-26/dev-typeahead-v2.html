@@ -1,0 +1,103 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $debug = $C->{CGI}->param('debug') || $C->getSessData('debug') || 0;
+
+	my $perm = $C->get_user_perm();
+
+	my $std_labels = $A->get_std_labels();
+
+	my @labels = ();
+	foreach my $key (@{ $std_labels->{ident} }) {
+		push(@labels, qq~{ id: '\-$key', name: '$std_labels->{caption}->{$key}' }~);
+	}
+
+	my @breadcrumb = ();
+	my @bc1 = ('Developer Summary', 'config-dev.html');
+	my @bc2 = ('Typeahead V1', 'dev-typeahead.html');
+	my @bc3 = ('Demo Typeahead', '');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+	push(@breadcrumb, \@bc3);
+</%init>
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Demo 2 Typeahead | <% $C->{CONFIG}->{site_title} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="/assets/css/prism_typeahead.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<link rel="manifest" href="assets/images/manifest/manifest.json">
+	<meta name="theme-color" content="#377dff">
+% # XX <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, C=>$C &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal">Typeahead v2</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& _includes/dev-typeahead-v2.html, labels=>\@labels, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
+							<p class="ml-3">
+								<% join "<br>", @labels %>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.3.1/typeahead.bundle.min.js"></script>
+
+%       my $jq_exp_v = '3.4.1';
+	<script type="text/javascript">
+		$(document).ready(function(){
+		var msg = 'ok';
+		if (jQuery.fn.jquery != '<% $jq_exp_v %>') {
+			msg = 'Erwartung war <% $jq_exp_v %>';
+		}
+		document.getElementById('div82_404021').innerHTML='<code>jQuery ist aktiv; Version: ' + jQuery.fn.jquery + '</code> ' + msg;
+	});
+	</script>
+
+	<& _includes/inc_typeahead_v2024_js.html, i_class=>'ta_404031_20', suggest_data=>\@labels, A=>$A &>
+
+	</body>
+</html>

@@ -1,0 +1,126 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $what   = $cgi->param('what')   || '';
+	my $val    = $cgi->param('val')    || '';
+	my $size   = $cgi->param('size')   || 'lg';
+
+	my $lang = $C->getSessData('xlang') || 'de';
+
+	my $prdinf = $A->get_product_v2(id=>$id);
+
+	my $cfunc = $what;
+	   $cfunc = 'vat' if $what eq 'prod_type';
+	my $addinf = $C->get_core_feat_info(what=>$cfunc);
+
+	my $sth = $C->{dbh}->prepare(qq~select id, created, uid, service, action from products_history where prod_id=$id and code=6 order by 1 desc limit 5~);
+	   $sth->execute();
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-<% $size %> modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Rabatt setzen</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form onsubmit="return validateForm403151()">
+
+			<div class="modal-body">
+				<span class="float-end text-pink" data-toggle="tooltip" data-placement="top" data-original-title="Aktueller Endkundenpreis">
+					CHF <% $C->decimal_mark($prdinf->{price_incl_vat}) %>
+				</span>
+				<p>Basis Verkaufspreis: <b>CHF <% $C->decimal_mark($prdinf->{price_orig_incl_vat}) %></b></p>
+
+				<label class="form-switch form-switch-primary d-block mt-2 mb-3">
+					<input type="checkbox" name="cb_final_buyer_price" value="1"
+						onclick="discount_is_amount_407061(this.checked)">
+						<i data-on="&#10004;" data-off="&#10005;"></i>
+							<div class="fs--16 pt-0" id="d407072_50">Eingabe in CHF statt in %</div>
+				</label>
+
+				<p class="mb-2 text-dark fs--17" id="p407072_42">Eingabe in <b>%</b></p>
+
+				<& ../_includes/inc_text_input.html, label=>$what, value_enc=>$val, write=>1, tx_class=>'fs--18 font-weight-bold', id=>$what &>
+
+%				if ($addinf->{info}->{id}) {
+					<h3 class="fs--20 mt-4"><% $addinf->{info}->{title_de} %></h3>
+					<% ${ $addinf->{summary} } %>
+					<p class="mb-0 fs--17" style="line-height:165%">
+% 					foreach (sort keys %{$addinf->{info}->{add_setting_url}}) {
+						&bull; <a class="link-muted" href="<% $addinf->{info}->{add_setting_url}->{$_} %>"><% $_ %></a><br>
+% 					}
+					&bull; <a class="link-muted" href="<% $addinf->{info}->{wiki_url} %>">Wiki Infos</a>
+					</p>
+%				}
+
+				<h6 class="text-gray-500">Verlauf</h6>
+				<table class="table table-sm fs--15 mt-3 mb-0 text-gray-700 table-responsive">
+%				while(my $r = $sth->fetch()) {
+%					my ($id, $created, $uid, $service, $action) = @{$r};
+					<tr>
+					<td nowrap><% $C->trans_date_short($created) %></td>
+					<td nowrap><% $C->shorten_title($service, 30) %></td>
+					<td nowrap><% $action %></td>
+					</tr>
+%				}
+				</table>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-danger w--150" onclick="document.getElementById('txe_<% $what %>').value=0;">
+					<i class="fi fi-thrash"></i>
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150"
+					onclick="validateForm403151()">
+					<i class="fi fi-check"></i> Update
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm403151() {
+		update('<% $what %>', document.getElementById('txe_<% $what %>').value);
+		update_subm();
+		return false;
+	}
+
+	function discount_is_amount_407061(val) {
+		active = 'NO';
+		if (val === true) {
+			active = 'YES';
+			document.getElementById('p407072_42').innerHTML = 'Eingabe in <b>CHF</b>';
+			document.getElementById('d407072_50').innerHTML = '<b class="text-dark">Eingabe in CHF</b>';
+		}
+		else {
+			document.getElementById('p407072_42').innerHTML = 'Eingabe in <b>%</b>';
+			document.getElementById('d407072_50').innerHTML = 'Eingabe in CHF';
+		}
+		update('f_discount_is_amount', active);
+	}
+
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();
+	});
+</script>

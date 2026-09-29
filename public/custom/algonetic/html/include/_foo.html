@@ -1,0 +1,51 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $webenv = $C->get_webenv();
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Foo Sub Title</span>
+</div>
+
+<div class="portlet-body">
+
+%    if ($perm->{is_devel}) {
+	<div class="float-right ml-5">
+%		foreach (sort keys %$webenv) {
+%			next if /^\_\_.+/;
+%			next if $_ eq 'db_orig' or $_ eq 'uname_all' or $_ eq 'VERSION';
+			&bull; <b><% $_ %></b> = <code><% $webenv->{$_} %></code><br>
+%		}
+		<br />
+		&bull; <a href="_debug.html">Debug Level <% $debug %></a>
+	</div>
+%    }
+
+	<div>
+		<& xx_list.html &>
+	</div>
+
+	<p class="mt-3">
+		<a href="#" class="js-ajax-modal"
+			data-href="_ajax/modal_signin_md.html"
+			data-ajax-modal-size="modal-md"
+			data-ajax-modal-centered="false"
+			data-ajax-modal-backdrop="static">
+			Sign In
+		</a>
+		(Modal)
+	</p>
+
+	<p>
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+% # XXX	<& xx_typography.html &>
+</div>

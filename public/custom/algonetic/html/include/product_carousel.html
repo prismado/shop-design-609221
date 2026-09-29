@@ -1,0 +1,39 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $d = $args{d};
+
+	my $sth = $C->{dbh}->prepare("SELECT featkey FROM products_feat WHERE product_id=$args{id} AND featname='_image'");
+	$sth->execute();
+</%init>
+% if ($args{debug}) {
+	<small>(Debug) - include/product_carousel (START)<br></small>
+% }
+<a href="produkte/p<%$args{id}%>_large.jpg" title="<% $d->{'title'} %>"><i class="fa fa-search-plus iconProductDetail"></i>
+
+% if ($d->{price_incl_vat} != $d->{price_orig_incl_vat}) {
+	<span class="aktionsOffer"><%sprintf('%.0f', $d->{discount_perc})%>%</span>
+% }
+
+			<img src="produkte/p<%$args{id}%>_large.jpg" style="width:100%" alt="<% $d->{'title'} %>" title="<% $d->{'title'} %>"/>
+            </a>
+			<div id="differentview" class="moreOptopm carousel slide">
+                <div class="carousel-inner">
+                  <div class="item active">
+% if ($sth->rows() < 1) {
+	<!-- No pictures for Product ID <%$args{id}%> -->
+% }
+% while(my $r = $sth->fetch()) {
+                   <a href="produkte/p<%$args{id}%>_<%$r->[0]%>_large.jpg"><i class="fa fa-search-plus iconProductDetail"></i><img  src="produkte/p<%$args{id}%>_<%$r->[0]%>_thmb.jpg" alt="<% $d->{'title'} %>/"></a>
+% #                <a href="produkte/p<%$args{id}%>_<%$r->[1]%>_orig.jpg"> <img  src="produkte/p<%$args{id}%>_<%$r->[1]%>_thmb.jpg" alt="<% $d->{'title'} %>"/></a>
+% #                <a href="produkte/p<%$args{id}%>_<%$r->[0]%>_orig.jpg" > <img  src="produkte/p<%$args{id}%>_<%$r->[2]%>_thmb.jpg" alt="<% $d->{'title'} %>"/></a>
+% }
+</div>
+                 </div>
+              <!--
+			  <a class="left carousel-control" href="#myCarousel" data-slide="prev">‹</a>
+              <a class="right carousel-control" href="#myCarousel" data-slide="next">›</a>
+			  -->
+              </div>
+<div style="text-align:center; font-size: 15px;"><% $C->prop('image_text') %></div>

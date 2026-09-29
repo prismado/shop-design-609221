@@ -1,0 +1,26 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $cgi = $C->{CGI};
+</%init>
+<div class="portlet-header border-bottom">
+	<span><% $C->prop('newsletter_text') %></span>
+</div>
+
+<div class="portlet-body">
+
+	<& ../../../../unsubscribe_dist.html &>
+% #	<& ../include/inc_text_edit.html, label=>'Foo Bar', value_enc=>'tbd', info=>'Info', delete=>0, id=>99 &>
+
+%	if ($debug) {
+%		foreach ($cgi->all_parameters) {
+			XX <% $_ %> = <% $cgi->param($_) %><br>
+%		}
+%	}
+
+</div>

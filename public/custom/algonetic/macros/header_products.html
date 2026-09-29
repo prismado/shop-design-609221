@@ -1,0 +1,73 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $bAdd = $C->{CGI}->param('bAdd');
+
+	if ($bAdd) {
+		$C->create_toast_note(body=>q~<center
+			class="text-dark">Bitte zuerst eine Kategorie anklicken</center>~, type=>'info',
+			style => q~.toast, .max-w-300 { max-width: 360px !important; opacity: 1.00; }~,
+			fs    => 20,
+			delay => 8000);
+	}
+
+	my $sth = $C->{dbh}->prepare(q~
+			select	id, label from categories
+			where	visible=1 AND parent_id=0 AND lang='de'
+			order	by 2
+	~);
+	$sth->execute();
+
+	my $selected = 0;
+	if ($s{fil}) { $selected = (split /=/, $s{fil})[1] + 0; }
+
+	my @nav = ();
+	while(my $r = $sth->fetch()) {
+		my ($id, $label) = @{$r};
+		$label      = $C->web_enc_v2($label);
+		my $wcl     = "cat_id=$id AND `count`>0";
+		my $wcl_enc = $C->uri_esc($wcl);
+		my $sec     = substr($C->md5_secret($wcl), 0, 6);
+		my $css_cl  = $id == $selected ? 'font-weight-bold text-dark' : 'link-muted text-gray-500';
+
+		push(@nav, qq~<a class="<% $css_cl %> ml-1 mr-1" href="products.html?macro=products&omit=cat_id&fil=$wcl_enc&XXXchk=$sec">$label</a>~);
+		# XXX push(@nav, qq~<a class="<% $css_cl %> ml-1 mr-1" href="show.html?macro=products&omit=cat_id&fil=$wcl_enc&chk=$sec">$label</a>~);
+	}
+
+	my $daily_offer = $A->get_daily_offer_categ();
+	my $sec         = substr($C->md5_secret("cat_id=$daily_offer->{id}"), 0, 6);
+	my $wcl_enc     = $C->uri_esc("cat_id=$daily_offer->{id}");
+	push(@nav, qq~<a class="link-muted text-gray-500 ml-1 mr-1" href="products.html?macro=products&omit=cat_id&fil=$wcl_enc">Daily</a>~);
+	# XXX push(@nav, qq~<a class="link-muted text-gray-500 ml-1 mr-1" href="show.html?macro=products&omit=cat_id&fil=$wcl_enc&chk=$sec">Daily</a>~);
+</%init>
+<div class="float-end mr-3 fs--14">
+	<% join ' &middot; ', @nav %>
+% # XXX	&middot; <a class="<% $selected ? 'link-muted text-gray-500 ml-1' : 'font-weight-bold text-dark ml-1' %>" href="show.html?macro=products">Alle</a>
+	&middot; <a class="<% $selected ? 'link-muted text-gray-500 ml-1' : 'font-weight-bold text-dark ml-1' %>" href="products.html">Alle</a>
+	&middot; <a class="text-gray-500 ml-1" href="show.html?macro=products-export">Export</a>
+	&middot;
+%	if ($selected) {
+		<a class="ml-1 mr-1 text-dark" href="/adm_items.html?bAddProduct=1&catID=<% $selected %>"><abbr style="cursor:pointer"
+			title="Produkt hinzu"><i class="fi fi-plus-squared fs--25"></i></abbr></a>
+%	}
+%	else {
+		<a class="ml-1 mr-1 text-dark" href="products.html?macro=products&bAdd=1"><abbr style="cursor:pointer"
+			title="Produkt hinzu"><i class="fi fi-plus-squared fs--25"></i></abbr></a>
+% # XXX		<a class="ml-1 mr-1 text-dark" href="/adx/show.html?macro=products&bAdd=1"><abbr style="cursor:pointer"
+% # XXX			title="Produkt hinzu"><i class="fi fi-plus-squared fs--25"></i></abbr></a>
+%	}
+
+%	if ($s{debug}) {
+<%perl>
+	my @env = ();
+	foreach (sort keys %s) {
+		next if $_ eq 'C' or $_ eq 'comp_file' or $_ eq 'dir' or $_ eq 'theme' or $_ eq 'check_env' or $_ eq 'call_src';
+		push(@env, qq~<b class="ml-4">$_</b>=<code>$s{$_}</code>~);
+	}
+	$m->out(join ' ', @env);
+</%perl>
+%	}
+</div>

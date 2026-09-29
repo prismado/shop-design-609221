@@ -1,0 +1,50 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $perm = $args{perm};
+
+	my $debug = 0;
+</%init>
+<div class="float-end mr-3">
+%    if ($perm->{is_devel}) {
+	<form method="post" name="f407011_12">
+	<input type="hidden" name="bCSVProd" value="1">
+	<input type="hidden" name="x_extra"  value="1">
+	</form>
+
+	<a href="/adx/show.html?macro=products-export&bExport=1<% $debug ? "&debug=$debug" : '' %>" class="btn btn-sm btn-primary mb-0 w--150">
+		<i class="fi fi-arrow-download m-0-md"></i>
+			<span class="d-none d-lg-inline-block">Export</span>
+	</a>
+
+	<a href="/adx/show.html?macro=products-export&x_extra=1&bExport=1<% $debug ? "&debug=$debug" : '' %>" class="btn btn-sm btn-primary mb-0 w--180">
+		<i class="fi fi-arrow-download m-0-md"></i>
+			<span class="d-none d-lg-inline-block">Export NEW</span>
+	</a>
+
+	<a href="#" onclick="document.f407011_12.submit()" class="btn btn-sm btn-primary mb-0 w--180">
+		<i class="fi fi-arrow-download m-0-md"></i>
+			<span class="d-none d-lg-inline-block">CSV Galaxus</span>
+	</a>
+
+	<a href="/adx/dev-edi-parse-order.html" class="btn btn-sm btn-secondary mb-0 w--200">
+		<i class="fi fi-cart-3 m-0-md"></i>
+			<span class="d-none d-lg-inline-block">Parse EDI Order</span>
+	</a>
+%    }
+</div>
+
+<div class="mt-3">
+	<a href="/adm_log.html?importance=4&filter=galaxus_orders_dg2partner&debug=1">Job Log</a> &ndash;
+%	if ($perm->{is_devel}) {
+		<a href="/adx/show.html?macro=prism_sys_jobs&q=edi">Auto Jobs</a> &ndash;
+		<a href="/adx/show.html?macro=work_table&q=edi\\_">Work Values</a> &ndash;
+		<small>
+		[ Debug <a href="/adx/show.html?macro=products-export&debug=2">2</a> | <a href="/adx/show.html?macro=products-export">off</a> ] &ndash;
+		</small>
+%	}
+	<a target="_new" href="https://www.galaxus.ch/de/marketplace/swiss-solution-group-10391065">Partner-Shop @ Galaxus</a>
+% # XXX	<a target="_new" href="https://drive.google.com/file/d/1_Ed_zJdDvL7YbgNFf6ZcQC7S0oF93ezz/view?usp=sharing">Muster-Lieferschein</a>
+</div>

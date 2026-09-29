@@ -1,0 +1,27 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	$C->redir('/_error.html') unless $perm->{is_admin};
+
+	my $del_det_id = $C->{CGI}->param('del_det_id') + 0;
+
+	$A->del_option_leaf($del_det_id);
+
+	$C->create_toast_note(body=>qq~<center>Zu l&ouml;schen: Det-ID $del_det_id</center>~,
+			title=>'Auswahl Entfernen - N404251-17', width=>'550px', delay=>7500);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+tbd
+
+<%doc>
+	Created: 17Apr2024
+
+	This macro is called by an Ajax call
+</%doc>

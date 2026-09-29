@@ -1,0 +1,98 @@
+<%init>
+	use JSON;
+	use ScreenPoint::Core;
+
+	my $json = JSON->new();
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $cgi = $C->{CGI};
+
+	my $sortcol   = $cgi->param('order[0][column]') || 0;
+	my $search    = $cgi->param('search[value]');
+	my $direction = $cgi->param('order[0][dir]') || 'desc';
+	my $length    = $cgi->param('length') + 0; $length ||= 10;
+	my $start     = $cgi->param('start') + 0;
+	my $draw      = $cgi->param('draw')  + 0; # -- https://datatables.net/manual/server-side
+	my $c_status  = $cgi->param('status') + 0;
+	my $str       = $cgi->param('str');
+	my $debug     = $cgi->param('debug');
+
+	($search ||= $cgi->param('q')) =~ s/'/''/g;
+	my $search_num = $search =~ /^\d+$/ ? 1 : 0;
+	my $search_phone = ($search =~ /^0\d\d.+/) ? 1 : 0;
+
+	my @msgs = ();
+	my $area = '';
+	if ($start && length != -1) {
+		$area = "LIMIT $start, $length";
+	}
+	elsif ($length > 0) {
+		$area = "LIMIT $length";
+	}
+
+	my @db_cols = qw(id firstname lastname company street city occupation phone email);
+	   @db_cols = qw(id firstname lastname street city occupation phone email) if $c_status == 4;
+	my $order_by = $db_cols[$sortcol];
+
+	my @wcl = ();
+	push(@wcl, "status=$c_status") if $c_status;
+
+	if ($search_phone) {
+		push(@wcl, "phone LIKE '$search%'");
+	}
+	elsif ($search_num) {
+		push(@wcl, "id=$search");
+	}
+	elsif (length($search) > 1) {
+		push(@wcl, "lastname LIKE '%$search%' OR firstname LIKE '%$search%' OR company LIKE '%$search%' OR occupation LIKE '%$search%'");
+	}
+
+	push(@wcl, "street like '$str%'") if $str;
+
+	my $wcl_str = join ' AND ', @wcl;
+	   $wcl_str = "WHERE $wcl_str" if @wcl;
+
+	if ($debug) {
+		print STDERR "[Debug] $wcl_str\n";
+		push(@msgs, "WCL: \"$wcl_str\"");
+	}
+
+	my $sth = $C->{dbh}->prepare("select " . (join ', ', @db_cols) . " from contacts $wcl_str ORDER BY $order_by $direction $area");
+	   $sth->execute() or (push(@msgs, $DBI::errstr));
+	my $row_count = $C->query("select count(*) from contacts $wcl_str")->[0];
+
+	my @json = ();
+	my $i = 0;
+
+	my @params = ();
+	my $allparas = join "<br>\n", @params;
+	   $allparas = "$start / $sortcol $direction / $length / $search";
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $txt, $lastname, $company, $street, $city, $occupation, $phone, $email) = @{$r};
+		my @row = ();
+		push(@row, qq~<a style='color:#699425' href='contact.html?&wcl=id%3D$id'>$id</a>~);
+		push(@row, $C->web_enc_v2($txt));
+		push(@row, $C->web_enc($lastname));
+		push(@row, $C->web_enc($company)) unless $c_status == 4;
+		push(@row, '<nobr>' . $C->web_enc($street) . '</nobr>');
+		push(@row, $C->web_enc($city));
+		push(@row, $C->web_enc($occupation));
+		push(@row, "<nobr>$phone</nobr>");
+		push(@row, "<nobr>$email</nobr>");
+		push(@json, \@row);
+	}
+
+	my $JSON =  $json->encode(\@json);
+
+	push(@msgs, "DN87: Debug Level $debug") if $debug;
+	$C->saveSessData('msgs', join "\n", @msgs);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+  "draw": <% $draw %>,
+  "recordsTotal": <% $row_count %>,
+  "recordsFiltered": <% $row_count %>,
+  "data": <% $JSON %>
+}
+

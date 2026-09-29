@@ -1,0 +1,74 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prod_id  = $args{prod_id};
+	my $prd      = $args{prd};
+	my $debug    = $args{debug};
+
+	my $cgi = $C->{CGI};
+
+	my $edi_order_nr = $cgi->param('edi_order_nr') + 0;
+
+	my $doSearch = 0;
+	if ($args{bSearch} && length($edi_order_nr) > 7) {
+		$doSearch = 1;
+	}
+
+	my $sth;
+
+	if ($doSearch) {
+		$sth = $C->{dbh}->prepare(qq~SELECT DISTINCT order_id FROM orders_status WHERE xval like '%$edi_order_nr%' limit 100~);
+		$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+	}
+</%init>
+<div class="portlet-body">
+
+	<h3 class="fs--25">Auftrags-Suche</h3>
+
+	<p class="mb-2">Suche einer Bestellung &uuml;ber die Galaxus-Auftragsnummer, z.B. 130516930</p>
+
+	<form method="post" name="f412160">
+		<input type="text" name="edi_order_nr" class="form-control" value="<% $edi_order_nr || '' %>" placeholder="Galaxus Auftrags-Nummer">
+		<input type="submit" class="btn btn-primary mt-2" name="bSearch" value="Suchen">
+	</form>
+
+%	if ($doSearch) {
+		<table class="table ZZtable-sm table-hover mt-2 border">
+			<tr>
+				<th>Order-ID</th>
+				<th>Datum</th>
+				<th>Extern</th>
+				<th>Lieferung an</th>
+				<th><span class="float-end">Totalbetrag</span></th>
+			</tr>
+%		while(my $r = $sth->fetch()) {
+%			my $oid = $r->[0];
+%			my $d = $A->get_order($oid);
+			<tr>
+				<td><a href="/adm_order.html?id=<% $r->[0] %>"><% $r->[0] %></a></td>
+				<td><% $C->trans_date_short_nt($d->{instime}) %></td>
+				<td><a target="_blank"
+					href="https://cmi.digitecgalaxus.ch/de/SupplierPurchaseOrder/<% $edi_order_nr %>"><% $edi_order_nr %></a> &#8599;</td>
+				<td><% $d->{deliv_firstname} %> <% $d->{deliv_lastname} %>
+%				foreach (sort keys %{ $d }) {
+% # XX					X -- <% $_ %> = <% $d->{$_} %><br>
+%				}
+				</td>
+				<td><span class="float-end"><% $d->{amount_incl_vat} %> CHF</span></td>
+			</tr>
+%		}
+		</table>
+%	}
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" target="_blank" href="https://cmi.digitecgalaxus.ch/de/CustomerReturnRegistration/ShowCustomerReturns">CMI</a>
+	</p>
+
+</div>
+
+<script>
+	document.f412160.edi_order_nr.focus();
+</script>

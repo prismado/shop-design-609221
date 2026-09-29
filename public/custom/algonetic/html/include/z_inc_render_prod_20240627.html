@@ -1,0 +1,117 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id = $args{id};
+	my $A  = $args{A};
+	my $C  = $args{C};
+	my $min_w = $args{min_w} || '180px';
+	my $max_w = $args{max_w} || '9vw';
+	my $show_count = $args{show_count} + 0;
+
+	my $min_h_frame = $args{min_h_frame} || '550px';
+	my $max_w_frame = $args{max_w_frame} || '405px';
+
+	my $d = $A->get_product_v2(id=>$id, public=>1, opts=>1);
+
+	my $in_basket   = $C->query("select id FROM basket WHERE sid=$args{SID} AND prod_id=$id")->[0];
+	my $spec_sale   = $d->{price_incl_vat} != $d->{price_orig_incl_vat} ? 1 : 0;
+	my $sold_out    = $d->{condition} eq 'SO' && $d->{count} < 1 ? 1 : 0;
+	my $discount_perc = sprintf('%.0f', $d->{discount_perc});
+
+	my $img_text = my $text2 = '';
+	if ($spec_sale) {
+		$img_text = "&nbsp;SALE $discount_perc %";
+	}
+	if ($d->{campaign_id}) {
+		$img_text = qq~$img_text <i class="fi fi-users ml-2 fs--20 text-white"></i>~;
+	}
+	if ($d->{extra} == 1) {
+		$text2 = qq~<span clasx="ml-1" style="letter-spacing:2px">Neu!</span>~;
+	}
+
+	my $min_height_scroll     = $args{laytst}->{min_height_scroll}     || '200px'; # -- 31Jan2024: Changed from 186px to 200px
+	my $min_height_brand      = $args{laytst}->{min_height_brand}      || '90px';
+	my $padding_bottom_scroll = $args{laytst}->{padding_bottom_scroll} ||  '90px';
+	my $scroll_h              = $args{laytst}->{scroll_h}              || '100';
+
+	my $link = "/product/$d->{title_enc}/$id";
+</%init>
+%	# -- 31Jan2024 (In connection with the "Daily offer" column on the right): min-height from 465px to 550px / max-width from 368px to 405px
+	<div class="col-lg-3 col-md-4 col-sm-5 col-12 mt-3 transition-all-ease-200 transition-hover-zoom"
+		style="min-height:<% $min_h_frame %>; max-width:<% $max_w_frame %>; transition: all 0.2s ease-in-out;">
+		<div class="card shadow-md shadow-lg-hover transition-all-ease-250 transition-hover-top h-100 border-light bl-0 br-0 bb-0 bw--2">
+		    <div class="card-body">
+			<p class="card-text">
+				<& inc_image_square.html,
+					overlap_text => $in_basket ? 'Im Warenkorb' : '',
+					class        => $in_basket ? 'opacity-2'    : '',
+					basket_id    => $in_basket,
+					link         => $link,
+					img_url      => "/produkte/p$id\_large.$d->{image}->{ext}",
+					min_w        => $min_w,
+					max_w        => $max_w,
+					sale_tag_cls => $args{sale_tag_cls},
+					cond_tag_cls => $args{cond_tag_cls},
+					text         => $img_text,
+					text2        => $text2 &>
+			</p>
+
+			<h5 class="card-title mb-3 fs--16 mt--n5" style="margin-left:-5px">
+%			    if ($args{condition} eq 'IN') {
+				<a class="text-red-800 text-decoration-none"
+					href="<% $link %>"><s><% $C->shorten_title($d->{title}, 45) %></s></a>
+%			    }
+%			    else {
+				<a class="text-dark text-decoration-none"
+					href="<% $link %>"><% $C->shorten_title($d->{title}, 45) %></a>
+%			    }
+			</h5>
+
+			<div class="h--<% $scroll_h %> bordex scrollable-vertical p--2 roundex ml--n7"
+	style="min-height:<% $min_height_scroll %>; padding-bottom:<% $padding_bottom_scroll %> !important; scrollbar-color: #eaeaea #f0f0f0; scrollbar-width:thin">
+				<p class="fs--14"><% $d->{desc_keyw} %></p>
+			</div><br />
+
+			<p class="fixed-bottom ml-3" style="background-color:white; min-height:<% $min_height_brand %>; padding-top:10px">
+				<span class="fs--14">
+					<a class="text-gray-600"
+						href="/products/<% $C->url_friendly($d->{cat_name}) %>/<% $d->{cat_id} %>"><% $d->{cat_names} %></a><br>
+					<a class="text-gray-600" href="/s~<% $d->{brand} %>.html"><% $d->{brand} || 'No Brand' %></a>
+				</span><br clear="all" />
+
+%				if ($show_count) {
+					<span style="color:#73c44d; font-size:0.85rem">
+						<i class="fi mdi-check fs--20"></i> <% $d->{count_product} %> Stk.
+					</span><br>
+%				}
+
+				<span class="float-right mr-3">
+%				if ($sold_out) {
+					<i class="fi fi-support	fs--19 text-blue-gray-900" data-toggle="tooltip" data-placement="bottom"
+						data-original-title="Zurzeit ausverkauft" stylx="color:maroon"></i>
+%				}
+%				else {
+					<% $spec_sale ? '<br>' : '' %>
+%					if ($d->{mand_count}) {
+						<a class="text-dark text-decoration-none fs--20" href="/article-<% $id %>-<% $d->{title_enc} %>.html"><img
+							src="/assets/images/icon_add_to_basket.svg" style="width:22px !important">&uarr;</a>
+%					}
+%					else {
+						<a href="#" style="text-decoration:none" class="fs--20" onclick="JavaScript:add2bask(<% $id %>)"><img
+							src="/assets/images/icon_add_to_basket.svg" style="width:22px !important"></a>
+%					}
+%				}
+				</span>
+
+%				if ($spec_sale)	{
+					<span class="fs--15 text-dark">statt <s>CHF <% $C->decimal_mark($d->{price_orig_incl_vat}) %></s></span><br />
+					<span class="lead font-weight-bold" style="color:#ce3b48">CHF <% $C->decimal_mark($d->{price_incl_vat}) %></span>
+%				}
+%				else {
+					<span class="fs--20 text-dark font-weight-medium">CHF <% $d->{price_incl_vat} %></span>
+%				}
+			</p>
+
+		    </div>
+		</div>
+	</div>

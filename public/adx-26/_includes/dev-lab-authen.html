@@ -1,0 +1,79 @@
+<%init>
+	use utf8;
+
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+
+	my $debug      = $args{debug};
+	my $perm       = $args{perm};
+	my $cgi        = $args{cgi};
+	my $dev_host   = $args{host_env_prim} eq 'yes' ? 1 : 0;
+	my $example_fn = $args{example_fn};
+
+	(my $exmpl_fn = $args{example_file}) =~ s/^$C->{CONFIG}->{DOCUMENT_ROOT}\///;
+</%init>
+<div class="portlet-body">
+
+	<h2 clasx="mb-4">Argon2 Hash Login</h2>
+	<p class="mt-3 mb-4">
+		app_secret: "<% substr($C->{CONFIG}->{app_secret}, 0, 3) %>..." &rarr;
+			<a href="/adx/special_keys.html?area=app">Edit</a>
+	</p>
+
+	<form method="post">
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="User" id="hostname" type="text" name="user" value="<% $cgi->{user} %>" autocomplete="off" class="form-control">
+		<label for="hostname">User</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="Host" id="port" type="text" name="pass" value="<% $cgi->{pass} %>" autocomplete="off" class="form-control">
+		<label for="port">Passwort</label>
+	</div>
+
+	<input type="submit" class="btn btn-primary w--180" name="bSubmit"> &ndash; <a href="/account-signin-argon.html">account-signin-argon</a>
+
+	</form>
+
+	<p class="mt-4">
+		<a href="/adx/special_keys.html?area=sso">SSO Konfiguration</a> &mdash;
+		<a href="/_systex/install/help/de/11/1/?filter=auth">Module</a> &mdash;
+		<a target="_blank" href="https://ops.zspace.ch/w-prismado/login-sso">Login SSO</a> (OPS Docu)
+	</p>
+
+	<p class="mt-4">
+		SSO Login &rarr; <a href="/app/login"><tt>/app/login</tt></a><br>
+		SSO Callback URL &rarr; <tt>https://<% $C->{CONFIG}->{HTTP_HOST} %>/app/_callback</tt>
+	</p>
+
+%	my $sth = $C->{dbh}->prepare(qq~SELECT id, `source`, importance, sid, module, service, action, tstamp, rc FROM log  
+%					where service like 'auth%' AND uid=$perm->{uid} ORDER by id DESC LIMIT 99~);
+%	   $sth->execute();
+
+	<table class="mt-4">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $src, $imp, $sid, $mod, $serv, $action, $ts, $rc) = @{$r};
+		<tr class="<% $imp == 1 ? 'font-weight-bold' : '' %>">
+			<td class="pr-2" nowrap><% $C->trans_date_short($ts) %></td>
+			<td class="pr-2"><% $serv %></td>
+			<td class="<% $imp > 2 ? 'text-green-600' : '' %>"><% $action %></td>
+		</tr>
+%	}
+	</table>
+
+	<pre class="line-numbers mt-6" data-start="10"><code 
+		class="language-perl">my ($rc, $msg) = $C-&gt;authen2( ); # -- user / pass / action=stay</code></pre>
+
+	<p>
+		<a href="/adm_db_edit.html?table=users&wcl=id%3D<% $perm->{uid} %>">DB-Schema &uuml;berpr&uuml;fen</a> &ndash;
+		Argon2: <a target="_blank" href="https://ops.zspace.ch/lab/Argon2/demo.html">Verschlüsseln</a> / 
+		<a target="_blank" href="https://ops.zspace.ch/lab/Argon2/verify.html">Überprüfen</a>
+	</p>
+
+	<pre class="ZZline-numbers mt-3" ZZdata-start="10"><code 
+		class="language-sql">ALTER TABLE users ADD password_hash CHAR(127) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT '0' AFTER uname;</code></pre>
+
+</div>

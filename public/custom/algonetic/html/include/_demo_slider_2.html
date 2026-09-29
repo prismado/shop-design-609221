@@ -1,0 +1,24 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $xtra_imgs = $args{xtra_imgs};
+
+	my %images = ();
+	$images{main} = "produkte/p$args{id}_large.jpg";
+	foreach (@{ $xtra_imgs }) {
+		$images{$_} = "$_\_large";
+	}
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Beispiel-Slider # 2 &ndash; <a href="admix.html?func=edit_item&id=<% $args{id} %>">ID: <% $args{id} %></a> &mdash; Mehrfach-Bilder</span>
+</div>
+
+<div class="portlet-body">
+
+	<& inc_image_slider.html, id=>$args{id}, prodinf=>$args{prodinf},
+		C=>$C, perm=>$perm, xtra_imgs=>$xtra_imgs, debug=>$debug &>
+
+</div>

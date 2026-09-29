@@ -1,0 +1,41 @@
+<%init>
+	# -- *** Legacy *** -- #
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my ($rc, $msg) = $C->authen(); # -- Makes logout / login
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin Account | <%$C->{CONFIG}->{site_title}%></title>
+</head>
+<body>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+% #	<&_includes/account2.html, H=>$H, A=>$A, C=>$C&>
+	    </div>
+	</div>
+</div>
+
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,91 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 09Feb2024 -- #
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $prod_id = $cgi->param('prod_id') + 0;
+	my $narrow  = $cgi->param('narrow');
+	my $public  = $cgi->param('public');
+	   $public  = 2 unless length($public); $public += 0; # -- 26Oct2024
+
+	my $debug = $C->getSessData('debug') || 0;
+	my $perm  = $C->get_user_perm();
+
+	$prod_id ||= $C->query("select MAX(id) FROM products")->[0];
+
+	my $prd = $A->get_product_v2(id=>$prod_id, public=>$public, debug=>1);
+	my $fls = $A->get_product_files(id=>$prod_id);
+	my $extra_imgs = $A->get_product_extra_imgs(id=>$prod_id);
+	my $option_check = $A->get_option_id_with_art_no($prod_id);
+
+	my @breadcrumb = ();
+	my @bc1 = ('Entwickler', 'config-dev.html');
+	my @bc2 = ('get_order_positions( )', "dev-get-order.html?order-id=99");
+	my @bc3 = ('Adx Dev', '');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+	push(@breadcrumb, \@bc3);
+</%init>
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Dev: Get Product | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="assets/css/<% $narrow ? 'core.min.css' : 'core_x_wide.min.css' %>">
+% #	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="/assets/css/prism_main.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+% #	<meta name="theme-color" content="#377dff">
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+% if ($narrow) {
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, C=>$C &>
+			</aside>
+% }
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><a class="text-dark text-decoration-none"
+						href="dev-get-order.html?order-id=<% 99 %>&narrow=<% $narrow ? 0 : 1 %>">&laquo;</a> Devel</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+						<& _includes/dev-get-product.html, prod_id=>$prod_id, prd=>$prd, fls=>$fls, extra_imgs=>$extra_imgs,
+							option_check=>$option_check, perm=>$perm,
+							public=>$public, A=>$A, C=>$C, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+
+	</body>
+</html>

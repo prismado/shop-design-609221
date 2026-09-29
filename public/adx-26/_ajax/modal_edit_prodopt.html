@@ -1,0 +1,33 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+
+	my $debug  = $C->getSessData('debug');
+</%init>
+<div class="modal fade" id="<% $css_id %>" ZZtabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+%			if ($debug) {
+				<script language="JavaScript">
+					var modalElement = document.getElementById('<% $css_id %>');
+					var modalZIndex = window.getComputedStyle(modalElement).getPropertyValue('z-index');
+					console.log("DN404201-22: Der z-index ist " + modalZIndex);
+				</script>
+%			}
+			<& ../../custom/algonetic/html/_ajax/modal_edit_prodopt.html &>
+		</div>
+
+	</div>
+</div>
+
+<%doc>
+	Created: 17Apr2024 / Updated 20Apr2024
+</%doc>

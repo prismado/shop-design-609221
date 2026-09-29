@@ -1,0 +1,146 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm   = $C->get_user_perm();
+	my $SID    = $C->getSID();
+	my $lang   = $C->getSessData('_current_lang') || 'de';
+	my $domain = $C->grep_2nd_level_dom($ENV{HTTP_HOST});
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	id, art_no, price, title, `description`
+		from	vproducts_1_02
+		where	cat_id=500 and campaign_id=0 and `count`>0 and lang='de' and price between 1 and 99
+		order	by price
+	~);
+	   $sth->execute();
+
+	my $st_pay_meth = $C->{dbh}->prepare(q~
+		select	SUBSTR(`key`, 10, 7)
+		from	config
+		where	`key` like 'pay\_meth\_%' and val+0 > 0
+		order	by 1
+	~);
+	$st_pay_meth->execute();
+
+	my %pay_meth_hr = (
+		INV => 'Rechnung',
+		PC  => 'Postcard (Datatrans)',
+		PC3 => 'Credit Card PCI 3.0 (Datatrans / Saferpay)',
+		PP  => 'PayPal',
+		PRE => 'Vorauszahlung',
+		TWI => 'TWINT'
+	);
+
+	my $remote_ip = $ENV{HTTP_X_REMOTE_ADDR} || $ENV{REMOTE_ADDR};
+	$C->log(msg=>"WARN: Access from $remote_ip", importance=>1, service=>'Maintenance');
+
+	my @maildata = ();
+	push(@maildata, qq~IP $remote_ip~);
+	$C->mail_generic(
+		to      => 'tesx@eshop.pub',
+		subject => "Access $C->{CONFIG}->{site_title}",
+		data    => (join '<br>', @maildata)
+	) unless $C->get_workval("XX_notified_$remote_ip");
+
+	$C->set_workval("XX_notified_$remote_ip", 1);
+
+	$r->content_type('text/html; charset=utf-8');
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<title><% $C->{CONFIG}->{site_title} %> - Maintenance</title>
+	<meta name="robots" content="noindex">
+	<meta name="googlebot" content="noindex">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+  <div class="container">
+    <center>
+	<a href="."><img class="img-fluid mt-5" src="images/welcome.png"></a><br />
+	<img class="img-fluid mt-2" src="images/logo_auctionline_400x60.png">
+	<div class="row">
+	<div class="col-md-12">
+		<center>
+			<h1><% $C->{CONFIG}->{HTTP_HOST} %></h1>
+
+			<p style="text-align:left">
+				<h3 clasx="mb-5">Interne Informationen f&uuml;r Funktionstests zum Online Shop</h3>
+				<h5 class="mb-5"><% $C->{CONFIG}->{site_title} %></h5>
+%				if ($perm->{is_devel}) {
+					<p>
+						<a href="https://www19d.auctionline.ch/maintenance.html">Devel</a> &ndash;
+						<a href="https://www2.auctionline.ch/maintenance.html">Pre-live</a> &ndash;
+						<a href="https://www.auctionline.ch/maintenance.html">Produktiv</a>
+					</p>
+%				}
+				<ul style="text-align:left; line-height:175%">
+				<li><h4><% $sth->rows() %> Produkte f&uuml;r Testeink&auml;ufe</h4>
+
+				<div class="well mb-2" style="background-color:yellow; padding:5px; font-weight:bold; text-align:center">
+					Bitte klicken Sie auf eines der folgenden Produkte, um einen Test-Einkauf zu beginnen.
+				</div>
+%				while(my $r = $sth->fetch()) {
+%					my ($id, $art_no, $price, $title, $desc) = @{$r};
+					&bull; <a href="article-<% $id %>-tbd.html"><% $title %></a>
+						&middot; CHF <% $C->round_amount(sprintf('%.2f', $price * 1.077)) %><br>
+%				}
+				</li>
+
+				<li class="mt-4"><h4><% $st_pay_meth->rows() %> eingeschaltete Zahlungsmethoden</h4>
+%				my $f_cc = 0;
+%				while(my $r = $st_pay_meth->fetch()) {
+%					my ($key, $val) = @{$r};
+%					$f_cc = 1 if $key eq 'pc3';
+					&bull; <code><% uc $key %></code> &middot; <% $pay_meth_hr{uc $key} || '* N/A *' %>
+%						if ($key eq 'pc3') {
+							&middot; <% $C->prp('creditcard') %>
+%						}
+						<br>
+%				}
+				</li>
+				</ul>
+%				if ($f_cc) {
+					<% $C->bootstrap_alert('Bezahl-Option &laquo;Kreditkarte&raquo; ist <u>aktiviert</u>', 'success') %>				
+%				}
+%				else {
+					<% $C->bootstrap_alert('Bezahl-Option Kreditkarte ist zurzeit <u>deaktiviert</u>', 'danger') %>				
+%				}
+%				if ($perm->{is_devel}) {
+					<a href="adm_db_edit.html?table=config&wcl=`key`%3D%27pay_meth_pc3%27">Activate CC</a> &mdash;
+					<a href="adm_db_edit.html?table=properties&wcl=`key`%3D%27creditcard_de%27+and+page%3D%27_global%27">KK Text</a>
+					&mdash; IP <% $remote_ip %>
+%				}
+			</p>
+
+			<p class="mt-4">
+				<hr />
+				Sie k&ouml;nnen sich als Benutzer <a href="registration.html">registrieren</a>
+					oder einen Einkauf als Gast durchf&uuml;hren mit Adressangaben.
+			</p>
+
+			<p class="mt-4">
+				<b><% $C->prp('site_company') %></b><br>
+				office@auctionlin<script language="JavaScript">document.write('e.ch')</script> &ndash;
+				tech-support@auctionlin<script language="JavaScript">document.write('e.ch')</script><br />
+% #				<% $C->prp('site_email') %><br>
+				<% $C->prp('site_phone') %><br><br>
+
+				<a href="info_impressum.html">Impressum</a>
+			</p>
+
+% # XX			<& include/footer.html, C=>$C, A=>$A &>
+		</center>
+	</div>
+	</div>
+    </center>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A = $args{A};
+	my $C = $args{C};
+
+	my $basket_tot = $A->get_basket_total_v3();
+	# XXX my $basket_total = $C->decimal_mark( $A->get_basket_total() );
+	my $basket_total = $basket_tot->{total};
+</%init>
+
+	<a href="basket.html" class="dropdown-toggle">
+	<span class="icon fa fa-shopping-cart"></span>
+	<span class="badge badge-cart"><% $args{basket_count} %></span>
+	<div class="dropdown-label"><% $C->{CONFIG}->{default_curr} %> <% $basket_total %></div>
+	</a>
+
+<%doc>
+XXX:
+/XXX
+</%doc>

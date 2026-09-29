@@ -1,0 +1,137 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $search= $args{i_search};
+	my $perm  = $args{perm};
+	my $sth   = $args{sth}; # -- id, mandatory, lang, label, sel_desc, ref, amount, det_id, feat_id, weight
+
+	my $vat_rate = $C->{CONFIG}->{vat_1} + 0;
+
+	my $border_top = q~border-top:3px solid #cccccc !important~;
+</%init>
+<div class="portlet-body">
+%	if ($debug) {
+		<code>adx/_includes/prism_options.html</code>
+%	}
+	<form name="f409271">
+%	    if ($search) {
+		<span class="float-end mt-2 mr-2">
+			<a class="link-muted" href="options.html">Zur&uuml;cksetzen</a>
+		</span>
+		<div class="form-label-group mb-3 w--600">
+			<input placeholder="" id="first_name" type="text" value="<% $search %>" name="i_search"
+				autocomplete="on" class="form-control" id="dummy409271">
+			<label for="first_name">Suchbegriff + Enter</label>
+		</div>
+%	    }
+%	    else {
+		<div class="form-label-group mb-3">
+			<input placeholder="" id="first_name" type="text" value="" name="i_search"
+				autocomplete="on" class="form-control" id="dummy409271">
+			<label for="first_name">Suchbegriff + Enter</label>
+		</div>
+%	    }
+	</form>
+
+	<table class="table XXtable-hover">
+	<tr>
+		<th colspan="3">Bezeichnung</th>
+		<th nowrap>Opt-ID</th>
+		<th>S</th>
+		<th>Auswahl</th>
+		<th>Referenz</th>
+		<th nowrap><span class="float-right mr-2">Preis Netto</span></th>
+		<th><span class="float-end">CHF</span></th>
+		<th></th>
+	</tr>
+%	my $id_before = 0;
+%	while(my $r = $sth->fetch()) {
+%		my $id = $r->[0];
+%		my $opt_count = $C->query("select count(*) from voptions2 where id=$id and lang='de'")->[0] || 1;
+%		my ($mandatory, $lang, $label, $desc, $ref, $amount, $det_id, $feat_id, $weight, $style, $instime) = @{$C->query(
+%		"select mandatory, lang, label, sel_desc, ref, amount, det_id, feat_id, weight, style, instime from voptions2
+%			where id=$id AND lang='de' order by id desc limit 1")};
+		<tr class="border">
+		<td class="p-0 pt-1" style="<% $border_top %>" nowrap>
+%		    if ($perm->{is_devel}) {
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil fs--17 text-danger mt-2"></i>', class=>'ml-3',
+				url=>qq~/adx/_ajax/modal_edit_prodopt.html?id=$id&css_id=404171_$id~, css_id=>"404171_$id") } %>
+%		    }
+%		    else {
+			<% ${ $A->modal( label=>' ', clasx=>'',
+				url=>qq~/adx/_ajax/modal_edit_prodopt.html?id=$id&css_id=404171_$id~, css_id=>"404171_$id") } %>
+%		    }
+
+			<a href="#" class="js-ajax-modal btn btn-primary btn-sm btn-pill mb-1"
+			        data-href="/_ajax/modal_sow_edit_prodopt.html?id=<% $id %>"
+			        data-ajax-modal-size="modal-lg"
+% #			        data-ajax-modal-backdrop="static"
+			        data-ajax-modal-centered="true">
+			        <span><i class="fi fi-pencil"></i></span>
+			</a>
+		</td>
+		<td style="<% $border_top %>">
+%			if ($weight) {
+				<b><% $label %></b>
+%			}
+%			else {
+				<s><b class="text-gray-400"><% $label || 'N/A' %></b></s>
+%			}
+%			if ($mandatory) {
+				<span class="badge badge-pill badge-primary" data-toggle="tooltip" data-placement="bottom" data-original-title="Pflicht-Auswahl">M</span>
+%			}
+		</td>
+		<td class="text-center" style="backgrounx-color:white; <% $border_top %>">
+			<a href="#" class="js-ajax-modal"
+				data-href="/_ajax/modal_option_use.html?id=<% $id %>"
+					data-toggle="tooltip" data-placement="bottom" data-original-title="Erstellt: <% $C->trans_date_short($instime) %>"
+					data-ajax-modal-size="modal-md"
+					data-ajax-modal-centered="true"
+					data-ajax-modal-backdrop="static">
+					<span><i class="fi fi-round-info-full fs--14 text-dark"></i></span>
+			</a>
+		</td>
+		<td class="text-center XXXfont-weight-bold fs--13" style="<% $border_top %>"><% $id %>
+%			if ($style == 1) {
+				<span data-toggle="tooltip" data-placement="bottom"
+					data-original-title="8-tung! St&uuml;ckzahl-relevant"><i class="fi fi-layerstore animate-pulse text-red-200"></i></span>
+%			}
+		</td>
+		<td style="<% $border_top %>"><span class="badge badge-<% $style == 3 ? 'success' : 'warning' %>"><% $style %></span></td>
+		<td class="border" style="<% $border_top %>" nowrap><% $desc %>
+%			if ($opt_count > 1) {
+				<small>&rarr; <% $opt_count %> &times; Auswahl</small>
+%			}
+		</td>
+		<td class="border" style="<% $border_top %>" nowrap>
+%			if (length($ref) > 20) {
+				<span data-toggle="tooltip" data-placement="bottom"
+					data-original-title="<% $ref %>"><% $C->shorten_title($ref, 20) %></span>
+%			}
+%			else {
+				<% $ref %>
+%			}
+		</td>
+		<td class="fs--12" style="<% $border_top %>">
+			<span class="float-right mr-2"><% sprintf('%.2f', $amount) %></span>
+		</td>
+		<td class="font-weight-bold" style="<% $border_top %>">
+			<span class="float-end">
+			<% sprintf('%.2f', $amount * (1 + $vat_rate/100)) %>
+			</span>
+		</td>
+		<td style="<% $border_top %>"><& inc_vertical_dots_prodopt.html, id=>$id, det_id=>$det_id, C=>$C &></td>
+		</tr>
+%	}
+	</table>
+</div>
+
+	<script language="JavaScript">
+		function f401071_callback() {
+			document.location='options.html?r=<% rand() %>';
+		}
+		document.f409271.i_search.focus();
+	</script>

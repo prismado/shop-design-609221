@@ -1,0 +1,45 @@
+<%init>
+        use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $cgi->param('lang') || 'de';
+
+	my $cur_camp_id = $C->getSessData('token_id') + 0;
+	my $debug       = $C->getSessData('debug') || 0;
+
+	my $wcl = $cur_camp_id ? "product_id IN (select id from products where campaign_id=0 OR campaign_id=$cur_camp_id)" :
+					"product_id NOT IN (select id from products where campaign_id>0 or `count` < 1)";
+
+	my $stmt = qq~
+		select	product_id, title, SUBSTR(`description`, 1, 80)
+		from	products_desc
+		where	lang='$lang' AND $wcl
+		order   by id DESC
+		limit	99
+	~;
+	print STDERR "X -- $stmt\n" if $debug;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute();
+
+        $r->content_type("text/plain; charset=utf-8");
+</%init>
+[
+% while(my $r = $sth->fetch()) {
+%	my ($product_id, $title, $description) = @{$r};
+%	(my $title_enc = $title) =~ s/"/&quot;/g;
+%	(my $desc_enc  = $description) =~ s/"/&quot;/g;
+%	    $desc_enc =~ tr/[\n\r\t]/ /;
+	{
+		"label":  "<% $title_enc %><!-- <% $desc_enc %> -->",
+		"url":    "/article-<% $product_id %>-product.html"
+	},
+% }
+	{
+		"label":  "About us",
+		"url":    "/info_help.html"
+	}
+]

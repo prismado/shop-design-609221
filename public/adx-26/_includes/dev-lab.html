@@ -1,0 +1,283 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $P     = $args{P}; # -- 21Apr2026
+	my $PA    = $args{PA}; # -- 06Jun2026
+	my $PS    = $args{PS};
+
+	use Crypt::Lite;
+	my $crypt = Crypt::Lite->new(encoding => 'hex8');
+
+	my $test_t  = $C->now(5);
+	my $test_tc = $C->md5_secret($test_t);
+
+	my $debug      = $args{debug};
+	my $perm       = $args{perm};
+	my $dev_host   = $args{host_env_prim} eq 'yes' ? 1 : 0;
+	my $bMailX     = $args{bMailX};
+	my $res_mail_x = $args{res_mail_x};
+
+	my $iter      = $C->{CGI}->param('iter') + 0; $iter ||= 50;
+	my $tests     = $C->{CGI}->param('tests'); # -- e.g. 1,2
+	my $pass_time = $C->{CGI}->param('pass_time');
+
+	my $uid_addr_check = ($C->{CGI}->param('uid') + 0) || 169;
+	my $addr_check = $A->check_postal_address(uid=>$uid_addr_check);
+
+	# my $api_check = $PA->_foo();
+	my $api_within_min = my $api_time_range_sec = my $dbid_log = 0;
+	if ($C->{CGI}->param('test') eq 'api') {
+		$api_within_min     = $C->{CGI}->param('m') + 0;
+		$api_time_range_sec = $C->{CGI}->param('s') + 0;
+	}
+	elsif ($C->{CGI}->param('test') eq 'add_err') {
+		$C->{dbh}->do(q~insert into log (source, importance, sid, uid, module, service, action, rc)
+				values ('srx', 1, 0, 169, 'mod', 'serve', 'Error E606120 Test', 0)~)
+		or $m->out("Err $DBI::errstr<hr>");
+		$dbid_log = $C->query('SELECT LAST_INSERT_ID()')->[0];
+	}
+
+	my $new_prop_id = $PS->set_property(key => 'zz_foo', val => "PID $$");
+
+	my $api_check = $PA->get_errors( within_min => $api_within_min, time_range_sec => $api_time_range_sec );
+</%init>
+<div class="portlet-body">
+
+	<span class="float-end fs--14">
+		<a href="dev-lab.html?iter=<% $iter %>">Reload</a> |
+		<a href="dev-lab.html?tests=<% $tests %>">Reload 2</a> &ndash;
+		<a href="dev-lab.html?tests=1">Tests: 1</a> |
+		<a href="dev-lab.html?tests=2&ZZpass_time=1">Tests: 2</a>
+%			if ($dev_host) {
+				(<a href="https://www.auctionline.ch/adx/dev-lab.html?tests=2&ZZpass_time=1">Prod</a>)
+%			}
+%			else {
+				(<a href="https://shopd.algonetic.ch/adx/dev-lab.html?tests=2&ZZpass_time=1">Dev</a>)
+%			}
+			|
+		<a href="dev-lab.html?tests=1,2&pass_time=1">Tests: 1,2</a> &mdash;
+		<a href="dev-lab.html?bReset=1">Reset</a> &mdash;
+		<a href="/adm_log.html?importance=4&debug=1">Logfile</a>
+	</span>
+
+
+	<h3>Prismado::API</h3>
+	<p class="mt-3">
+		<p>
+			<a href="/_api"><tt><b>/_api</b></tt></a> &mdash;
+			<a href="/_api/get_errors"><tt><b>/_api/get_errors</b></tt></a> &mdash;
+			[ <a href="dev-lab?test=api&s=500&m=1500">500s / 1500m</a> ] &mdash;
+			[ <a href="dev-lab?test=add_err">+ Err</a> ]
+		</p>
+%		foreach (sort keys %$api_check) {
+%			next if $_ eq 'errors';
+			&bull; <b><% $_ %></b> = <% $api_check->{$_} %><br>
+%		}
+		<table class="table table-sm mt-3">
+		<tr>
+			<th>Time</th>
+			<th>SID</th>
+			<th>UID</th>
+			<th>Module/Service</th>
+			<th>Text</th>
+			<th>Source</th>
+			<th>RC</th>
+		</tr>
+%		foreach my $d (@{$api_check->{errors}}) {
+			<tr>
+				<td>
+					<a href="/adm_db_edit.html?table=log&wcl=id%3D<% $d->{id} %>">E</a>
+					<% $C->trans_date($d->{ts}) %></td>
+				<td><% $d->{sid} %></td>
+				<td><% $d->{uid} %></td>
+				<td><% $d->{module} %> / <% $d->{service}%></td>
+				<td><% $d->{action} %></td>
+				<td><% $d->{src} %>
+%					foreach (sort keys %$d) {
+%	next if $_ eq 'id' or $_ eq 'action' or $_ eq 'sid' or $_ eq 'uid' or $_ eq 'rc' or $_ eq 'module' or $_ eq 'service' or $_ eq 'ts' or $_ eq 'src';
+						&bull; <b><% $_ %>:</b> <% $d->{$_} %><br>
+%					}
+				</td>
+				<td><% $d->{rc} %></td>
+			</tr>
+%		}
+		</table>
+	</p>
+
+
+	<h4 class="mt-5">SSO / Entra</h4>
+	<p>
+		<a href="/app/login">SSO Login</a> &ndash; <s>/auth/oidc</s>
+	</p>
+
+
+	<h4 class="mt-5">Network Tools / Queries</h4>
+	<p>
+		<tt>Prismado::API / getIP(host =&gt; 'algonetic.com')</tt><br>
+		algonetic.com: IP = <% $PA->getIP(host => 'algonetic.com')->{ip} %>
+	</p>
+
+
+	<h3 class="mt-5">Prismado::Shop</h3>
+
+	<p>
+		<tt>$PS-&gt;_foo( )</tt> &rarr; <% $PS->_foo()->{msg} %><br>
+		Property <tt><b>zz_foo</b></tt> = "<% $C->txt('zz_foo') %>" &rarr; (DBID <% $new_prop_id %>) &larr; <code>$PS-&gt;set_property( )</code>
+	</p>
+
+	<p>
+		<tt>update_top_notch( active =&gt; 1 )</tt><br>
+		[ <a href="dev-lab?bTopNo=1&active=0">active =&gt; 0</a> ] &mdash;
+		[ <a href="dev-lab?bTopNo=1&active=1">active =&gt; 1</a> ]<br>
+		content_top_notch = <% $C->txt('content_top_notch') %>
+	</p>
+
+
+	<h3 class="mt-5">Encryption / Verification</h3>
+	<p class="mt-3">
+		<code>$P-&gt;get_secret->{secret}</code> &rarr; <% substr($P->get_secret->{secret}, 0, 4) %>...<br>
+		Input: <b><% $perm->{email} %></b><br>
+		Output: <b><% substr($crypt->encrypt($perm->{email}, $C->{CONFIG}->{md5_secret}), 0, 80) %>...</b><br>
+		Secret: <b><% substr($C->{CONFIG}->{md5_secret}, 0, 3) %>...</b><br>
+		md5_secret of 2026-03-23 15:58: <b><% $C->md5_secret('2026-03-23 15:58') %></b><br><br>
+
+		<a href="/_do?action=request_new_password&uname=user2028">Password Request</a><br><br>
+
+%		my $pw_link = $A->generate_forgot_password_link(uname=>$perm->{email})->{url};
+		<a clasx="text-primary" href="/<% $pw_link %>"><% substr($pw_link, 0, 80) %>...</a>
+		&rarr; <a href="/adm_log.html?importance=2&filter=warn&filtertype=not">Check Log</a><br><br>
+
+		Test PW Request on other servers:<br>
+		<a href="https://serviced.algonetic.ch/proto/core">serviced.algonetic.ch</a> (core) &mdash;
+		<a href="https://service-t.auctionline.ch/proto/core">service-t</a> (core)
+	</p>
+
+	<h3>Address Check</h3>
+%	foreach (sort keys %{$addr_check}) {
+		[ addr_check ] &middot; <b><% $_ %></b> = <% $addr_check->{$_} %><br>
+%	}
+
+	<div class="col-6 pl-0 mt-5">
+		<pre class="line-numbers" data-start="1"><code class="language-perl">my @lt_here = localtime(time);
+$C-&gt;format_time(format=>'rfc5322', localtime=>\@lt_here);</code></pre>
+	</div>
+
+	<div class="col-2 pl-0">
+		<pre clasx="line-numbers" data-start="10"><code class="language-shell">W407051-38</code></pre>
+	</div>
+
+<%perl>
+	my $t;
+	if ($pass_time) {
+		my @lt_here = localtime(time - 66 * 86400);
+		$t = $C->dev_tester_407090(tests=>$tests, localtime=>\@lt_here);
+	}
+	else {
+		$t = $C->dev_tester_407090(tests => $tests);
+	}
+
+	foreach (sort keys %{ $t->{t1} }) {
+		next unless length( $t->{t1}->{$_} );
+		next if /^VERSION$/ or /^localtime$/;
+		next if /^rc/ && $t->{t1}->{$_} == 0;
+		next if /^warnings$/ && $t->{t1}->{$_} == 0;
+		$m->out("[ Result t1 ] &middot; <b>$_</b> = <code>$t->{t1}->{$_}</code><br>");
+	}
+	$m->out("<br>\n");
+
+	foreach (sort keys %{ $t->{t2} }) {
+		next unless length( $t->{t2}->{$_} );
+		next if /^VERSION$/ or /^localtime$/;
+		next if /^rc/ && $t->{t2}->{$_} == 0;
+		next if /^warnings$/ && $t->{t2}->{$_} == 0;
+		$m->out("[ Result t2 ] &middot; <b>$_</b> = <code>$t->{t2}->{$_}</code><br>");
+	}
+
+	$m->out("<br>\n");
+	foreach (sort keys %{ $t }) {
+		next if /^t\d+$/ or /^tests$/ or /^localtime$/;
+		$m->out("&bull; <b>$_</b> = $t->{$_}<br>");
+	}
+	$m->out("<br>\n");
+</%perl>
+
+	<p clasx="mt-3">Test executed at <% $C->now(2) %></p>
+
+	<p>Work Value of <b>rfc_time_5322_407050</b>: <code><% $C->get_workval('rfc_time_5322_407050') %></code></p>
+
+	<form method="post">
+		<input class="button btn-primary btn-sm" type="submit" name="bMailX" value="Senden via mail_x()">
+	</form>
+
+%	if ($bMailX) {
+		<p>Gesendet</p>
+%		foreach (sort keys %{ $res_mail_x }) {
+%			next unless length( $res_mail_x->{$_} );
+%			next if /^data$/;
+			&bull; <b><% $_ %></b> = <code><% $res_mail_x->{$_} %></code><br>
+%		}
+%	}
+
+	<p class="mt-3">
+		Docu: <a href="/_systex/install/help/de/11/1/sub-mail_x.html">$C-&gt;mail_x( )</a>
+	</p>
+
+%	my $sth = $C->{dbh}->prepare(qq~SELECT id, `source`, importance, sid, module, service, action, tstamp, rc FROM log  
+%					where service like 'mail\_%' AND uid=$perm->{uid} ORDER by id DESC LIMIT 99~);
+%	   $sth->execute();
+	<table class="mt-3">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $src, $imp, $sid, $mod, $serv, $action, $ts, $rc) = @{$r};
+		<tr class="<% $imp == 1 ? 'font-weight-bold' : '' %>">
+			<td class="pr-2" nowrap><% $C->trans_date($ts) %></td>
+			<td class="pr-2"><% $serv %></td>
+			<td class="<% $imp > 2 ? 'text-green-600' : '' %>"><% $action %></td>
+		</tr>
+%	}
+	</table>
+
+	<p class="mt-3">
+		<form method="post">
+			<input type="text" name="email" placeholder="E-Mail Check" value="<% $args{email} %>" autocomplete="off">
+			<input type="submit" name="bMailC" value="Check">
+		</form>
+	</p>
+
+	<p class="mt-3 XXXmb-5">
+		<tt>$ENV{HTTP_X_SERVER_ADDR}</tt> = "<code><% $ENV{HTTP_X_SERVER_ADDR} %></code>"<br><br>
+
+		$C-&gt;format_hr3('503221122') &rarr; <% $C->format_hr3('503221122') %><br>
+		$C-&gt;format_hr3('5032211') &rarr; <% $C->format_hr3('5032211') %><br>
+		$C-&gt;format_hr3('1234567890') &rarr; <% $C->format_hr3('1234567890') %><br>
+		$C-&gt;format_hr3('3') &rarr; <% $C->format_hr3('3') %><br>
+	</p>
+
+	<p class="mt-4 mb-5">
+		Change Lang: <a href="/_change_lang.html?lang=XX">XX</a> &ndash;
+			<a href="/_change_lang.html?lang=%27%20OR%20SLEEP%2815%29%29%3B%20--%20">SLEEP(15)</a> &ndash;
+			<a href="/_change_lang.html?lang=0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z">0'XOR(if(now()=sysdate(),sleep(15),0))XOR'Z</a> &ndash;
+			<a href="/_change_lang.html?lang=0'XOR(if(now()=sysdate(),sleep(2),0))XOR'Z">0'XOR(if(now()=sysdate(),sleep(2),0))XOR'Z</a> &ndash;
+			<a href="/_change_lang.html?lang=if(now()=sysdate(),sleep(15),0)">if(now()=sysdate(),sleep(15),0)</a><br><br>
+
+			<code>about (f'r)</code> = "<% $C->txt('about', "f'r") %>" / <code>about (f;r)</code> = "<% $C->txt('about', "f;r") %>"
+	</p>
+
+	<& _demo_tabs.html, C=>$C &>
+
+% #	<pre class="line-numbers" data-start="10"><code class="language-perl">my $foo = '1'; # -- tbd</code></pre>
+
+<%doc>
+	<h4 class="fs--20 mt-5 mb-3">Dropdown</h4>
+	<div class="form-label-group mb-3">
+        	<select id="sel_406210_31" class="form-control bs-select">
+			<option value="foo">Foo</option>
+			<option value="bar" selected>Bar</option>
+        	</select>
+        	<label for="select_options">BT Slct example</label>
+	</div>
+</%doc>
+
+
+</div>

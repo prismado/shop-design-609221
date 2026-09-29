@@ -1,0 +1,27 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	$C->redir('/_error.html') unless $perm->{is_admin};
+
+	my $del_det_id = $C->{CGI}->param('del_det_id') + 0;
+
+	$A->del_option($del_det_id);
+
+	$C->create_toast_note(body=>qq~<center>Gel&ouml;scht: Opt-ID $del_det_id</center>~,
+			title=>'Option komplett entfernt - N404251-17B', width=>'550px', delay=>7500);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+tbd
+
+<%doc>
+	Created: 25Apr2024
+
+	This macro is called by an Ajax call
+</%doc>

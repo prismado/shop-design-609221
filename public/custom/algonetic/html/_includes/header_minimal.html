@@ -1,0 +1,50 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	# -- Created: 16Sep2025
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+	my $lang  = $args{lang} || 'de';
+	my $show_lang = $args{show_lang};
+
+	my $login_type = $args{login_type}; # -- 17Jan2024
+
+	my $t_notes = $C->get_toast_notes(); # -- 20Sep2023
+	my $sess    = $C->start_session(origin=>$ENV{REQUEST_URI}, skip_bots=>1); # -- 22Oct2023
+</%init>
+% if ($t_notes->{style}) {
+	<style><% $t_notes->{style} %></style>
+% }
+% foreach my $note (@{ $t_notes->{notes} }) {
+	<div class="hide toast-on-load" 
+		data-toast-type="<% $note->{type} %>"
+		data-toast-title="<% $note->{title} %>"
+		data-toast-body="<% $note->{body} %>"
+		data-toast-pos="top-center"
+		data-toast-delay="<% $note->{delay} %>"
+		data-toast-fill="true">
+	</div>
+% }
+<header id="header">
+	<div class="container-fluid position-relative">
+%		if ($show_lang) {
+		<nav class="navbar navbar-expand-lg navbar-light justify-content-lg-between justify-content-md-inherit h--70">
+		<div class="float-right">
+			<& ../include/lang_nav.html, lang=>$lang, C=>$C, debug=>$debug &>
+		</div>
+		</nav>
+%		}
+
+		<button class="navbar-toggler shadow-xs h-auto w-auto m-0 btn btn-sm bg-white rounded-circle position-absolute end-0 mt-1 mb-1 ml-2 mr-2 z-index-2 d-none d-inline-block d-lg-none"
+			type="button" data-toggle="collapse" data-target="#navbarMainNav" aria-controls="navbarMainNav"
+				aria-expanded="false" aria-label="Toggle navigation">
+		<i class="fi fi-bars"></i>
+		</button>
+
+	</div>
+
+
+</header>

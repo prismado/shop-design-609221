@@ -1,0 +1,34 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $comp  = $args{comp};
+
+	my $res = $C->exec(comp_file=>"../../../../adx/_includes/$comp\.html");
+
+	my $html = $C->slurp_file( "$C->{CONFIG}->{DOCUMENT_ROOT}/adx/_includes/$comp\.html" );
+
+	my @html_code = ();
+	my $start_doc = 0;
+	foreach my $line (split /[\n\r]/, ${$html}) {
+		$line =~ s/\</&lt;/g;
+		push(@html_code, $line) if $start_doc;
+		$start_doc =1 if $line =~ /\&lt;\/%init/;
+	}
+</%init>
+<h4><% $comp %></h4>
+<p>
+	<% $res->{out} %>
+</p>
+
+<p class="mt-0 mb-2 fs--11">
+	[ <a class="link-muted" href="#" onclick="JavaScript:document.getElementById('code_<% $comp %>').style.display=''">Code Anzeigen</a> &ndash;
+	<a class="link-muted" href="#" onclick="JavaScript:document.getElementById('code_<% $comp %>').style.display='none'">Verbergen</a> ]
+</p>
+
+<span style="display:none" id="code_<% $comp %>">
+	<pre><% join "\n", @html_code %></pre>
+</span>
+
+<p class="mb-3">&nbsp;</p>

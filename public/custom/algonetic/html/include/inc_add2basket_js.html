@@ -1,0 +1,34 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $css_id = $args{css_id} || "ajx_30609211";
+</%init>
+% # <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div id="ajx_1"></div>
+
+<script language="JavaScript">
+	function add2bask (id, b) {
+% #		alert('X -- add2bask ID ' + id);
+		loadModal(id);
+	}
+
+function loadModal(prod_id) {
+  $.ajax({
+    url: '/custom/algonetic/html/ajx_overlap_bask.html?css_id=<% $css_id %>&id=' + prod_id,
+    type: 'GET',
+    dataType: 'html',
+    success: function(response) {
+     $('#ajx_1').html(response);
+        $('#<% $css_id %>').modal('show');
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+}
+</script>
+
+<%doc>
+	Created: 09Jun2023
+</%doc>

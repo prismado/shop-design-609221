@@ -1,0 +1,81 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $d = $args{d}; # -- Product Data or other page-related information
+
+	unless ($d) {
+		my %empty = ();
+		$d = \%empty;
+	}
+
+	my $google_analytics_code = $C->get_safe_property( 'google_analytics_code', 'sys' );
+	   $google_analytics_code = '' if $google_analytics_code =~ /^\* /;
+
+	my $description = '';
+	if ($d->{title}) {
+		$description = "$d->{title}, $C->{CONFIG}->{default_description}";
+	}
+	else {
+		$description = $C->{CONFIG}->{default_description};
+	} 
+</%init>
+% # XXX <&google_analytics.html&>
+% if ($google_analytics_code) {
+<script async src="https://www.googletagmanager.com/gtag/js?id=<% $google_analytics_code %>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '<% $google_analytics_code %>', { 'anonymize_ip': true });
+</script>
+% }
+<meta charset="utf-8">
+<meta name="description" content="<% $description %>" />
+<meta name="keywords" content="<%$C->{CONFIG}->{default_keywords}%>" />
+<meta name="robots" content="index,follow,noodp,noodp" />
+<meta name="page-topic" content="<%$C->{CONFIG}->{default_description}%>" />
+<meta http-equiv="pragma" content="NO-CACHE" />
+<meta http-equiv="cache-control" content="NO-CACHE" />
+<meta name="Revisit" content="After 10 days"/>
+<meta name="copyright" content="Copyright 2019"/>
+<meta name="author" content="Swiss Remarketing AG"/>
+<link rel="canonical" href="https://<% $C->{CONFIG}->{HTTP_HOST} %><% $ENV{REQUEST_URI} %>" />
+<link rel="alternate" hreflang="de-CH" href="https://<% $C->{CONFIG}->{HTTP_HOST} %>" />
+<meta name="publisher" content="https://<% $C->{CONFIG}->{HTTP_HOST} %>"/>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<!-- fav and touch icons -->
+<link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+<link rel="manifest" href="images/favicon/site.webmanifest">
+<link rel="mask-icon" href="images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#ffc40d">
+<meta name="theme-color" content="#ffffff">
+
+<!-- Cookie Consent for DSVGO -->
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
+<script>
+window.addEventListener("load", function(){
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#444444",
+      "text": "#ffffff"
+    },
+    "button": {
+      "background": "#FF5F02",
+      "text": "#ffffff"
+    }
+  },
+  "content": {
+    "message": "<% $C->prop('cookie_message_text') %>",
+    "dismiss": "<% $C->prop('cookie_accept') %>",
+    "link": "<% $C->prop('cookie_learn_more') %>",
+    "href": "info_datenschutz.html"
+  }
+})});
+</script>

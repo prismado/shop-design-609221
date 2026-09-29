@@ -1,0 +1,66 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="p-0 mt-2 mb-1">
+	<span class="fs--20">Foo Sub Title</span>
+</div>
+
+<p class="hidden-xs-down mt-3 fs--15 border p-2">
+	<b>Nicht mehr f&uuml;r winzige Bildschirme!</b> (CSS-Klasse <code class="fs--19">hidden-xs-down</code>)<br>
+	Max-width: 575.98px
+</p>
+
+<p class="hidden-sm-down mt-3 fs--20 border p-2">
+	<b>Ab kleine bis mittlere Bildschirme!</b> (CSS-Klasse <code class="fs--19">hidden-sm-down</code>)<br>
+	Max-width: 767.98px
+</p>
+
+<p class="hidden-md-down mt-3 fs--25 border p-2">
+	<b>Ab mindestens 992 Pixel!</b> (CSS-Klasse <code class="fs--19">hidden-md-down</code>)<br>
+	Max-width: 991.98px
+</p>
+
+% # ===============================================================================================
+<div class="alert alert-danger hidden-sm-up">
+	<b>576 Pixel und darunter</b> &ndash; <code>hidden-sm-up</code>
+</div>
+
+<div class="alert alert-warning hidden-xs-down hidden-xl-up hidden-md-up">
+	<b>Ab mindestens 768 Pixel</b> &ndash; <code>hidden-xs-down hidden-xl-up hidden-md-up</code>
+</div>
+
+<div class="alert alert-info hidden-sm-down hidden-xl-up">
+	<b>Ab mindestens 992 Pixel</b> &ndash; <code>hidden-sm-down hidden-xl-up</code>
+</div>
+
+<div class="alert alert-success hidden-md-down hidden-lg-down">
+	<b>Ab mindestens 1200 Pixel</b> &ndash; <code>hidden-md-down hidden-lg-down</code>
+</div>
+% # ===============================================================================================
+
+<pre>@media (max-width:  575.98px) { .hidden-xs-down { display: none !important; } }
+@media (min-width:  576px   ) { .hidden-sm-up   { display: none !important; } }
+@media (max-width:  767.98px) { .hidden-sm-down { display: none !important; } }
+@media (min-width:  768px   ) { .hidden-md-up   { display: none !important; } }
+@media (max-width:  991.98px) { .hidden-md-down { display: none !important; } }
+@media (min-width:  992px   ) { .hidden-lg-up   { display: none !important; } }
+@media (max-width: 1199.98px) { .hidden-lg-down { display: none !important; } }
+@media (min-width: 1200px   ) { .hidden-xl-up   { display: none !important; } }</pre>
+
+<& inc_debug_env.html &>
+
+% # XXX <p><% $ENV{HTTP_COOKIE} %></p>
+
+<div class="alert alert-info mt-1 fs--18" id="div81_307071">jQuery ist inaktiv</div>
+
+<p class="mt-4 mb-0">
+% foreach (sort keys %$perm) {
+%	next if /^\_\_.+/;
+	[ perm ] &bull; <b><% $_ %></b> = "<code><% $perm->{$_} %></code>"<br>
+% }
+</p>

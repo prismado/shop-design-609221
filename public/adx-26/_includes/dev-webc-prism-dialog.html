@@ -1,0 +1,101 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $debug    = $args{debug};
+
+	my $mt = 'mt-5';
+</%init>
+<div class="portlet-body">
+
+	<table class="table border col-8">
+
+	<tr>
+	<td>&ndash;</td>
+	<td>
+		<prism-dialog class="float-end" prompt="Wert" instruction="Z.B. ein Geldbetrag"
+			callback="foo" timeout="3500" css_id="pd_404191_13"
+			x_gaga="gugu 123" x_gugu="asdf 456" x_irgendwas="supi trupi"
+			debug="2">
+		</prism-dialog>
+		<p class="float-start mb-0">Beispiel-Aufruf <code>&lt;prism-dialog&gt;</code>, timeout 3500 ms</p>
+	</td>
+	</tr>
+
+	<tr>
+	<td>&ndash;</td>
+	<td>
+		<prism-dialog class="float-end" prompt="2. Eingabe" instruction=""
+			callback="foo" timeout="1000" css_id="pd_404191_19"
+			x_info="Von der 2. Eingabe"
+			x_gaga="gugu 12345">
+		</prism-dialog>
+		<p class="float-start mb-0">Ohne Wert bei <code>instruction</code> und ohne Debug-Modus &middot; <code>&lt;prism-dialog&gt;</code></p>
+	</td>
+	</tr>
+
+	<tr>
+	<td class="font-weight-bold">SR</td>
+	<td>
+		<prism-dialog-sr class="float-end" prompt="Eingabe Nr. 3" instruction=""
+			callback="foo" timeout="3500" css_id="pd_404211_27" referer="/adx/dev-webc-prism-dialog.html"
+			x_info="Von der 3. Eingabe"
+			x_gaga="gugu 12345">
+		</prism-dialog-sr>
+		<p class="float-start mb-0">Einfache Variante mit <code>&lt;prism-dialog-sr&gt;</code>, timeout: 3500 und referer</p>
+	</td>
+	</tr>
+
+	<tr>
+	<td class="font-weight-bold">SR</td>
+	<td>
+		<prism-dialog-sr class="float-end" prompt="Eing. m/Instr." instruction="Bitte Wert eingeben"
+			callback="foo" timeout="2500" css_id="pd_404211_33" referer="/adx/dev-webc-prism-dialog.html"
+			x_info="Von der 3. Eingabe"
+			x_gaga="gugu 12345">
+		</prism-dialog-sr>
+		<p class="float-start mb-0">Variante mit "<b>instruction</b>" <code>&lt;prism-dialog-sr&gt;</code></p>
+	</td>
+	</tr>
+
+	<tr>
+	<td class="font-weight-bold">SR</td>
+	<td>
+	<p class="float-start mb-0">Variante Modal mit ShadowRoot <code>&lt;prism-dialog-sr&gt;</code></p>
+	<p class="float-end mb-0">
+		<% ${ $A->modal( label=>'<b>PopUp auf Modal</b>',
+			url=>'/adx/_ajax/modal_bar.html?id=4321&css_id=402171_19&foxi=932171-321', css_id=>'402171_19') } %>
+	</p>
+	</td>
+	</tr>
+
+	</table>
+
+	<p class="fs--13"><a href="dev-webc-prism-dialog.html?suppr_1=1">&lt;prism-dialog&gt; unterdr&uuml;cken</a></p>
+
+	<p><a href="/_systex/install/help/de/11/2/">Online-Hilfe</a</p>
+
+	<h4 class="mt-4 fs--20">Code-Quellen</h4>
+
+	<ul class="mt-3 pl-3">
+	<li><a href="/assets/js/prism_dialog.js">assets/js/prism_dialog.js</a>
+	<li><a href="/assets/js/prism_dialog_shadowRoot.js">custom/algonetic/html/assets/js/prism_dialog_shadowRoot.js</a>
+	<li>custom/algonetic/html/_ajax/webc_prism_dialog.html &ndash; <code>Swal.fire({ ... })</code></li>
+	<li><a href="/assets/css/prism_swal.css">custom/algonetic/html/assets/css/prism_swal.css</a>
+	</ul>
+	
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a> |
+		<a class="fs--13" href="https://x.prismado.com/lab/web-components/demo1.html">WebC Labor</a>
+	</p>
+
+</div>
+
+<%doc>
+	Created: 18Apr2024
+
+	Macros: custom/algonetic/macros/
+</%doc>

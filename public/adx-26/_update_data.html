@@ -1,0 +1,49 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 25Apr2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $action = $cgi->param('action');
+	my $id     = $cgi->param('id') + 0;
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+
+	my @vars = ();
+	my %data = ();
+	foreach ($cgi->all_parameters) {
+		$data{$_} = $cgi->param($_);
+		push(@vars, "&bull; $_ = " . $cgi->param($_));
+	}
+
+	my $referer = $ENV{HTTP_REFERER} || '/';
+
+	if ($action eq 'upd_prod_opt') {
+		my $res = $A->adm_update_product_opt(data=>\%data, debug=>$debug);
+
+		if ($res->{rc}) {
+			$C->create_toast_note(body=>"Update Produkte-Option ID-$id<br>RC = $res->{rc} $res->{msg}", type=>'danger');
+		}
+		else {
+			$C->create_toast_note(body=>"<center>Produkte-Option ID-$id erfolgreich aktualisiert $res->{msg}</center>", title=>'Erfolg - N604061');
+		}
+
+		$C->create_toast_note(body=>"$res->{msg}<br>" . (join "<br>\n", @vars), delay=>15000, width=>'660px', type=>'pink') if $debug;
+
+		if ( $data{_add_leaf} ) {
+			$referer = "/adx/options.html?option_id=$id"; # -- 06Apr2026
+			# $referer = "/adx/options.html?open=$id"; # -- 06Apr2026
+		}
+	}
+	else {
+		$C->create_toast_note(body=>"Unknown action [$action]", type=>'danger', title=>'Error');
+		$C->create_toast_note(body=>(join "<br>\n", @vars), delay=>15000, width=>'660px', type=>'pink');
+	}
+
+	$m->redirect($referer);
+</%init>

@@ -1,0 +1,84 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $val    = $cgi->param('val')    || '';
+
+	my $cats = $A->get_categories(show_invisible=>0);
+
+	my $daily_off   = $A->get_daily_offer_categ(); # -- /products/daily-offer/<% $daily_offer->{id} %>
+	my $cur_count   = $C->query("select COUNT(*) from products2categ where cat_id=$daily_off->{id}")->[0];
+	my %daily_offer = ( id => $daily_off->{id}, label => "In den $cur_count Tagesangeboten" );
+	push(@{ $cats->{result} }, \%daily_offer) if ref($cats->{result}) eq 'ARRAY';
+
+	my $service_cid = $C->query("select cat_id from categ_meta where xkey='PURPOSE' and xval='SERVICE-PORTAL' limit 1")->[0];
+	my %service_cat = (id => $service_cid, label => 'Service-Portal' );
+	push(@{ $cats->{result}  }, \%service_cat) if ref($cats->{result}) eq 'ARRAY';
+
+	my $prd = $A->get_product_v2(id=>$id);
+	my %cur_cat_id = ();
+	foreach (split /,/, $prd->{cat_ids}) {
+		$cur_cat_id{$_} = 1;
+	}
+
+	$cur_cat_id{ $C->query("select cat_id from products2categ where product_id=$id and cat_id=$daily_off->{id}")->[0] } = 1;
+	$cur_cat_id{ $C->query("select cat_id from products2categ where product_id=$id and cat_id=$service_cid")->[0]     } = 1;
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-md modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Kategorien zuweisen &middot; <small>Prod-ID <% $id %></small></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form method="post" action="/_assign_categ2prod.html">
+			<input type="hidden" name="id" value="<% $id %>">
+
+			<div class="modal-body">
+%				foreach my $c (@{ $cats->{result} }) {
+%					my $active = $cur_cat_id{ $c->{id} } ? 'checked=""' : '';
+					<label class="form-switch form-switch-primary d-block">
+						<input type="checkbox" name="cb_cat_<% $c->{id} %>" value="1" <% $active %>>
+							<i data-on="&#10004;" data-off="&#10005;"></i>
+							<b><% $c->{label} %></b> &middot; <span class="text-gray-500 fs--14"><% $c->{id} %></span><br>
+%							foreach (sort keys %{ $c }) {
+%								next if $_ eq 'label' or $_ eq 'meta' or $_ eq 'id' or $_ eq 'visible'
+%									or $_ eq 'has_meta' or $_ eq 'parent_id';
+								X -- <% $_ %> = <% $c->{$_} %><br>
+%							}
+					</label>
+%				}
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="submit" class="btn btn-sm btn-soft btn-primary w--150" XXXonclick="validateForm403151()">
+					<i class="fi fi-check"></i> Update
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm403151() {
+		save();
+		return false;
+	}
+</script>

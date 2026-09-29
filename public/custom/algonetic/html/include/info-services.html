@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $lang  = $args{lang};
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span><% $C->txt('about', $lang) %></span>
+</div>
+</%doc>
+
+<div class="portlet-body p-3 bg-white mt--n10">
+
+%	if ($args{edit_mode}) {
+		<div class="float-end">
+			<a href="/adm_properties.html?filter=content"><i class="fi fi-pencil"></i></a>
+		</div>
+%	}
+
+	<% $C->prp('content') %>
+
+	<hr />
+	<h3>Abholauftrag</h3>
+
+	<p>
+		<a href="/info-collection-order.html">Online-Formular</a>
+	</p>
+
+</div>

@@ -1,0 +1,36 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $order_id = $args{order_id};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0);
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>Foo Sub Title</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+
+	<p>tbd <a href="dev-order-get-pos.html?order_id=123">x</a></p>
+	<p><% $order_id %></p>
+
+	<p>Output von Makro <code>custom/<% $C->{CONFIG}->{theme} %>/macros/_foo.html</code>:</p>
+	<div class="alert alert-info">
+		<% $macro->{out} %>
+	</div>
+
+	<hr />
+
+	<p>
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+</div>

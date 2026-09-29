@@ -1,0 +1,41 @@
+<%init>
+	my $modal_id  = 'modal_309021';
+
+	my $modal_url = q~'/custom/algonetic/html/ajx_overlap_bask.html?css_id=modal_309021&id=' + prod_id~;
+	   $modal_url = qq~'/_ajax/modal_foo_rs.html?css_id=$modal_id'~;
+	   $modal_url = q~'/_ajax/modal_signin_md.html'~;
+	# -- custom/algonetic/html/ajx_overlap_bask.html?css_id=ajx_309021&id=' + prod_id
+</%init>
+
+<div class="modal fade" id="<% $modal_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<div class="modal-dialog modal-md" role="document">
+		<div class="modal-content">
+			<& ../_ajax/modal_signin_md.html &>
+		</div>
+	</div>
+</div>
+
+% # <div id="<% $modal_id %>"></div>
+
+
+<script language="JavaScript">
+
+$(document).ready(function(){
+  $.ajax({
+    success: function() {
+	$('#<% $modal_id %>').modal('show');
+    }
+  });
+});
+
+</script>
+
+<%doc>
+	Created: 02Sep2023
+	------------------
+
+	After:
+	<script src="assets/js/core.min.js"></script>
+
+	<& include/inc_autoopen_modal.html &>
+</%doc>

@@ -1,0 +1,62 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $lang  = $args{lang};
+
+	my $prop_id = $C->query(qq~select id from properties where `key`='warranty_declaration_$lang'~)->[0];
+
+	my $editcol = '#FCFCAB';
+</%init>
+<div class="portlet-body p-1 bg-white mt--n10">
+
+% #	<img src="/assets/images/delivery_dhl_algonetic_gen.svg" class="img-fluid ml-4 mb-3" style="transform:scaleX(1.15); max-width:28vw">
+	<img src="/assets/images/logo/logo_warranty.svg" class="img-fluid float-left mr-2" style="max-width:30px !important">
+
+	<div class="float-end mt--n10">
+		<button class="btn btn-outline-primary btn-sm btn-soft animate-pulse"
+			onclick="JavaScript:document.location='<% $args{referer} %>'">Zur&uuml;ck</button>
+	</div>
+
+%	if ($args{edit_mode}) {
+		<div class="float-end">
+			<a href="/adx/manage-property.html?area=warranty_declaration"><i class="fi fi-pencil"></i> &Uuml;bersicht</a>
+		</div>
+%	}
+
+	<h3 class="fs--25 mt-0 mb-0">Garantie</h3>
+
+%	if ($args{edit_mode}) {
+		<table class="table" style="border:1px maroon solid; border-top:2px solid maroon">
+		<tr><td style="background-color:<% $editcol %> !important">
+			<div class="float-end">
+				<a href="/adm_property.html?id=<% $prop_id %>"><i class="fi fi-pencil"></i></a>
+			</div>
+			<% $C->txt('warranty_declaration', $lang) %>
+		</td></tr></table>
+%	}
+%	else {
+		<div class="mt-5 mb-4 w--800">
+%			if ($perm->{is_devel}) {
+				<div class="float-end">
+					<a href="/adm_property.html?id=<% $prop_id %>"><i class="fi fi-pencil"></i></a>
+				</div>
+%			}
+			<% $C->txt('warranty_declaration', $lang) %>
+		</div>
+
+%		if ($perm->{uid} > 0) {
+			<a href="/account-orders.html">Ihre Bestellungen</a>
+%		}
+
+%		if ($perm->{is_admin}) {
+			<center>
+				<p class="fs--13 mt-5 font-weight-bold">F&uuml;r &Auml;nderungen: Editor-Modus aktivieren</p>
+			</center>
+%		}
+%	}
+
+</div>

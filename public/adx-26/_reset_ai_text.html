@@ -1,0 +1,32 @@
+<%init>
+	use ScreenPoint::Core;
+	# use ScreenPoint::Auctionline;
+
+	# -- Created: 12Sep2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	# my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+
+	$m->redirect('/adx/') unless $perm->{is_admin};
+
+	my $cgi = $C->{CGI};
+
+	my $virtual = $cgi->param('virtual') + 0;
+
+	my $referer = $ENV{HTTP_REFERER} || '/';
+
+	my @vars = ();
+
+	foreach ($cgi->all_parameters) {
+		push(@vars, "$_ = " . $cgi->param($_));
+	}
+
+	$C->{dbh}->do("delete from products_desc where id=$virtual");
+
+	$C->create_toast_note(body=>"In Bearbeitung...<br>" . join "<br>\n", @vars);
+
+	$m->redirect($referer);
+</%init>

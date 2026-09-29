@@ -1,0 +1,52 @@
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #ffcc00; border-radius:10px; overflow:hidden;">
+  <!-- Gelber DHL-Balken -->
+  <tr>
+    <td style="background-color:#ffcc00; padding:10px 24px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+	  <td style="font-family:Arial,Helvetica,sans-serif; font-size:16px; font-weight:bold; font-style:italic; color:#d40511; letter-spacing:1px;">
+	    DHL
+	  </td>
+	  <td align="right" 
+	style="font-family:Roboto,Arial,Verdana,Helvetica,sans-serif; font-size:12px; font-weight:bold; color:#d40511; text-transform:uppercase; letter-spacing:0.5px;">
+	    Sendungsverfolgung
+	  </td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+  <!-- Inhalt der Box -->
+  <tr>
+    <td style="background-color:#fffdf3; padding:24px; text-align:center;">
+      <div style="font-family:Roboto,Arial,Verdana,Helvetica,sans-serif; font-size:13px; color:#8a8f98; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
+	&#128230; Versandstatus
+      </div>
+      <div style="font-family:Roboto,Arial,Verdana,Helvetica,sans-serif; font-size:20px; font-weight:bold; color:#1a1a1a; margin-bottom:14px;">
+	Ihre Sendung ist unterwegs
+      </div>
+      <!-- Sendungsdaten (Platzhalter: werden im Prozess gerendert) -->
+      <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 18px auto;">
+	<tr>
+	  <td style="background-color:#ffffff; border:1px solid #f0e3a3; border-radius:6px; padding:10px 18px; font-family:'Courier New',Courier,monospace; font-size:13px; color:#414141; line-height:160%;">
+	    DHL Shipment &middot; {{dhl_shipment}}<br>
+	    Tracking-ID &middot; {{tracking_id}}
+	  </td>
+	</tr>
+      </table>
+      <!-- Bulletproof CTA-Button -->
+      <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+	<tr>
+	  <td style="border-radius:6px; background-color:#d40511;">
+	    <a href="https://www.dhl.com/ch-de/home/tracking/tracking-express.html?submit=1&amp;tracking-id={{tracking_id}}"
+	       style="display:inline-block; padding:13px 34px; font-family:Roboto,Arial,Verdana,Helvetica,sans-serif; font-size:15px; font-weight:bold; color:#ffffff; text-decoration:none; border-radius:6px;">
+	      Sendung jetzt verfolgen&nbsp;&#8594;
+	    </a>
+	  </td>
+	</tr>
+      </table>
+      <div style="font-family:Roboto,Arial,Verdana,Helvetica,sans-serif; font-size:12px; color:#8a8f98; margin-top:14px;">
+	Aktuelle Zustellinformationen erhalten Sie jederzeit &uuml;ber den Button.
+      </div>
+    </td>
+  </tr>
+</table>

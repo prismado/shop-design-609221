@@ -1,0 +1,67 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $lang     = $s{lang} || 'de';
+</%init>
+<style>
+	.row_small td {
+	/* border:        1px solid #e8e8e8 !important; */
+	border-top:    1px solid #e8e8e8 !important;
+	line-height:   24px;
+}
+</style>
+
+<div style="font-family:Roboto, Arial; font-size:15px; color:#414141; line-height:125%">
+
+<span style="color:#515151; font-size:0.85rem">
+	[ Betrifft <% $s{x_subj} %> ]<br>
+</span>
+
+<table>
+	<tr class="row_small" valign="top">
+		<td>Kunde</td>
+		<td>
+			<b><% $s{frm_company} %></b><br>
+			<% $s{frm_addr_1} %><br>
+			<% $s{frm_zip} %> <% $s{frm_city} %>
+		</td>
+	</tr>
+%	foreach (sort keys %s) {
+%		next unless /^frm_(.+)$/;
+%		next if $_ eq 'frm_company' or $_ eq 'frm_addr_1' or $_ eq 'frm_zip' or $_ eq 'frm_city';
+		<tr class="row_small">
+		<td style="padding-right:50px"><b><% $C->shorten_title($C->txt($1), 75) %></b></td>
+		<td><code><% $s{$_} %></code></td>
+		</tr>
+%	}
+</table>
+
+<br />
+
+Freundliche Gr&uuml;sse / Meilleures salutations / Kind regards<br><br>
+
+<b><big>Auctionline.ch</big></b><br />
+<small>
+Ein Webshop der <% $C->prp('site_company') %><br /><br />
+
+<% $C->{CONFIG}->{order_email_sender} %> | <a href="https://<% $C->{CONFIG}->{HTTP_HOST} %>">https://<% $C->{CONFIG}->{HTTP_HOST} %></a>
+</small>
+<br /><br />
+
+<hr noshade size="1" style="color:#717171; max-width:340px; margin-left:0" />
+<span style="color:#717171">
+  <small>
+	<b><% $C->prp('site_company') %> | <% $C->prp('site_addr') %> | <% $C->prp('site_zip') %> <% $C->prp('site_city') %></b>
+  </small>
+</span>
+
+</div>
+
+<br>
+<span style="font-size:0.66rem; color:#b0b0b0"><center>[ Vorlage V # 310161-3A &ndash; Prismado &ndash; cancel_order ]</center></span>
+<%doc>
+	Created: 14Jan2024
+</%doc>

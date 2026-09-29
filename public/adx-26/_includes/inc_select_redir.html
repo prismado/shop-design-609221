@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	(my $this = $args{this}) =~ s/^adx\///;
+
+	my %map = (
+		'config-dev'    => 'Developer Summary',
+		'custom-fonts'  => 'Fonts',
+		'config-layout' => 'Layout / Design-Patterns',
+		'custom-layout' => 'Custom Layout',
+		'dev-sftp'      => 'Developer SFTP',
+		'dev-lab'       => 'Developer Lab',
+		'dev-lab-shipment' => 'Developer Lab Shipment',
+		'dev-lab-authen'=> 'Developer Lab Authen'
+	);
+</%init>
+
+<div class="form-label-group mb-3">
+	<select id="select_options" onchange="document.location=this.value" class="form-control bs-select">
+%		foreach my $ref (sort keys %map) {
+			<option value="<% $ref %>.html" <% $this eq $ref ? 'selected' : '' %>><% $map{$ref} %></option>
+%		}
+	</select>
+	<label for="select_options">BT Slct <% $this %></label>
+</div>

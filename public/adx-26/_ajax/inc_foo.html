@@ -1,0 +1,24 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id  = $cgi->param('id') + 0;
+	my $sid = $cgi->param('sid') + 0;
+
+	my $sth = $C->{dbh}->prepare("SELECT prod_id, count FROM basket WHERE sid=$sid");
+	   $sth->execute();
+</%init>
+<i class="fi fi fi-cart-1"></i> <% $C->now(2) %> / ID <% $id %> / SID <% $sid %> / <% $sth->rows() %><br />
+% while(my $r = $sth->fetch()) {
+%	my ($prod_id, $count) = @{$r};
+	<% $count %> &times; ID <% $prod_id %>
+%	if ($id == $prod_id) {
+		&larr; already added
+%	}
+	<br>
+% }

@@ -1,0 +1,101 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+	my $debug = $s{debug};
+
+	my $perm    = $s{perm};
+	my $cgi     = $C->{CGI};
+
+	my @order_itms = ();
+
+	foreach my $d (@{ $s{odat}->{item_rows} }) {
+		my %linedat = ();
+		foreach (sort keys %{$d}) {
+			next if /^option\_.+/ or /^discount/;
+			$linedat{$_} = $d->{$_};
+		}
+		push(@order_itms, \%linedat);
+	}
+
+	my $edi_order_id = $s{edi_order_id};
+	my $first        = $s{odat}->{odat}->{deliv_firstname};
+	my $last         = $s{odat}->{odat}->{deliv_lastname};
+	my $company      = $s{odat}->{odat}->{deliv_company};
+	my $street       = $s{odat}->{odat}->{deliv_street};
+	my $zip          = $s{odat}->{odat}->{deliv_zip};
+	my $city         = $s{odat}->{odat}->{deliv_city};
+
+	my $now   = $C->now(7);
+	my $dn_id = $C->now(10) . $s{order_id}; # -- e.g. 11720161201040841
+
+	# ---------- $r->content_type('text/plain; charset=utf-8');
+</%init>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- N405170-36: <% $s{odat}->{x_x_inpt} %> | SSG Order-ID <% $s{order_id} %> | V <% $s{ver} %> -->
+<DISPATCHNOTIFICATION
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.opentrans.org/XMLSchema/2.1" version="2.1">
+    <DISPATCHNOTIFICATION_HEADER>
+	<CONTROL_INFO>
+	    <GENERATION_DATE><% $now %>T<% $C->now(6) %></GENERATION_DATE>
+	</CONTROL_INFO>
+	<DISPATCHNOTIFICATION_INFO>
+	    <DISPATCHNOTIFICATION_ID><% $dn_id %></DISPATCHNOTIFICATION_ID>
+	    <DISPATCHNOTIFICATION_DATE><% $now %>T<% $C->now(6) %></DISPATCHNOTIFICATION_DATE>
+	    <PARTIES>
+		<PARTY>
+		    <PARTY_ROLE>delivery</PARTY_ROLE>
+		    <ADDRESS>
+			<NAME  xmlns="http://www.bmecat.org/bmecat/2005"><% $C->xml_escape($company) %></NAME>
+			<NAME2 xmlns="http://www.bmecat.org/bmecat/2005"><% $C->xml_escape($C->trim("$first $last")) %></NAME2>
+			<CONTACT_DETAILS>
+			    <FIRST_NAME   xmlns="http://www.bmecat.org/bmecat/2005"><% $C->xml_escape($first) %></FIRST_NAME>
+			    <CONTACT_NAME xmlns="http://www.bmecat.org/bmecat/2005"><% $C->xml_escape($last) %></CONTACT_NAME>
+			</CONTACT_DETAILS>
+			<STREET        xmlns="http://www.bmecat.org/bmecat/2005"><% $C->xml_escape($street) %></STREET>
+			<ZIP           xmlns="http://www.bmecat.org/bmecat/2005"><% $zip %></ZIP>
+			<CITY          xmlns="http://www.bmecat.org/bmecat/2005"><% $city %></CITY>
+			<COUNTRY       xmlns="http://www.bmecat.org/bmecat/2005">Schweiz</COUNTRY>
+			<COUNTRY_CODED xmlns="http://www.bmecat.org/bmecat/2005">CH</COUNTRY_CODED>
+		    </ADDRESS>
+		</PARTY>
+	    </PARTIES>
+	    <SHIPMENT_ID><% $s{odat}->{x_dhl_shipmentTrackingNumber} %></SHIPMENT_ID>
+% #	    <SHIPMENT_ID><% $s{odat}->{x_dhl_packages__trackingNumber__0} %>.<% $s{odat}->{x_dhl_shipmentTrackingNumber} %></SHIPMENT_ID>
+	    <SHIPMENT_CARRIER>DHL</SHIPMENT_CARRIER>
+	</DISPATCHNOTIFICATION_INFO>
+    </DISPATCHNOTIFICATION_HEADER>
+    
+    <DISPATCHNOTIFICATION_ITEM_LIST>
+	<DISPATCHNOTIFICATION_ITEM>
+% foreach my $d (@order_itms) {
+%	next unless $d->{prod_id};
+%	my $gtin = $C->query("select `description` from products_feat where product_id=$d->{prod_id} and featkey='GTIN' limit 1")->[0];
+
+			<PRODUCT_ID>
+				<!-- <% $d->{count} %> x Prod-ID <% $d->{prod_id} %> <% $C->web_enc($d->{title}) %> -->
+				<SUPPLIER_PID xmlns="http://www.bmecat.org/bmecat/2005"><% $d->{prod_id} %></SUPPLIER_PID>
+				<INTERNATIONAL_PID
+					xmlns="http://www.bmecat.org/bmecat/2005"><% $gtin %>
+				</INTERNATIONAL_PID>
+			</PRODUCT_ID>
+			<QUANTITY><% $d->{count} %></QUANTITY>
+%	}
+
+	    <ORDER_REFERENCE>
+		<ORDER_ID><% $edi_order_id %></ORDER_ID>
+	    </ORDER_REFERENCE>
+	</DISPATCHNOTIFICATION_ITEM>
+    </DISPATCHNOTIFICATION_ITEM_LIST>
+
+</DISPATCHNOTIFICATION>
+%
+% if ($debug) {
+%	foreach (sort keys %{ $s{odat} }) {
+%		next if /^item_rows$/;
+		<!-- <% $_ %> = <% $s{odat}->{$_} %> -->
+%	}
+% }

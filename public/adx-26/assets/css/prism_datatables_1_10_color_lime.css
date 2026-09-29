@@ -1,0 +1,54 @@
+table.dataTable tr.odd                { background-color: #e2f0cb !important; line-height: 1.75; color:black }
+table.dataTable tr.even               { background-color: #cbddcb; line-height: 1.75; color: #222222 }
+table.dataTable td.sorting_1          { background-color: #b7cfb7; font-weight: 500 }
+table.dataTable tr:hover              { background-color: #b7cfb7 !important; }
+table.dataTable tr:hover td.sorting_1 { background-color: #b7cfb7 !important; }
+
+.custom-select {
+	color:green;
+	padding-left:20px !important;
+	width:95px;
+	font-weight:bold;
+}
+
+.dataTables_wrapper .dataTables_paginate a {
+	padding: 8px 14px;
+	margin: 0 -6px;
+	border: 1px solid #ddd;
+	color: #585858;
+	cursor: pointer;
+	background-color: #f8fcfd;
+	border-radius: 8px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+	border: 1px solid #111;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f0f0f0), color-stop(100%, #fff)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f0f0f0 0%, #fff 100%); /* Chrome10+,Safari5.1+ */
+	background: -moz-linear-gradient(top, #f0f0f0 0%, #fff 100%); /* FF3.6+ */
+	background: -ms-linear-gradient(top, #f0f0f0 0%, #111 100%); /* IE10+ */
+	background: -o-linear-gradient(top, #f0f0f0 0%, #111 100%); /* Opera 11.10+ */
+}
+
+.page-item.active .page-link {
+	color: #585858;
+	font-weight: bold;
+	background-color: #dce8ff;
+	border-color: #a8a8a8;
+}
+
+.dataTables_wrapper .dataTables_paginate a:hover {
+	background-color: lightblue !important;
+	color: #585858;
+	/* font-weight: bold; */
+	border: 1px solid #ddd;
+}
+
+.dataTables_info {
+	font-size:14px;
+	color: #585858 !important;
+}
+
+.dataTables_filter input {
+	// font-size:44px;
+}

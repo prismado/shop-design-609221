@@ -1,0 +1,50 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $stmt = qq~
+		SELECT  DISTINCT id, price, title, description, count, campaign_id, extra, `condition`
+		FROM    vproducts
+		WHERE   lang='$args{lang}' AND campaign_id=$args{token_id} AND count>0
+		ORDER	BY brand, title
+		LIMIT   999
+	~;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute();
+</%init>
+<div class="portlet-header border-bottom">
+%	if ($perm->{is_admin}) {
+		<span class="float-end">
+			<i class="fi fi-round-info-full mr-1" data-tooltip="tooltip"
+				data-original-title="Info sichtbar nur f&uuml;r Admin"></i> Sortierung: 1. Marke / 2. Modell
+		</span>
+%	}
+	<span>PRO-Zone: <% $args{company} %></span>
+</div>
+
+<div class="portlet-body">
+
+	<p><% $args{teaser_text} %></p>
+	<p><% $sth->rows() %> Artikel</p>
+
+	<div class="row">
+%		while(my $r = $sth->fetch()) {
+%			my ($id, $price, $title, $desc, $count, $campaign_id, $extra, $condition) = @{$r};
+
+%			if ($condition eq 'SO' or $condition eq 'OR') {
+				<& inc_render_prod.html, id=>$r->[0], show_count=>1, SID=>$args{SID}, A=>$A, C=>$C &>
+%			}
+%			elsif ($perm->{is_admin}) {
+				<& inc_render_prod.html, id=>$r->[0], show_count=>1, SID=>$args{SID}, A=>$A, C=>$C, condition=>$condition &>
+%			}
+%		}
+	</div>
+
+</div>
+
+<& inc_add2basket_js.html &>

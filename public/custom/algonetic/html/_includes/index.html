@@ -1,0 +1,32 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $lang  = $args{lang};
+	my $perm  = $args{perm};
+
+	my $product_promo_header = $C->txt('product_promo_header', $lang);
+	   $product_promo_header = '' if $product_promo_header =~ /^\* .+ \*$/ && !$args{edit_mode};
+</%init>
+% if ($product_promo_header) {
+<div class="portlet-header border-bottom" <% $debug > 1 ? 'style="border: 2px solid pink"' : '' %>>
+	<div class="mb-0 fs--20"><% $product_promo_header %>
+%		if ($args{edit_mode}) {
+			<a href="/adx/manage-property.html?area=product_promo_header"><i class="fi fi-pencil"></i></a>
+%		}
+	</div>
+</div>
+% }
+
+% # -- 31Jan2024: Added: p-2 pr-3
+<div class="portlet-body p-2 pr-3" <% $debug > 1 ? 'style="border: 2px solid green"' : '' %>>
+
+%	if ($debug) {
+		<code>_includes/index.html</code> &middot; lang: <% $lang %>
+%	}
+	<& ../include/promo_products.html, prod_highlight=>$args{prod_highlight}, SID=>$C->{sid}, perm=>$perm,
+		lang=>$lang, laytst=>$args{laytst}, debug=>$debug, A=>$A, C=>$C, is_mobile=>$args{is_mobile} &>
+
+</div>

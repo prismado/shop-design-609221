@@ -1,0 +1,52 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	# my $SID  = $C->getSID();
+
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+
+	my $uid = $C->getUID();
+	   $uid = $C->getSessData('_anon_uid') if $uid < 1;
+	my $uinf = $C->get_user_info( $uid );
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Wir wissen Ihr Feedback zu sch&auml;tzen! &#128077;</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body p-1" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+
+	<p class="text-center ml-3 mr-3">
+%		if ($uinf->{gender} == 2) {
+			Sehr geehrte Frau <% $uinf->{lastname} %>
+%		}
+%		else {
+			Sehr geehrter Herr <% $uinf->{lastname} %>
+%		}
+		<br><br>
+
+		<b>Wir sch&auml;tzen Ihr Feedback sehr!</b><br><br>
+
+		Ihre Meinung ist uns wichtig, denn sie hilft uns, unseren Service kontinuierlich zu verbessern und anderen Kunden
+		bei ihrer Entscheidungsfindung.<br><br>
+
+% #		Als kleines Dankeschön für Ihre Zeit erhalten Sie einen 5% Rabatt-Code für Ihren nächsten Einkauf nach Abgabe Ihrer Bewertung.<br><br>
+	
+		Sind Sie bereit, uns zu bewerten?<br>
+		Vielen Dank f&uuml;r Ihre Unterst&uuml;tzung!<br><br>
+
+		<a target="_blank" class="btn btn-primary" href="<% $C->txt('site_url_google_business') %>">Google Bewertung abgeben</a><br>
+
+% #		&#11088;&#11088;&#11088;&#11088;&#11088;
+	</p>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-primary btn-sm btn-soft" data-dismiss="modal">
+			Lieber sp&auml;ter
+		</button>
+	</div>
+</div>

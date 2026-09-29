@@ -1,0 +1,248 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my %args = $m->caller_args(0); # -- In case it's called by a web function
+
+	my $order_id = $C->{CGI}->param('order_id') || $args{order_id};
+	   $order_id += 0;
+
+	my $odat = $A->get_order_prepare(order_id=>$order_id);
+	my $uinf = $A->get_user_info($odat->{uid});
+
+	$C->saveSessData('_current_lang', 'de');
+
+	my %ship_meth_hr_map = (
+		std => 'Standardversand',
+		exp => $C->prop('delivery_method_title0'),
+		postpac_prio => $C->prop('delivery_method_title_postpac_prio'),
+		pic => 'Pickup'
+	);
+
+	my %pay_meth_hr_map = (
+		inv => $C->prop('invoice'),
+		pre => $C->prop('prepay'),
+		pp  => 'PayPal',
+		pc  => 'PostFinance Card',
+		pc3 => $C->prop('creditcard'),
+		twi => 'TWINT',
+		six => $C->prop('creditcard')
+	);
+
+	my $proto = 'http';
+	   $proto = 'https' if $ENV{HTTPS} eq 'on' or $ENV{HTTP_X_FORWARDED_PROTO} eq 'https';
+
+	my $tax_amount = $C->query("SELECT xval+0 FROM `orders_details` where order_id=$order_id and xkey='vat_amount'")->[0];
+
+	my %header = (
+		h05_mail_order_time      => $odat->{instime_swiss},
+		h10_mail_order_nr        => $order_id,
+		h15_mail_cust_nr         => $odat->{uid},
+		h16_telephone            => $odat->{phone},
+		h17_emailadress          => $odat->{email},
+		h20_mail_payment_method  => $pay_meth_hr_map{$odat->{checkout_zahlungsart_select}} || "* $odat->{checkout_zahlungsart_select} *",
+		h30_mail_customer_ust_id => $odat->{ust_id}
+	);
+
+	if ($odat->{checkout_zahlungsart_select} eq 'pc3' or $odat->{checkout_zahlungsart_select} eq 'twi'
+		or $odat->{checkout_zahlungsart_select} eq 'pc') {
+		my %pmeth_hr_map = (
+			AMX => 'American Express',
+			ECA => 'Mastercard',
+			PFC => 'PostFinance',
+			VIS => 'VISA',
+			TWI => 'TWINT'
+		);
+		my $pmeth_hr = $pmeth_hr_map{$odat->{pay_pmethod}} || "* $odat->{pay_pmethod} *";
+		$header{h27_authorizationCode} = $odat->{pay_authorizationCode} || 'N/A';
+		if ($odat->{pay_pmethod} eq 'TWI') {
+			$header{h20_mail_payment_method} = " $pmeth_hr (Handyzahlung)";
+		}
+		elsif ($odat->{pay_pmethod} eq 'PFC' or $odat->{pay_meth} == 5) {
+			$header{h20_mail_payment_method} = " $pmeth_hr (Post)";
+		}
+		else {
+			$header{h20_mail_payment_method} .= " $pmeth_hr Exp $odat->{pay_expm}/$odat->{pay_expy}";
+		}
+	}
+
+	my $shipping_net = $odat->{shipping_amount} / (1 + $odat->{vat_rate} / 100);
+	my $shipping_tax = $odat->{shipping_amount} - $shipping_net;
+	# XXX my $subtotal     = sprintf('%.2f', $odat->{basket_total_incl_shipping_rounded} - $odat->{shipping_amount} + $shipping_net);
+	my $subtotal = 0;
+</%init>
+<& mail_v2.css &>
+<table><tr><td>
+	<img style="width:222px; max-width:853px; margin-top:-5px"
+		src="<%$proto%>://<% $C->{CONFIG}->{HTTP_HOST} %>/images/logo_mailtemplate.png">
+	<p style="font-weight:bold; margin-top:10px">Der folgende Fixpreis-Artikel wurde via <% $C->{CONFIG}->{HTTP_HOST} %> verkauft.</p>
+</td></tr></table>
+
+<& includes/key_value_table.html, data=>\%header, C=>$C &>
+<br />
+
+% if ($odat->{street} eq $odat->{deliv_street} && $C->trim($odat->{company}) eq $C->trim($odat->{deliv_company})) {
+	<table cellspacing=0 cellpadding=2><tr><td>
+	<b><% $C->prop('invoice') %> / <% $C->prop('deliv_addr') %></b><br>
+	<% $C->web_enc($odat->{company}) %><br>
+	<% $C->web_enc("$odat->{firstname} $odat->{lastname}") %><br>
+	<% $C->web_enc($odat->{street}) %><br>
+	<% $odat->{zip} %> <% $C->web_enc($odat->{city}) %><br>
+	<% $C->web_enc($odat->{country_decoded}) %><br>
+% #	<% $odat->{phone} %>
+	</td></tr></table>
+% }
+% else {
+	<table cellspacing=0 cellpadding=2>
+	<tr><td><b><% $C->prop('invoice') %></b></td>  <td><b><% $C->prop('deliv_addr') %></b></td></tr>
+	<tr>
+	<td style="padding-right:60px">
+		<% $C->web_enc($odat->{company}) %><br>
+		<% $C->web_enc("$odat->{firstname} $odat->{lastname}") %><br>
+		<% $C->web_enc($odat->{street}) %><br>
+		<% $odat->{zip} %> <% $C->web_enc($odat->{city}) %><br>
+		<% $C->web_enc($odat->{country_decoded}) %><br>
+	</td>
+
+	<td>
+		<% $C->web_enc($odat->{deliv_company}) %><br>
+		<% $C->web_enc("$odat->{deliv_firstname} $odat->{deliv_lastname}") %><br>
+		<% $C->web_enc($odat->{deliv_street}) %><br>
+		<% $odat->{deliv_zip} %> <% $C->web_enc($odat->{deliv_city}) %><br>
+		<% $C->web_enc($odat->{deliv_country_decoded}) %>
+	</td>
+	</tr>
+	</table>
+% }
+<br />
+
+<table cellspacing=0 cellpadding=2 width="98%">
+<thead>
+	<tr class="row_small" style="font-weight:bold">
+	<td class="hidden-xs" style="min-width: 35px;">Pos.</td>
+	<td><% $C->prop('prod_name') %></td>
+	<td style="text-align:right; padding-right:20px"><% $C->prop('mail_item_count') %></td>
+	<td class="hidden-xs">Art No</td>
+	<td class="hidden-xs">RA</td>
+	<td style="text-align:right; padding-right:20px"><% $C->prop('mail_unit_price') %></td>
+	<td></td>
+	<td nowrap style="text-align:right"><%$C->prop('price')%> <% $odat->{currency} %></td>
+	</tr>
+</thead>
+
+% while(my $row = $A->get_order_positions()) {
+%	my ($is_prozone, $token, $company_id) = @{$C->query("select id, token, company_id from campaign_data where id=$row->{campaign_id}")};
+%
+%	my $options       = $A->get_basket_options_by_order_pos(order_pos_id=>$row->{id});
+%	my @option_ids    = @{$options->{option_ids}};
+%	my @option_refs   = @{$options->{option_refs}};
+%	my @option_names  = @{$options->{option_names}};
+%       my @option_prices = @{$options->{option_prices}};
+%
+%	my $total_line = $row->{price_orig_current} * $row->{count};
+%	$subtotal += $total_line;
+%
+%	my $company_name = '';
+%	if ($is_prozone) {
+%		$company_name = $C->query("select name from companies where id=$company_id")->[0];
+%	}
+	<tr valign="top" class="row_small">
+	<td class="hidden-xs" style="color:#b1b1b1"><% $row->{position} %></td>
+	<td><b><% $C->web_enc($row->{title}) %></b><br>
+%		if ($is_prozone) {
+			<b>Pro-Zone:</b> <% $company_name %><br>
+%		}
+
+<%doc>
+%		for (my $i=0; $i < $#option_ids + 1; $i++) {
+			<% $option_names[$i] %><br>
+%		}
+</%doc>
+
+	</td>
+	<td style="text-align:right; padding-right:20px"><% $row->{count} %></td>
+	<td class="hidden-xs" style="padding-right:20px"><% $row->{art_no} %></td>
+	<td class="hidden-xs" style="padding-right:20px"><% $row->{RA} %></td>
+	<td style="text-align:right; padding-right:20px"><% $C->decimal_mark($row->{price_orig_current}) %></td>
+	<td style="padding-right:20px"><small><% $row->{order_discount_perc} ? "-$row->{order_discount_perc}%" : '' %></small></td>
+	<td style="text-align:right"><% $C->decimal_mark($total_line) %></td>
+	</tr>
+
+%	for (my $i=0; $i < $#option_ids + 1; $i++) {
+	<tr valign="top" class="row_small">
+		<td class="hidden-xs" style="color:#b1b1b1"><% $row->{position} %>.<% $i+1 %></td>
+		<td><b><% $option_names[$i] %></b></td>
+		<td style="text-align:right; padding-right:20px"><% $row->{count} %></td>
+		<td><% $option_refs[$i] %></td>
+		<td stylx="text-align:right; padding-right:20px">&mdash;</td>
+		<td style="text-align:right; padding-right:20px"><% sprintf('%.2f', $option_prices[$i]) %></td>
+		<td></td>
+		<td style="text-align:right"><% sprintf('%.2f', $option_prices[$i] * $row->{count}) %></td>
+	</tr>
+%	}
+% }
+
+<tr class="row_small">
+	<td class="hidden-xs" style="color:#b1b1b1"><% $odat->{positions} + 1 %></td>
+	<td colspan="3"><% $ship_meth_hr_map{$odat->{ship_meth}} || "* $odat->{ship_meth} *" %> exkl. <% $odat->{vat_rate} %> % VAT</td>
+	<td class="hidden-xs"></td>
+	<td colspan="2"></td>
+	<td style="text-align:right">
+		<% sprintf('%.2f', $shipping_net) %>
+	</td>
+</tr>
+
+% $subtotal = $odat->{amount_incl_vat} - $odat->{tax_amount} - $shipping_tax;
+
+<tr>
+	<td class="hidden-xs"></td>
+	<td colspan="3">Subtotal</td>
+	<td class="hidden-xs"></td>
+	<td colspan="2"></td>
+% #	<td style="text-align:right"><% $C->decimal_mark( $odat->{basket_total_incl_shipping_rounded} ) %></td>
+	<td style="text-align:right"><% $C->decimal_mark( $subtotal ) %></td>
+</tr>
+
+<tr>
+	<td class="hidden-xs"></td>
+	<td colspan="3"><% $C->prop('vat') %></td>
+	<td class="hidden-xs"></td>
+	<td></td>
+	<td></td>
+	<td style="text-align:right"><% $C->decimal_mark($odat->{tax_amount} + $shipping_tax) %></td>
+</tr>
+
+% if ($odat->{voucher_id}) {
+<tr>
+	<td></td>
+	<td colspan="6">Voucher</td>
+	<td style="text-align:right">-<% sprintf('%.2f', $odat->{voucher_value}) %></td>
+</tr>
+% }
+
+<tr style="font-weight:bold;">
+	<td class="hidden-xs"></td>
+	<td colspan="3"><% $C->prop('mail_total_incl_tax') %></td>
+	<td class="hidden-xs"></td>
+	<td></td>
+	<td></td>
+	<td style="text-align:right; text-decoration-line: underline; text-decoration-style: double;">
+		<% $C->decimal_mark( $odat->{amount_incl_vat} ) %>
+	</td>
+</tr>
+
+</table>
+
+<hr noshade size="1" align="left" style="width:98%" />
+% if ($odat->{remarks}) {
+	<p><b>Kunden-Bemerkerung:</b><br>
+	<% $odat->{remarks} %></p>
+% }
+<p>
+Details: <a 
+href="https://<%$C->{CONFIG}->{HTTP_HOST}%>/admix.html?func=orders&id=<%$order_id%>">https://<%$C->{CONFIG}->{HTTP_HOST}%>/admix.html?func=orders&id=<%$order_id%></a>
+</p>
+<br />

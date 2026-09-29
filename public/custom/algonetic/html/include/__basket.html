@@ -1,0 +1,240 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C         = $s{C};
+	my $A         = $s{A};
+	my $vat_col   = $s{vat_col};
+	my $add_vat   = $s{add_vat} || 0;
+	my $img_max_w = $s{img_max_w};
+	my $mode      = $s{mode};
+	my $debug     = $s{debug};
+
+	my $bsk_itms     = $A->get_basket_items_v2();
+	my $basket_items = $bsk_itms->{items};
+
+	$A->{bsk_itms__item_count} = $bsk_itms->{item_count};
+
+	my $total     = 0.000;
+	my $col_count = 7;
+
+	$col_count-- if $mode eq 'checkout';
+	$col_count-- if $s{hide_img};
+	$col_count-- unless $vat_col;
+
+	$A->{bsk__colspan} = $col_count;
+</%init>
+<thead>
+<tr class="well">
+% unless ($s{hide_img}) {
+	<th></th>
+% }
+	<th style="text-align:center; margin-left:10px; margin-right:10px"><% $C->prop('count') %></th>
+	<th><% $C->prop('product') %>
+%		if ($debug) {
+			<br>This: <code class="font-weight-normal">custom/algonetic/html/include/__basket.html</code> / Mode: <code class="fs--17"><% $mode %></code> /
+			Lightbox <% $s{lightbox} || 0 %><br>
+			<code>$bsk_itms = $A-&gt;get_basket_items_v2()</code><br>
+			<tt class="font-weight-normal text-green-800 fs--13">$basket_items = $bsk_itms->{items};<br>
+				foreach my $data (@{ $basket_items }) { ... }</tt>
+%		}
+	</th>
+%  if ($vat_col) {
+	<th style="text-align:center">MwSt.</th>
+%  }
+	<th class="hidden-md-down" style="text-align:right"><% $C->prop('price_p_piece') %></th>
+	<th style="text-align:right" nowrap>Preis <% $C->{CONFIG}->{default_curr} %></th>
+%  if ($mode eq 'basket') {
+	<th></th>
+%  }
+</tr>
+</thead>
+% foreach my $data (@{ $basket_items }) {
+%	my $d        = $data->{pdata};
+%	my $line_tot = $data->{count} * ($data->{price_active} + $data->{upsell});
+%	   $line_tot = $data->{count} * ($data->{price} + $data->{upsell}) if $add_vat;
+%	my $bask_det = $A->get_active_basket_details(basket_id=>$data->{basket_id});
+%	my $bsk_arr  = $bask_det->{array};
+%	my $opt_avail = $A->get_opt_from_product( $data->{prod_id} );
+%	my $details  = $A->get_basket_details($data->{basket_id});
+%	   $total    += $line_tot;
+	<tr>
+% unless ($s{hide_img}) {
+	<td style="width:7%">
+		<a href="/product.html?id=<% $data->{prod_id} %>"><img class="img-fluid mw-60 mt-2 ml-2"
+			style="max-width:<% $s{img_max_w} %>; min-width:<% $s{img_min_w} %>"
+				src="<% $data->{pdata}->{image}->{url_thmb} %>"></a>
+	</td>
+% }
+	<td class="pt-3" style="text-align:center;" nowrap>
+%  if ($mode eq 'basket') {
+		<button type="button" class="btn btn-sm rounded-circle btn-soft btn-light b-0 mb-0 text-dark hidden-xs-down"
+			onclick="icount_sub_91029181(<% $data->{basket_id} %>)"><i class="fi fi-minus"></i></button>
+		<b><% $data->{count} %></b>
+		<button type="button" class="btn btn-sm rounded-circle btn-soft btn-light b-0 mb-0 text-dark hidden-xs-down"
+			onclick="icount_add_91029181(<% $data->{basket_id} %>)"><i class="fi fi-plus"></i></button>
+%  }
+%  else {
+		<b><% $data->{count} %></b>
+%  }
+	</td>
+
+	<td class="pt-2">
+%		if ($d->{discount_perc}) {
+			<div class="float-right hidden-md-down" style="margin-left:10px">
+				<span style="color:red">Aktion <% sprintf('%.0f', $d->{discount_perc}) %> %</span>
+			</div>
+%		}
+		<span class="fs--19 font-weight-bold"><% $A->shorten_title($d->{title}, 50) %></span><br />
+%	unless ($s{hide_subdsc}) {
+%		(my $desc_short = $A->shorten_title($d->{description}, 60)) =~ s/<[^>]*>//gs;
+		<small><% $desc_short %> von <% $data->{pdata}->{brand} %></small><br />
+%	}
+%	if ($debug) {
+		<br />DN309052: <% $#{ $bsk_arr } + 1 %> Options have been selected.<br>
+		<span class="fs--14 text-green-800">
+%		foreach (sort keys %{$data}) {
+%			next if /^pdata$/ or /^count$/;
+			&rarr; <% $_ %> = <b><% $data->{$_} %></b><br>
+%		}
+%		foreach (sort keys %{$data->{pdata}->{image}}) {
+%			next if /^rc$/ or /^file$/;
+			[ pdata / image ] &middot; <% $_ %> = <b><% $data->{pdata}->{image}->{$_} %></b><br>
+%		}
+		</span>
+%		foreach (sort keys %{ $bask_det->{feat_id} }) {
+			[ feat_id ] &middot; Opt-ID <% $_ %><br>
+%		}
+%		foreach (sort keys %{$opt_avail}) {
+			[ opt_avail ] &middot; <a href="/adm_options.html?id=<% $_ %>">Opt-ID <% $_ %></a>
+%				unless ( $bask_det->{feat_id}->{ $_ }  ) {
+					&ndash; Unselected
+%				}
+			<br>
+%		}
+%	}
+%    if (@{$bsk_arr}) {
+	<table class="table table-sm mb-0" style="margin-top:8px; XXbackground-color:lightgreen">
+%	foreach my $bskdet (@{$bsk_arr}) {
+		<tr>
+		<td style="padding-left:0px; width:25%" clasx="borderless" nowrap><% $A->shorten_title($bskdet->{label}, 20) %>:</td>
+		<td style="padding-left:0px" nowrap><% $bskdet->{subdesc} || $bskdet->{ref} %>
+%			if ($debug) {
+				<div class="mt-2" style="line-height:115%; font-weight:normal">
+%				foreach (sort keys %$bskdet) {
+					[ bskdet ] &middot; <% $_ %> = <code><% $bskdet->{$_} %></code><br>
+%				}
+				</div>
+%			}
+		</td>
+		</tr>
+%	}
+	</table>
+%    }
+%	foreach my $opt_id (keys %{$opt_avail}) {
+%		unless ( $bask_det->{feat_id}->{ $opt_id }  ) {
+%			my $label = $C->query("select label from options_desc where option_id=$opt_id and lang='de'")->[0];
+			<span class="hidden-sm-down"
+				data-toggle="tooltip" data-placement="bottom"
+				data-original-title="Sie k&ouml;nnen bei diesem Ger&auml;t zus&auml;tzlich <% $label %> dazu bestellen!">
+				<i class="fi fi-squared-info fs--19 mr-1 animate-pulse"
+					style="animation-duration:1s; animation-iteration-count:3"></i>
+				M&ouml;gliche Zusatz-Option:
+			</span>
+%			if ($s{lightbox}) {
+				<a href="/basket.html"><% $label %></a>
+%			}
+%			else {
+%				my $opt_count = $C->query("select count(*) from options_feat where option_id=$opt_id and lang='de'")->[0];
+%				my $variants = "$opt_count Varianten";
+%				if ($opt_count == 1) {
+%					my $answ = $C->query("select `description` from options_feat where option_id=$opt_id and lang='de'")->[0];
+%					$variants = "$answ?";
+%				}
+			    <a href="#" class="js-ajax-modal" id="m309062"
+					data-href="/_ajax/modal_basket_option.html?bid=<% $data->{basket_id} %>&opt_id=<% $opt_id %>"
+					data-ajax-modal-size="modal-lg"
+					data-ajax-modal-centered="true"
+					data-ajax-modal-backdrop="static">
+					<span><% $label %>: <% $variants %></span>
+			    </a>
+%			}
+			<br>
+%		}
+%	}
+
+%  if ($debug > 1) {
+	<% $C->html_debug("<br>Basket-ID $data->{basket_id} / $data->{vat_perc} % VAT / $total / Add VAT: $add_vat, Mode: $mode") %>
+	<small>
+%	foreach (sort keys %{$data}) {
+%		next if $_ eq 'instime' or $_ eq 'basket_id' or $_ eq 'vat_perc';
+		<b><% $_ %></b> = <% $data->{$_} %><br>
+%	}
+	</small>
+%  }
+	</td>
+
+%  if ($vat_col) {
+	<td nowrap style="text-align:center; padding-tox:0"><small><% $data->{vat_perc} %> %</small></td>
+% }
+
+	<td class="hidden-md-down" style="text-align:right">
+%	  if ($add_vat) {
+		<% sprintf('%.2f', $data->{price}) %>
+%	  }
+%	  else {
+		<% $C->decimal_mark($data->{price_active}) %>
+%	  }
+%		if ($data->{upsell} > 0) {
+			<br />
+			+ <% $data->{upsell} %>
+%		}
+	</td>
+
+	<td class="float-right" stylx="">
+		<b><% $C->{CONFIG}->{round5} ? $C->round_amount($line_tot) : sprintf('%.2f', $line_tot) %></b>
+	</td>
+
+%  if ($mode eq 'basket') {
+	<td>
+		<div onclick="document.location='/basket.html?action=del&id=<% $data->{basket_id} %>'"
+			data-toggle="tooltip" data-placement="bottom"
+			data-original-title="Produkt entfernen"
+			style="cursor:pointer; color:red"><i class="fi fs--12 fi-close"></i>
+		</div>
+	</td>
+%  }
+
+	</tr>
+% }
+
+% unless ($s{hide_subtot}) {
+<tr class="well" style="background-color:#f8f8f8 !important">
+	<td colspan="<% $col_count %>" class="pt--12">
+		<div class="float-right mt-0" style="margin-right:<% $mode eq 'basket' ? '40px' : '0px' %>">
+%			# -- font-weight-medium // $C->decimal_mark( $C->{CONFIG}->{round5} ? $C->round_amount($total) : $total)
+			<span class="fs--19 font-weight-bold"><% $C->{CONFIG}->{default_curr} %>
+				<% $C->{CONFIG}->{round5} ? $C->round_amount($total) : sprintf('%.2f', $total) %>
+			</span>
+		</div>
+		<span class="mt-2 fs--19 p--5"><% $mode eq 'basket' ? 'Total' : 'Subtotal' %> <% $add_vat ? 'inkl. ' : 'zzgl.' %> <% $C->prop('vat') %></span>
+	</td>
+</tr>
+% }
+
+<script language=JavaScript>
+	function icount_add_91029181(basket_id) {
+		$('#ajx_autocalc_91029181').load('/ajx_basket_autocalc.html?callback=%2Fbasket.html&action=add&id=' + basket_id);
+	}
+	function icount_sub_91029181(basket_id) {
+		$('#ajx_autocalc_91029181').load('/ajx_basket_autocalc.html?callback=%2Fbasket.html&action=sub&id=' + basket_id);
+	}
+</script>
+
+<div id="ajx_autocalc_91029181"></div>
+
+<%doc>
+	Documentation:
+
+	https://docs.ch2.be/w/publigate/basket
+	https://docs.ch2.be/w/publiate-tech/seamless-integration
+</%doc>

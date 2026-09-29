@@ -1,0 +1,131 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $perm     = $args{perm};
+	my $prod_id  = $args{prod_id};
+	my $prd      = $args{prd};
+	my $public   = $args{public}; # -- 02Jul2024
+	my $fls      = $args{fls};
+	my $debug    = $args{debug};
+
+	my $xtra_imgs = $args{extra_imgs};
+</%init>
+<div class="portlet-body">
+
+	<p class="float-end font-weight-bold">
+%		if ($args{option_check} > 0) {
+			<span class="font-weight-normal">
+			<a href="/adx/options.html?open=<% $args{option_check} %>">Main Option-ID <% $args{option_check} %></a>
+%			if ($perm->{is_devel}) {
+				&middot; <a href="/admix.html?func=options&id=<% $args{option_check} %>">Old Edit</a>
+%			}
+			</span>
+%		}
+%		else {
+			*** Error: <% $args{option_check} %>
+%		}
+		&middot; [ Edit <a href="/adm_edit_product.html?id=<% $prod_id %>">Prod-ID <% $prod_id %></a> ]
+	</p>
+
+	<h3 class="fs--25"><% $prd->{title} %></h3>
+	<h3
+	class="fs--20"><code>$A-&gt;get_product_v2( id=&gt;<a href="dev-get-product.html?prod_id=<% $prod_id %>"><% $prod_id %></a>, public=&gt;<a href="dev-get-product.html?prod_id=<% $prod_id %>&public=2"><% $public %></a> )</code></h3>
+	<p>[ _rc = "<b><% $prd->{_rc} %></b>" <% $prd->{msg} %> <% $prd->{_msg} %> ]</p>
+%	if ($prd->{pfeat}->{"-001\t_exclude\ttitle"}) {
+		<h4 class="fs--17"><% $prd->{pfeat}->{"-001\t_exclude\ttitle"} %></h4>
+%	}
+
+	<div class="row">
+
+	<div class="col-6">
+	<table class="table table-sm table-hover mt-0 border">
+%	foreach (sort keys %{$prd}) {
+%		next unless length( $prd->{$_} );
+%		next if $_ eq 'currency' or $_ eq '_version' or /^p?feat$/ or /^\_.+/ or $_ eq 'title' or /^categs$/;
+		<tr>
+		<td><b><% $_ %></b></td>
+		<td>
+%			if ($_ eq 'desc_long' or $_ eq 'description') {
+%				(my $desc = $C->shorten_title($prd->{$_}, 40)) =~ s/\</&lt;/g;
+				<% $desc %>
+%			}
+%			elsif ($_ eq 'title_enc') {
+				<% $prd->{$_} %> &middot; <small>(<% length($prd->{$_}) %> Zeichen)</small>
+%			}
+%			elsif ($_ eq 'image') {
+				&bull; <% $prd->{image}->{url} %> <small> &larr; Hauptbild</small><br>
+%				foreach my $ximg (sort @{ $xtra_imgs->{pics} }) {
+					&bull; /<% $ximg %><br>
+%				}
+				<table class="table table-sm mb-0">
+%				foreach (sort keys %{ $prd->{image} }) {
+%					next if $_ eq 'rc';
+					<tr>
+						<td><% $_ %></td>
+						<td><code><% $prd->{image}->{$_} %></code></td>
+					</tr>
+%				}
+%				foreach my $ximg (sort @{ $xtra_imgs->{pics} }) {
+%					my $core_elem = '';
+%					if ($ximg =~ /^produkte\/p$prod_id\_(.+)\_large\.+/) {
+%						$core_elem = $1;
+%					}
+					<tr style="line-height:0.66">
+					<td class="pt-2 pb-0 fs--14" nowrap><a href="/<% $ximg %>"><% $core_elem %></a></td>
+					<td class="fs--14 pb-1">
+						<span class="float-end pt-0">
+		<a href="/adm_db_edit.html?table=products_feat&wcl=product_id%3D<% $prod_id %>+AND+featname%3D%27_image%27+AND+featkey%3D%27<% $core_elem %>%27"><i
+							class="fi fi-pencil"></i></a>
+						</span>
+					</td></tr>
+%				}
+				</table>
+%			}
+%			else {
+				<% $prd->{$_} %>
+%			}
+		</td>
+		</tr>
+%	}
+	</table>
+	</div>
+
+%	# --------------------------------------------------------------------------------------------------
+	<div class="col-6">
+
+	<div class="float-end">
+		<table class="table table-sm table-hover mt-0 border">
+%		foreach (sort keys %{$prd->{feat}}) {
+%			my ($ord, $label, $ref, $id) = split /\t/;
+			<tr>
+			<td class="font-weight-bold"><% $label %></td>
+			<td clasx="font-weight-bold"><% $ref %></td>
+			<td><a href="/adm_db_edit.html?table=products_feat&wcl=id%3D<% $id %>"><i class="fi fi-pencil"></i></a></td>
+			<td><code><% $prd->{feat}->{$_} %></code></td>
+			</tr>
+%		}
+		</table>
+
+		<h4 class="fs--17 mb-3 font-weight-bold"><tt>$prd-&gt;{pfeat}</tt></h4>
+		<table class="table table-sm table-hover mt-0 border">
+%		foreach (sort keys %{$prd->{pfeat}}) {
+			<tr>
+			<td>"<code><% $_ %></code>"</td>
+			<td class="font-weight-bold"><% $prd->{pfeat}->{$_} %></td>
+			</tr>
+%		}
+		</table>
+
+		<h5>File(s)</h5>
+%		foreach (@{ $fls->{files} }) {
+			&bull; <a href="/produkte/docs/<% $_ %>"><% $_ %></a><br>
+%		}
+	</div>
+
+	</div>
+
+	</div>
+
+</div>

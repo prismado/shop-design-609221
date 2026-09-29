@@ -1,0 +1,29 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+	my $caller = $args{caller};
+	my $lang  = $args{lang} || 'de';
+
+	# -- Ajax-Link: CSS-Klasse "js-ajax"
+</%init>
+<style>
+	.eHnuJD path,.eHnuJD circle{fill:#e60021;}
+</style>
+<ul class="nav flex-column" style="border: 3px solid black;">
+
+% if ($caller eq 'account-settings') {
+	<& ../include/inc_left_nav_account.html, perm=>$perm, C=>$C, A=>$A &>
+% }
+% else {
+	<& ../include/inc_left_nav_products_dark.html, lang=>$lang, C=>$C, A=>$A &>
+% }
+
+<li class="nav-item"><a class="nav-link js-ajax" style="color:#a8a8a8;" href="/prozone.html"><i class="fi fi-users"></i><b>PRO-Zone</b></a></li>
+
+<& ../include/inc_left_nav_about_dark.html, C=>$C, A=>$A &>
+
+</ul>

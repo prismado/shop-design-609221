@@ -1,0 +1,84 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $id   = $args{id};
+
+	my $d           = $A->get_product($id);
+	my $lang        = 'de';
+	my $aktionPreis = $d->{price_incl_vat} != $d->{price_orig_incl_vat} ? 1 : 0;
+	my $in_basket   = $C->query("select id FROM basket WHERE sid=$args{SID} AND prod_id=$id")->[0];
+	my $sold_out    = $d->{condition} eq 'SO' && $d->{count} < 1 ? 1 : 0;
+
+	my $has_mandatory_options = $C->query(qq~SELECT mandatory FROM voptions WHERE mandatory=1 AND
+		id IN (SELECT substr(featkey, 3, 8) from products_feat WHERE product_id=$id AND featkey LIKE '_o%') and lang='de'
+		LIMIT 1
+	~)->[0];
+	my $is_offer = $d->{price_incl_vat} != $d->{price_orig_incl_vat} ? 1 : 0;
+</%init>
+<a href="article-<%$id%>-<%$d->{title_enc}%>.html" class="iconProduct"><i class="fa fa-info-circle"></i></a>
+% if ($is_offer) {
+	<p><%sprintf('%.0f', $d->{discount_perc})%>%</p>
+% }
+% if ($sold_out) {
+	<p><% $C->prop('sold_out') %></p>
+% }
+
+% if ($in_basket) {
+	<span class="inBasket">
+		<i class="fa fa-shopping-cart"></i> <% $C->prop('in_basket') %>
+		<div data-toggle="tooltip" data-placement="bottom" data-original-title="<% $C->prop('del_frombasket') %>"
+			onclick="document.location='_del_from_basket.html?id=<%$in_basket%>'" class="float-right">&nbsp;<i class="fi fi-close"></i>
+		</div>
+	</span>
+% }
+
+<span style='display:none' class="inBasket" id="product_area_<%$id%>"><i class="fa fa-shopping-cart"></i> <% $C->prop('in_basket') %>
+	<div data-toggle="tooltip" data-placement="bottom" data-original-title="Aus Warenkorb entfernen"
+		onclick="document.location='_del_from_basket.html?id=<%$in_basket%>'" class="pull-right">&nbsp;<i class="fa fa-times"></i>
+	</div>
+</span>
+
+<div class="overlayBasket" id="ajx_bask_<%$id%>"></div>
+
+<a href="article-<%$id%>-<%$d->{title_enc}%>.html">
+	<picture id="pic<%$id%>" <%($in_basket or $sold_out) ? 'class="blur"' : ''%> alt="<%$d->{title}%>">
+		<img src="produkte/p<%$id%>_thmb.jpg" class="img-fluid" style="height:205px"
+			alt="image with artdirection" <%($in_basket or $sold_out) ? 'class="blur"' : ''%> id="pic<%$id%>" />
+	</picture>
+</a>
+
+<h5 class="mt-2" style="min-height:45px"><% $C->shorten_title($d->{title}, 42) %></h5>
+
+<p style="min-height:125px"><% $C->shorten_title($d->{description}, 150) %></p>
+
+% if ($d->{pfeat}->{"0000\t_redir_search\tREDIR"} or $d->{pfeat}->{"0000\t_redir_cat\tREDIR"}) {
+	<a class="btn btn-price"
+		href="article-<%$id%>-<%$d->{title_enc}%>.html">ab <%$C->decimal_mark($C->round_amount($d->{price_incl_vat}))%></a>
+		<a class="btn btn-basket" href="article-<%$id%>-<%$d->{title_enc}%>.html"><i
+			class="fa fa-chevron-circle-right"></i><% $C->prop('group_view') %></a>
+% }
+% else {
+%	# -- $is_offer ?
+	<div class="float-left" style="margin-top:10px">
+		<span class="lead"><b>CHF <% $d->{price_incl_vat} %></b></span>
+	</div>
+%	if ($is_offer) {
+		<span class="offerPriceFront">
+			<% $C->prop('offer_price_text') %> <%$is_offer ? $C->decimal_mark($d->{price_orig_incl_vat}) : ''%>
+		</span>
+%	}
+
+%	if ($has_mandatory_options) {
+		<a class="btn btn-basket" href="article-<%$id%>-<%$d->{title_enc}%>.html"><% $C->prop('buy_w_option') %></a>
+%	}
+%	else {
+	    <div class="float-right">
+		<a class="btn btn-secondary <%$in_basket or $sold_out ? 'disabled' : ''%>" data-toggle="modal"
+			onclick="addtobasket(<%$id%>, this)" <%$in_basket or $sold_out ? '' : 'href="#basketLightbox"'%>><i
+				class="fa fa-shopping-cart"></i><% $C->prop('basket') %></a>
+	    </div>
+%	}
+% }
+<br clear="all" />

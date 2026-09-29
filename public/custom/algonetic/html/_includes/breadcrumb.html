@@ -1,0 +1,59 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $p_bottom = $args{p_bottom} || 'pb-2';
+	my $debug    = $args{debug};
+
+	my $last_elem = $#{ $args{breadcrumb} };
+</%init>
+
+<style>
+.mybreadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.mybreadcrumb-item + .mybreadcrumb-item::before {
+  content: "/";
+  padding: 0 0.5rem;
+	color: black;
+}
+
+.mybreadcrumb a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.mybreadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.mybreadcrumb .active {
+  color: #6c757d;
+}
+</style>
+
+<nav aria-label="breadcrumb">
+
+<ol class="breadcrumb breadcrumb-sublime fs--15 <% $p_bottom %>">
+	<li class="breadcrumb-item mr-2"><a href="/" clasx="">Start</a></li> <span class="mr-2" style="color:black;">/</span>
+%	my $i = 0;
+%	foreach my $b (@{ $args{breadcrumb} } ) {
+%		if ($i++ == $last_elem) {
+			<li class="mybreadcrumb-item active">
+%				if ($b->[1]) {
+					<a href="<% $b->[1] %>"><% $b->[0] %></a>
+%				}
+%				else {
+					<% $b->[0] %>
+%				}
+			</li>
+%		}
+%		else {
+			<li class="mybreadcrumb-item"><a href="<% $b->[1] %>"><% $b->[0] %></a></li>
+%		}
+%	}
+</ol>
+
+</nav>

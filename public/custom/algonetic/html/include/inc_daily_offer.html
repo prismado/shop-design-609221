@@ -1,0 +1,35 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	# -- Created: 05Dec2024
+
+	my $A = $args{A};
+	my $C = $args{C};
+
+	my $hide_prices = $args{hide_prices};
+
+	my $daily_cat = $A->get_daily_offer_categ()->{id};
+</%init>
+
+<center>
+	<h4 class="mt-5	mb-3 fs--17">
+		<a class="text-dark" href="/products/daily-offer/<% $daily_cat %>">Weitere Vorschl&auml;ge: Unsere Tagesangebote</a>
+	</h4>
+</center>
+
+<div class="d-flex justify-content-center">
+
+	<div class="row	text-center"> 
+
+%		my $sth	= $C->{dbh}->prepare("select id, title,	extra from vproducts where cat_id=$daily_cat and lang='de'");
+%		   $sth->execute();
+
+%		while(my $r = $sth->fetch()) {
+%			my ($id, $title, $extra) = @{$r};
+			<div class="text-center">
+				<& inc_render_prod.html, id=>$id, hide_prices=>$hide_prices, SIx=>0, A=>$A, C=>$C &>
+			</div>
+%		}
+	</div>
+
+</div>

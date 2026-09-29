@@ -1,0 +1,35 @@
+<%init>
+	use ScreenPoint::Core;
+
+	# -- Created: 30Oct2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	my $cgi = $C->{CGI};
+
+	my $id    = $cgi->param('id') + 0;
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+
+	my @vars = ();
+	foreach ($cgi->all_parameters) {
+		push(@vars, "$_ = " . $cgi->param($_));
+	}
+
+	my $errstr = '';
+
+	$C->{dbh}->do(qq~
+		delete	from products_feat
+		where	product_id=$id and featname='_exclude' and featkey IN ('OP_ALERT', 'OP_RECOMM')
+	~)
+		or ($errstr = $DBI::errstr);
+
+	if ($errstr) {
+		$m->out("Error: $errstr");
+	}
+	else {
+		$C->create_toast_note(body=>"OP Alert removed " . join "<br>\n", @vars);
+		$m->redirect("edit-product.html?id=$id");
+	}
+</%init>

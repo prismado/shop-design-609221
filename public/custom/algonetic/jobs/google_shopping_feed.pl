@@ -1,0 +1,1 @@
+../../../_systex/google_shopping_feed.pl

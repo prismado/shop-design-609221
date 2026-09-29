@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $title = $args{title} || 'Sub Title X';
+	my $icon  = $args{icon}  || 'mollecules';
+	my $image = $args{image} || 'demo_computer_1.jpg';
+</%init>
+<div class="col-12 col-lg-4" stylx="height:550px">
+  <div class="p-3 border" style="background-color:white; XXheight:580px">
+
+	<img class="img-fluid mb-2" src="/assets/images/<% $image %>" style="min-width:100%">
+
+	<h2 class="fs--20 text-dark mt-3 mb-4">
+		<i class="fi fi-<% $icon %> mr-2"></i> <% $title %>
+	</h2>
+
+	<div class="h--100 scrollable-vertical p--2 roundex ml--n5"
+		style="min-height:230px; padding-bottom:90px !important; scrollbar-color: #eaeaea #f0f0f0; scrollbar-width:thin">
+
+	        <p><% $args{text} || '* No text *' %></p>
+
+	</div>
+
+  </div>
+</div>

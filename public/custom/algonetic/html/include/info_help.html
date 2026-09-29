@@ -1,0 +1,29 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $lang  = $args{lang};
+
+	my $prp_id = $C->query("select id from properties where `key`='content_de' and page LIKE '%\/html\/info_help' limit 1")->[0];
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span><% $C->txt('about', $lang) %></span>
+</div>
+</%doc>
+
+<div class="portlet-body p-3 bg-white mt--n10">
+
+%	if ($args{edit_mode}) {
+		<div class="float-end">
+			<a href="/adm_property.html?id=<% $prp_id %>"><i class="fi fi-pencil fs--25 animate-pulse"></i></a>
+% # XX			<a href="/adm_properties.html?filter=content"><i class="fi fi-pencil fs--25 animate-pulse"></i></a>
+		</div>
+%	}
+
+	<% $C->prp('content') %>
+
+</div>

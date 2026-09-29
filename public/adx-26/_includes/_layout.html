@@ -1,0 +1,44 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Layout</span>
+</div>
+
+<div class="portlet-body">
+
+% #	<a href="/_do.html">XX</a>
+
+	<ol>
+		<li><% ${ $A->modal( label=>'Modal 1', url=>'/adx/_ajax/modal_foo.html?css_id=402171_18', css_id=>'402171_18') } %><br>
+			${ $A->modal( label=&gt;'Modal 1', url=&gt;'/url', css_id=&gt;'tbd' ) }</li>
+		<li><% ${ $A->modal( label=>'Modal 2', url=>'/adx/_ajax/modal_bar.html?id=4321&css_id=402171_19&foxi=932171-321', css_id=>'402171_19') } %></li>
+	</ol>
+
+	<& inc_layout_component.html, comp=>'sample_modal', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'sample_modal_ajax', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'_sample_image_label', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'_sample_image_square', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'_sample_image_and_text_mini', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'_sample_image_and_text', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'_sample_carousel', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'sample_grid_cards', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'inc_view_more_less', C=>$C &>
+
+	<& inc_layout_component.html, comp=>'_sample_ajax_load', C=>$C &>
+
+	<& xx_typography.html &>
+</div>

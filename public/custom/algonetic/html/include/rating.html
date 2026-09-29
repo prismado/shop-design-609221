@@ -1,0 +1,44 @@
+<%init>
+	use utf8; # -- 06Jan2025
+
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	my $cur_rating  = $C->get_property('506241_g_rating', '_core', 'sys');
+</%init>
+<style>
+.star-wrapper {
+    font-size: 15px; /* Grösse der Sterne */
+    color: lightgray; /* Farbe der Umrisse */
+    position: relative;
+}
+
+.full-stars {
+	color: #e47700;
+}
+
+.half-star {
+    position: relative;
+    display: inline-block;
+    color: lightgray; /* Standard-Farbe der Umrisse */
+}
+
+.half-star::before {
+    content: '★';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    overflow: hidden;
+	color: #e47700; /* Farbe für den halben Stern */
+}
+</style>
+
+<div class="float-right mr-4 hidden-sm-down">
+	<a href="https://www.google.com/storepages?q=auctionline.ch&c=CH&so=NEWEST" target="_blank" class="text-dark">
+	<div class="w-full"><img alt="Google-Bewertung" title="Google-Bewertung" src="/assets/images/logo/Google-506-242.svg"> <% $cur_rating %>
+		<span class="star-wrapper full-stars">★★★★</span>
+		<span class="star-wrapper half-star" style="margin-left:-3px">★</span>
+	</div>
+	</a>
+</div>

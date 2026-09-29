@@ -1,0 +1,77 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+</%init>
+<div class="row no-gutters">
+
+	<div class="col-6 col-md-3 p--0">
+		<figure class="overflow-hidden text-center clearfix d-block m-0 position-relative">
+			<a href="niche.classifieds-item.html" class="text-decoration-none">
+				<img class="img-fluid lazy"
+					src="demo.files/images/unsplash/products/barrett-ward-cOJgO4Zzs-w-unsplash-min.jpg" alt="..." data-loaded="true">
+			</a>
+		</figure>
+
+		<div class="clearfix pt-2 hidden-md-down">
+			<label class="form-checkbox form-checkbox-danger m-0">
+				<input type="checkbox" name="checkbox_p">
+				<i></i> Compare 1
+			</label>
+			<a href="#!" class="btn btn-sm m-0 p-0 text-muted">
+				<i class="fi fi-heart-slim float-start fs--18"></i>
+				<span class="d-inline-block">Save</span>
+			</a>
+		</div>
+	</div>
+
+	<div class="col-6 col-md-3 order-xs-2 order-md-3 order-lg-3 p--0">
+		<span class="btn btn-sm btn-block bg-primary text-white text-center mb-2 fs--14 d-none d-lg-block">
+			<i class="fi fi-star"></i> Featured
+		</span>
+
+		<ul class="bg-light h-100-xs p-3 list-unstyled rounded mb-2 fs--15 text-muted">
+		<li class="clearfix"><i class="fi fi-check float-start"></i> good condition</li>
+		<li class="clearfix"><i class="fi fi-check float-start"></i> refund</li>
+		<li class="clearfix"><i class="fi fi-check float-start"></i> lorem</li>
+		<li class="clearfix"><i class="fi fi-close float-start"></i> ipsum </li>
+		</ul>
+		<a href="#!" class="btn btn-sm btn-block btn-warning fs--14 m-0 d-none d-lg-block">
+			<i class="fi fi-phone"></i> Contact Seller
+		</a>
+	</div>
+
+	<div class="col-12 mt-3 d-block d-sm-none"><!-- mobile spacer --></div>
+
+	<div class="col-12 col-md-6 order-xs-3 order-md-2 order-lg-2 p-0">
+		<div class="px-3 p-0-xs">
+			<h2 class="fs--18 mb-0">
+				<a href="niche.classifieds-item.html" class="text-danger">
+					Lorem ipsum dolor sit amet adipiscium
+				</a>
+			</h2>
+
+			<p class="m-0">
+			<span class="d-block fs--14">
+				Merc c180 avantgarde new model 2015. unregistered. japan. local ap holder. white ...
+			</span>
+			<span class="d-block fs--20 mt-3 text-dark">
+				$158.95
+			</span>
+			</p>
+
+			<div class="clearfix d-block d-sm-none">				
+				<hr>
+				<label class="form-checkbox form-checkbox-danger">
+					<input type="checkbox" name="checkbox_p">
+					<i></i> Compare 2
+				</label>
+
+				<a href="#!" class="btn btn-sm m-0 p-0 text-muted">
+					<i class="fi fi-heart-slim float--start fs--18"></i>
+					<span class="d-inline-block">Save</span>
+				</a>			
+			</div>
+		</div>
+	</div>
+</div>

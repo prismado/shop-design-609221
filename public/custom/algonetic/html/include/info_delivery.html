@@ -1,0 +1,75 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm}; # -- $perm->{uid}: 0 or UID
+	my $lang  = $args{lang};
+
+	my $prop_id_general = $C->query(qq~select id from properties where `key`='delivery_text_general_$lang'~)->[0];
+	my $prop_id_status  = $C->query(qq~select id from properties where `key`='delivery_text_status_$lang'~ )->[0];
+	my $prop_id_returns = $C->query(qq~select id from properties where `key`='delivery_text_returns_$lang'~)->[0];
+
+	my $editcol = '#FCFCAB';
+</%init>
+<div class="portlet-body p-1 bg-white mt--n10">
+
+	<img src="/assets/images/delivery_dhl_algonetic_gen.svg" class="img-fluid ml-4 mb-3" style="transform:scaleX(1.15); max-width:28vw">
+
+	<div class="float-end mt--n10">
+		<button class="btn btn-outline-primary btn-sm btn-soft animate-pulse"
+			onclick="JavaScript:document.location='<% $args{referer} %>'">Zur&uuml;ck</button>
+	</div>
+
+%	if ($args{edit_mode}) {
+		<div class="float-end">
+			<a href="/adx/manage-property.html?area=delivery_text"><i class="fi fi-pencil"></i> &Uuml;bersicht</a>
+		</div>
+%	}
+
+	<h3 class="fs--25 mt-0 mb-0">Lieferung</h3>
+%	if ($args{edit_mode}) {
+		<table class="table" style="border:1px maroon solid; border-top:2px solid maroon">
+		<tr><td style="background-color:<% $editcol %> !important">
+			<div class="float-end">
+				<a href="/adm_property.html?id=<% $prop_id_general %>"><i class="fi fi-pencil"></i></a>
+			</div>
+			<% $C->txt('delivery_text_general', $lang) %>
+		</td></tr></table>
+%	}
+%	else {
+		<p class="mt-0 mb-4"><% $C->txt('delivery_text_general', $lang) %></p>
+%	}
+
+	<h3 class="fs--25 mt-5 mb-0">Lieferstatus</h3>
+%	if ($args{edit_mode}) {
+		<table class="table" style="border:1px maroon solid; border-top:2px solid maroon">
+		<tr><td style="background-color:<% $editcol %> !important">
+			<div class="float-end">
+				<a href="/adm_property.html?id=<% $prop_id_status %>"><i class="fi fi-pencil"></i></a>
+			</div>
+			<% $C->txt('delivery_text_status', $lang) %>
+		</td></tr></table>
+%	}
+%	else {
+		<p class="mt-0 mb-4"><% $C->txt('delivery_text_status', $lang) %></p>
+%	}
+
+	<h3 class="fs--25 mt-5 mb-0">R&uuml;ckgaben / Retouren (RMA-Antrag)</h3>
+%	if ($args{edit_mode}) {
+		<table class="table" style="border:1px maroon solid; border-top:2px solid maroon">
+		<tr><td style="background-color:<% $editcol %> !important">
+			<div class="float-end">
+				<a href="/adm_property.html?id=<% $prop_id_returns %>"><i class="fi fi-pencil"></i></a>
+			</div>
+			<% $C->txt('delivery_text_returns', $lang) %>
+		</td></tr></table>
+%	}
+%	else {
+		<p class="mt-0 mb-4"><% $C->txt('delivery_text_returns', $lang) %></p>
+%	}
+
+	<a href="/account-orders.html">Ihre Bestellungen</a>
+
+</div>

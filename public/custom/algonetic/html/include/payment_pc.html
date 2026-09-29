@@ -1,0 +1,98 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	use Digest::HMAC_MD5 qw(hmac_md5_hex);
+
+	my $order_id = $C->getSessData('order_id') + 0;
+	my $refno = $order_id;
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $total = $C->query("select amount_incl_vat FROM orders WHERE id=$order_id")->[0];
+	   $total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+	(my $total_no_dot = $total) =~ tr/\.//d;
+
+	my $msg = $C->{CGI}->param('msg');
+
+	my $merchantId = $C->{CONFIG}->{payment_gw_merchantId};
+	my $currency = 'CHF';
+
+	my $sign = '';
+	my $string = "$merchantId$total_no_dot$currency$refno";
+
+	if ($args{mode} eq 'test') {
+		my $key = '52951d43e8c403e4e8a510ff75ab743e1230c3cc61f0114ffb09adc367ab146ee09a83232861788e4a8a95d0f02a8c164b7c0f5cb6382f72c1c447e09e158608';
+		$key = '837460b764a6e36a0b9fae6bbc5cf833231b5e72246b722843ca46ba13a765527a63c023a646c5628ecaf562b23a3f9cb054dbf5f2d80dc2c26ed74f11f0f3bd' if $C->{CONFIG}->{payment_gw_merchantId} eq '1100018748';
+		my $key_pack = pack 'H*', $key;
+		$sign = hmac_md5_hex($string, $key_pack);
+	}
+	elsif ($C->{CONFIG}->{payment_gw_merchantId} eq '3000012515') { # --
+		$sign = '171103141507807064';
+	}
+</%init>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('postcard') %>-<% $C->prop('payment') %></h1>
+</div>
+
+<div id="checkoutBlock">
+
+<div id="stepWrapper">
+<div class="span3"><div class="stepBox"><span class="badge label-normal">1</span> <% $C->prop('order_finalize') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">2</span> <% $C->prop('order_overview') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-success">3</span> <% $C->prop('payment') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">4</span> <% $C->prop('confirmation') %></div></div>
+</div>
+
+<div id="checkoutContent">
+
+<div class="no-more-tables">
+<table class="table">
+          <thead data-title="Kreditkartenzahlung | <% $C->prop('order') %> <%$order_id%>" class="well">
+              <tr>
+              <th colspan="2"><% $C->prop('payment') %> | <% $C->prop('order') %> <%$order_id%></th>
+            </tr>
+          </thead>
+<tr><td colspan="2">
+
+<form id="paymentForm"
+	data-merchant-id="<%$merchantId%>"
+	data-amount="<%$total_no_dot%>"
+	data-currency="<%$currency%>"
+	data-refno="<%$refno%>"
+	data-language="<%$lang%>"
+	data-payment_host="<%$C->{CONFIG}->{HTTP_HOST}%>"
+	data-paymentmethod="PFC"
+	data-sign="<%$sign%>">
+
+<& summary.html, total=>$total, CORE=>$C, A=>$A &>
+
+<button class="btn btn-checkout" id="paymentButton"><% $C->prp('btn_continue_payment') %></button> <a class="btn btn-grey"
+		href="javascript:history.back()"><% $C->prop('btn_return') %></a>
+
+</form>
+
+</td></tr>
+</table>
+
+
+</div><!-- end no-more-tables   -->
+
+
+<script type="text/javascript">
+    $("#paymentButton").click(function () {
+        Datatrans.startPayment({'form': '#paymentForm'});
+    });
+</script>
+
+% if ($args{mode} eq 'test') {
+	<% $C->bootstrap_alert('<b>INFO</b>&nbsp;&nbsp;Testkarte: VISA 4003600000000014, Exp 12/2021 / CVV 123', 'success') %>
+% }
+
+</div> <!-- end productBlock -->
+</div> <!-- end checkoutBlock -->
+<br><br><br><br><br><br><br><br><br><br>
+</div> <!-- end checkoutContent -->

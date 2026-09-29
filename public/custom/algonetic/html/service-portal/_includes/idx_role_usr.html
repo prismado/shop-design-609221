@@ -1,0 +1,77 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+
+	my $stu = $C->{dbh}->prepare(q~select user_id, uname, email, substr(xkey, 17, 15), xval
+				from users_details, users u where xkey LIKE 'perm_is_service_%' and u.id=user_id
+				order	by 2~);
+	   $stu->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $s_cat_id = $perm->{is_service_user} || $perm->{is_service_manager} || $perm->{is_service_admin};
+
+	my @cat_ids = ();
+	push(@cat_ids, $s_cat_id);
+	my $prods = $A->get_products_by_cat_ids(\@cat_ids);
+</%init>
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+	<li class="nav-item">
+		<a class="nav-link active nav-link-remember" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">
+			<span class="float-start"><svg style="margin-bottom:0px !important;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big w-4 h-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg></span>
+			Ihr Inventar
+		</a>
+	</li>
+
+	<li class="nav-item">
+		<a class="nav-link nav-link-remember" ZZid="profile-tab" data-toggle="tab" href="#profile408251" role="tab" ZZaria-controls="profile" aria-selected="false">
+			<span class="float-start"><svg style="margin-bottom:0px !important;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pc-case w-12 h-12 mb-4 text-green-600"><rect width="14" height="20" x="5" y="2" rx="2"></rect><path d="M15 14h.01"></path><path d="M9 6h6"></path><path d="M9 10h6"></path></svg></span>
+			Neue Bestellung
+		</a>
+	</li>
+
+	<li class="nav-item">
+		<a class="nav-link nav-link-remember" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">
+			<span class="float-start"><svg style="margin-bottom:0px !important;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert w-12 h-12 mb-4 text-red-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg></span>
+			St&ouml;rungsmeldung
+		</a>
+	</li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+
+	<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+		<div clasx="p--10">
+			<& inc_inventory_usr.html, C=>$C, A=>$A, perm=>$perm &>
+		</div>
+	</div>
+
+	<div class="tab-pane fade" id="profile408251" role="tabpanel" ZZaria-labelledby="profile-tab">
+		<div clasx="p--10">
+			<& inc_store.html, cat_ids=>\@cat_ids, C=>$C, A=>$A, perm=>$perm &>
+		</div>
+	</div>
+
+	<div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+		<div class="p--15">
+			<p>Techniker kontaktieren</p>
+
+			<& inc_modal_link.html, label=>'<i class="fi fi-plus mr-2"></i> Erfassen',
+				url=>'/_ajax/modal_foo.html', size=>'md', class=>'btn btn-primary', C=>$C &>
+		</div>
+	</div>
+
+</div>
+
+<%doc>
+XXX:
+<br />
+<span class="float-end mt-5"><a class="link-muted fs--11" target="_blank"
+		href="https://claude.site/artifacts/d5289931-eb1e-44e6-a77d-b2e83c2f72bf">C-Entwurf: User</a>
+</span>
+/XXX
+</%doc>

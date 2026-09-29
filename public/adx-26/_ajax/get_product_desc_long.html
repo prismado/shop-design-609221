@@ -1,0 +1,19 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $id       = $cgi->param('id') + 0;
+	my $lang     = $cgi->param('lang') || 'de';
+	my $debug    = $cgi->param('debug');
+
+	$C->saveSessData('xlang', $lang);
+
+	my $txt = $C->query("select desc_long from products_desc where product_id=$id and lang='$lang'")->[0] || '* Leer *';
+</%init>
+<% $txt %>
+<%doc>
+	Created: 27Mar2024
+</%doc>

@@ -1,0 +1,15 @@
+<table class="table table-sm table-striped table-hover">
+% foreach (sort keys %ENV) {
+%	next if /pass/i or /^MOD\_PERL/ or /^GATEWAY/ or /DOCUMENT_ROOT/ or /STATUS/ or /^HTTP_CONNECTION$/ or $_ eq 'PATH' or /^SERVER\_/;
+%	next if /^REQUEST\_.+/ or $_ eq 'HTTP_COOKIE' or $_ eq 'HTTP_HOST' or /^REMOTE\_.+/ or /^d[be].+/ or /db_name/;
+%	next if $_ eq 'HTTP_X_FORWARDED_PROTO' or (/^HTTP\_SEC\_FETCH\_.+/ && $ENV{$_} eq 'none') or $_ eq 'HTTP_UPGRADE_INSECURE_REQUESTS';
+%	next if /^HTTP\_SEC\_FETCH\_(DEST|MODE)$/ or $_ eq 'HTTP_ACCEPT' or $_ eq 'HTTP_CACHE_CONTROL';
+%	next unless length($ENV{$_});
+	<tr>
+	<td><b><% $_ %></b></td>
+	<td nowrap><% $ENV{$_} %></td>
+	</tr>
+% }
+</table>
+
+<p><% $ENV{HTTP_COOKIE} %></p>

@@ -1,0 +1,273 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	# XXX $m->redirect('/_temporary_unavailable.html') unless $C->{dbh}; # -- 21Jul2026
+
+	my $lang      = $C->getSessData('_current_lang') || 'de';
+	my $debug     = $C->getSessData('debug') || 0;
+	my $perm      = $C->get_user_perm();
+
+	my $layout_test           = $C->{CGI}->param('layout_test');
+	my $min_height_scroll     = $C->{CGI}->param('min_height_scroll') + 0;
+	my $padding_bottom_scroll = $C->{CGI}->param('padding_bottom_scroll') + 0;
+	my $track_tag             = $C->{CGI}->param('pt');
+
+	my $is_mobile = $C->is_smartphone();
+	my $dark = $C->txt('sys_layout_dark_mode', 'sys') + 0;
+	my $dark_logo = 1 if $dark;
+
+	my $slogan    = $C->txt('slogan', $lang);
+	my $edit_mode = $C->getSessData('adm_edit_mode') + 0;
+
+	my %laytst = ();
+	if ($layout_test) {
+		my $promo_pos = $C->{CGI}->param('promo_pos') + 0;
+		foreach ($C->{CGI}->all_parameters) {
+			next unless /^laytst_(.+)/;
+			$laytst{$1} = $C->{CGI}->param($_);
+		}
+		$C->saveSessData('promo_pos', $promo_pos);
+	}
+
+	if ($track_tag) {
+		$C->start_tag_tracking( tag=>$track_tag );
+	}
+
+	my $slide_ids_ref = $A->slide_ids();
+	my $ticker_text   = $C->txt('ticker_text_top', $lang);
+	   $ticker_text   = '' if $ticker_text =~ /^\* .+/;
+
+	my $top_notch_status = $C->txt('content_top_notch_status', $lang) + 0;
+	my $top_notch_text   = $C->txt('content_top_notch', $lang);
+	my $top_notch_header = $C->txt('content_top_notch_header', $lang);
+	my $top_notch_footer = $C->txt('content_top_notch_footer', $lang);
+
+	my $conv_track_on  = $C->get_property('google_conv_tracking_on', '_global', 'sys');
+	my $prod_highlight = $A->get_product_highlights(shuffle=>$layout_test ? 0 : 1);
+	my $daily_offer    = $A->get_daily_offer_categ();
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title><% $C->{CONFIG}->{site_title} %> | <% $slogan %></title>
+%	if ($conv_track_on) {
+		<% $C->get_property('google_conv_tracking_head', '_global', 'sys') %>
+%	}
+	<meta name="description" content="<% $C->{CONFIG}->{site_title} %>, <% $C->{CONFIG}->{default_description} %>">
+	<meta name="keywords" content="<% $C->{CONFIG}->{default_keywords} %>" />
+	<& include/inc_header_seo.html, C=>$C &>
+% #	<& include/inc_cookie_consent.html &>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+%	unless ($is_mobile) {
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=<% $C->uri_esc($font_1) %>:wght@400&family=<% $C->uri_esc($font_2) %>:wght@400&display=swap">
+%	}
+	<link rel="shortcut icon" href="favicon.ico">
+	<style>
+		.top-notch {
+			background-color: #ff5b51;
+			color: white;
+			font-weight: bold;
+			padding: 3px; /* Adjust the padding to control the thickness of the top area */
+		}
+		.product-name {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.prism-limit-len-450-405041 {
+			max-width: 450px !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		p, td           { font-family: '<% $font_1 %>', sans-serif; color: #333; }
+		h5, h6, th      { font-family: '<% $font_1 %>', sans-serif; font-weight: bold; }
+		li, .breadcrumb { font-family: '<% $font_2 %>', sans-serif; }
+
+		<& include/inc_css.html &>
+	</style>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+%	if ($conv_track_on) {
+		<% $C->get_property('google_conv_tracking_body', '_global', 'sys') %>
+%	}
+%	if ($ticker_text or $top_notch_status) {
+		<div class="top-notch pt-1 mb--n2 p-0 z-index-100">
+%			if ($ticker_text) {
+			<marquee behavior="scroll" direction="left" scrollamount="3">
+				<span class="mr-5"><% $ticker_text %></span> <span class="ml-5"><% $ticker_text %></span>
+			</marquee>
+%			}
+%			if ($top_notch_status) {
+				<% $top_notch_header %>
+				<% $top_notch_text %>
+				<% $top_notch_footer %>
+%			}
+		</div>
+%	}
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, lang=>$lang, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+%			    if ($dark) {
+				class="aside-start aside-secondary bg-dark text-white aside-hide-xs d-flex flex-column h-auto">
+			<& _includes/sidebar_dark.html, perm=>$perm, lang=>$lang, ticker=>$ticker_text, dark_logo=>$dark_logo, top_notch=>$top_notch_status, A=>$A, C=>$C &>
+%			    }
+%			    else {
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm=>$perm, lang=>$lang, ticker=>$ticker_text, top_notch=>$top_notch_status, debug=>$debug, A=>$A, C=>$C &>
+%			    }
+			</aside>
+
+			<div id="middle" class="flex-fill" <% $debug > 1 ? 'style="border: 2px solid maroon"' : '' %>>
+				<div class="page-title shadow-xs">
+					<div class="float-end fs--13" style="color:#919191; margin-top:20px; margin-right:30px"
+						data-toggle="tooltip" data-placement="top" data-original-title="Schnelle Lieferung mit DHL und Tracking-Status!">
+						<center>
+						<a class="text-dark" href="/info-delivery.html">
+						<img src="/assets/images/logo/delivery" class="img-fluid" alt="DHL Express Lieferung"
+							width="80" height="40"
+							style="max-width:2.9vw; min-width:40px; height:auto;"><br>
+						<span class="hidden-md-down">Folge-Werktag</span>
+						</a>
+						</center>
+					</div>
+
+					<div class="float-end mr-3 fs--13 hidden-md-down" style="color:#919191; margin-top:15px"
+						data-toggle="tooltip" data-placement="top" data-original-title="Mind. 12 Monate Garantie!">
+						<center>
+						<a class="text-dark" href="/info-warranty.html">
+						<img src="/assets/images/logo/logo_warranty.svg" class="img-fluid" alt="Garantie-Siegel" style="max-width:1.8vw"><br>
+						<span>Garantie</span>
+						</a>
+						</center>
+					</div>
+
+					<div class="float-end mr-3 fs--13" style="color:#919191; margin-top:15px"
+						data-toggle="tooltip" data-placement="top" data-original-title="Eigene Lagerbest&auml;nde!">
+						<center>
+						<img src="/assets/images/logo/stock_icon.svg" class="img-fluid" alt="Eigene Lagerbest&auml;nde"
+							style="max-width:1.8vw; min-width:28px; height:auto;" width="28" height="28"><br>
+						<span class="text-dark hidden-md-down">Auf Lager</span>
+						</center>
+					</div>
+
+					<div class="float-end mr-5 fs--13 hidden-lg-down" style="color:#919191; margin-top:25px">
+						<img src="/assets/images/logo/logo_google-pay.svg" alt="G-Pay" class="img-fluid" style="max-width:4.0vw"><br>
+					</div>
+
+					<div class="float-end mr-1 fs--13 hidden-lg-down" style="color:#919191; margin-top:23px">
+						<img src="/assets/images/logo/logo_paypal.webp" class="img-fluid" alt="PayPal" style="max-width:2.8vw"><br>
+					</div>
+
+					<div class="float-end mr-1 fs--13 hidden-lg-down" style="margin-top:24px">
+				<img src="/assets/images/logo/twint-cropped.svg" alt="TWINT" style="min-width:4.2vw !important; max-width:3.5vw !important;"><br>
+					</div>
+
+					<div class="float-end mr-1 fs--13 hidden-lg-down" style="margin-top:23px">
+						<img src="/assets/images/logo/logo_postfinance.webp" class="img-fluid" alt="Postfinance" style="max-width:3.6vw"><br>
+					</div>
+
+					<div class="float-end mt-4 mr-1 fs--13 hidden-lg-down" style="color:#919191">
+						<img src="/assets/images/logo/logo-visa-mastercard.webp" class="img-fluid" alt="VISA MC" style="max-width:5.1vw"><br>
+					</div>
+
+					<h1 class="h5 mt--10 mb--10 font-weight-medium"><% $slogan %>
+%						if ($edit_mode) {
+							<a href="/adx/manage-property.html?area=slogan"><i class="fi fi-pencil ml-1"></i></a>
+							<code class="fs--15 ml-5">Lauftext</code> <a href="/adx/manage-property.html?area=ticker"><i
+								class="fi fi-pencil"></i></a>
+							<code class="fs--15 ml-4">Top-Notch</code>
+							<a href="#" class="js-ajax-modal"
+								data-href="/_ajax/modal_edit_top_notch.html"
+									data-ajax-modal-size="modal-xl"
+									data-ajax-modal-centered="true"
+									data-ajax-modal-backdrop="static">
+									<span><i class="fi fi-pencil"></i></span>
+							</a>
+%						}
+					</h1>
+					<span class="breadcrumb breadcrumb-sublime fs--15 font-weight-light text-blue-gray-400 pb-0">
+						<% $C->txt('sub_slogan', $lang) %>
+%						if ($edit_mode) {
+							<a href="/adx/manage-property.html?area=sub_slogan"><i class="fi fi-pencil ml-1"></i></a>
+%						}
+					</span>
+%					if ($#{ $slide_ids_ref } > -1) {
+						<& include/inc_carousel.html, slide_ids_ref=>$slide_ids_ref, C=>$C, A=>$A, perm=>$perm, XXis_mobile=>0, debug=>$debug &>
+%					}
+				</div>
+
+				<div class="row">
+					<div class="col-12 col-xl-10 mt--n20 mb-5 p-0">
+						<& _includes/index.html, C=>$C, A=>$A, perm=>$perm, is_mobile=>$is_mobile,
+							laytst=>\%laytst, edit_mode=>$edit_mode, prod_highlight=>$prod_highlight,
+							min_height_scroll=>$min_height_scroll, padding_bottom_scroll=>$padding_bottom_scroll,
+							lang=>$lang, debug=>$debug &>
+					</div>
+					<div class="col-xl-2 d-none d-xl-block">
+%						my $hl_index = $#{$prod_highlight->{ids}};
+%					    if ($hl_index < 0) {
+						<p class="fs--13">Aktuell keine Tagesangebote</p>
+%					    }
+%					    else {
+%						my $hl_id    = $prod_highlight->{ids}->[$hl_index]->{id};
+%						my $hl_link  = "/product/tagesangebot-limitiert/$hl_id";
+%						my $cond     = $prod_highlight->{ids}->[$hl_index]->{extra};
+%						my %cond_hr  = (1=>'Neu!', 2=>'Refurbished');
+						<h5 class="text-center mt-2">Tagesangebot</h5>
+						<p class="text-center fs--13 mb-2">
+							<a class="text-gray-800" href="/products/daily-offer/<% $daily_offer->{id} %>">Tagesangebote anzeigen</a>
+						</p>
+
+						<a href="<% $hl_link %>"><img class="img-fluid" alt="<% $prod_highlight->{ids}->[$hl_index]->{title_enc} %>"
+							src="/produkte/p<% $hl_id %>_large.<% $prod_highlight->{ids}->[$hl_index]->{ext_main_pic} %>"></a>
+						<h6><a class="text-dark text-decoration-none"
+							href="<% $hl_link %>"><% $prod_highlight->{ids}->[$hl_index]->{title} %></a></h6>
+
+						<p><span class="badge"><% $cond_hr{$cond} || "* $cond *" %></span></p>
+						<p class="fs--15"><% $prod_highlight->{ids}->[$hl_index]->{desc_keyw} %></p>
+					<p><big><b style="color:#ce3b48">CHF <% $prod_highlight->{ids}->[$hl_index]->{price_incl_vat_fmt} %></b></big><br>
+						statt CHF <s><% $prod_highlight->{ids}->[$hl_index]->{price_orig_incl_vat} %></s></p>
+						<p class="fs--15" style="color:#006622; font-size:0.85rem">
+							<i class="fi mdi-check fs--20"></i> <% $prod_highlight->{ids}->[$hl_index]->{count_product} %> St&uuml;ck an Lager
+						</p>
+						<& include/inc_add2basket.html, id=>$hl_id, p_inf=>$prod_highlight->{ids}->[$hl_index], C=>$C &>
+%					    }
+
+						<p class="mt-3 fs--15 font-weight-bold">Lieferung sp&auml;testens am folgenden Werktag</p>
+						<p class="mt-5 fs--11">
+							Die Swiss Solution Group AG gew&auml;hrt auf all ihren Occasions-Ger&auml;ten eine Garantie
+							mindestens von 12 Monaten ab Kaufdatum. 2 Jahre auf Neuger&auml;te.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+%	if ($debug > 1) {
+		<script src="assets/js/core.js"></script>
+%	}
+%	else {
+		<script src="assets/js/core.min.js" defer></script>
+%	}
+% #	<div id="page_js_files"><!-- specific page javascript files here --></div>
+
+	</body>
+</html>

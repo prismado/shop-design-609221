@@ -1,0 +1,31 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $perm = $args{perm};
+
+	$A->adjust_basket_count($args{SID}); # -- Fix over-ordered products in basket
+
+	if ($C->{CONFIG}->{minimum_amount_order} &&
+		$C->query("SELECT SUM(count * price) FROM basket WHERE sid=$args{SID}")->[0] < $C->{CONFIG}->{minimum_amount_order}) {
+		my $mini_amount = sprintf('%.2f', $C->{CONFIG}->{minimum_amount_order});
+		$C->saveSessData('app_msg', "Mindestbestellwert von $C->{CONFIG}->{default_curr} $mini_amount noch nicht erreicht");
+	}
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span><% $C->txt('instruction', $args{lang}, 'checkout') %>
+%		if ($perm->{is_devel}) {
+			<abbr title="page: checkout"><a href="/adm_properties.html?filter=instruction"><i class="fi fi-pencil ml-1"></i></a></abbr>
+%		}
+	</span>
+</div>
+</%doc>
+
+<& basket_data2.html, msg=>$args{msg}, rc=>$args{rc}, bsk=>$args{bsk}, gr_tot=>$args{gr_tot}, lang=>$args{lang}, perm=>$perm, C=>$C, A=>$A, debug=>$args{debug} &>
+
+% if ($args{debug}) {
+	<br clear='all' />
+	<tt>get_basket_total() = <%$A->get_basket_total()%></tt>
+% }

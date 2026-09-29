@@ -1,0 +1,101 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $addr = $A->get_address(1); # -- Owner Data
+	my $cgi = $C->{CGI};
+
+	my $msg = $C->{CGI}->param('msg');
+
+	$C->gen_captcha( pointsize => 31.5, fill => '#cccccc', background => '#f0f0f0' );
+	# $C->gen_captcha( pointsize => 31.5, fill => '#353535', background => '#f5f5f5' );
+</%init>
+<form name="contact_form" id="contact_form" action="#" method="post" class="ps-checkout-forms">
+% if ($msg) {
+	<b style='color:red'><%$msg%></b><br><br>
+% }
+
+ <div class="no-more-tables-responsive">
+ <table class="table">
+             <thead data-title="<%$C->prop('form_title_contact')%>" class="well">
+            <tr>
+              <th colspan="2"><%$C->prop('form_title_contact')%></th>
+            </tr>
+          </thead>
+
+
+ <tr>
+       <td colspan="2"> 
+		<select class="form-control col-md-2" name="contact_gender">
+                <option value="<%$C->prop('male')%>" SELECTED><%$C->prop('male')%></option>
+                <option value="<%$C->prop('female')%>"><%$C->prop('female')%></option>
+		</select>
+	</td>
+ </tr>
+
+  <tr>
+	  <td ><label  for="firstName"><% $C->prop('surname') %> <em>*</em></label>
+		<input id="contact_surname" type="text" class="required form-control" name="contact_surname"
+			value="<% $addr->{firstname} %>" placeholder="Peter" required>
+</td>
+<td>	    	<label  for="secondName"><% $C->prop('lastname') %> <em>*</em></label>
+			<input id="contact_name" type="text" class="required form-control" name="contact_name"
+				value="<% $addr->{lastname} %>" placeholder="Muster" required>			
+	</td>
+  </tr>
+
+ <tr>
+<td>	 	    <label  for="email"><% $C->prop('emailadress') %> <em>*</em></label>
+			<input id="contact_email" type="text" class="required input-large" name="contact_email"
+		value="<% $C->get_email($C->getUID()) %>" placeholder="example@example.com" required></td>
+<td>
+    	   <label for="tele"><% $C->prop('telephone') %></label>
+		<input id="contact_tel" type="text" class="input-large" name="contact_tel" value="<%$cgi->param('contact_tel')%>" placeholder="+41769669000"> </td>
+
+  </tr>
+ <tr>
+  <td colspan="2">
+	 	    <label  for="subject"><% $C->prop('subject') %> <em>*</em></label>
+       		 <input id="contact_subject" name="contact_subject" type="text" class="required input-large"  value="<%$cgi->param('contact_subject')%>">
+   </td>
+  </tr>
+  <tr>
+  <td colspan="2">
+	 	    <label ><% $C->prop('form_message') %> <em>*</em></label>
+
+		<textarea name="message" maxlength="500" style="width: 80%;" placeholder="Your Message *"><%$cgi->param('message')%></textarea>
+		<p><% $C->prop('letter_count') %>: <span class="charleft">500</span></p>
+  </td>
+  </tr>
+   <tr>
+  <td colspan="2">
+<label >Captcha <em>*</em></label>
+	<table style='background-color:#F5F5F5; margin-top:5px'>
+	<tr><td>
+	<img style='width:130px; height:auto;' title='Bildwort'
+	src="http<%($ENV{HTTPS} or $ENV{HTTP_X_FORWARDED_PROTO} eq 'https') ? 's' : ''%>://<%$C->{CONFIG}->{captcha_domain}%>/tmp/iword/iw<%$C->getSessData('captcha_ref')%>.gif">
+	</td></tr>
+	</table>
+
+% if ($cgi->param('bSubmit')) {
+	<span style='color:red'><% $C->prop('try_again') %></span>
+% }
+
+	<input type=text placeholder="Captcha"
+		style='margin-top:5px; font-weight:bold; width:102px; margin-right:9px' name="captcha"><br>
+
+ </td>
+  </tr>
+</table>
+<div class="checkbox checkbox-custom checkbox-circle">
+	<input type="checkbox" id="policy_check" required name="policy_check" value="accept">
+	<label for="policy_check"><% $C->prop('read_notes') %> <b><a target="_blanc" href="/info_datenschutz.html"><% $C->prop('privacy') %></a></b></label><br>
+</div>
+<br>
+<input type="hidden" name="bSubmit" value="1">
+<button id="contact_submit" class="btn btn-checkout" type="submit" namx="bSubmit"><% $C->prop('btn_send') %></button>
+
+ </div> <!-- end  no-more-tables-->
+
+
+</form>

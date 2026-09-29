@@ -1,0 +1,31 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $id     = $cgi->param('id') + 0;
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Foo</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+
+	<p>ADX / tbd / ID <% $id %></p>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary">
+				<i class="fi fi-check"></i> Save changes
+			</button>
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">
+				<i class="fi fi-close"></i> Close
+			</button>
+		</div>
+
+</div>

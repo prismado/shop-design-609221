@@ -1,0 +1,69 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $mdata = $args{mdata};
+	my $chv   = $args{chv} || 0; # -- check valid? 1 | 0
+	my $fil   = $chv ? $args{fil} : '';
+	my $q     = $args{q};
+	my $omit  = $args{omit}; # -- Comma-separated
+	my $theme = $args{theme};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	(my $table = $mdata->{para}->{source}) =~ tr/\t//d;
+
+	my $macro = '';
+	   $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0) if $debug;
+</%init>
+<div class="portlet-body">
+%	if ($mdata->{type} eq 'DataTable') {
+		<prism-datatable table="<% $table %>" macro="<% $args{macro} %>" dt_ver="1.10.18" theme="<% $theme %>"
+			debug="<% $debug %>" fil="<% $C->uri_esc($fil) %>" q="<% $C->uri_esc($q) %>" omit="<% $omit %>" role="admin"></prism-datatable>
+%	}
+
+%	if ($args{body_macro_name}) {
+%		if ($debug) {
+			Makro: <code class="fs--17 font-weight-bold"><% $args{body_macro_name} %></code><br>
+%		}
+		<% $args{body_macro}->{out} %>
+%	}
+
+%	if ($debug) {
+		<p class="mt-2 mb-0">DN402141-29:</p>
+		fil="<code><% $fil %></code>"<br>
+%		foreach (sort keys %{$mdata}) {
+%			next if $_ eq 'para';
+			[ mdata ] &middot; <b><% $_ %></b> = "<code><% $mdata->{$_} %></code>"<br>
+%		}
+%		foreach my $key (sort keys %{$mdata->{mdata}}) {
+			[ mdata (2) ] &middot; <b><% $key %></b> = "<code><% $mdata->{mdata}->{$key} %></code>"<br>
+%		}
+%	}
+
+<%doc>
+	<form>
+		<div class="float-end">
+			<input type="button" value="Zur&uuml;ck" class="btn btn-soft btn-secondary" onclick="document.location='/adx/config-dev.html'">
+		</div>
+	</form><br />
+</%doc>
+
+%	if ($perm->{is_devel}) {
+		<p>
+			<a href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_<% $args{macro} %>_sys%27+AND+page%3D%27_macro%27"><i
+				class="fi fi-pencil"></i> Edit XML</a> &mdash;
+			<a class="fs--13 link-muted"
+				href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_products_sys%27+AND+page%3D%27_macro%27">Example</a> &mdash;
+			<a href="https://docs.ch2.be/w/prismado-shop/feat-generic-adm-func">Wiki Help</a>
+		</p>
+%		if ($debug) {
+			<p class="mt-3">Output von Makro <code>custom/<% $C->{CONFIG}->{theme} %>/macros/_foo.html</code>:</p>
+			<div class="alert alert-info">
+				<% $macro->{out} %>
+			</div>
+%		}
+%	}
+
+</div>

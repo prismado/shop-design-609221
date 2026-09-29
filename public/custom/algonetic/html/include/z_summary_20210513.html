@@ -1,0 +1,170 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $basket_h     = $A->get_basket_items();
+	my $prod_options = $A->get_basket_options();
+
+	my $pay_meth = $C->{CGI}->param('checkout_zahlungsart_select') || $C->getSessData('checkout_zahlungsart_select') || '';
+
+	unless ($pay_meth) { # -- "cod", "cc", "paypal", "inv"
+		$m->out('ERR: missing pay meth<br>');
+	}
+
+	$C->saveSessData('pay_meth', $pay_meth);
+
+	my $voucher          = $C->trim($C->{CGI}->param('voucher') || $C->getSessData('voucher'));
+	my $basket_total     = $A->get_basket_total();
+	my $voucher_info     = $A->get_voucher_info($voucher);
+	my $ship_meth        = $C->getSessData('ship_meth');
+	my $ship_meth_amount = $C->{CONFIG}->{"ship_$ship_meth"};
+	   $ship_meth_amount = 0 unless $C->{CONFIG}->{shipping_free_as_of} > $basket_total;
+
+	my $pay_cost = sprintf('%.2f', $C->{CONFIG}->{"pay_cost_$pay_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+	my $gr_tot = $args{grand_tot};
+</%init>
+<div class="ps-checkout" id="summary">
+<div class="no-more-tables">
+% if ($args{debug} > 1) {
+	<table class="table table-smt table-hover">
+%	foreach (sort keys %{$gr_tot}) {
+		<tr><td style="width:33%">
+%			if (/^basket_total/) {
+				&mdash; <% $_ %>
+%			}
+%			else {
+				<b><% $_ %></b>
+%			}
+		</td>
+		<td style="font-weight:<% $_ =~ /total$/i ? 'bold' : '' %>">
+			<% $gr_tot->{$_} %>
+		</td></tr>
+%	}
+	</table>
+	<br />
+	
+% }
+	<table class="table ps-chekout-list">
+	<thead data-title="<% $C->prop('prod_name') %>" class="well">
+	<tr>
+	<th><% $C->prop('piece') %></th>
+	<th><% $C->prop('prod_name') %></th>
+	<th><% $C->prop('price_p_piece') %></th>
+	<th class="last_td"><% $C->prop('price') %> CHF</th>
+	</tr>
+	</thead>
+% if ($basket_h->rows() < 1) {
+	<tr>
+	<td colspan="4" style="text-align:center"><a href='/categ.html?id=1'><% $C->prop('no_items') %></a></td>
+	</tr>
+% }
+% my $ship_tot = 0; # XX -- Could be read from "get_basket_total.al"
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count, $basket_id) = @{$r};
+%	my $d             = $A->get_product_v2(id=>$prod_id, public=>1);
+%	my $vat_perc      = $d->{vat};
+%	my $details       = $A->get_basket_details($basket_id);
+%	my $ups_price_tot = $C->query("select sum(price) from basket_details where basket_id=$basket_id")->[0]
+%										* (1 + $vat_perc / 100);
+%	my $price_incl_vat = sprintf('%.2f', $d->{price_incl_vat} + $ups_price_tot);
+%	my $total_line     = $count * $price_incl_vat;
+%	$ship_tot += $A->get_shipping( pay_meth => $pay_meth eq 'cod' ? 3 : 4, count => $count ) unless $C->{CONFIG}->{shipping_free_as_of};
+	<tr>
+		<td class="quantity"><% $count %></td>
+		<td><a href="/product.html?id=<% $prod_id %>"><b><% $d->{'title'} %></b></a>
+%		if ($d->{discount_perc} > 0.0) {
+			&middot; <span style="color:red">Aktion <% sprintf('%.0f', $d->{discount_perc}) %> %</span>
+%		}
+		<%@{$details} ? '<br />' : ''%>
+
+%		my $result = $A->get_basket_options_by_basket_id_v2(basket_id=>$basket_id, lang=>'de');
+%		foreach (@{$result->{array}}) {
+%			my ($label, $desc, $ref, $opt_id, $price) = split /\t/;
+			&bull; <% $label %>: <% $desc %>
+%			if ($price > 0.0) {
+%				my $price_incl_vat = $price * (1 + $d->{vat} / 100);
+				&middot; CHF <% sprintf('%.2f', $price_incl_vat) %>
+%			}
+			<br>
+%		}
+
+%		foreach (@{$details}) {
+%			my ($feat_id, $ref, $price) = split /\t/;
+%			$price = sprintf('%.2f', $price * (1 + $vat_perc / 100));
+%			my $style = $C->query("select style from options where id=$feat_id")->[0];
+%			my ($label, $desc) = @{$C->query(
+%				"select label, description FROM voptions WHERE id=$feat_id and ref='$ref' and lang='de'")};
+%		}
+		</td>
+		<td><% $price_incl_vat %></td>
+		<td class="last_td"><b><% $C->decimal_mark($total_line) %></b></td>
+	</tr>
+% }
+% if ($C->{CONFIG}->{shipping_free_as_of}) {
+%	$ship_tot = $basket_total < $C->{CONFIG}->{shipping_free_as_of} ? $C->{CONFIG}->{shipping_amount} : 0;
+% }
+%	$ship_tot += $ship_meth_amount;
+	<tr>
+		<td></td>
+		<td><a href="info_agb.html"><% $C->prop('delivery_cost') %></a></td>
+		<td>
+%			if ($args{debug}) {
+				<tt>Debug 114</tt>
+%			}
+		</td>
+% # XX		<td class="last_td"><% sprintf('%.2f', $ship_tot * (1 + $C->{CONFIG}->{vat} / 100) + $pay_cost) %></td>
+		<td class="last_td"><% $gr_tot->{shipping_amount} %></td>
+	</tr>
+
+% my $grand_tot = sprintf('%.2f', $basket_total + $pay_cost + $ship_tot * (1 + $C->{CONFIG}->{vat} / 100));
+
+% if ($voucher) {
+	<tr>
+		<td>Voucher <b><%uc $voucher%></b></td>
+		<td>
+%		my $discount = 0;
+%		if ($voucher_info->{is_valid}) {
+			Voucher ist g&uuml;ltig
+%			if ($voucher_info->{amount} > 0) {
+%				$grand_tot = sprintf('%.2f', $grand_tot - $voucher_info->{amount});
+%				$grand_tot = '0.00' if $grand_tot < 0;
+%				$discount = sprintf('%.2f', $voucher_info->{amount});
+%			}
+%			if ($voucher_info->{perc} > 0) {
+%				my $disc = sprintf('%.2f', $basket_total * $voucher_info->{perc} / 100);
+%				$discount += $disc;
+%				$grand_tot = sprintf('%.2f', $grand_tot - $disc);
+			<%sprintf('%.2f', $voucher_info->{perc})%> % auf <%$basket_total%>
+%			}
+%		}
+%		else {
+			<span style='color:red'><% $C->prop('voucher_valid') %></span>
+			<%$voucher_info->{_msg}%>
+%		}
+		</td>
+		</td><td>
+		<td class="last_td"><i>-<% sprintf('%.2f', $discount) %></i></td>
+	</tr>
+% }
+
+ </tbody>
+        </table>
+
+% # -- Gesamtsumme inkl.
+	<table class="table noborder">
+           <tr class="well total">
+            <td colspan="4"><span><h4><% $C->prop('sum_total') %> <% $C->prop('mwst') %></h4></span></td>
+            <td class="last_td">
+			<h4>CHF&nbsp;<% $C->decimal_mark($args{total}) %></h4>
+	</td>
+          </tr>
+	</table>
+
+</div>
+</div>
+
+% if ($args{debug}) {
+	<&page_info.html, 'End of include'&>
+% }

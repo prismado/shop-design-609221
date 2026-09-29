@@ -1,0 +1,88 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+	my $debug = $s{debug};
+
+	my $perm    = $s{perm};
+	my $cgi     = $C->{CGI};
+
+	my @order_itms = ();
+
+	foreach my $d (@{ $s{odat}->{item_rows} }) {
+		my %linedat = ();
+		foreach (sort keys %{$d}) {
+			next if /^option\_.+/ or /^discount/;
+			$linedat{$_} = $d->{$_};
+		}
+		push(@order_itms, \%linedat);
+	}
+
+	# ---------- $r->content_type('text/plain; charset=utf-8');
+</%init>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- N405162-25: Reply to <% $s{odat}->{x_x_inpt} %> | V <% $s{ver} %> -->
+% if ($debug) {
+%	foreach (sort keys %s) {
+%		next if $_ eq 'C' or $_ eq 'check_env' or $_ eq 'debug' or /^odat$/ or /^theme$/;
+		<!-- [ para ] - <% $_ %> = <% $s{$_} %> -->
+%	}
+
+%	foreach my $d (@order_itms) {
+%		next unless $d->{prod_id};
+%		my $gtin = $C->query("select `description` from products_feat where product_id=$d->{prod_id} and featkey='GTIN' limit 1")->[0];
+		<!-- ***** <% $d->{count} %> x Prod-ID <% $d->{prod_id} %> <% $d->{title} %> / <% $gtin %> ***** -->
+%		foreach (sort keys %{$d}) {
+%			next if /^prod_id$/ or /^campaign_id$/ or /^art_no$/ or /^count$/ or /^title$/;
+			<!-- [ odat / item_rows ] - <% $_ %> = <% $d->{$_} %> -->
+%		}
+%	}
+% }
+<ORDERRESPONSE
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.opentrans.org/XMLSchema/2.1" version="2.1">
+    <ORDERRESPONSE_HEADER>
+        <ORDERRESPONSE_INFO>
+            <ORDER_ID><% $s{edi_order_id} %></ORDER_ID>
+            <ORDERRESPONSE_DATE><% $C->now(7) %>T<% $C->now(6) %></ORDERRESPONSE_DATE>
+            <SUPPLIER_ORDER_ID><% $s{order_id} %></SUPPLIER_ORDER_ID>
+        </ORDERRESPONSE_INFO>
+    </ORDERRESPONSE_HEADER>
+
+    <ORDERRESPONSE_ITEM_LIST>
+        <ORDERRESPONSE_ITEM>
+% foreach my $d (@order_itms) {
+%	next unless $d->{prod_id};
+%	my $gtin = $C->query("select `description` from products_feat where product_id=$d->{prod_id} and featkey='GTIN' limit 1")->[0];
+
+			<PRODUCT_ID>
+				<!-- <% $d->{count} %> x Prod-ID <% $d->{prod_id} %> <% $C->web_enc($d->{title}) %> -->
+				<SUPPLIER_PID xmlns="http://www.bmecat.org/bmecat/2005"><% $d->{prod_id} %></SUPPLIER_PID>
+				<INTERNATIONAL_PID
+					xmlns="http://www.bmecat.org/bmecat/2005"><% $gtin %>
+				</INTERNATIONAL_PID>
+			</PRODUCT_ID>
+			<QUANTITY><% $d->{count} %></QUANTITY>
+% }
+
+            <DELIVERY_DATE>
+                <DELIVERY_START_DATE><% $C->now(7, 86400) %></DELIVERY_START_DATE>
+                <DELIVERY_END_DATE><% $C->now(7, 86400 * 2) %></DELIVERY_END_DATE>
+            </DELIVERY_DATE>
+
+        </ORDERRESPONSE_ITEM>
+    </ORDERRESPONSE_ITEM_LIST>
+
+</ORDERRESPONSE>
+% if ($debug) {
+%	foreach (sort keys %{ $s{odat} }) {
+%		next if /^item_rows$/;
+		<!-- <% $_ %> = <% $s{odat}->{$_} %> -->
+%	}
+% }
+%
+<%doc>
+	Created: 14May2024
+</%doc>

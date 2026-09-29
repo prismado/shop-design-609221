@@ -1,0 +1,170 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $job_ids = $args{job_ids}->{mrows};
+
+	my $sth = $C->{dbh}->prepare(qq~
+		SELECT	id, SUBSTR(featkey, 12, 31), featname
+		FROM	config_prod_feat
+		WHERE	lang='sys' and featkey LIKE 'job\_detail\_$args{job_id}\_%'
+	~);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $dbid_desc = 0;
+	my %job_para = ();
+	while(my $r = $sth->fetch()) {
+		my ($dbid, $k, $v) = @{$r};
+		$k =~ s/^$args{job_id}\_//; $k =~ s/^\_//;
+		if ($k eq 'cat_ids') {
+			my @cat_desc = ();
+			foreach my $cat_id (split /,/, $v) {
+				my $cat_name = $C->query("select label from categories where id=$cat_id and lang='de'")->[0];
+				push(@cat_desc, "$cat_id $cat_name");
+			}
+			$job_para{cat_ids_hr} = join ' <span class="ml-1 mr-1">/</span> ', @cat_desc;
+		}
+		$job_para{$k} = $v;
+		$dbid_desc = $dbid if $k eq 'description';
+	}
+
+	my %excl_id = ();
+	foreach (split /,/, $job_para{cat_ids_excl}) {
+		$excl_id{$_+0} = 1;
+	}
+
+	my $cat_ids   = $job_para{cat_ids};
+	my $min_price = $job_para{min_price};
+
+	my $st2 = $C->{dbh}->prepare(qq~
+		select  distinct id, art_no, price, `description`
+		from    vproducts
+		where   cat_id IN ($cat_ids) and lang='de' AND campaign_id=0 AND
+			(`count`>0 OR `condition` = 'OR') and (`condition` IS NULL or `condition` IN ('OR', 'SO'))
+		order   by id desc
+		limit   8000
+	~);
+	$st2->execute();
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Shopping Feed f&uuml;r Google Merchants Center &ndash; <% $args{job_ids}->{query_rows} %> Job(s)</span>
+</div>
+
+<div class="portlet-body">
+	<p class="float-end">
+		<a class="link-muted fs--12" href="manage-property.html?area=google_shopping">Google Category Mapping</a>
+%		foreach (@{$job_ids}) {
+%			if ($_ == $args{job_id}) {
+				<a class="ml-3 text-dark" href="g-feed.html?jobid=<% $_ %>"><b>Job-ID <% $_ %></b></a>
+%			}
+%			else {
+				<a class="ml-3" href="g-feed.html?jobid=<% $_ %>">Job-ID <% $_ %></a>
+%			}
+%		}
+	</p>
+
+	<p>
+		<a href="/adm_job.html?id=<% $args{job_id} %>">Edit System Job</a>
+%		if ($min_price) {
+			&mdash; Minimum Price: <b>CHF <% sprintf('%.2f', $min_price) %></b>
+%		}
+	</p>
+%	foreach (keys %excl_id) {
+% # XXX		XXX --------- <% $_ %><br>
+%	}
+
+	<h5 class="mb-2"><% $job_para{cat_ids_hr} %>
+%		if ($job_para{cat_ids_excl}) {
+			<span class="text-red-800 fs--13 ml-3">Ohne: <% $job_para{cat_ids_excl} %></span>
+%		}
+	</h5>
+	<h6 class="mb-3">
+%		if ($job_para{description} =~ /^https:\/\//) {
+			<a href="<% $job_para{description} %>"><% $job_para{description} %></a>
+%		}
+%		else {
+		<% $job_para{description} %>
+%		}
+%		if ($perm->{is_devel}) {
+			<a href="/adm_safe_property.html?id=<% $dbid_desc %>"><i class="fi fi-pencil"></i></a>
+%		}
+	</h6>
+
+	<table class="table table-sm table-striped table-hover border">
+	<tr>
+		<th></th>
+		<th>ID</th>
+		<th>Titel</th>
+		<th>Kat-IDs</th>
+		<th>Art Nr.</th>
+		<th>Stk.</th>
+		<th>GTIN</th>
+		<th>Zustand</th>
+		<th>Beschreibung</th>
+		<th class="float-end">Preis</th>
+	</tr>
+%	OUTER: while(my $r = $st2->fetch()) {
+%		my ($id, $art_no, $price, $desc) = @{$r};
+%		my $GTIN = $A->get_feature_by_key($id, 'GTIN') + 0;
+%		next unless $GTIN;
+%		my $prd_inf = $A->get_product($id);
+%		$art_no     = $A->get_product_art_no( id=>$id )->{art_no};
+%		foreach my $c_id (split /,/, $prd_inf->{cat_ids}) {
+%			foreach (keys %excl_id) {
+%				next OUTER if $_ == $c_id;
+%			}
+%		}
+		<tr>
+		<td style="background-color:white; padding-right:15px">
+			<a href="/produkte/p<% $id %>_large.jpg"><img
+				src="/produkte/p<% $id %>_large.<% $A->get_product_image(id=>$id)->{ext} %>" style="max-width:4.5vw"></a>
+		</td>
+		<td><a href="/article-<% $id %>-x.html"><% $id %></a></td>
+		<td>
+%			if ($prd_inf->{price_incl_vat} < $min_price) {
+				<s class="text-blue-gray-200"><% $C->shorten_title($prd_inf->{title}, 45) %></s>
+%			}
+%			else {
+				<b><% $C->shorten_title($prd_inf->{title}, 45) %></b>
+%			}
+		</td>
+		<td><% $prd_inf->{cat_ids} %></td>
+		<td><% $art_no %></td>
+		<td><span class="text-green-600 fs--12"><% $prd_inf->{count_product} %></span></td>
+		<td nowrap><tt><b><% $GTIN %></b></tt> <small>(<% length($GTIN) %>)</small></td>
+		<td style="font-size:0.85rem"><% uc $C->get_safe_property("adm_extra_$prd_inf->{extra}", 'en') %></td>
+		<td><% $C->shorten_title($desc, 77) %></td>
+		<td clasx="">
+			<b class="float-end">
+%				if ($prd_inf->{price_incl_vat} < $min_price) {
+					<span class="animate-pulse"
+						data-toggle="tooltip" data-placement="top" data-original-title="Unter Mindestpreis <% $min_price %>"
+							style="color:red"><% $prd_inf->{price_incl_vat} %></span>
+%				}
+%				else {
+					<% $prd_inf->{price_incl_vat} %>
+%				}
+			</b>
+		</td>
+		</tr>
+%	}
+	</table>
+
+	<hr />
+	<table class="table table-sm table-striped table-hover">
+%	foreach my $k (sort keys %job_para) {
+%		my $v = $job_para{$k};
+%		next if $k eq 'quiet' or $k eq 'caller' or $k eq 'min_price' or $k eq 'description' or $k =~ /^cat_ids/;
+%		next if $k eq 'rc' && $v == 0;
+		<tr>
+			<td style="width:20%"><% ucfirst $k %></td>
+			<td><code><% $v %></code></td>
+		</tr>
+%	}
+	</table>
+
+</div>

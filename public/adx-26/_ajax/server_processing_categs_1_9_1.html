@@ -1,0 +1,90 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols    = qw(id parent_id visible weight lang label extra_label id);
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+	my $lang      = $cgi->param('lang') || 'de';
+	my $visible   = $cgi->param('visible');
+
+	if (length($visible)) {
+	}
+	else {
+		$visible = 1;
+	}
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my @where_clause = ();
+	push(@where_clause, "lang='$lang'");
+	push(@where_clause, "visible=$visible") if length($visible);
+	push(@where_clause, "lastname LIKE '$sSearch%' OR firstname LIKE '$sSearch%' OR company LIKE '$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	categories
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	if ($C->{CONFIG}->{debug_level} > 1) {
+		print STDERR "$stmt\n";
+	}
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM categories $wcl")->[0];
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $parent_id, $visible, $weight, $lng, $label, $extra_label, $status) = @{$r};
+		$label = "<b>$label</b>" if $parent_id == 0;
+
+		my @arr = ();
+		push(@arr, "<a href='/adm_categ.html?id=$id'>$id</a>");
+		push(@arr, $label);
+		push(@arr, $parent_id);
+		push(@arr, $visible ? 'J' : '<span style="color:red">N</span>');
+		push(@arr, $extra_label);
+		push(@arr, $weight);
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	 __METACLONING__
+</%doc>

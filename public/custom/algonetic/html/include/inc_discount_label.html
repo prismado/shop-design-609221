@@ -1,0 +1,23 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $disc_perc = $args{disc_perc};
+	my $max_fs    = ($args{max_fs} + 0) || 14;
+
+	my $animate = $args{is_mobile} ? '' : 'animate-pulse';
+</%init>
+<div class="absolute-full z-index-3 text-white mt-2 show-hover-item">
+
+	<span style="letter-spacing:1px"
+		class="fs--<% $max_fs %> float-end pl-2 btn p-1 mr-0 mt-n1 text-white badge-pink font-weight-bold hidden-lg-down">SALE <% $disc_perc %> %
+	</span>
+
+	<span style="letter-spacing:1px"
+		class="fs--12 float-end pl-2 btn p-1 mr-0 mt-n1 text-white badge-pink hidden-xl-up hidden-md-down">SALE <% $disc_perc %> %
+	</span>
+
+	<span style="letter-spacing:1px"
+		class="fs--10 float-end <% $animate %> pl-2 btn p-1 mr-1 mt-n1 text-white badge-pink hidden-lg-up">SALE <% $disc_perc %> %
+	</span>
+
+</div>

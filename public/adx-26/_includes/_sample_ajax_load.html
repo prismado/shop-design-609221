@@ -1,0 +1,35 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+
+	# $m->out(q~
+	# 	<div class="float-right">&rarr; <a href="https://dmsd.prismado.com/components-carousel.html">Carousel (Orig)</a></div>
+	# ~);
+
+</%init>
+<div id="sample_07"></div>
+
+% # XXX <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+function loadAjax07() {
+  $.ajax({
+    url: '/adx/_ajax/inc_foo.html',
+    type: 'GET',
+    dataType: 'html',
+    success: function(response) {
+     $('#sample_07').html(response);
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+}
+
+$(document).ready(function() {
+	loadAjax07();
+	setInterval(loadAjax07, 5000); // Funktion alle 10 Sekunden aufrufen
+});
+</script>
+

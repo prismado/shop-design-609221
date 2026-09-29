@@ -1,0 +1,68 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid}
+	my $debug = $C->getSessData('debug');
+	my $cgi   = $C->{CGI};
+
+	$m->abort() unless $perm->{is_admin};
+
+	my @paras = my @infos = ();
+	my $type  = 'pink';
+
+	my $max_width_default = $C->txt('sys_product_tiles_promo_max_width_default', 'sys', '_layout');
+	my $min_width_default = $C->txt('sys_product_tiles_promo_min_width_default', 'sys', '_layout');
+
+	push(@infos, qq~<p>Auf Standard zur&uuml;ck setzen<br>
+		max_width_default: $max_width_default / min_width_default: $min_width_default</p>~);
+
+	foreach ($cgi->all_parameters) {
+		push(@paras, "[ CGI ] &middot; <b>$_</b> = \"<code class='text-white'>" . $cgi->param($_) . '</code>"');
+	}
+
+	if ($cgi->param('x_info') eq 'cmd_404301_39' && $cgi->param('input') eq 'JA') {
+		my $errstr = '';
+
+		my $cur_id_min = $C->query(q~select id from properties where `key`='sys_product_tiles_promo_min_width_sys' and page='_layout' limit 1~)->[0];
+		my $cur_id_max = $C->query(q~select id from properties where `key`='sys_product_tiles_promo_max_width_sys' and page='_layout' limit 1~)->[0];
+		push(@infos, "XX $cur_id_min / $cur_id_max");
+
+		if ($cur_id_min && $cur_id_max) {
+			$C->{dbh}->do("UPDATE properties SET val='$min_width_default' where id=$cur_id_min");
+			$C->{dbh}->do("UPDATE properties SET val='$max_width_default' where id=$cur_id_max");
+		}
+		else {
+
+		$C->{dbh}->do(qq~
+			INSERT INTO `properties` (`page`, `key`, `val`) VALUES
+				('_layout', 'sys_product_tiles_promo_max_width_sys', '$max_width_default'),
+				('_layout', 'sys_product_tiles_promo_min_width_sys', '$min_width_default')
+				;
+		~) or do { $errstr = $DBI::errstr; };
+
+		}
+
+		if ($errstr) {
+			$type = 'danger';
+			push(@infos, "Fehler: $errstr");
+		}
+		else {
+			$type = 'success';
+			push(@infos, 'Durchgef&uuml;hrt');
+		}
+	}
+
+	push(@infos, @paras) if $debug;
+
+	my $info = join '<br>', @infos;
+
+	$C->create_toast_note(body=>$info, title=>'Restore Defaults / DN-404301-18', width=>'600px', delay=>18000, type=>$type);
+</%init>
+
+<%doc>
+	Created: 30Apr2024
+
+	This macro is called by an Ajax call
+</%doc>

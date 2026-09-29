@@ -1,0 +1,92 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+	my $perm = $s{perm};
+
+	my $pdfconf = $C->load_config(table=>'pdf_config');
+
+	my $cgi = $C->{CGI};
+
+	my $bUpdate = $cgi->param('bUpdate');
+	my @upd_vars = ();
+	if ($bUpdate) {
+		foreach ($cgi->all_parameters) {
+			next unless /^pdfc\_(.+)$/;
+			my $val = $cgi->param("pdfc\_$1");
+			next if $val eq $pdfconf->{$1};
+			$C->{dbh}->do(qq~update pdf_config set xval='$val' where xkey='$1'~) or ($C->create_toast_note(body=>$DBI::errstr));
+			push(@upd_vars, "&bull; <b>$1</b>: $pdfconf->{$1} &rarr; $val");
+		}
+		my $summary = $C->web_enc(join '<br>', @upd_vars);
+		if (@upd_vars) {
+			$C->create_toast_note(body=>qq~<span class="text-dark">Aktualisiert:<br>$summary</span>~, delay=>25000, type=>'info', fs=>16,
+				style=>q~.toast, .max-w-300 { max-width: 600px !important; opacity: 0.85; }~);
+		}
+		else {
+			$C->create_toast_note(title=>'Keine &Auml;nderungen', type=>'warning', delay=>11000,
+				style=>q~.toast, .max-w-300 { max-width: 380px !important; opacity: 0.95; }~,
+				body=>q~<center class="text-dark">Klicken Sie auf das jeweilige <i class="fi fi-pencil"></i>-Symbol,
+					um &Auml;nderungen vorzunehmen</center>~);
+		}
+	}
+
+	my @env = ();
+	if ($s{debug}) {
+		foreach (sort keys %s) {
+		next if $_ eq 'C' or $_ eq 'comp_file' or $_ eq 'dir' or $_ eq 'theme' or $_ eq 'check_env';
+			push(@env, qq~[ s ] &middot; <b>$_</b> = <code>$s{$_}</code>~);
+		}
+	}
+
+	$pdfconf = $C->load_config(table=>'pdf_config');
+</%init>
+<p class="float-end">
+	<a class="link-muted fs--13" href="/adm_masterdata.html">Alte Version</a>
+</p>
+
+<p>
+	<a href="/contact.html">Kontaktdaten</a> aufrufen, dann Editier-Modus einschalten |
+	<a href="/adx/manage-property.html?area=site">Site-Werte anpassen</a>
+</p>
+
+<form method="post">
+
+<div class="float-end">
+	<input type="hidden" name="macro" value="master_data">
+	<input type="submit" class="btn btn-success mb-2" value="Aktualisieren" name="bUpdate">
+</div>
+
+<h3 class="fs--20 pt-2">PDF-Konfiguration</h3>
+
+<table class="table table-sm table-hover border">
+% foreach my $key (sort keys %{ $pdfconf }) {
+%	unless ($perm->{is_devel}) {
+%		next if $key =~ /^address\_pos\_(x|y)$/ or $key =~ /^default\_.+/ or $key =~ /^logo\_.+/;
+%	}
+%	my $val = $C->web_enc($pdfconf->{$key});
+%	(my $key_short = $key) =~ s/^company\_//;
+%	    $key_short ||= 'company';
+%	    $key_short = 'vat' if $key_short eq 'vat_no';
+%	my $key_disp = ($key =~ /^company/ && $key ne 'company_slogan' && $key ne 'company_email' && $key !~ /^company_iban/) ? $C->txt($key_short) : ucfirst $key_short;
+	<tr>
+		<td class="font-weight-bold pt-4 pl-2" style="width:30%"><% $key_disp %></td>
+		<td><& adx_include/inc_text_input.html, label=>$key_disp, value_enc=>$val, id=>$key, name=>"pdfc_$key",
+			class=>'mb--n15', tx_class=>'font-weight-bold fs--16', input_args=>'autocomplete="off"' &></td>
+	</tr>
+% }
+</table>
+
+</form>
+
+% if ($perm->{is_devel}) {
+%	foreach (sort keys %s) {
+%		next if $s{$_} =~ /^ScreenPoint\:\:.+/ or /^perm$/ or /^dir$/;
+		[ S ] &middot; <b><% $_ %></b> = <code><% $s{$_} %></code><br>
+%	}
+
+%	foreach ($cgi->all_parameters) {
+		[ CGI ] &middot; <% $_ %> = <% $cgi->param($_) %><br>
+%	}
+% }

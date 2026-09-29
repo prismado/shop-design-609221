@@ -1,0 +1,100 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $id    = $args{id} || 0; # -- 25Jun2024
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Information zu PRO-Zone / Mitarbeitershop <% $args{company_name} ? "&middot; $args{company_name}" : '' %></span>
+</div>
+
+<div class="portlet-body">
+
+%	if ($perm->{is_admin}) {
+		<span class="float-end">
+			<a href="/adx/edit-product.html?id=<% $id %>">Edit Product</a>
+		</span>
+%	}
+
+	<div class="row">
+		<div class="col-8"><% $C->prop('prozone_intro') %></div>
+	</div>
+
+%	if ($args{token}) {
+		<form method="post" action="token.html">
+		<input type=hidden name="token" value="<% $args{token} %>">
+		<input type="submit" class="btn btn-warning mb-3" value="PRO-Zone Artikel anzeigen">
+		</form>
+%	}
+
+%	if ($args{debug} > 1) {
+		<p>SID <% $C->getSID() %></p>
+%	}
+
+%	if ($args{bGo} && $args{email}) {
+		<div class="timer-autohide alert alert-info mt-3" data-timer-autohide="300000">
+			<i class="fi fi-squared-info mr-2 fs--19"></i>
+			Gesendet an: <b><% $args{email} %></b><br><br>
+
+			<% $C->prop('prozone_mail_advice') %>
+		</div>
+%	}
+%	else {
+%		if ($args{company_id}) {
+			<p><a class="link-muted fs--12" href="#" onclick="document.getElementById('f309180').style.display=''">PRO-Zone wechseln?</a></p>
+%		}
+		<div id="f309180" style="<% $args{company_id} ? 'display:none' : '' %>">
+		<form method="post" name="f308131" id="f309200">
+		<input type="hidden" name="bGo" value="1">
+%		if ($args{debug}) {
+			<input type=hidden name="debug" value="<% $args{debug} %>">
+%		}
+		<div class="form-label-group mb-3">
+			<input placeholder="tbd" name="email" type="email" id="txe_99" class="form-control col-6" autocomplete="email" value="<% $args{email} %>">
+			<label for="txe_99">Ihre Firmen-E-Mail-Adresse</label>
+		</div>
+		<button type="submit" class="btn btn-primary mt-3" id="btn309200"><% $C->prop('prozone_access') %></button>
+		</form>
+		</div>
+
+		<script language="JavaScript">
+			document.f308131.email.focus();
+		</script>
+%	}
+
+%	if ($args{msg}) {
+		<br />
+		<% $C->bootstrap_alert( $args{msg}, 'success' ) %>
+%	}
+
+%    if ($perm->{is_devel}) {
+	<br />
+	<hr />
+	<small>Active Company-ID: <% $args{company_id} %> &mdash; <a href="https://docs.ch2.be/w/auctionline2019-tech/prozone">Wiki Infos</a></small><br />
+%	if ($debug) {
+		<br />
+%		my $sth = $C->{dbh}->prepare("select id, company_id, token from campaign_data order by id desc limit 9999");
+%		   $sth->execute();
+%		while(my $r = $sth->fetch()) {
+%		my ($id, $company_id, $token) = @{$r};
+%		my $mail_dom = $C->query("select mail_domain from campaign_maildom where company_id=$company_id order by id desc limit 1")->[0];
+		&bull; <% $id %> &middot; <a
+			href="admix.html?func=companies&edit=<% $company_id %>">Company-ID <% $company_id %></a>
+				&middot; [ <a href="token.html?token=<% $token %>"><code><% $token %></code></a> ] &middot; ...@<% $mail_dom %><br>
+%		}
+%	}
+%    }
+
+</div>
+
+<& inc_add2basket_js.html &>
+
+<%doc>
+XXX:
+<script language="JavaScript">
+	document.f308131.email.focus();
+</script>
+/XXX
+</%doc>

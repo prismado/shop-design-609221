@@ -1,0 +1,94 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C          = $args{C};
+	my $cat_ids    = $args{cat_ids} || '1071,1072';
+	my $cats       = $args{cats};
+	my $add_text_a = $args{add_text_a};
+	my $add_text_b = $args{add_text_b};
+	my $debug      = $args{debug};
+	my $perm       = $args{perm};
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, title, `description`, desc_long
+		from	vproducts
+		where	`count` > 0 AND lang='de' AND cat_id IN ($cat_ids)
+		order	by id desc
+		limit	2000
+	~);
+	$sth->execute();
+
+	my %memo     = ();
+	my @keyw_arr = ();
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Keywords</span>
+</div>
+
+<div class="portlet-body">
+	<p>
+		Kategorien: <a href="keywords.html?cat_ids=<% $cat_ids %>"><% $cat_ids %></a>
+	</p>
+
+	<table class="table float-end table-sm col-3 mb-3">
+%	foreach my $c (@{$cats}) {
+		<tr>
+		<td><a href="keywords.html?cat_ids=<% $c->{id} %>"><b><% $c->{id} %></b></a></td>
+		<td><% $c->{label} %></td>
+		</tr>
+%	}
+	</table>
+
+	<form>
+	<input type="hidden" name="cat_ids" value="<% $cat_ids %>">
+	<input type=text class="form-control col-5"      name="add_text_b" value="<% $args{add_text_b} %>" placeholder="Before">
+	<input type=text class="form-control col-5 mt-2" name="add_text_a" value="<% $args{add_text_a} %>" placeholder="After">
+	<input type="submit" class="btn btn-primary btn-sm btn-soft mt-2 mb-2" value="Add" name="bAdd">
+	</form>
+
+	<table class="table table-sm col-6" style="font-size:0.66rem">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $title, $desc, $desc_long) = @{$r};
+%		(my $keyw = $title) =~ tr/A-Z/a-z/;
+%		    $keyw = $C->shorten_title($keyw, 40);
+%		my ($e1, $e2, $e3) = split / /, $keyw;
+%		my $key = $C->trim("$e1 $e2 $e3");
+%		unless ($memo{$key}) {
+%			push(@keyw_arr, "\"$key\"");
+%			push(@keyw_arr, "\[$key\]");
+%			$memo{$key} = 1;
+%		}
+
+%		$key = $C->trim("$e1 $e2");
+%		unless ($memo{$key}) {
+%			push(@keyw_arr, "\"$key\"");
+%			push(@keyw_arr, "\[$key\]");
+%			$memo{$key} = 1;
+%		}
+%		if ($add_text_b) {
+%			$key = $C->trim("$add_text_b $e1 $e2");
+%			unless ($memo{$key}) {
+%				push(@keyw_arr, "\"$key\"");
+%				push(@keyw_arr, "\[$key\]");
+%				$memo{$key} = 1;
+%			}
+%		}
+%		if ($add_text_a) {
+%			$key = $C->trim("$e1 $e2 $add_text_a");
+%			unless ($memo{$key}) {
+%				push(@keyw_arr, "\"$key\"");
+%				push(@keyw_arr, "\[$key\]");
+%				$memo{$key} = 1;
+%			}
+%		}
+		<tr>
+		<td><% $id %></td>
+		<td><% $title %></td>
+		</tr>
+%	}
+	</table>
+
+	<textarea class="form-control col-5" style="font-family:Consolas,Courier; font-size:0.95rem"
+		rows="25"><% join "\n", @keyw_arr %></textarea>
+
+</div>

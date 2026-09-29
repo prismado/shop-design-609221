@@ -1,0 +1,11 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+<p>Hier können Sie als Verein mit Ihrem Vereins-Login spezielle Dokumente abrufen:</p>
+<br>
+<a href="#login" role="button" data-toggle="modal" class="btn btn-basket"><i class="fa fa-sign-in"></i><% $C->prop('login') %></a>
+<hr>
+<br>
+
+<p>Möchten Sie ein Vereins-Login erhalten, bitte <a href="/contact.html">kontaktieren Sie uns</a></p>

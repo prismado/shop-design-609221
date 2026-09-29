@@ -1,0 +1,65 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+
+	# XXX substr(xkey, 17, 15)
+	my $stu = $C->{dbh}->prepare(q~
+				select	DISTINCT user_id, uname, email, '', xval, is_admin
+				from	users_details, users u
+				where	xkey LIKE 'perm_is_service_%' and u.id=user_id
+				order	by 2
+	~);
+	   $stu->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $s_cat_id = $perm->{is_service_user} || $perm->{is_service_manager} || $perm->{is_service_admin};
+
+	my %usr_icon = (
+		admin   => '&#128081;',
+		manager => '&#128681;',
+		user    => '&#129485;'
+	);
+</%init>
+
+<span class="float-end"><a class="link-muted fs--11" target="_blank"
+		href="https://claude.site/artifacts/d902a28b-c9ba-4fd8-a1e5-cfd2a1406d03">Claude-Entwurf</a>
+</span>
+
+<h3 class="fs--20">Benutzerliste &ndash; Cat-ID <% $s_cat_id %></h3>
+
+<table class="table table-sm border table-hover mt-3">
+%	while(my $r = $stu->fetch()) {
+%		my ($uid, $uname, $email, $role, $val, $is_admin) = @{$r};
+%		next if $is_admin;
+%		my ($first, $last, $company) = @{$C->query("select firstname, lastname, company from users_addr where user_id=$uid and type=1")};
+%		my $st = $C->{dbh}->prepare("select substr(xkey, 17, 15) from users_details where User_id=$uid and xkey like 'perm_is_service_%'");
+%		   $st->execute();
+%		my %urole = ();
+%		while(my $r = $st->fetch()) {
+%			$urole{$r->[0]} = 1;
+%		}
+		<tr>
+			<td style="width:180px;"><% $uname %></td>
+			<td>
+				<table>
+%				foreach my $role (sort keys %urole) {
+					<tr style="background-color:transparent !important;">
+					<td style="border:none; width:35px; background-color:transparent !important;"><% $usr_icon{$role} %></td>
+					<td style="border:none;"><% ucfirst $role %></td>
+					</tr>
+%				}
+				</table>
+			</td>
+			<td><% $first %> <% $last %></td>
+			<td><% $company %></td>
+			<td><% $email %></td>
+			<td><a href="/adm_user.html?id=<% $uid %>"><i class="fi fi-pencil"></i></a></td>
+			<td><span class="float-end"><% $val %></span></td>
+		</tr>
+%	}
+</table>
+

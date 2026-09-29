@@ -1,0 +1,34 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+	my $perm = $s{perm};
+
+	my $fil_super_promo     = 'is_active' . $C->_lt_() . '0';
+	my $fil_super_promo_chk = substr($C->md5_secret($fil_super_promo), 0, 6);
+
+	my $selected = 0;
+	if ($s{fil}) { $selected = (split /=/, $s{fil})[1] + 0; }
+</%init>
+<div class="float-end mr-3">
+	<a class="link-muted text-dark mr-4" href="/_systex/install/help/de/11/3/job-hourly_tasks.pl.html"><i class="fi fi-time"></i> Hourly Jobs</a>
+	<a class="link-muted text-dark mr-4" href="show.html?macro=prism_sys_jobs&q=sync"><i class="fi fi-reload"></i> Sync</a>
+	<a class="link-muted text-dark mr-4" href="/adm_safe_properties.html?lang=sys&filter=env"><i class="fi fi-globe"></i> Host Env</a>
+	<a class="link-muted text-dark mr-4" href="/adm_log.html?importance=4"><i class="fi mdi-format_list_bulleted"></i> Log</a>
+	<a class="link-muted fs--11 mr-4 text-gray-500" href="/adm_safe_properties.html?lang=sys">Safe Prop.</a>
+	<a class="link-muted fs--11 mr-4 text-gray-500" href="/adm_jobs.html">Alte &Uuml;bersicht (2019)</a>
+	<% ${ $A->modal( label=>'<i class="fi fi-plus-squared fs--25"></i>', tooltip=>'Promo hinzu',
+			url=>'/adx/_ajax/modal_add_promo.html?css_id=402181_18', css_id=>'402181_18') } %>
+
+%	if ($s{debug}) {
+<%perl>
+	my @env = ();
+	foreach (sort keys %s) {
+		next if $_ eq 'C' or $_ eq 'comp_file' or $_ eq 'dir' or $_ eq 'theme' or $_ eq 'check_env' or $_ eq 'call_src';
+		push(@env, qq~<b class="ml-4">$_</b>=<code>$s{$_}</code>~);
+	}
+	$m->out(join ' ', @env);
+</%perl>
+%	}
+</div>

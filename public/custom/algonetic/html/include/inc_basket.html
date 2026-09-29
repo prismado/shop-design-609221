@@ -1,0 +1,39 @@
+<%init>
+	# -- Created 15Sep2023
+
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $this  = $args{this};
+
+	# XX my $label = $C->prop('basket');
+	my $bask  = $A->get_basket_items_v2();
+</%init>
+<li class="list-inline-item ml--1 mr--6	dropdown">
+%	if ($this =~ /\/basket\.html$/) {
+		<span class="nav-link"><i class="fi fi-cart-2"	style="margin-top:-2px"></i></span>
+%	}
+%	elsif ($this =~ /\/checkout\.html$/ or $this =~ /\/summary.html$/ or $this =~ /\/payment/) {
+		<a class="nav-link" href="/basket.html">
+			<span class="nav-link">
+				<i class="fi fi-cart-2"	style="margin-top:-2px"></i>
+			</span>
+		</a>
+%	}
+%	else {
+		<a class="nav-link" href="#" onclick="loadModal(0)" aria-label="Warenkorb anzeigen">
+%			if ($bask->{item_count}) {
+				<span class="badge badge-success fs--10	p--3 mt--n3 position-absolute end-0 animate-pulse"
+					style="animation-duration:1s; animation-iteration-count:3">
+					<% $bask->{item_count} %>
+				</span>
+%			}
+			<i class="fi fi-cart-2 fs--20" style="margin-top:-2px"></i>
+%			if ($bask->{basket_total} > 0) {
+				CHF <% sprintf('%.2f', $bask->{basket_total}) %>
+%			}
+% # XX			<span class="hidden-md-down ml-1"><% $label %></span>
+		</a>
+%    }
+</li>

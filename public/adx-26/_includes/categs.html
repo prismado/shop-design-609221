@@ -1,0 +1,128 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C       = $args{C};
+	my $A       = $args{A};
+	my $lang    = $args{lang};
+	my $debug   = $args{debug};
+	my $perm    = $args{perm};
+	my $cats    = $args{cats};
+
+	my $range_visible_act = !$args{show_invisible} ? 'text-dark' : '';
+	   $range_visible_act = '' if $args{show_all};
+
+	my $range_invisible_act = $args{show_invisible} ? 'text-dark' : '';
+	my $range_show_all_act  = $args{show_all}       ? 'text-dark' : '';
+</%init>
+<div class="portlet-header border-bottom">
+	<span class="float-end">
+		<a class="mr-3 ml-3 <% $lang eq 'de' ? 'text-dark font-weight-bold' : 'font-weight-light' %>" href="categs.html?lang=de">DE</a>
+		<a class="mr-3 <% $lang eq 'en' ? 'text-dark' : 'font-weight-light' %>"      href="categs.html?lang=en">EN</a>
+		<a class="mr-3 <% $lang eq 'fr' ? 'text-dark' : 'font-weight-light' %>"      href="categs.html?lang=fr">FR</a>
+		[
+		<a class="mr-2 fs--12 <% $range_visible_act %>"   href="categs.html?show_invisible=0&lang=<% $lang %>">Sichtbare</a>
+		<a class="mr-2 fs--12 <% $range_invisible_act %>" href="categs.html?show_invisible=1&lang=<% $lang %>">Unsichtbare</a>
+		<a class="mr-0 fs--12 <% $range_show_all_act %>"  href="categs.html?show_all=1&lang=<% $lang %>">Alle</a> ]
+		<span class="ml-3">
+			<% ${ $A->modal( label=>q~<i class="fi fi-plus-squared fs--25"></i>~,
+				url=>'/adx/_ajax/modal_add_category.html?css_id=402171_19', css_id=>'402171_19') } %>
+		</span>
+	</span>
+</div>
+
+<div class="portlet-body">
+%	if ($debug) {
+%		foreach (keys %{$cats}) {
+			[ Debug ] &middot; <b><% $_ %></b> = <code><% $cats->{$_} %></code><br>
+%		}
+%	}
+	<table class="table table-sm table-hover">
+%	my $i = 0;
+%	foreach my $c (@{$cats->{result}}) {
+%		my $label = $c->{label};
+%		my ($weight, $visible) = @{$C->query("select weight, visible from categories where id=$c->{id}")};
+%		my $main_cat = 0;
+%		my @subsubcats = ();
+%		my $vis_info = !$visible ? ' <span class="fs--11" style="background-color:yellow">unsichtb.</span>' : '';
+%		my $info_pgs = $C->mquery(stmt=>"select id from vproducts where cat_id=$c->{id} and lang='de' and `condition`='IP'");
+%		if ($c->{parent_id}) {
+%			$label = $c->{label};
+%			foreach (@{ $A->get_sub_categs($c->{id})}) {
+%				my $sublabel = $C->query("select label from categories where id=$_")->[0];
+%				push(@subsubcats, qq~<tr style="background-color:white !important; border:1px solid red !important">
+%							<td style="width:60px"><a class="ml--n5" href="/adm_categ.html?id=$_">$_</a></td>
+%							<td>$sublabel</td>
+%						</tr>~);
+%			}
+%		}
+%		else {
+%			$label = "<big><b>$c->{label}</b>$vis_info</big>";
+%			if ($i) {
+				<tr style="background-color:white !important"><td colspan="6">&nbsp;</td></tr>
+%			}
+%			$main_cat = 1;
+%		}
+		<tr style="background-color:<% $main_cat ? '#f0f0f0' : 'white' %> !important">
+			<td style="width:100px" class="pt-2"><a href="/adm_categ.html?id=<% $c->{id} %>"><% $c->{id} %></a></td>
+			<td style="width:220px"><% $label %></td>
+			<td><% $C->txt("_categ_desc_$c->{id}", $lang) %>
+%				if ($c->{has_meta}) {
+					<br />
+%					foreach my $mdat (@{ $c->{meta} }) {
+						&bull; <a href="/adm_db_edit.html?table=categ_meta&wcl=id%3D<% $mdat->{id} %>"><% $mdat->{xkey} %></a>
+						= <% $mdat->{xval} %><br>
+%						foreach (sort keys %{$mdat}) {
+%							next if $_ eq 'id' or $_ eq 'xkey' or $_ eq 'xval';
+							X -- <% $_ %> = <% $mdat->{$_} %><br>
+%						}
+%					}
+%				}
+%				if ($main_cat) {
+					<a class="link-muted fs--12" href="categs.html?id=<% $c->{id} %>&bAddMeta=1&lang=sys">+ Metadaten</a>
+%				}
+%				if (@{ $info_pgs->{mrows} }) {
+					<br />
+					<span class="fs--15">
+%					foreach my $p_id (@{ $info_pgs->{mrows} }) {
+%						my $title = $C->query("select title from products_desc where product_id=$p_id and lang='de' limit 1")->[0];
+						<i class="fi fi-plus fs--13 mr-1"></i> Info-Seite <a href="edit-product.html?id=<% $p_id %>"><% $p_id %></a> <% $title %><br>
+%					}
+					</span>
+%				}
+			</td>
+			<td>W-<% $weight %></td>
+			<td><a href="/adm_categs.html?bAdd=1&parent_id=<% $c->{id} %>">+</a></td>
+			<td><& inc_vertical_dots.html, id=>$c->{id}, C=>$C &></td>
+		</tr>
+%		if (@subsubcats) {
+%			foreach (@{ $A->get_sub_categs($c->{id})}) {
+%				my $sublabel = $C->query("select label from categories where id=$_")->[0];
+				<tr style="background-color:white !important">
+					<td></td>
+					<td><a href="/adm_categ.html?id=<% $_ %>"><% $_ %></a></td>
+					<td><i><% $sublabel %></i></td>
+					<td></td>
+					<td></td>
+					<td stylx="border:none"><span clasx="float-end mr-2"><& inc_vertical_dots.html, id=>$_, C=>$C &></span></td>
+				</tr>
+%			}
+%		}
+%		$i++;
+%	}
+
+	</table>
+
+	<p class="float-end mt-3"><a href="/adm_categs.html"><b>Alte Version</b></a> &ndash;
+		<a href="https://docs.ch2.be/w/prismado-shop/feat-categ">Wiki-Hilfe</a></p>
+
+	<script language="JavaScript">
+		function f312260_callback() {
+			document.location='categs.html?r=<% rand() %>';
+% #			alert('XX ich bin zurueck');
+		}
+
+		function f409141_callback_redir() {
+			document.location='categ-setting.html?r=<% rand() %>';
+		}
+	</script>
+</div>

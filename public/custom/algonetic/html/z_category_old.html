@@ -1,0 +1,79 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $is_admin      = $C->is_admin();
+	my $show_sold_out = $C->get_sys_config('show_sold_out_prods');
+
+	my $debug       = $C->{CGI}->param('debug');
+	my $search_orig = $C->{CGI}->param('q');
+	(my $search = $search_orig) =~ s/'/''/g;
+	    $search =~ s/ /%/g;
+	my ($sort, $order) = split /,/, $C->{CGI}->param('order');
+	    $sort += 0;
+	$order = 'a' unless ($order eq 'a' or $order eq 'd');
+
+	my $SID          = $C->getSID();
+	my $lang         = $C->getSessData('_current_lang') || 'de';
+	my $basket_count = $C->query("SELECT COUNT(*) FROM basket WHERE sid=$SID")->[0];
+
+	my $version = $C->{CGI}->param('version') + 0;
+	my $id = $C->{CGI}->param('id');
+	   $id = 988 unless $id =~ /^\d+$/;
+	my $title = $C->query("select label FROM categories WHERE id=$id AND lang='de'")->[0];
+	   $title = 'Suche' if $search;
+
+	my $token_id = $C->getSessData('token_id') + 0;
+	my %pagedata = ( title=>$title );
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$title%> | Produkte | <%$C->{CONFIG}->{site_title}%></title>
+<& include/head_metablock.html, d=>\%pagedata, C=>$C &>
+<&include/head_cssload.html&>
+</head>
+<body>
+<&include/content_header.html, basket_count=>$basket_count, SID=>$SID, is_admin=>$is_admin, C=>$C&>
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid ps-content">
+<& include/content_sideblock.html, cat_id=>$id, lang=>$lang, C=>$C, A=>$A &>
+
+<div id="productBlock" class="span9">
+	<div class="well ps-categorie">
+		<div class="span4"><h1><%$title%></h1></div>
+	</div>
+
+%	if ($version == 2) {
+	<&include/category_v2.html, id=>$id, SID=>$SID, q=>$search, sort=>$sort, order=>$order, A=>$A, C=>$C&>
+%	}
+%	else {
+	<& include/category.html, id=>$id, SID=>$SID, q=>$search, debug=>$debug, token_id=>$token_id,
+		sort=>$sort, order=>$order, show_sold_out=>$show_sold_out, A=>$A, C=>$C &>
+%	}
+</div>
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+% # ============================================================================================
+% # -- Bewirkt, dass Menüs 2. Hierarchie-Stufe offen bleiben, wenn angeklickt
+% # ============================================================================================
+% my $parent_id   = $C->query("select parent_id FROM categories WHERE id=$id")->[0];
+% my $parent_id_2 = $C->query("select parent_id FROM categories WHERE id=$parent_id")->[0];
+% if ($parent_id_2) {
+<script language=JavaScript>
+$( document ).ready(function() {
+	$(".submenulevel1 ul").slideToggle(0);
+});
+</script>
+% }
+% # ============================================================================================
+</body>
+</html>

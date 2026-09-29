@@ -1,0 +1,123 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	use utf8; # -- 19Feb2026
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $msg   = $args{msg};
+	my $email = $args{email};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $ostat = $args{order_status};
+	my $odat  = $args{odat};
+	my $delivery_date = $args{delivery_date};
+
+	my $phone_e164 = $C->format_phone_number(phone=>$odat->{deliv_phone});
+</%init>
+<div class="portlet-header border-bottom">
+	<h5>Bestellbest&auml;tigung &mdash; Unsere Referenz Nr. <span id="order_id_406102"><% $args{order_id} %></span></h5>
+</div>
+
+<div class="portlet-body" style="background-color:white">
+
+	<h5 class="mb-0 fs--18"><% $C->prop('mail_order_thanks') %></h5>
+
+	<table class="table mt-4 border table-responsive">
+		<% ${$args{order_stmt}->{out}} %>
+	</table>
+
+%	if ($msg) {
+		<div class="alert alert-info mt-3 text-center">
+			<% $msg %>
+		</div>
+%	}
+
+	<p>
+		Zahlungs-Methode: <% $ostat->{pay_meth_hr} %>
+		<% $ostat->{paid} ? "(CHF $odat->{amount_incl_vat} bezahlt)" : '(Nicht bezahlt)' %><br>
+	</p>
+
+	<div class="float-end">
+		<a href="#" class="js-ajax-modal"
+			data-href="/_ajax/modal_rating.html"
+			data-ajax-modal-size="modal-md"
+			data-ajax-modal-centered="true"
+			data-ajax-modal-backdrop="static">
+			<span>Bewerten Sie uns!</span>
+		</a>
+	</div>
+
+	<p>
+		<h5 class="mb-3">
+			Lieferung an
+%			if ( $odat->{delivery_note_file_name} ) {
+				(<a target="_blank" href="/<% $odat->{delivery_note_file_name} %>">Lieferschein</a>)
+%			}
+		</h5>
+
+		<% $odat->{deliv_company} %>
+		<span id="cust_firstname_deliv"><% $odat->{deliv_firstname} %></span>
+		<span id="cust_lastname_deliv"><% $odat->{deliv_lastname} %></span><br />
+		<span id="cust_street_deliv"><% $odat->{deliv_street} %></span><br />
+		<span id="cust_zip_deliv"><% $odat->{deliv_zip} %></span> <span id="cust_city_deliv"><% $odat->{deliv_city} %></span>
+		<span id="cust_region_deliv" style="display:none"></span>
+		&ndash; <span id="cust_country_deliv">CH</span>
+% #		<span id="cust_country_deliv" style="display:none">Schweiz</span>
+	</p>
+
+%	if ($phone_e164->{rc}) {
+		<p class="float-left mr-1">Tel. (Bitte im <a href="/account.html">Kundenkonto</a> korrigieren)</p>
+		<p class="float-left text-red-800" id="cust_phone_deliv" style="text-decoration:line-through"><% $phone_e164->{phone} || 'N/A' %></p>
+%	}
+%	else {
+		<p class="float-left mr-1">Tel.</p>
+		<p class="float-left" id="cust_phone_deliv"><% $phone_e164->{phone} || 'N/A' %></p>
+%	}
+
+	<p id="cust_email_deliv" class="float-left mt--n10" style="clear: left"><% $odat->{email} %></p>
+
+	<p class="float-left mt-2" style="clear: left">
+		DHL Tracking-Nr.: <b><% $odat->{dhl_shipmentTrackingNumber} || 'Wird erstellt' %></b>
+		<span id="deliv_date_406102" style="display:none"><% $delivery_date %></span>
+	</p>
+
+	<p class="float-end">
+		<% $C->prop('closing_greeting') %><br><br>
+
+		<% $C->prop('site_company') %><br>
+		<% $C->prop('site_email') %><br>
+		Tel. <% $C->prop('site_phone') %>
+	</p><br clear="all" />
+
+	<h5 class="mt-5">Bestellverlauf</h5>
+	<table class="table table-sm mt-3 table-responsive">
+%	foreach my $statr (@{ $ostat->{status_recs} }) {
+%		next if $statr->{xval} =~ /^N310260/;
+		<tr>
+		<td><% $C->trans_date_short($statr->{created_at}) %></td>
+		<td class="pl-4"><% $statr->{src_hr} %></td>
+%		if ($debug) {
+			<td class="pl-2"><% $statr->{src} %></td>
+%		}
+		<td class="pl-4">
+%			if ($statr->{status_id} == 400) {
+				DHL Tracking Nr. <% $odat->{dhl_shipmentTrackingNumber} %> /
+					Sendung <% $odat->{dhl_packages__trackingNumber__0} %>
+%			}
+%			elsif ($statr->{status_id} == 100) {
+				Versand wird vorbereitet
+%			}
+%			elsif ($statr->{status_id} == 200) {
+				Bestellung erfolgreich abgeschlossen
+%			}
+%			else {
+				<% $statr->{xval} %>
+%			}
+		</td>
+		<td class="pl-4">Info-Code <% $statr->{status_id} %></td>
+		</tr>
+%	}
+	</table>
+
+</div>

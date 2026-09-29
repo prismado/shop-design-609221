@@ -1,0 +1,121 @@
+<%init>
+	# -- Used by checkout.html
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $total      = $args{total};
+	my $total_1    = $args{total_1};
+	my $total_2    = $args{total_2};
+	my $total_3    = $args{total_3};
+	my $total_6    = $args{total_6};
+	my $cc_amount  = $args{cc_amount};
+	my $std_amount = $args{std_amount};
+	my $pri_amount = $args{pri_amount};
+	my $exp_amount = $args{exp_amount};
+	my $ins_amount = $args{ins_amount};
+	my $inv_amount = $args{inv_amount};
+</%init>
+<script language=JavaScript>
+	cur_pay = 1; // default
+	cur_ship = 4; // default
+% # ============================  Klick auf Zahlungsart-Bereich   ============================
+	function updateTot(type) {
+		if (type == 1) { // -- CC
+			if (cur_ship == 4) { // -- Standard <% $std_amount || '0.000' %>
+				dynTot.innerHTML = "<% $C->decimal_mark( $total + $std_amount + $cc_amount ) %>";
+			}
+			else if (cur_ship == 7) { // -- Express
+				dynTot.innerHTML = "<% $C->decimal_mark( $total + $exp_amount + $cc_amount ) %>";
+			}
+			else {
+				dynTot.innerHTML = "<% $C->decimal_mark( $total + $ins_amount + $cc_amount ) %>";
+			}
+		}
+		else if (type == 2) {
+			dynTot.innerHTML = "<% $total_2 %>"; // -- COD
+		}
+		else if (type == 3) {
+			dynTot.innerHTML = "<% $total_3 %>"; // -- Postcard
+		}
+		else if (type == 4) { // -- Rechnung
+			if (cur_ship == 4) { // -- Standard
+				dynTot.innerHTML = "<% $C->decimal_mark( $total + $std_amount + $inv_amount ) %>";
+			}
+			else if (cur_ship == 7) { // -- Express
+				dynTot.innerHTML = "<% $C->decimal_mark( $total + $exp_amount + $inv_amount ) %>";
+			}
+			else {
+				dynTot.innerHTML = "<% $C->decimal_mark( $total + $ins_amount + $inv_amount ) %>";
+			}
+		}
+		else {
+			dynTot.innerHTML = "<% $total_1 %>";
+		}
+
+		cur_pay = type; // update
+	}
+
+% # ============================  Klick auf Shipping-Bereich   ============================
+	function updateTotShip(type) {
+% #		----------------------- Standard:
+		if (type == 4) {
+			if (cur_pay == 1) {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $cc_amount + $std_amount) %>";
+			}
+			else if (cur_pay == 4) { // -- Rechnung
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount + $std_amount) %>";
+			}
+			else {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount) %>";
+			}
+		}
+% #		----------------------- Versichert + Unterschrift:
+		else if (type == 5) {
+			if (cur_pay == 1) {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $ins_amount + $cc_amount) %>";
+			}
+			else if (cur_pay == 4) {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $ins_amount + $inv_amount) %>";
+			}
+			else {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $ins_amount) %>";
+			}
+		}
+		else if (type == 6) {
+			if (cur_pay == 4) { // -- Rechnung
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount) %>";
+			}
+			else {
+				dynTot.innerHTML = "<%$total_6%>";
+			}
+		}
+% #		----------------------- Express:
+		else if (type == 7) {
+			if (cur_pay == 1) {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $cc_amount + $exp_amount) %>";
+			}
+			else if (cur_pay == 4) { // -- Rechnung
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount + $exp_amount) %>";
+			}
+			else {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount) %>";
+			}
+		}
+% #		----------------------- Priority:
+		else if (type == 8) {
+			if (cur_pay == 1) {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $cc_amount + $pri_amount) %>";
+			}
+			else if (cur_pay == 4) { // -- Rechnung
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount + $pri_amount) %>";
+			}
+			else {
+				dynTot.innerHTML = "<% sprintf('%.2f', $total + $inv_amount) %>";
+			}
+		}
+
+		cur_ship = type; // update
+	}
+</script>

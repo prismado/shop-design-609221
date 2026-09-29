@@ -1,0 +1,47 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>Foo Sub Title</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<p>Typeahead Demo</p>
+
+	<form method="post">
+		<input type=text class="form-control mt-2" style="max-width:45vw !important" autocomplete="off"
+			id="auto404021_19" placeholder="Leerschlag f&uuml;r Auswahl" name="tbd" value=""><br>
+
+		<input type="submit" class="btn btn-primary mb-2" value="Go!" name="bXX">
+	</form>
+
+	<hr />
+	[ <% ${ $A->modal( label=>'&Ouml;ffne Test Modal', class=>'text-blue-600',
+		url=>'/adx/_ajax/modal_foo_typeahead.html?id=4321&css_id=402171_19&foxi=932171-321', css_id=>'402171_19') } %> ]
+
+% # XXX	[ <% ${ $A->modal( label=>'Test Modal 2 (noch nicht f/Firefox)', class=>'text-blue-600',
+% # XXX		url=>'/adx/_ajax/modal_foo_typeahead_2.html?id=4321&css_id=404031_28&foxi=932171-321', css_id=>'404031_28') } %> ]
+
+	<p class="mt-3">
+		Siehe auch<br>
+		&bull; <a href="https://dmsd.prismado.com/plugins-sow-inline-search.html">plugins-sow-inline-search</a><br>
+		&bull; <a href="https://twitter.github.io/typeahead.js/examples/">twitter.github.io/typeahead.js/examples</a>
+	</p>
+
+	<div id="div82_404021">JQuery ist inaktiv</div>
+
+	<p class="mt-3">
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+</div>

@@ -1,0 +1,41 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $perm  = $args{perm};
+	my $debug = $args{debug}  // 0;
+	my $appenv= $args{appenv} // 'production'; # -- 07Sep2026
+</%init>
+<%doc>
+	LOGO
+	visibility : desktop only
+</%doc>
+% if ($appenv eq 'production') {
+<div class="d-none d-sm-block" style="background-color:#506A80;">
+% }
+% else {
+<div class="d-none d-sm-block bg-youtube">
+% }
+	<div class="clearfix d-flex justify-content-between">
+% #		Logo: width: 110 / height: 60px max
+		<a class="w-100	align-self-center navbar-brand p-3" href="/">
+			<img src="assets/images/logo/logo-prismado-transp-400x110.webp" height="48" alt="DN1105A">
+% # XXX			<img src="assets/images/logo/logo-prismado-400x120.avif" ZZwidth="97" height="48" alt="DN1105A">
+% # XX			<img src="assets/images/logo/logo_prismado_shop_white_bg.svg" height="46" style="margin-top:-5px; margin-bottom:-1px" alt="DN1105">
+% # XX			<img src="assets/images/logo/logo_prismado_shop_tx_white_bg.svg" width="97" height="40" alt="DN1105">
+		</a>
+	</div>
+</div>
+
+<div class="aside-wrapper scrollable-vertical scrollable-styled-light align-self-baseline h-100	w-100">
+<%doc>
+	IMPORTANT NOTE:
+	Curently using ajax navigation!
+	remove .js-ajax	class to have regular links!
+</%doc>
+
+%	# -- Orig: nav-deep-dark
+	<nav class="nav-deep nav-deep-light nav-deep-hover fs--15 pb-5">
+		<& left_nav.html, perm=>$perm, debug=>$debug, C=>$C &>
+	</nav>
+</div>

@@ -1,0 +1,23 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $title = $args{title} || 'Sub Title X';
+	my $icon  = $args{icon}  || 'mollecules';
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+% # <img class="img-fluid mb-2" src="/assets/images/demo_computer_1.jpg" style="min-width:100%">
+
+<h2 class="fs--20 text-dark mt-2 mb-1"><i class="fi fi-<% $icon %> mr-2"></i> <% $title %></h2>
+
+% # <p class="mt-3 mb-0">
+
+	<div class="row p-2">
+	<& __demo_inc_corp_box.html, title=>'Rollout / Staging' &>
+	<& __demo_inc_corp_box.html, title=>'Wiping und Recycling' &>
+	<& __demo_inc_corp_box.html, title=>'Refurbishing / Online Shop' &>
+	</div>
+
+% # </p>

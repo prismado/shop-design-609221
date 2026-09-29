@@ -1,0 +1,10 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $link = shift;
+	my $label = shift;
+	my $symbol = shift || 'fa-arrow-circle-right';
+	(my $THIS = $ENV{SCRIPT_NAME}) =~ s/^\///;
+	my $attr = $link eq $THIS ? ' class="current"' : '';
+</%init>
+<i class="fa <%$symbol%>"></i><a href="<%$link%>"><%$label%></a>

@@ -1,0 +1,295 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $is_admin = $C->is_admin();
+	my $is_logged_in = $C->is_logged_in();
+	my @appmsgs = ();
+
+	$C->cgi2session();
+
+	my $ship_meth     = $C->{CGI}->param('ship_meth') || $C->getSessData('ship_meth');
+	my $remarks       = $C->{CGI}->param('checkout_bemerkungen') || $C->getSessData('checkout_bemerkungen');
+	my $delivery_date = $C->{CGI}->param('checkout_liefer_date') || $C->getSessData('checkout_liefer_date');
+	my $debug         = $C->{CGI}->param('debug') + 0;
+	my $referenz_text = $C->{CGI}->param('checkout_referenz')    || $C->getSessData('checkout_referenz');
+	   $referenz_text =~ tr/["<>]//d; # -- Against XSS
+	my $addr_bill = $A->get_address(1);
+	my $addr_deliv = $A->get_address(2);
+
+	my %pay_meth_hr_map = (
+		cc => 'Kreditkarte', pc => 'Postcard', inv => 'Rechnung', cod => 'Nachname', pp => 'PayPal',
+		pre => 'Vorauskasse', pc3 => 'Kreditkarte', pcd => 'Postcard Direkt', twi=>'TWINT'
+	);
+
+	my %ship_meth_hr_map = (
+		std => 'Standard',
+		ins => 'Versicherter Versand',
+		postpac_prio => $C->prp('delivery_method_title_postpac_prio'),
+		pic => 'Selbstabholung',
+	);
+
+	my $pay_meth = $C->{CGI}->param('checkout_zahlungsart_select') || $C->getSessData('checkout_zahlungsart_select');
+	   $pay_meth =~ tr/["<>]//d; # -- Against XSS
+	my $pay_meth_hr = $pay_meth_hr_map{$pay_meth} || "* $pay_meth *";
+
+	my $ship_meth_hr = $ship_meth_hr_map{$ship_meth} || "* $ship_meth *";
+	$C->del_sess_key('flag_anon_buy'); # -- Reset flag
+
+	my $SID = $C->getSID();
+
+	my $order_okay = 1;
+	my $art_numbers = $A->get_products_art_no_from_session( $SID );
+	foreach my $prodid (keys %{$art_numbers}) {
+		my $stock_count = $C->query("select stock from options_details where ref='$art_numbers->{$prodid}'")->[0];
+		next if $stock_count == -1;
+		my $count_req   = $C->query("SELECT count FROM basket WHERE prod_id=$prodid and sid=$SID")->[0];
+		if ($count_req > $stock_count) {
+			my $prod_title = $C->query("select title from products_desc where product_id=$prodid and lang='$lang'")->[0];
+			my $stock_warn_msg = $C->prop('out_of_stock_warn');
+			   $stock_warn_msg =~ s/\{id\}/$prodid/g;
+			   $stock_warn_msg =~ s/\{avail\}/$stock_count/g;
+			push(@appmsgs, $stock_warn_msg);
+			push(@appmsgs, $C->prop('out_of_stock_hint'));
+			$C->log(msg=>'WARN: ' . $C->web_enc($C->utf2iso($stock_warn_msg)), importance=>1);
+			$order_okay = 0;
+		}
+	}
+
+	$C->saveSessData('ship_meth', $ship_meth); # -- To get a current result from the next method on case it has been updated
+	my $grand_tot = $A->get_order_grand_total(debug=>$debug); # -- Total inkl. Mwst.
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Summary | <%$C->{CONFIG}->{site_title}%></title>
+<& include/head_metablock.html, C=>$C &>
+<& include/head_cssload.html &>
+</head>
+
+<body>
+<& include/content_header.html, is_admin=>$is_admin, C=>$C &>
+<!-- Adress Lightbox =======-->
+ <div id="adressLightbox" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="adressen" aria-hidden="false">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+                            <h4><% $C->prop('adress_input') %></h4>
+                        </div>
+
+                        <div class="modal-body">
+                              <div id="ajx_adress"></div>
+                               </div>
+      </div>
+
+       </div>
+ <!-- AGB Lightbox =======-->
+ <div id="agbLightbox" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="AGB's" aria-hidden="false">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+                            <h4 class="modal-title text-center text-uppercase"><% $C->prop('agbs_long') %></h4>
+                        </div>
+
+                        <div class="modal-body">
+                              <div id="ajx_agb"></div>
+                               </div>
+      </div>
+ <!-- lightbox =======-->
+<!-- Datenschutz Lightbox =======-->
+    <div class="modal fade" id="policyLightbox" tabindex="-1" role="dialog" aria-label="<% $C->prop('agbs') %>" aria-hidden="true">
+      <div class="modal-dialog modal-md-middle">
+        <div class="modal-content">
+          <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</span></button>
+            <h4 class="modal-title text-center text-uppercase">
+          <% $C->prop('policy') %>
+            </h4>
+          </div>
+
+            <div class="modal-body">
+             <div id="ajx_policy"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+ <!-- lightbox =======-->
+
+<div id="mainContainer">
+<div class="container">
+<div class="row-fluid ps-content">
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('order_overview') %></h1>
+</div>
+
+<div id="checkoutBlock">
+
+
+<div id="stepWrapper">
+<div class="span3"><div class="stepBox"><span class="badge label-normal">1</span> <% $C->prop('order_finalize') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-success">2</span> <% $C->prop('order_overview') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">3</span> <% $C->prop('payment') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">4</span> <% $C->prop('confirmation') %></div></div>
+</div>
+
+<div id="checkoutContent">
+<br>
+<p> <% $C->prop('order_text') %> </p>
+
+% unless ($order_okay) {
+	<div style="background-color:#ffbf3a !important; font-weight:bold; padding:20px">
+		<% join '<br>', @appmsgs %>
+	</div><br />
+% }
+
+<form name="summary" action="payment.html" method="post" id="form-summary">
+% if ($debug) {
+	<input type=hidden name=debug value="<% $debug %>">
+% }
+<div class="no-more-tables">
+
+	<& include/summary.html, total=>$grand_tot->{grand_total}, grand_tot=>$grand_tot, CORE=>$C, A=>$A, SID=>$SID, debug=>$debug &>
+
+ <table class="table table-hover">
+	<thead data-title="<% $C->prop('title_delivery') %>" class="well">
+	<tr><th colspan="2"><% $C->prop('title_delivery') %></th></tr>
+	</thead>
+	<tbody>
+%	# -- Versand / Zahlungsart
+	<tr>
+              <td><% $C->prop('delivery_method') %></td>
+              <td nowrap class="last_td" style="width:160px !important">
+%	if ($ship_meth eq 'pic') {
+		<a target="_blank" href="info_selbstabholer.html"><%$ship_meth_hr%></a>
+%	}
+%	else {
+		<%$ship_meth_hr%>
+%	}
+		</td>
+	</tr>
+
+	<tr>
+              <td><% $C->prop('payment_method') %></td>
+              <td class="last_td"><%$pay_meth_hr%></td>
+            </tr>
+          </tbody>
+        </table>
+
+ </div> <!-- end  no-more-tables-->
+
+% if ($referenz_text) {
+<table class="table table-hover">
+             <thead class="well">
+            <tr>
+              <th><%$C->prop('cust_ref')%></th>
+            </tr>
+          </thead>
+            <tr>
+ <td><%$referenz_text%></td>
+        </tr>
+        </table>
+% }
+% if ($remarks) {
+<table class="table table-hover">
+             <thead class="well">
+            <tr>
+              <th><% $C->prop('comment') %></th>
+            </tr>
+          </thead>
+            <tr>
+ <td> <% $remarks %></td>
+        </tr>
+        </table>
+% }
+
+% if ($is_logged_in) {
+	<&include/addresses_blocks.html, A=>$A, CORE=>$C, debug=>$debug&>
+% }
+% else {
+<div id="not_logged_in">
+	<div style='width:100%;color:red;margin-bottom:10px; margin-top:10px; float:left;'><% $C->prop('not_loggedin') %></div>
+
+%	if ($ENV{HTTP_USER_AGENT} =~ /MSIE (7|8|9)\.\d+;/) {
+		<form><input class="gray_btn" type=button value="Weiter	ohne Anmeldung"
+			onclick="JavaScript:document.getElementById('addr_anon_msie8').style.display='';this.style.display='none'">
+			<br><br>
+		</form>
+		<div id="addr_anon_msie8" style='display:none'>
+		<&_includes/addresses_blocks_anon.html&>
+		</div>
+%	}
+%	else {
+	<div id="no_registration">
+<button type="button" data-target="#login" data-toggle="modal" class="btn btn-checkout"><% $C->prop('login') %></button>
+		<input id="no_reg" class="btn btn-grey" onclick="document.getElementById('not_logged_in').style.display='none';
+		document.getElementById('includeLogincenter').style.borderColor='#ddd';$('#ajx_address_one_time').load('_includes/addresses_blocks_anon.html')" type="button" name="no_reg" value="<% $C->prp('continue_nologin') %>"></div>
+	</div>
+
+	<div id="ajx_address_one_time"></div>
+%	}
+% }
+
+% if ($is_logged_in) {
+<div class="checkbox checkbox-custom checkbox-circle">
+	<input type="checkbox" id="agb_check" name="agb_check" value="accept">
+	<label for="agb_check"><% $C->prop('agb_info') %> <a target="_blanc" data-toggle="modal" onclick="$('#ajx_agb').load('_includes/info_agbs_de.html')" data-target="#agbLightbox"><% $C->prop('agbs_long') %></a> | <a target="_blanc" data-toggle="modal"
+              onclick="$('#ajx_policy').load('_includes/info_policy_de.html')" class="ps_under_line" data-target="#policyLightbox"><% $C->prop('policy') %></a></label><br>
+</div>
+        <div class="buttons">
+% if ($order_okay) {
+ <input id="submit_summary" class="btn btn-checkout" type="submit" name="submit_summary" value="<% $C->prop('btn_continue_payment') %>">
+% }
+<a class="btn btn-grey" href="javascript:history.back()"><% $C->prop('btn_return') %></a>
+ </div>
+
+% }
+	    </form>
+
+% unless ($is_logged_in) {
+<div id="includeLogincenter">
+	<&include/login_center.html, CORE=>$C&>
+ </div>
+% }
+
+</div><!--end checkout -->
+% if ($debug) {
+	<&include/debug.html, CORE=>$C, A=>$A&>
+% }
+
+<br>
+</div><!-- End span-->
+</div><!-- End productBlock -->
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+<script src="js/jquery.form-validation.min.js"></script>
+<script>
+$(function(){
+$('#form-summary').formValidation({
+validationMessage   : 'val-message',
+requireClass        : 'required',
+errorBoxClass       : 'val-box',
+errorClass          : 'alert error',
+showErrorMsg        : true,
+consecutiveErrors   : false,
+appendErrorToTitle  : false,
+ajaxMode			: false,
+defaultErrorMsg     : "Bitte ausfüllen!",
+defaultSuggestText  : "",
+});
+});
+</script>
+
+</BODY>
+</HTML>

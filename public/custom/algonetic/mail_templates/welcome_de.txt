@@ -1,0 +1,46 @@
+From: "{{from_name}}" <{{order_mail_sender}}>
+To: {{to}}
+Subject: Willkommen im Auctionline Shop
+X-Info: mail.pgate.net/xml-rpc
+User-Agent: Thunderbird 2.0.0.24 (Windows/20100228)
+MIME-Version: 1.0
+Content-Type: text/html; charset=UTF-8
+X-Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>mail</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body style="font-family:Roboto,Helvetica,Verdana,Arial,sans-serif; font-size:16px; color:#515151;">
+
+Willkommen im <b style="color:#ff8800;">Auctionline Shop</b> &ndash; Ihrem Webshop f&uuml;r IT-Markenprodukte!<br><br>
+
+Bitte best&auml;tigen Sie Ihre E-Mail-Adresse, indem Sie auf den folgenden Link klicken:
+<br><br>
+
+<a href="https://{{HTTP_HOST}}/account.html?token={{TOKEN}}">Registrierung abschliessen</a>
+<br><br>&nbsp;<br>
+
+Freundliche Gr&uuml;sse<br><br>
+
+<b>Swiss Solution Group AG</b><br><br>
+
+<small>
+Bahnhofstrasse 66 <br>
+CH-5605 Dottikon<br><br>
+
+<table style="font-family:Roboto,Helvetica,Verdana,Arial,sans-serif; font-size:12px; color:#515151;">
+
+<tr><td>Tel.</td>	<td>+41 (0)56 616 99 66</td></tr>
+<tr><td>E-Mail</td>	<td>sales@auctionline.ch</td></tr>
+<tr><td>Web</td>	<td>{{HTTP_HOST}}</td></tr>
+<tr><td>Twitter&nbsp;&nbsp;</td>	<td>x.com/auctionline</td></tr>
+
+</table>
+
+</small>
+
+</body></html>

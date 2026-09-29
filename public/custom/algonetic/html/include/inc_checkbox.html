@@ -1,0 +1,38 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $name   = $args{name};
+	my $choice = $args{choice}; # -- Ja||Nein
+	my $C      = $args{C};
+
+	my @choices = split /\|\|/, $choice;
+
+	my $checked = $C->getSessData($name);
+</%init>
+<div class="checkbox mt-4">
+    <label class="form-switch form-switch-success d-block">
+
+	<input type="checkbox" id="<% $name %>" name="<% $name %>"
+		onclick="click_cb_<% $name %>()" <% $checked ? 'checked' : '' %> value="<% $choices[0] %>">
+	<i data-on="&#10004; Ja" data-off="&#10005;"></i>
+
+	<label clasx="ml-2" for="<% $name %>">
+		<% $args{label} %><span class="font-weight-bold ml-2" id="cur_choice_<% $name %>"></span>
+	</label>
+
+    </label>
+</div>
+
+<script language="JavaScript">
+	var checked_<% $name %> = <% $checked ? 1 : 0 %>
+	function click_cb_<% $name %> () {
+		if (checked_<% $name %> == 1) {
+			document.getElementById('cur_choice_<% $name %>').innerHTML='<% $choices[1] %>'
+			checked_<% $name %> = 0
+		}
+		else {
+			document.getElementById('cur_choice_<% $name %>').innerHTML='<% $choices[0] %>'
+			checked_<% $name %> = 1
+		}
+	}
+</script>

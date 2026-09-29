@@ -1,0 +1,97 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $hl    = $args{hl};
+	my $col   = $args{col} || 6; # -- Use 4 instead of 6 for three articles on one row
+	my $debug = $args{debug};
+
+	my $url_friendly_cat = $C->url_friendly($hl->{cat_name});
+
+	my $id = $hl->{id};
+
+	  my $link = "/product/$hl->{title_enc}/$id"; # -- 06Nov2023
+	my $spec_sale = $hl->{price_incl_vat} != $hl->{price_orig_incl_vat} ? 1 : 0; # -- 06Sep2024
+
+	my $height_promo_box = 100; # -- (e.g. 80 / 100) / Use 220 for full description (06Jan2024)
+</%init>
+<div class="col-12 col-lg-<% $col %>">
+    <div class="card shadow-md shadow-lg-hover transition-all-ease-250 transition-hover-top XXh-300 border-light bl-0 br-0 bb-0 bw--2 mt-1 mb-0"
+		style="max-width:800px">
+	<div class="card-body p-2">
+		<& inc_carousel_product.html, hl=>$hl, max_w=>'62%', img_w=>205, C=>$C &>
+
+		<div class="float-end lead mt-0">
+%		if ( $hl->{extra} == 1) {
+			<span class="badge badge-warning"><span class="ml-1 fs--11" style="letter-spacing:1px">Neuger&auml;t</span></span>
+%		}
+%		else {
+			<span class="badge badge-info"><span class="ml-1 fs--11">Refurbished</span></span>
+%		}
+		</div>
+
+%		# -- Large screens from a screen size of 1200 pixels:
+		<h5 class="card-title mt-2 ml-1 hidden-lg-down prism-limit-len-450-405041" style="line-height:130%; font-size:<% $args{title_size} %>">
+			<a class="text-dark text-decoration-none" href="<% $link %>"><% $hl->{title} %></a>
+		</h5>
+
+%		# -- Screens from 992 to 1200 pixels:
+		<h5 class="card-title mt-2 ml-1 hidden-xl-up hidden-md-down product-name" style="line-height:130%; font-size:1.05rem">
+			<a class="text-dark font-weight-bold text-decoration-none" href="<% $link %>">
+				<% $hl->{title} %>
+			</a>
+		</h5>
+
+%		# -- Screens below 992 pixels:
+		<h5 class="card-title mt-2 ml-1 hidden-lg-up" style="line-height:130%; font-size:1.05rem">
+			<a class="text-dark font-weight-bold text-decoration-none" href="<% $link %>">
+				<% $hl->{title} %>
+			</a>
+		</h5>
+
+		<div class="card-text h--<% $height_promo_box %> scrollable-vertical pl-1 rounded"
+			style="scrollbar-color: #e1e1e1 #f8f8f8; scrollbar-width:thin; margin-top:10px !important; margin-bottom: 10px !important">
+%			if ($args{debug}) {
+				<code>include/inc_two_products.html</code><br />
+				<small>
+%				foreach (@{ $hl->{xtra_imgs} }) {
+					X -- <% $_ %><br>
+%				}
+				</small>
+%			}
+			<p class="fs--15" style="text-wrap: balance;"><% $hl->{desc_keyw} %></p>
+		</div>
+
+			<span class="fs--15 text-dark">
+%				if ($spec_sale) {
+					statt <s>CHF <% $hl->{price_orig_incl_vat} %></s>
+%				}
+			</span><br />
+			<p class="font-weight-bold lead mb-0" style="color:#ce3b48">CHF <% $hl->{price_incl_vat_fmt} %></p>
+
+			<span class="float-right mt-n2 mb-0 prism-limit-len-450-405041" data-toggle="tooltip" data-placement="bottom"
+				data-original-title="In den Warenkorb <% $hl->{mand_count} ? 'mit Optionen' : '' %>">
+%			    if ($hl->{mand_count}) {
+				<a class="fs--20 text-dark text-decoration-none" href="article-<% $id %>-<% $hl->{title_enc} %>.html"><img
+					alt="Zum Warenkorb" width="22" height="22"
+					src="/assets/images/icon_add_to_basket.svg" style="width:22px !important; margin-bottom:4px !important">&uarr;</a>
+%			    }
+%			    else {
+				<a href="#" style="text-decoration:none" class="fs--20" onclick="JavaScript:add2bask(<% $id %>)"><img
+					width="22" height="22"
+					src="/assets/images/icon_add_to_basket.svg" alt="Zum Warenkorb" style="width:22px !important;"></a>
+%			    }
+			</span>
+
+			<p class="mb-0">
+			<a class="text-dark font-weight-light" href="/products/<% $url_friendly_cat %>/<% $hl->{cat_id} %>">
+				<span class="hidden-lg-down fs--14"><% $C->shorten_title($hl->{cat_names}, 25) %></span>
+				<span class="hidden-xl-up hidden-md-down"><% $C->shorten_title($hl->{cat_names}, 11) %></span>
+				<span class="hidden-lg-up"><% $hl->{cat_names} %></span>
+			</a> &middot; <span class="fs--14"><% $hl->{brand} %></span>
+			</p>
+
+	</div>
+    </div>
+</div>

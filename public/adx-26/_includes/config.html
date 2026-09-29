@@ -1,0 +1,94 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $curcfg = $args{curcfg};
+
+	my %help = my %hlp_title = ();
+
+	$help{501160} = q~mnemonic LIKE 'edi\_%'~;  $hlp_title{501160} = 'EDI-Hilfe';
+	$help{501161} = q~mnemonic LIKE '%\_data'~; $hlp_title{501161} = 'Daten-Hilfe';
+</%init>
+<div class="portlet-header border-bottom">
+	<span class="float-end">
+		<span id="ajx_402171_19"></span>
+		<span class="text-blue-600 cursor-pointer" onclick="JavaScript:loadModal402171_19(1)">Online-Hilfe</span>
+		&middot; <span class="text-blue-600 cursor-pointer" onclick="JavaScript:loadModal402171_19(2)">(2)</span>
+%		if ($perm->{is_devel}) {
+			&middot; <a href="/app/config">Config <sup>2026</sup></a>
+			<% $ENV{db_name} %> @ <% $ENV{db_host} %>
+%		}
+	</span>
+	<span>Konfiguration</span>
+</div>
+
+<div class="portlet-body">
+
+	<ul class="list-group list-group-flush rounded overflow-hidden mt-3 col-11">
+		<& inc_aero_list_item.html, label=>'Stammdaten', url=>'/adx/show.html?macro=master_data',
+			info=>'Stammdaten bearbeiten: Unternehmensadresse / Bankkonten / Firmennummer',
+			badge=>'fi fi-homeadvisor', badge_type=>'info', no_border=>1, C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"Versand / Shipping", url=>'/adm_shipping.html', legacy=>1,
+			info=>'Versandkosten und -einstellungen', badge=>'&#128666', badge_type=>'info', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"E-Mail-Konfiguration", url=>'/adx/show.html?macro=mail',
+			info=>q~Einstellungen zum Versenden und Empfangen der E-Mails &ndash; <a href="/adx/special_keys.html?area=order">Sender-Adressen</a>~,
+				badge=>'fi fi-envelope', badge_type=>'info', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Mehrwertsteuer / VAT', url=>'/adm_vat.html',
+			info=>qq~Haupt-Satz aktuell: <a href="special_keys.html?area=vat">$C->{CONFIG}->{vat_1} %</a>~,
+				badge=>'&#128181', badge_type=>'warning', legacy=>1, C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Shop-Konfiguration', url=>'shop-config.html',
+			info=>qq~Sys-Properties, spezielle Shop-Einstellungen, Speicher-Pfade &middot;
+				<a href="/adx/special_keys.html?area=default">Default-Werte</a> &mdash;
+					<a href="/adx/categs.html">Tagesangebote</a>: Kat-ID $curcfg->{daily_offer}->{id}~,
+					badge=>'fi fi-cart-5', badge_type=>'danger', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"Post-processing", url=>'special_keys.html?area=order_post',
+			info=>'Shop-spezifische Aktivit&auml;ten nach einer erfolgten Bestellung (Schlussverarbeitung)',
+				badge=>'fi fi-cogs', badge_type=>'info', C=>$C &>
+
+<%perl>
+		my $xtra_inf_sysconf = '';
+		if ($perm->{is_devel}) {
+			$xtra_inf_sysconf = '&mdash; <a href="/adm_safe_properties.html?lang=sys">Safe-Properties</a>';
+		}
+</%perl>
+		<& inc_aero_list_item.html, label=>"System-Konfiguration", url=>'special_keys.html',
+			info=>qq~CONFIG-Werte: Hostname, Document Root usw. &mdash;
+				<a href="/_systex/install/help/de/12/7/">EDI-Konfiguration</a> $xtra_inf_sysconf~,
+				badge=>'fi fi-cog', badge_type=>'danger', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"System Jobs", url=>'show.html?macro=prism_sys_jobs',
+			info=>'Periodische automatische Verarbeitungen', badge=>'fi fi-cog-full', badge_type=>'danger', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"&Uuml;bersicht alte Hauptkonfiguration", url=>'/adm_config.html', legacy=>1,
+			info=>'Alle bisherigen Einstellungen', badge=>'fi fi-hourglass', badge_type=>'warning', C=>$C &>
+	</ul>
+
+	<h3 class="mt-5 fs--19">Siehe auch</h3>
+%	foreach my $hlp (sort keys %help) {
+		&bull; <a href="help.html?fil=<% $C->uri_esc($help{$hlp}) %>&chk=<% substr($C->md5_secret($help{$hlp}), 0, 6) %>"><% $hlp_title{$hlp} %></a><br>
+%	}
+</div>
+
+<script>
+function loadModal402171_19(area) {
+  $.ajax({
+    url: '/adx/_ajax/modal_online_help.html?css_id=402171_19&area=' + area,
+    type: 'GET',
+    dataType: 'html',
+    success: function(response) {
+     $('#ajx_402171_19').html(response);
+	$('#402171_19').modal('show');
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+}
+</script>

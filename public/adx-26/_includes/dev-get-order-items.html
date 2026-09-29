@@ -1,0 +1,175 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $P        = $args{P}; # -- 18Aug2026
+	my $perm     = $args{perm};
+	my $order_id = $args{order_id};
+	my $debug    = $args{debug};
+
+	my $ord_items = $A->get_order_items(order_id=>$order_id, show_options=>1, debug=>2);
+
+	my $st_hist = $C->{dbh}->prepare(qq~
+		select	id, created_at, uid, src, status_id, xval
+		from	orders_status
+		where	order_id=$order_id
+		order	by 1 DESC
+		limit	999
+	~);
+	   $st_hist->execute();
+</%init>
+<div class="portlet-body">
+
+	<div class="float-end w--200">
+		<& inc_select_redir_405141.html, this=>$C->this(), order_id=>$order_id &>
+	</div>
+
+	<div class="float-end mr-5">
+		<a href="/adm_db_edit.html?table=orders&wcl=id%3D<% $order_id %>"><small>Order: DB Edit</small></a>
+		&middot; <a href="/_systex/install/help/de/4/1/">?</a>
+	</div>
+
+	<h4 class="fs--20">$A-&gt;get_order_items( order_id=&gt;<a
+		href="/admix.html?func=orders&id=<% $order_id %>"><code><% $order_id %></code></a>, show_options=&gt;<code>1</code> ) # &ndash;
+		<a href="/adm_user.html?id=<% $ord_items->{x_uid} %>">
+			<% $C->trim("$ord_items->{x_firstname} $ord_items->{x_lastname} $ord_items->{x_company}") %></a>, <% $ord_items->{x_city} %>
+	</h4>
+
+	<p>Wird verwendet von <code>$A-&gt;create_pdf_bill()</code></p>
+
+	<p>
+		<tt>$P-&gt;get_shipment_tracking_number(order_id =&gt; <% $order_id %>)-&gt;{tracking_number}</tt> &rarr;
+			<b class="text-dark"><% $P->get_shipment_tracking_number(order_id => $order_id)->{tracking_number} %></b>
+	</p>
+
+	<form method="post" name="f412231">
+	    <input type="hidden" name="order-id" value="<% $order_id %>">
+	    <input type="hidden" name="bAction" value="1">
+	    <div class="float-end">
+		<div class="form-label-group w--220">
+			<select id="sel_412231" name="action" class="form-control bs-select" onchange="document.f412231.submit();">
+				<option value="" style="background-color:lightgreen !important;" selected>&middot; Bitte w&auml;hlen</option>
+				<option class="fs--13" value="finalize">finalize(suppr_merch=&gt;1)</option>
+				<option class="fs--13" value="finalize_20">finalize(suppr_merch=&gt;1, force_email=&gt;1)</option>
+				<option class="fs--13" value="finalize_00">finalize( )</option>
+				<option class="fs--13" value="finalize_30">finalize(force_email=&gt;1)</option>
+				<option class="fs--13" value="recreate_order_response">Order Response (EDI)</option>
+				<option class="fs--13"  value="foo">Reload</option>
+			</select>
+			<label for="select_options"><i class="fi fi-cog"></i> Aktionen</label>
+		</div>
+	    </div>
+	</form>
+
+	<table class="table table-sm col-9 table-hover mb-0 border">
+%	foreach my $row (@{$ord_items->{item_rows}}) {
+		<tr style="background-color:#e1e1e1 !important">
+			<td class="font-weight-bold fs--18" colspan="3">[ <% $row->{title} %> ]</td>
+		</tr>
+%		foreach (sort keys %{$row}) {
+%			next if $_ eq 'title';
+%			next unless length( $row->{$_} );
+			<tr>
+			<td style="width:38%">[ <code>item_rows</code> ] &middot; <b><% $_ %></b></td>
+			<td>
+%				if (/^prod_id$/) {
+					<a href="edit-product.html?id=<% $row->{$_} %>"><% $row->{$_} %></a>
+%				}
+%				else {
+					<% $row->{$_} %>
+%				}
+			</td>
+			<td>
+%				if (/^count$/ && $row->{prod_id}) {
+					<span class="float-end">
+%						if ($perm->{is_devel}) {
+		<a class="mr-3" href="/API/?action=get_basket_options_by_order_pos&token=<% $args{api_token} %>&order_pos_id=<% $row->{orders_product_id} %>">API</a>
+%						}
+					<a href="/adm_db_edit.html?table=orders_products&wcl=order_id%3D<% $order_id %>+AND+prod_id%3D<% $row->{prod_id} %>"><i
+						class="fi fi-pencil"></i></a> &ndash;
+					<a href="/adm_db_edit.html?table=orders&wcl=id%3D<% $order_id %>"><i class="fi fi-pencil"></i> <small>Order</small></a>
+					</span>
+%				}
+			</td>
+			</tr>
+%		}
+		<tr style="background-color:white !important"><td colspan="3">
+%		    if ($row->{prod_id}) {
+%			my $st = $C->{dbh}->prepare(
+%				"SELECT id, xkey, xval FROM orders_details WHERE order_id=$order_id AND xkey like 'pr%$row->{prod_id}\_%' order by 2");
+%			   $st->execute() or $m->out("ERR $DBI::errstr<br>");
+%			while(my $r = $st->fetch()) {
+%				my ($id, $key, $val) = @{$r};
+				[ orders_details ] - <% $key %> = <a href="/adm_db_edit.html?table=orders_details&wcl=id%3D<% $id %>"><% $val %></a><br>
+%			}
+%		    }
+%		    else {
+			&nbsp;
+%		    }
+		</td></tr>
+%	}
+	</table>
+
+%	my $st = $C->{dbh}->prepare("SELECT id, xkey, xval FROM orders_details WHERE order_id=$order_id AND xkey like 'pr%' order by 2");
+%	   $st->execute() or $m->out("ERR $DBI::errstr<br>");
+%	while(my $r = $st->fetch()) {
+%		my ($id, $key, $val) = @{$r};
+		[ orders_details &ndash; pr% ] &middot; <% $id %> <b><% $key %></b> = <% $val %><br>
+%	}
+	<% $st->rows() ? '<br>' : '' %>
+
+	<span class="float-end mr5">
+		<& inc_modal_link.html, label=>'Add Order Detail', url=>"/_ajax/modal_adx_add_order_detail.html?order_id=$order_id",
+			size=>'md', class=>'btn btn-sm btn-primary ZZbtn-pill', C=>$C, XXgroup_icon=>'fi fi-locked' &>
+	</span>
+
+	<h4 class="fs--20 mb-3">$A-&gt;ord_items->{ ... } &middot; <small>Schl&uuml;ssel mit Pr&auml;fix "_x" stammen aus
+		<code class="fs--18 font-weight-bold">get_order( )</code></small></h4>
+
+	<table class="table table-sm col-9 table-hover mt-2 border">
+%	foreach (sort keys %{$ord_items}) {
+%		next unless length($ord_items->{$_});
+%		next if $_ eq 'item_rows' or $_ eq 'vat_rates' or $_ eq 'debug' or $_ eq 'VERSION';
+%		(my $det_key = $_) =~ s/^x\_//;
+%		my $is_o_detail = 1 if $det_key eq 'remarks' or $det_key =~ /^pay\_res.+/;
+%		   $is_o_detail ||= $C->query("select id from orders_details where xkey='$det_key' and order_id=$order_id limit 1")->[0];
+		<tr>
+		<td class="font-weight-bold" style="width:38%"><% $_ %></td>
+		<td><% $ord_items->{$_} %>
+%			if ($is_o_detail) {
+				<a href="/adm_db_edit.html?table=orders_details&wcl=order_id%3D<% $order_id %>+and+xkey=%27<% $det_key %>%27"><i
+					class="fi fi-pencil"></i></a>
+%			}
+		</td>
+		</tr>
+%	}
+	</table>
+
+	<h4 class="fs--20 mb-3">Order History &ndash; <a href="dev-get-order-items.html?order-id=<% $order_id %>&bAddHist=1">Add</a></h4>
+
+	<form method="post">
+	<input type="hidden" name="order-id" value="<% $order_id %>">
+	<table class="table table-sm">
+%	while(my $r = $st_hist->fetch()) {
+%		my ($id, $created_at, $uid, $src, $status_id, $xval) = @{$r};
+		<tr>
+			<td><% $C->trans_date_short($created_at) %></td>
+			<td><% $status_id %></td>
+			<td><% $src %></td>
+			<td>UID <% $uid %></td>
+			<td><% $xval %></td>
+			<td><input type="checkbox" class="mr-2" name="cb_hist_<% $id %>"> <a
+				href="/adm_db_edit.html?table=orders_status&wcl=id%3D<% $id %>"><i class="fi fi-pencil"></i></a></td>
+		</tr>
+%	}
+	</table>
+	<input type="submit" class="btn btn-danger" name="bDelHist" value="del">
+	</form>
+
+	<hr />
+%	foreach (@{$ord_items->{vat_rates}}) {
+		[ <code>vat_rates</code> ] &middot; <% $_ %> %<br>
+%	}
+
+</div>

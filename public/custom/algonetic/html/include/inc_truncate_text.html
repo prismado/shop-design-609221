@@ -1,0 +1,56 @@
+    <style>
+	.truncate-text {
+	    position: relative; overflow: hidden;
+	}
+	.truncate-text.truncated::after {
+	    content: "";
+	    position: absolute;
+	    bottom: 0;
+	    left: 0;
+	    width: 100%;
+	    height: 50px;
+	    background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,1));
+	}
+	.show-more {
+	    display: none;
+	    position: relative;
+	    z-index: 1;
+	    background-color: white;
+	    padding: 0 5px;
+	    text-decoration: none;
+% #	    color: blue;
+	}
+	.show-more:hover { text-decoration: underline; }
+    </style>
+
+    <script>
+	function truncateText() {
+	    const container = document.querySelector('.truncate-container');
+	    const textElement = container.querySelector('.truncate-text');
+	    const link = container.querySelector('.show-more');
+	    const windowHeight = window.innerHeight;
+	    const maxHeight = windowHeight * 0.14;
+
+	    // Reset
+	    textElement.style.maxHeight = 'none';
+	    textElement.classList.remove('truncated');
+	    link.style.display = 'none';
+
+	    if (textElement.offsetHeight > maxHeight) {
+		textElement.style.maxHeight = `${maxHeight}px`;
+		textElement.classList.add('truncated');
+		link.style.display = 'inline';
+	    }
+	}
+
+	document.querySelector('.show-more').addEventListener('click', function(e) {
+	    e.preventDefault();
+	    const textElement = this.previousElementSibling;
+	    textElement.style.maxHeight = 'none';
+	    textElement.classList.remove('truncated');
+	    this.style.display = 'none';
+	});
+
+	window.addEventListener('load', truncateText);
+	window.addEventListener('resize', truncateText);
+    </script>

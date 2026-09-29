@@ -1,0 +1,45 @@
+.tt-menu {
+    background-color: white !important; /* Stellt einen weißen Hintergrund ein */
+    opacity: 1; /* Macht den Hintergrund vollständig undurchsichtig */
+    border: 1px solid #ccc; /* Fügt einen leichten Rahmen hinzu */
+    border-radius: 4px; /* Optional: Rundet die Ecken für ein moderneres Aussehen */
+    box-shadow: 0 5px 10px rgba(0,0,0,.2); /* Optional: Fügt einen Schatten für einen schwebenden Effekt hinzu */
+    min-width: 20vw;
+    z-index: 1000; /* Stellt sicher, dass das Menü über anderen Elementen schwebt */
+}
+
+.tt-suggestion {
+    padding: 8px 16px; /* Fügt Innenabstand hinzu */
+    border-bottom: 1px solid #eee; /* Fügt eine Trennlinie zwischen den Vorschlägen hinzu */
+    cursor: pointer; /* Ändert den Cursor zum Zeiger, um Interaktivität anzudeuten */
+}
+
+.tt-suggestion:last-child {
+    border-bottom: none; /* Entfernt die Trennlinie vom letzten Vorschlag */
+}
+
+.tt-suggestion:hover {
+    background-color: #f8f8f8; /* Aendert den Hintergrund beim Hover */
+}
+
+/* etc */
+.prism-limit-len-404282 {
+	max-width: 250px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prism-limit-len-350-404282 {
+	max-width: 350px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prism-limit-len-400-404282 {
+	max-width: 400px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

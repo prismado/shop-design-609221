@@ -1,0 +1,81 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $id        = $args{id} + 0;
+	my $callb     = $args{callb}   || 'callb_403181';
+	my $zone      = $args{zone}    || 2;
+	my $ph_size   = $args{ph_size} || 'fs--45';
+	my $remove    = defined $args{remove} ? $args{remove} : 1;
+	my $dropz_css = $args{dropz_css};
+	my $debug     = $args{debug};
+
+	my $supported = $args{supported} || 'jpg, jpeg, png, webp, avif';
+</%init>
+	<label id="dropz_403181_<% $zone %>" style="border:2px dotted #ccc !important; <% $dropz_css %>"
+		data-tooltip="tooltip" data-original-title="Unterst&uuml;tzte Formate:&NewLine;<% $supported %>"
+		class="rounded text-center position-relative d-block cursor-pointer border border-secondary border-dashed">
+
+%		if ($remove) {
+		<!-- remove button -->
+		<a href="#" class="js-file-input-showcase-remove<% $zone %> hide position-absolute absolute-top text-align-start w-100 z-index-3">
+			<span class="d-inline-block btn btn-sm bg-secondary text-white pt--4 pb--4 pl--10 pr--10 m--1" title="remove image" data-tooltip="tooltip">
+				<i class="fi fi-close m-0"></i>
+			</span>
+		</a>
+%		}
+
+		<span class="z-index-2 js-file-input-showcase-container<% $zone %> d-block absolute-full z-index-1 hide-empty"><!-- image container --></span>
+
+		<input name="showcase_file" type="file" 
+			data-file-ext="<% $supported %>"
+			data-file-max-size-kb-per-file="10240"
+			data-file-ext-err-msg="Allowed:" 
+			data-file-size-err-item-msg="File too large!"
+			data-file-size-err-total-msg="Total allowed size exceeded!"
+			data-file-toast-position="top-center"
+			data-file-preview-container=".js-file-input-showcase-container<% $zone %>" 
+			data-file-preview-show-info="false" 
+			data-file-preview-class="m-0 p-0 rounded" 
+			data-file-preview-img-height="auto" 
+			data-file-btn-clear="a.js-file-input-showcase-remove<% $zone %>"
+			data-file-preview-img-cover="true"
+
+			data-file-ajax-upload-enable="true"
+			data-file-ajax-upload-url="/_upload_prodimg_by_adm.html"
+			data-file-ajax-upload-params="['action','upload']['id','<% $id %>']['zone','<% $zone %>']"
+
+			data-file-ajax-delete-enable="true"
+			data-file-ajax-delete-url="/_demo.ajax_file_upload.php"
+			data-file-ajax-delete-params="['action','delete_file']"
+
+			data-file-ajax-toast-success-txt="Successfully Uploaded!"
+			data-file-ajax-callback-function="<% $callb %>"
+			data-file-ajax-toast-error-txt="One or more files not uploaded!"
+
+			class="custom-file-input absolute-full">
+
+		<div class="absolute-full">
+			<div class="d-table">
+				<div class="d-table-cell align-middle text-center">
+					<i class="fi fi-image <% $ph_size %> text-muted"></i>
+%					if (defined $args{tip}) {
+						<% $args{tip} %>
+%					}
+%					else {
+					<small class="d-block text-muted">
+						<b>UPLOAD</b>
+						<span class="d-block mt-0">
+							Hauptbild<br>
+							<nobr><% $C->{CONFIG}->{default_imgsize_large} %>x<% $C->{CONFIG}->{default_imgsize_large} %> px minimum</nobr>
+						</span>
+					</small>
+%					}
+				</div>
+			</div>
+		</div>
+
+		<!-- ratio maintained using a `blank` image -->
+		<img class="w-100" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="...">
+
+	</label>

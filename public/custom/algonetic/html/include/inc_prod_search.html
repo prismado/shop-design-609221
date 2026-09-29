@@ -1,0 +1,12 @@
+<%init>
+	my %args = $m->caller_args(0);
+	(my $q = $args{title_enc}) =~ s/\+/\*20/g;
+	my $id = $args{id};
+</%init>
+<script language="JavaScript">
+	function modal_update_prices(id) {
+		$('#ajx_2').load('_includes/ajx_modal_auctionline_update_extra_data.html?id=' + id);
+        }
+</script>
+
+&middot; <a href="#" onclick="modal_update_prices(<%$id%>)">Update Extra Data (GTIN)</a>

@@ -1,0 +1,47 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $sth   = $args{sth};
+	my $debug = $args{debug};
+</%init>
+<div class="portlet-body">
+
+	<div class="row">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $title, $desc) = @{$r};
+		<& inc_render_prod.html, id=>$id, A=>$A, C=>$C &>
+		<hr />
+%	}
+	</div>
+
+<%doc>
+	<div class="shadow-xs shadow-primary-xs-hover px-4 py-3 mb-4">
+		<h5><a href="contact-3.html" class="text-dark">Contact Us &ndash; variant no. 3</a></h5>
+		<small class="d-block">Last Update: december, 2019 / <b>2988 views</b></small>
+	</div>
+</%doc>
+
+<%doc>
+% #	<!-- pagination -->
+	<nav aria-label="pagination" class="mt-5">
+		<ul class="pagination pagination-pill justify-content-end justify-content-center justify-content-md-end">
+			<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a></li>
+			<li class="page-item active"><a class="page-link" href="#">1 <span class="sr-only">(current)</span></a></li>
+			<li class="page-item" aria-current="page"><a class="page-link" href="#">2</a></li>
+			<li class="page-item"><a class="page-link" href="#">3</a></li>
+			<li class="page-item"><a class="page-link" href="#">Next</a></li>
+		</ul>
+	</nav>
+% #	<!-- pagination -->
+</%doc>
+									
+%	if ($debug) {
+		<pre><% $args{stmt} %></pre>
+		<p>Debug Level <% $debug %></p>
+%	}
+
+</div>
+
+<& inc_add2basket_js.html &>

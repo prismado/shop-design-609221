@@ -1,0 +1,217 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+	my $perm = $C->get_user_perm();
+	my $cgi = $C->{CGI};
+	my $anon_uid = my $flag_error = 0;
+	my $mobile_number = $cgi->param('mobile_number');
+	my $agb_check     = $cgi->param('agb_check');
+
+	my $debug = $C->is_devel() or $C->getPermaSessData('debug') ? 1 : 0;
+
+	$C->redir('/summary_agb.html') unless $agb_check eq 'accept'; # -- AGBs not accepted
+
+	my @appmsgs = ();
+
+	if ($C->getSessData('flag_anon_buy')) {
+		my $anon_uid = $C->getSessData('_anon_uid');
+		if ($anon_uid) {
+			$C->log( msg => "WARN: Anon user already created: UID $anon_uid", importance => 1 );
+		}
+
+		my %data = ();
+		foreach ($cgi->all_parameters) {
+			my $val = $cgi->param($_);
+			$data{$_} = $val if $val;
+		}
+
+		if (length($data{lastname_1}) < 2 && length($data{lastname_2}) < 2) { # -- >>((
+			$flag_error++;
+		}
+
+		foreach (sort keys %data) {
+			$C->log( msg => "(anon) <b>$_</b> = \"$data{$_}\"", importance => 2 );
+		}
+
+		$data{uname}        = "anon$$\@localhost";
+		$data{cust_email}   = $data{email} || $data{uname};
+		$data{cust_surname} = $data{firstname_2};
+		$data{cust_name}    = $data{lastname_2} || $ENV{REMOTE_ADDR};
+		$data{cust_street}  = $data{street_2};
+		$data{cust_city}    = $data{city_2};
+		$data{cust_zip}     = $data{zip_2};
+		$data{cust_gender}  = $data{gender_2};
+		$data{sid}          = $SID;
+
+		unless ($anon_uid) {
+			# -- Create user ... !
+			my ($rc, $msg) = $A->create_user( \%data );
+			$anon_uid = $A->{uid};
+			$C->saveSessData('_anon_uid', $anon_uid);
+			$C->{dbh}->do("UPDATE users SET uname='anonymous$anon_uid', status=4 WHERE id=$anon_uid");
+			$C->log( msg => "Temp user created: rc=$rc $msg UID $anon_uid $data{cust_email}", importance => 1 );
+		}
+		else {
+			# -- Update ...
+			$data{firstname} = $data{firstname_2};
+			$data{lastname}  = $data{lastname_2};
+			$data{street}    = $data{street_2};
+			$data{city}      = $data{city_2};
+			$data{zip}       = $data{zip_2};
+			my $rc = $A->set_address_by_id($anon_uid, 1, \%data);
+			$C->log( msg => "Address of UID $anon_uid updated, rc=$rc $A->{errstr}", importance => 1 );
+		}
+
+		$C->del_sess_key('flag_anon_buy') unless $flag_error; # -- Reset
+	}
+
+	my $UID = $C->getSessData('_uid') || $C->getSessData('_anon_uid');
+	my $UINF = $A->get_user_info($UID);
+
+	if ($C->{CGI}->param('bConfirmOrder')) {
+		if ($UINF->{cb_pay_inv} or !$C->{CONFIG}->{sms_username}) {
+			$C->log(msg=>'Direct invoice order');
+			$C->redir('/order_confirm.html');
+		}
+		else {
+			my $mobile_code = $cgi->param('mobile_code');
+			if (length($mobile_code) && $mobile_code eq $C->getSessData('sms_code')) {
+				$C->log(msg=>'SMS code okay');
+				$C->redir('/order_confirm.html');
+			}
+		}
+	}
+
+	my $pay_meth = $C->getSessData('pay_meth');
+
+	my $order_id = $C->getSessData('order_id');
+	if ($C->{CGI}->param('agb_check') eq 'accept') {
+		$anon_uid ||= $C->getSessData('_anon_uid');
+		$order_id = sprintf('%08d', $A->save_order($C->getSessData('order_id'), $anon_uid));
+		if ($order_id < 0) {
+			$m->redirect('/');
+		}
+		$C->log(msg=>"Order ID $order_id created", service=>'payment_inv', importance=>2);
+		$A->set_order_detail($order_id, 'checkout_zahlungsart_select', $pay_meth);
+		$C->saveSessData('order_id', $order_id); # -- Save for the next step
+	}
+
+	my $pay_info = my $pay_text = 'n.a.';
+
+	$pay_info = $C->prop('invoice_infos'); # -- Rechnungs-Informationen
+	$pay_text = $C->prop('invoice_text');
+	# -- Die Rechnung mit dem Gesamtbetrag wir Ihnen zusammen mit der Lieferung in den nächsten Tagen zugestellt!
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $cur_voucher_value = $A->get_cur_voucher_value();
+	my $shipping = $C->getSessData('checkout_zahlungsart_select') eq 'cod' ? $A->{'ship_tot_cod'} : $A->{'ship_tot_cc'};
+	my $ship_meth = $C->getSessData('ship_meth');
+        my $ship_meth_amount = sprintf('%.2f', $C->{CONFIG}->{"ship_$ship_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+	my $pay_cost = sprintf('%.2f', $C->{CONFIG}->{"pay_cost_$pay_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+	my $order_dat = $A->get_order($order_id);
+	# XXX my $total = $C->decimal_mark($A->get_basket_total() + $shipping + $pay_cost + $ship_meth_amount - $cur_voucher_value);
+	my $total = $C->decimal_mark( $order_dat->{amount_incl_vat} );
+
+	my $total_article_count = 0;
+	foreach (@{$order_dat->{_products}}) {
+		my ($prod_id, $count, $price, $id) = split /\t/;
+		$total_article_count += $count;
+		push(@appmsgs, "&bull; $count &times; Prod-ID $prod_id for $price / Orders-Product-ID $id") if $debug;
+	}
+	push(@appmsgs, "Total Articles: $total_article_count") if $debug;
+	if ($total_article_count < 1) {
+		push(@appmsgs, "<span style='font-weight:bold'>ERROR E1002:</span> Ein Ausnahmefehler ist aufgetreten");
+		$C->log(msg=>"ERROR E1002: No articles in payment step at Order-ID $order_id", importance=>1, service=>'payment_inv');
+		$flag_error++;
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<title>Rechnung / Invoice <%$C->{CONFIG}->{site_title}%> - Payment</title>
+	<link rel="stylesheet" href="assets/css/core.min.css">
+	<meta charset="utf-8">
+</head>
+
+<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+	<script src="assets/js/core.min.js"></script>
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, A=>$A, C=>$C &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<h1><% $C->prop('payment') %></h1>
+% # ====================================================================================================================================
+% # ====================================================================================================================================
+% # ====================================================================================================================================
+ <form action="#" method="post">
+<input type=hidden name="agb_check" value="<%$agb_check%>">
+
+<table class="table">
+          <thead data-title="<%$C->prop('order')%> <%$order_id%>" class="well">
+              <tr>
+              <th colspan="2"><%$C->prop('order')%> <%$order_id%></th>
+            </tr>
+          </thead>
+<tr><td colspan="2"><h4><%$pay_info%></h4></td></tr>
+<tr><td colspan="2">
+% if ($UINF->{cb_pay_inv} or !$C->{CONFIG}->{sms_username}) {
+	<%$pay_text%><br>
+% }
+% else {
+%	# -- SMS ... !
+%	if ($mobile_number) {
+%		$A->invoice_send_sms(recipient => $mobile_number);
+		Bitte geben Sie den erhaltenen SMS Code ein:<br><br>
+
+		<input type=text name=mobile_number value="<%$mobile_number%>" placeholder="Ihre Handy-Nummer">
+		<input type=text name=mobile_code style='font-weight:bold' placeholder="SMS Code?">
+%	}
+%	else {
+	    <%$C->prop('invoice-text')%><br> <br>
+
+		<%$C->prop('invoice-mobileformtext')%><br>
+		<input type=text name=mobile_number class="mobileForm" placeholder="Handy-Nummer"><br>
+		<%$C->prop('invoice-verificationtext')%><br><br>
+%	}
+% }
+</td></tr>
+<tr><td><h4><% $C->prop('sum_total') %> <% $C->prop('mwst') %>&nbsp;</h4></td>
+<td><h4>CHF <% $total %></h4></td></tr>
+</table>
+
+% if ($flag_error) {
+	ERROR<br>
+% }
+% else {
+	<input id="payment_submit_kk" class="btn btn-primary" type="submit"
+			name="bConfirmOrder" value="<% $C->prop('but_send_order') %>">
+	<a class="btn btn-grey" href="javascript:history.back()"><% $C->prop('btn_return') %></a>
+% }
+ </form>
+% # ====================================================================================================================================
+% # ====================================================================================================================================
+% # ====================================================================================================================================
+
+% if (@appmsgs) {
+	<br />
+	<% $C->bootstrap_alert( (join "<br>\n", @appmsgs), $flag_error ? 'danger' : 'success') %><br />
+% }
+% if ($debug) {
+% }
+			</div>
+%			# =================== id="middle" class="flex-fill"
+		</div>
+	</div>
+</BODY>
+</HTML>

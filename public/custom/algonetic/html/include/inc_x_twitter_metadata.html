@@ -1,0 +1,63 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $pdata = $args{pdata};
+
+	my $tw_ca = ($ENV{REQUEST_URI} =~ /tw-ca-s/) ? 'summary_large_image' : 'photo';
+
+	(my $description = $pdata->{description}) =~ tr/[\n\r]/ /;
+	(my $title       = $pdata->{title})       =~ s/"/&quot;/g;
+
+	$description =~ s/\%\%(.+)\%\%//g;
+	$description =~ tr/[\<\>]//d;
+	$description =~ s/"/&quot;/g;
+</%init>
+<meta name="twitter:title"       content="<% substr($title, 0, 70) %>">
+<meta name="twitter:description" content="<% $description %>">
+<meta name="twitter:image"       content="https://<% $C->{CONFIG}->{HTTP_HOST} %>/produkte/p<% $args{id} %>_large.jpg">
+% # -- summary_large_image / photo
+<meta name="twitter:card"        content="<% $tw_ca %>">
+<meta name="twitter:site"        content="@auctionline">
+<meta name="twitter:creator"     content="@algonetic">
+<%doc>
+	XX _get_product_v2 = 0.8001
+	XX art_no = 1507
+	XX art_no_ref = 681
+	XX brand = HP
+	XX campaign_id = 0
+	XX cat_id = 1059
+	XX cat_ids = 1033,1059
+	XX cat_name = PC & mehr
+	XX cat_names = Computer, PC & mehr
+	XX cat_url_friendly = pc-mehr
+	XX categs = ARRAY(0x55ba66206b98)
+	XX condition = OR
+	XX count = 99999999
+	XX count2 = 99999999
+	XX count_product = 4318
+	XX currency = CHF
+	XX desc_long = <p>Lange Beschreibung von CORE(TM) I5-8500T/2.10GHz, 8192 MB, 512GB inkl. Betriebssystem [Refurbished IT-Hardware]</p>
+	XX description = CORE(TM) I5-8500T/2.10GHz, 8192 MB, 512GB inkl. Betriebssystem [Refurbished IT-Hardware]
+	XX discount_perc = 10
+	XX extra = 
+	XX feat = HASH(0x55ba66206b68)
+	XX instime = 2018-04-29 13:06:20
+	XX msg = DN0032: public = 2 / Debug L2
+	XX pfeat = HASH(0x55ba66206b80)
+	XX price = 92.8505106778086
+	XX price_enduser = 92.85
+	XX price_enduser_net = 83.57
+	XX price_enduser_unrounded = 92.8505106778086
+	XX price_incl_vat = 100.00
+	XX price_orig = 103.167234086454
+	XX price_orig_incl_vat = 111.10
+	XX prod_type = 1
+	XX sale_type = 2
+	XX teaser = 2.1
+	XX title = HP ProDesk 400 G4"x / Refurbished Hardware
+	XX title_enc = hp-prodesk-400-g4-x-refurbished-hardware
+	XX vat = 7.70
+	XX vat_amount = 7.15
+	XX xchange = 1
+</%doc>

@@ -1,0 +1,272 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C      = $args{C};
+	my $A      = $args{A};
+	my $area   = $args{area};
+	my $core   = $args{core};
+	my $page   = $args{page}; # -- 13Sep2024
+	my $debug  = $args{debug};
+	my $perm   = $args{perm};
+	my $appmsg = $args{appmsg};
+	my $usage  = $args{usage};
+
+	my $sth;
+	my $sth_rows = 0;
+	my $wcl = '';
+
+	if ($area) {
+		$wcl = $area ? "WHERE `key` LIKE '$area\\_%'" : "WHERE `key` LIKE '\\_%'";
+
+		$sth = $C->{dbh}->prepare(qq~
+		select	id, `key`, val, tstamp, page, time_to_sec(timediff(NOW(), tstamp))/60
+		from	properties
+			$wcl
+		order	by 2
+		~);
+		$sth->execute();
+		$sth_rows = $sth->rows();
+	}
+
+	my $wc2 = $core ? qq~`key` LIKE '%\_%' AND page LIKE '\_%' AND page != '_global'~ : q~`key` LIKE '%\_%' AND (page NOT LIKE '\_%' OR page='_global')~;
+	   $wc2 = "page='$page'" if $page; # -- 13Sep2024
+
+	my $st2 = $C->{dbh}->prepare(qq~
+		select	DISTINCT SPLIT_STR(`key`, '_', 1)
+		from	properties
+		where	$wc2
+		order	by 1
+	~);
+	   $st2->execute() or $m->out("Err $DBI::errstr<hr>");
+	my $st2_rows = $st2->rows();
+
+	my $res;
+
+	my $next_order_id = $C->query(qq~SELECT AUTO_INCREMENT FROM information_schema.TABLES
+						WHERE TABLE_SCHEMA='$ENV{db_name}' AND TABLE_NAME='orders'~)->[0];
+	my $max_order_id = $C->query('select max(id) from orders')->[0];
+	my $db_schema = $C->get_table_schema(table => 'orders', schema => $ENV{db_name});
+</%init>
+<div class="portlet-header border-bottom">
+%	if ($debug) {
+		[ Debug ] &middot; area="<code><% $area %></code>" &ndash; "<% $wcl %>" &rarr; <% $sth_rows %> Areas / st2: <% $st2_rows %> rows<br>
+		Where Clause #2: <% $wc2 %>
+%	}
+%	if ($area) {
+		<span>Property verwalten: <code><span class="ml-2" style="font-size:1.3rem"><% $area %></span></code></span>
+%	}
+%	else {
+		<div class="float-end">
+			<a href="#" class="js-ajax-modal"
+				data-href="_ajax/modal_add_property.html"
+				data-ajax-modal-size="modal-md"
+				data-ajax-modal-centered="true"
+				data-ajax-modal-backdrop="static">
+				<span>Hinzuf&uuml;gen</span>
+			</a>
+			&ndash;
+			<a href="show.html?macro=properties">Suche</a>
+		</div>
+		<div class="alert alert-info mb-0 col-8">Bitte w&auml;hlen Sie einen Konfigurations-Bereich aus
+%			if ($perm->{is_devel}) {
+				&mdash; Dev: <a href="manage-property.html?core=1">Core</a> / <a href="manage-property.html">Alle</a>
+%			}
+		</div>
+%	}
+</div>
+
+<div class="portlet-body mb--n5">
+
+% if ($area) {
+	<form method="post" name="keyForm_308181">
+	<input type="hidden" name="area" value="<% $area %>">
+	<input type="hidden" name="bAddKey" value="0">
+	<input type="hidden" name="bDelete" value="0">
+
+	<table class="table tablx-sm table-hover table-striped border">
+	<tr>
+		<th>Schl&uuml;ssel</th>
+		<th>Wert</th>
+		<th class="text-center pl-4">ID</th>
+		<th><span class="float-right">Update</span></th>
+	</tr>
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $key, $val, $ts, $page, $age_min) = @{$r};
+%		next if $key =~ /\_\_explain$/;
+%		(my $key_disp = $key) =~ s/^$area\_//;
+%		(my $val_enc = $val) =~ s/"/&quot;/g;
+%		my $info = $C->{CONFIG}->{"$key\__explain"};
+%		my $help = $A->get_core_help(feat=>"config_$key", value=>$val);
+%		my $type = $key =~ /pass/ ? 'password' : 'text';
+		<tr>
+		<td style="width:11vw" nowrap>
+%			if ($key =~ /\_sys$/) {
+%				$key_disp =~ s/\_sys$//;
+				<b><% uc $key_disp %></b> <span class="fs--12 text-blue-gray-400 ml-1">[sys]</span>
+%			}
+%			else {
+				<b><% uc $key_disp %></b>
+%			}
+%			if ($page ne '_global') {
+				<br><% $page %>
+%			}
+		</td>
+		<td><& inc_text_edit.html, label=>$key, value=>$val, value_enc=>$val_enc, info=>$info,
+			delete=>$perm->{is_devel}, del_meth=>'property', type=>$type, id=>$id &>
+%			if ($help->{help_text}) {
+				<div class="mb-2">
+%					if ($help->{expert_level} > 5) {
+						<i class="fi fi-graduate fs--18"></i>
+%					}
+					<% $help->{help_text} %>
+				</div>
+%				foreach my $label (sort keys %{$help->{help_urls}}) {
+%					(my $label_disp = $label) =~ s/^\d\d\_//;
+					&bull; <a href="<% $help->{help_urls}->{$label} %>"><% $label_disp %></a><br>
+%				}
+%			}
+		</td>
+		<td class="text-center pl-4" style="width:2vw; color:#919191"><small><% $id %></small></td>
+		<td style="width:11vw" nowrap>
+			<span class="float-right<% $age_min < 5 ? ' animate-pulse' : '' %>">
+				<% $C->trans_date_short($ts) %>
+			</span>
+		</td>
+		</tr>
+%	}
+
+	<tr style="background-color:white !important">
+		<td colspan="4">
+			<div class="float-right">
+				<input type="submit" class="btn btn-secondary mb-2 btn-soft" value="Abbrechen">
+
+				<a href="#" class="js-ajax-modal mb-1" stylx="padding-right:32px !important"
+					data-href="_ajax/modal_del_prop.html?area=<% $area %>"
+					data-ajax-modal-size="modal-md"
+					data-ajax-modal-centered="true"
+					data-ajax-modal-backdrop="static">
+					<button class="btn btn-soft btn-danger mb-2 mr-2 ml-2"><i class="fi fi-round-close mr-2"></i> Delete</button>
+				</a>
+
+				<button type="button" class="btn btn-info mb-2 btn-soft"
+					onclick="document.keyForm_308181.bAddKey.value=1; document.keyForm_308181.submit()">
+					<i class="fi fi-plus"></i> Schl&uuml;ssel hinzu
+				</button>
+				<input type="submit" class="btn btn-success btn-soft mb-2" value="Speichern" name="bUpdate">
+			</div>
+		</td>
+	</tr>
+
+	</table>
+
+	</form>
+% }
+
+%	if (@{ $appmsg }) {
+		<div class="alert alert-info mt-2 col-7">
+			<% join "<br>\n", @{$appmsg} %>
+		</div>
+%	}
+
+%	if ($usage && 1==2) { # -- 29Sep2024 too expensive
+	<ol>
+	</ol>
+%	}
+
+%	if ($area eq 'cfg') {
+%	    my $info_max_id = $db_schema->{data}->[0]->{type} =~ /mediumint$/i ? q~Max. 16'277'215~ : '';
+	    <form method="post">
+	    <input type="hidden" name="area" value="cfg">
+	    <div class="row mt-3">
+
+		<div class="col-4">
+			N&auml;chste Order-ID &ndash; Type: <b><% ucfirst $db_schema->{data}->[0]->{type} %></b> &ndash; Letzte: <% $max_order_id %>
+			<div class="mt-2">
+			<& inc_text_edit.html, label => 'N&auml;chste Order-ID', value => $next_order_id, value_enc => $next_order_id, id => 0,
+						info => $info_max_id, delete => $perm->{is_devel}, del_meth => 'property', type => 'text' &>
+			</div>
+		</div>
+
+		<div class="col-2 p-2">
+			<input class="btn btn-primary btn-sm btn-soft mt-4" type="submit" value="Update" name="bUpdNextOrderID">
+		</div>
+
+		<div class="col-6 p-2 mt-4">
+			<a href="shop-config.html"><i class="fi fi-arrow-end-full"></i> Shop-Konfiguration</a>
+			(<abbr title="production / preproduction / stage / development / local"><% $C->get_safe_property('SHOP_CONFIG_ENV', 'sys') %></abbr>)
+
+			<a class="ml-5" href="/adm_safe_properties.html?lang=sys&filter=apply_vat">
+				<i class="fi fi-arrow-end-full"></i> MwSt.
+			</a>
+		</div>
+
+	    </div>
+	    </form>
+%	}
+
+	<div class="row col-border mt-3">
+		<div class="col-md-3 col-6">
+%			my $i = 0;
+%			my $key_before = '';
+%			while(my $r = $st2->fetch()) {
+%				next unless $r->[0];
+%				if ($i++ > ($st2_rows / 4)) {
+%					$key_before = $r->[0]; last;
+%				}
+				&bull; <a style="<% $area eq $r->[0] ? 'font-weight:bold; color:black' : '' %>"
+					href="manage-property.html?area=<% $r->[0] %>"><% ucfirst $r->[0] %></a><br />
+%			}
+		</div>
+		<div class="col-md-3 col-6">
+			&bull; <a style="<% $area eq $key_before ? 'font-weight:bold; color:black' : '' %>"
+				href="manage-property.html?area=<% $key_before %>"><% ucfirst $key_before %></a><br />
+%			while(my $r = $st2->fetch()) {
+%				if ($i++ > ($st2_rows / 4 * 2)) {
+%					$key_before = $r->[0]; last;
+%				}
+				&bull; <a style="<% $area eq $r->[0] ? 'font-weight:bold; color:black' : '' %>"
+					href="manage-property.html?area=<% $r->[0] %>"><% ucfirst $r->[0] %></a><br />
+%			}
+		</div>
+		<div class="col-md-3 col-6">
+			&bull; <a style="<% $area eq $key_before ? 'font-weight:bold; color:black' : '' %>"
+				href="manage-property.html?area=<% $key_before %>"><% ucfirst $key_before %></a><br />
+%			while(my $r = $st2->fetch()) {
+%				if ($i++ > ($st2_rows / 4 * 3)) {
+%					$key_before = $r->[0]; last;
+%				}
+				&bull; <a style="<% $area eq $r->[0] ? 'font-weight:bold; color:black' : '' %>"
+					href="manage-property.html?area=<% $r->[0] %>"><% ucfirst $r->[0] %></a><br />
+%			}
+		</div>
+		<div class="col-md-3 col-6">
+			&bull; <a style="<% $area eq $key_before ? 'font-weight:bold; color:black' : '' %>"
+				href="manage-property.html?area=<% $key_before %>"><% ucfirst $key_before %></a><br />
+%			while(my $r = $st2->fetch()) {
+				&bull; <a style="<% $area eq $r->[0] ? 'font-weight:bold; color:black' : '' %>"
+					href="manage-property.html?area=<% $r->[0] %>"><% ucfirst $r->[0] %></a><br />
+%			}
+		</div>
+	</div>
+
+%	if ($perm->{is_devel}) {
+%		my $sth = $C->{dbh}->prepare(q~SELECT id, page, `key` FROM properties WHERE page LIKE '\_%' AND `key` LIKE '%\_sys' order by 1 DESC LIMIT 5~);
+%		   $sth->execute();
+		<span class="float-end">
+			<a href="manage-property.html?area=choice_{COLOR}">JSON-Example</a> &ndash;
+			<a href="manage-property.html?area=google">Google Settings</a> &ndash;
+			<a href="manage-property.html?area=google_rating">Google Rating</a>
+		</span>
+		<h5 class="mt-5">Special Examples</h5>
+		<table class="table table-sm w--600">
+%		while(my $r = $sth->fetch()) {
+%			my ($id, $page, $key) = @{$r};
+			<tr>
+				<td><a href="/adm_db_edit.html?table=properties&wcl=id%3D<% $id %>">ID <% $id %></a></td>
+				<td><% $page %></td><td><% $key %></td>
+			</tr>
+%		}
+		</table>
+%	}
+
+</div>

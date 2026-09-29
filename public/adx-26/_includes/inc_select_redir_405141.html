@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	(my $this = $args{this}) =~ s/^adx\///;
+
+	my $order_id = $args{order_id} + 0;
+	# XXX my $edi_order_id = $args{edi_order_id} + 0;
+
+	my %map = (
+		'config-dev'          => 'Developer Summary',
+		'dev-get-order'       => 'Get Order',
+		'dev-get-order-edi'   => 'EDI',
+		'dev-edi-parse-order' => 'EDI Parse Order',
+		'dev-get-order-items' => 'Order Items'
+	);
+</%init>
+
+<div class="form-label-group mb-3">
+	<select id="select_options" onchange="document.location=this.value" class="form-control bs-select">
+%		foreach my $ref (sort keys %map) {
+%			my $para = $ref !~ /edi\-parse/ ? "?order-id=$order_id" : '';
+			<option value="<% $ref %>.html<% $para %>" <% $this eq $ref ? 'selected' : '' %>><% $map{$ref} %></option>
+%		}
+			<option value="/admix.html?func=orders&id=<% $order_id %>">Zu Order (Admin)</option>
+			<option value="https://docs.ch2.be/w/prismado-shop/feat-sale">Wiki (Order / Sale)</option>
+	</select>
+	<label for="select_options"><% $this %> | <% $order_id %></label>
+</div>
+
+<%doc>
+	Created: 14May2024
+	adx/dev-get-order-items.html
+</%doc>

@@ -1,0 +1,59 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A    = $args{A};
+	my $id   = $args{id} + 0; # -- Product ID
+	my $lang = $args{lang} || 'de';
+
+	my $res = $A->get_options($id, $lang);
+
+	my $C = $A->{C};
+	my $cur_sel = '';
+
+	my $missing_feat_id = 0;
+	if ($args{msg} =~ /Missing mandatory feature ID \[(\d+)\]$/) {
+		$missing_feat_id = $1;
+	}
+
+	my $extra = $args{debug} ? "\&debug=$args{debug}" : '';
+</%init>
+% if ($args{debug}) {
+	<%$C->html_debug('Start / On Change: _ajx_set_opt.html', 'product_options_numbers')%>
+% }
+<style type="text/css">#rundrum {border:1px solid #f00;}</style>
+%
+% my $opt_id_before = 0;
+<!-- ============================================================================================ -->
+% foreach (@{$res}) {
+%	my ($opt_id, $style, $label, $desc, $val, $amount) = split /\t/;
+%	(my $val_enc = $val) =~ tr/ /+/;
+%	next unless $style == $args{type};
+%	$amount *= (1 + $C->{CONFIG}->{vat} / 100);
+%	my $warn_style = $opt_id == $missing_feat_id ? ' id="rundrum"' : '';
+%	unless ($opt_id == $opt_id_before) {
+%		$cur_sel = $C->getSessData("prod_id_$id\_$opt_id");
+		<% $opt_id_before ? '</select><br></div>' : '' %>
+		  <div class="pull-left">
+		<b style="<%$warn_style ? 'color:red' : ''%>"><%$label%></b><br>
+		<select<%$warn_style%> style='width:139px' name="opt_<%$opt_id%>"
+	  onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$id%>&opt_id=<%$opt_id%>&rnd=<%rand()%><%$extra%>');">
+		<option value=''>&middot; <% $C->prop('choose') %></option>
+%	}
+	<option value="<%$val_enc%>"<%$val eq $cur_sel ? ' selected' : ''%>><%$desc || $label%>
+%		if ($amount) {
+			&mdash; <%$A->{C}->{CONFIG}->{'default_curr'}%> <%sprintf('%.2f', $amount)%>
+%		}
+	</option>
+%	$opt_id_before = $opt_id;
+% }
+
+<% $opt_id_before ? '</select></div>' : '' %>
+<!-- ============================================================================================ -->
+<div id='ajx_1'></div>
+
+<%doc>
+	<select clasx="detailform" name="opt_<% $opt_id %>"
+	onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$id%>&opt_id=<%$opt_id%>&rnd=<%$$%>');">
+
+	Uncaught ReferenceError: dynTotal is not defined
+</%doc>

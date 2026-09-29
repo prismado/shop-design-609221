@@ -1,0 +1,70 @@
+<%doc>
+***************************************************************
+
+	***  8-tung  ***
+
+	Bitte keine Aenderungen hier anbringen.
+	Das ist eine Testversion für interne Zwecke.
+
+***************************************************************
+</%doc>
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $stmt = '';
+
+	if ($args{q}) {
+		my $search = $args{q};
+		$stmt = qq~
+			SELECT	DISTINCT id, `condition`
+			FROM 	vproducts_long
+			WHERE 	(desc_long LIKE '%$search%' 
+				OR title LIKE '%$search%' OR description LIKE '%$search%')~;
+	}
+	else {
+		my $sort = $args{sort} || 1;
+		my $order = $args{order} eq 'd' ? 'DESC' : 'ASC';
+		
+		$stmt = qq~
+			SELECT 	product_id, `condition`, price
+			FROM 	products2categ c, products p 
+			WHERE 	p.id=product_id AND cat_id=$args{id} 
+			ORDER 	BY $sort $order
+		~;
+	}
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $m->out("ERR $DBI::errstr $stmt<br>");
+
+	my $search = $args{q};
+</%init>
+<script language=JavaScript>
+function addtobasket (id, b) {
+	$('#ajx_noti').load('ajx_overlap_basket.html?id=' + id + '&rand=<%rand()%>')
+	b.disabled='disabled';
+	document.getElementById('product_area_' + id).style.display='';
+	document.getElementById('pic' + id).className='blur'
+}
+</script>
+
+<div class="span8 pull-right filterSortlist">
+XX V2<br>
+
+<select id="sort" name="sort" onchange="location = this.options[this.selectedIndex].value;">
+<option value="#">Bitte wählen...</option>
+<option <%$args{order} eq 'a' ? 'selected' : ''%>  value='/category2.html?id=<%$args{id}%>&order=3,a&q=&pkg='>Preis (niedrig)</option>
+<option <%$args{order} eq 'd' ? 'selected' : ''%> value='/category2.html?id=<%$args{id}%>&order=3,d&q=&pkg='>Preis (hoch)</option>
+</select>
+<%doc>
+<a href="category2.html?id=1033&q=" title="Anzeigen als Gitter"><i class="fa fa-th"></i></a>
+</%doc>
+</div>
+
+<ul class="thumbnails">
+% while(my $r = $sth->fetch()) {
+%	next if $r->[1] eq 'IN'; # -- Skip invisible products
+	<&render_cat_prod.html, id=>$r->[0], SID=>$args{SID}, A=>$A, C=>$C&>
+% }
+<ul>

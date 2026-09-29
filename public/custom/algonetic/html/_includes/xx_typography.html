@@ -1,0 +1,25 @@
+
+<p><a href="assets/css/vendor_bundle.css">vendor_bundle.css</a> / core.css</p>
+
+<p>
+<%doc>
+XXX:
+<span style="color: #6c757d;">Ein Text-Beispiel mit 6c757d</span><br>
+<span style="color: #adb5bd;">Ein Text-Beispiel mit adb5bd</span><br>
+<span style="color: #377dff;">Ein Text-Beispiel mit 377dff</span><br>
+<span style="color: #121212;">Ein Text-Beispiel mit 121212</span><br>
+/XXX
+</%doc>
+<a href="/adx/_layout.html">Schriftgr&ouml;ssen (fs--Klassen)</a>
+</p>
+
+<div class="float-right">
+	<code>font-weight-light</code>
+%	for (my $i=1; $i<7 ;$i++) {
+		<h<% $i %> class="font-weight-light">Ein Text-Beispiel mit H<% $i %></h<% $i %>>
+%	}
+</div>
+
+% for (my $i=1; $i<7 ;$i++) {
+	<h<% $i %> class="">Ein Text-Beispiel mit H<% $i %></h<% $i %>>
+% }

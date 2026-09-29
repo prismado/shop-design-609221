@@ -1,0 +1,48 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $area   = $cgi->param('area');
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+
+	my $count = $C->query("select COUNT(*) from properties where `key` LIKE '$area\\_%'")->[0];
+
+	my $sth = $C->{dbh}->prepare(qq~select `key` from properties where `key` LIKE '$area\\_%' ORDER BY 1~);
+	   $sth->execute();
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Property l&ouml;schen</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+
+	<p>Sind Sie sicher? / Bereich: <b><% $area %></b></p>
+
+	<p><b><% $count %></b> Properties werden gel&ouml;scht!</p>
+
+	<small>
+%	while(my $r = $sth->fetch()) {
+		&bull; <% $r->[0] %><br>
+%	}
+	</small>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">
+				<i class="fi fi-close"></i> Cancel
+			</button>
+
+			<button type="button" class="btn btn-danger" name="bDelete" onclick="document.keyForm_308181.bDelete.value=1; document.keyForm_308181.submit()">
+				<i class="fi fi-check"></i> L&ouml;schen
+			</button>
+		</div>
+
+</div>
+<%doc>
+	Created: 13Jan2024
+</%doc>

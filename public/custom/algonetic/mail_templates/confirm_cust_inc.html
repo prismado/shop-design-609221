@@ -1,0 +1,234 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	use utf8; # -- 13Apr2026
+
+	# -- Created: 22May2024
+
+	$C->saveSessData('_current_lang', 'de');
+
+	(my $logo_src = $C->grep_2nd_level_dom( $C->{CONFIG}->{HTTP_HOST} )) =~ tr/\./\_/;
+
+	# $s{order_id} = 639;
+
+	# -- my $order_stmt = $A->get_order_statement(order_id=>$s{order_id}); # -- 04Oct2024
+	my $order_stmt = $A->get_order_statement(order_id=>$s{order_id}, add_vat=>1);
+	my $odat       = $A->get_order_prepare(order_id=>$s{order_id});
+	my $uinf       = $A->get_user_info($odat->{uid});
+	my $lang       = $odat->{lang} || 'de';
+
+	my %pay_meth_hr_map = (
+		inv => $C->txt('invoice', $lang),
+		pre => $C->prop('prepay'),
+		pp  => 'PayPal',
+		pc  => 'PostFinance Card',
+		pc3 => $C->prop('creditcard'),
+		twi => 'TWINT',
+		prx => 'Payrexx AG',
+		six => $C->prop('creditcard')
+	);
+
+	my $payment_brand = ucfirst $odat->{pay_resPaymentBrand} || '';
+	my $payment_info  = "$pay_meth_hr_map{$odat->{checkout_zahlungsart_select}} $payment_brand" || "* $odat->{checkout_zahlungsart_select} *";
+	if ($odat->{checkout_zahlungsart_select} eq 'pp') {
+		$payment_info = "PayPal: Transaktion $odat->{pay_resPayPal_txn_id}";
+	}
+	elsif ($payment_brand) {
+		$payment_info = $payment_brand;
+	}
+
+	my %header = (
+		h05_mail_order_time      => $odat->{instime_swiss},
+		h10_mail_order_nr        => $s{order_id},
+		h15_mail_cust_nr         => $odat->{uid},
+		h16_phone                => $odat->{phone},
+		h17_email                => $odat->{email},
+		h20_mail_payment_method  => $payment_info,
+		h30_mail_customer_ust_id => $odat->{ust_id}
+	);
+
+	if ($odat->{checkout_zahlungsart_select} eq 'pc3' or $odat->{checkout_zahlungsart_select} eq 'twi'
+		or $odat->{checkout_zahlungsart_select} eq 'pc') {
+		my %pmeth_hr_map = (
+			AMX => 'American Express',
+			ECA => 'Mastercard',
+			PEF => 'PostFinance',
+			PFC => 'PostFinance Card',
+			VIS => 'VISA',
+			TWI => 'TWINT'
+		);
+		my $pmeth_hr = $pmeth_hr_map{$odat->{pay_pmethod}} || "* $odat->{pay_pmethod} *";
+		$header{h27_authorizationCode} = $odat->{pay_authorizationCode} || 'N/A';
+		if ($odat->{pay_pmethod} eq 'TWI') {
+			$header{h20_mail_payment_method} = " $pmeth_hr (Handyzahlung)";
+		}
+		elsif ($odat->{pay_pmethod} eq 'PFC' or $odat->{pay_meth} == 5) {
+			$header{h20_mail_payment_method} = " $pmeth_hr (Post)";
+		}
+		else {
+			$header{h20_mail_payment_method} .= " $pmeth_hr Exp $odat->{pay_expm}/$odat->{pay_expy}";
+		}
+	}
+
+	my $shipping_net = $odat->{shipping_amount} / (1 + $odat->{vat_rate} / 100);
+	my $shipping_tax = $odat->{shipping_amount} - $shipping_net;
+
+	my $tax_amount = $C->query("SELECT xval+0 FROM orders_details where order_id=$s{order_id} and xkey='vat_amount'")->[0];
+</%init>
+<!-- ============================== Confirmation Customer Start ============================== -->
+<html>
+<head>
+	<title>E-Mail</title>
+	<style>
+		.row_small td {
+% #		/* border:        1px solid #e8e8e8 !important; */
+			border-top:    1px solid #e8e8e8 !important;
+			line-height:   24px;
+		}
+		.td_410051 {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width:280px;
+		}
+	</style>
+</head>
+<body style="font-family:Roboto,Calibri,Arial">
+
+	<img style="margin-top:0px; margin-bottom:15px" width="180" XXheight="62"
+		src="https://<% $C->{CONFIG}->{HTTP_HOST} %>/images/logo_mailtemplate_<% $logo_src %>.png">
+
+<p style="margin-left:5px; font-size:0.95rem">
+%	if ($odat->{gender} == 2) {
+		<% $C->web_enc($C->txt('mail_salutation_woman', $lang) . ' ' . $C->web_enc($odat->{lastname})) %>
+%	}
+%	else {
+		<% $C->web_enc($C->txt('mail_salutation_man', $lang) . ' ' . $C->web_enc($odat->{lastname})) %>
+%	}
+	<br><br>
+
+	<% $C->web_enc($C->txt('mail_order_thanks', $lang)) %><br />
+</p>
+
+<& includes/key_value_table.html, data=>\%header, C=>$C &>
+<br />
+
+% if ($odat->{street} eq $odat->{deliv_street} && $C->trim($odat->{company}) eq $C->trim($odat->{deliv_company})) {
+	<table cellspacing=0 cellpadding=2><tr><td>
+	<b><% $C->prop('invoice') %> / <% $C->prop('deliv_addr') %></b><br>
+	<% $C->web_enc($odat->{company}) %><br>
+	<% $C->web_enc("$odat->{firstname} $odat->{lastname}") %><br>
+	<% $C->web_enc($odat->{street}) %><br>
+	<% $odat->{zip} %> <% $C->web_enc($odat->{city}) %><br>
+	<% $C->web_enc($odat->{country_decoded}) %><br>
+% #	<% $odat->{phone} %>
+	</td></tr></table>
+% }
+% else {
+	<table cellspacing=0 cellpadding=2>
+
+	<tr style="height:40px">
+	<td><b><% $C->txt('invoice', $lang) %></b></td>  <td><b><% $C->txt('deliv_addr', $lang) %></b></td>
+	</tr>
+
+	<tr>
+	<td style="padding-right:60px">
+		<% $C->web_enc($odat->{company}) %><br>
+		<% $C->web_enc("$odat->{firstname} $odat->{lastname}") %><br>
+		<% $C->web_enc($odat->{street}) %><br>
+		<% $odat->{zip} %> <% $C->web_enc($odat->{city}) %><br>
+		<% $C->web_enc($odat->{country_decoded}) %><br>
+	</td>
+
+	<td>
+		<% $C->web_enc($odat->{deliv_company}) %><br>
+		<% $C->web_enc("$odat->{deliv_firstname} $odat->{deliv_lastname}") %><br>
+		<% $C->web_enc($odat->{deliv_street}) %><br>
+		<% $odat->{deliv_zip} %> <% $C->web_enc($odat->{deliv_city}) %><br>
+		<% $C->web_enc($odat->{deliv_country_decoded}) %>
+	</td>
+	</tr>
+
+	</table>
+% }
+<br /><br />
+
+<table cellspacing=0 cellpadding=4 width="98%">
+	<% ${$order_stmt->{out}} %>
+</table>
+
+% if ($odat->{order_status} == 4 && ($odat->{pay_meth} == 4 or $odat->{pay_meth} == 16)) {
+%	# -- Betrag dankend erhalten
+	<p style="margin-top:15px">
+		<b><% $C->txt('amount_received', $lang) %></b>
+	</p>
+% }
+
+<hr noshade size="1" align="left" style="width:98%" />
+% if ($odat->{remarks}) {
+	<p style="background-color:#ffffb3"><b>Kunden-Bemerkung:</b><br>
+	<% $C->toUTF( $odat->{remarks} ) %></p>
+% }
+
+<p>
+	Details: <a 
+href="https://<%$C->{CONFIG}->{HTTP_HOST}%>/order_detail.html?id=<%$s{order_id}%>">https://<%$C->{CONFIG}->{HTTP_HOST}%>/order_detail.html?id=<%$s{order_id}%></a>
+</p>
+
+% if ($odat->{dhl_shipmentTrackingNumber}) {
+	<center>
+%	# -- f8faa7
+%	my $dhl_link = "https://www.dhl.com/ch-de/home/tracking/tracking-express.html?submit=1&tracking-id=$odat->{dhl_shipmentTrackingNumber}";
+	<p style="border: 1px solid #bbbbbb; padding:4px; line-height:22px; background-color:#fcde9e; margin-top:15px; text-align:center; max-width:70%">
+		<span style="font-size:1.3rem">&#9951;</span> <b>DHL Sendungs-Nr.</b> <span
+			style="color:#CD5C5C;font-family:Courier; font-size:1.15rem"><b><% $odat->{dhl_shipmentTrackingNumber} %></b></span><br>
+		<a href="<% $dhl_link %>"><u>Link zur Paket-Sendungsverfolgung</u></a>
+	</p>
+	</center>
+% }
+
+<p style="font-size:12px; line-height:150%; margin-top:10px; margin-bottom:20px; text-align:center">
+	DHL Paket-Nr. <% $C->format_hr4( $odat->{dhl_packages__trackingNumber__0}) %><br>
+</p>
+
+<p>
+%	# -- Wenn Sie uns kontaktieren m...
+	<% $C->web_enc($C->txt('mail_inquiries_text', $lang)) %><br />
+
+	Freundliche Gr&uuml;sse / Salutations cordiales / Kind regards<br><br>
+
+	<b><% $C->web_enc( $C->txt('site_company', 'de') ) %></b><br>
+	<% $C->web_enc( $C->txt('slogan', 'de') ) %><br><br>
+
+	<small>
+	<% $C->web_enc( $C->txt('site_addr', 'de') ) %> | <% $C->web_enc( $C->txt('site_zip', 'de') ) %> <% $C->web_enc( $C->txt('site_city', 'de') ) %><br>
+	<% $C->{CONFIG}->{HTTP_HOST} %> | <% $C->txt('site_email', 'de') %>
+	</small>
+</p>
+
+<p>
+	<center>
+		<span style="font-size:0.8rem">- Bestell-Best&auml;tigung in PDF-Format in der Beilage -</span>
+	</center>
+</p>
+
+<br />
+% # --------------------------- "...-A7" stands for ALGO Version 6 of _this_ template
+<span style="font-size:0.7rem; color:#b0b0b0"><center>Vorlage V # 405222-A9 &ndash; Prismado E-Commerce &ndash; confirm_cust_inc <% $odat->{lang} %></center></span>
+</body>
+</html>
+<!-- ============================== Confirmation Customer End ============================== -->
+
+
+
+
+
+
+
+<%doc>
+XXX:
+/XXX
+</%doc>

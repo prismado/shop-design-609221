@@ -1,0 +1,90 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $mytxt = $cgi->param('mytxt');
+	my $id    = $cgi->param('id') + 0;
+	my $lang  = $C->getSessData('xlang') || $cgi->param('lang') || 'de';
+	my $bSave = $cgi->param('bSave');
+
+	my $debug = $C->getSessData('debug') || 0;
+	my $perm  = $C->get_user_perm();
+
+	$m->redirect('/adx/') unless $perm->{is_admin};
+
+	my @paras = ();
+	if ($debug) {
+		foreach ($cgi->all_parameters) {
+			next if $_ eq 'mytxt';
+			push(@paras, "[ CGI ] &middot; <b>$_</b> = " . $cgi->param($_));
+		}
+	}
+
+	if ($bSave) {
+		(my $txt = $mytxt) =~ s/'/''/g;
+		my $errstr = '';
+		my $ai_lang = $lang . 'a';
+		$C->{dbh}->do(qq~update products_desc set desc_long='$txt' where lang='$lang' and product_id=$id~) or ($errstr = $DBI::errstr);
+		$C->{dbh}->do("delete from products_desc where lang='$ai_lang' and product_id=$id");
+		if ($debug) {
+			$C->create_toast_note(body=>(qq~<span class="text-dark">Okay: Updated <code>products_desc</code> in:<br>
+				adx/_wysiwyg_edit_for_iframe.html~ . (join '<br>', @paras) . '</span>'), width=>'500px', type=>'info', delay=>9999);
+		}
+	}
+
+	$mytxt ||= (
+		$C->query("select desc_long from products_desc where product_id=$id and lang='$lang" . 'a' . "'")->[0] ||
+		$C->query("select desc_long from products_desc where product_id=$id and lang='$lang'")->[0]
+	);
+
+	my @breadcrumb = ();
+	my @bc1 = ('CKEditor 4.x', '_wysiwyg_editor_2.html');
+	my @bc2 = ("Wysiwyg Editor - ID $id", '');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+	if ($debug) {
+		my @bc3 = 'Debug DN404051-36: adx/_wysiwyg_edit_for_iframe';
+		push(@breadcrumb, \@bc3);
+	}
+</%init>
+<!doctype html>
+<html lang="<% $lang %>" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Wysiwyg | Layout-23</title>
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core_x_wide.min.css">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	</head>
+
+	<body class="header-sticky">
+
+<%doc>
+	<div id="middle" clasx="flex-fill" clasx="pl--0 pr--0">
+		<div class="page-title shadow-xs">
+			<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+		</div>
+	</div>
+</%doc>
+
+	<& _includes/_wysiwyg_edit_for_iframe.html, id=>$id, mytxt=>$mytxt, C=>$C, perm=>$perm, debug=>$debug &>
+
+	<script src="assets/js/core.min.js"></script>
+
+	</body>
+</html>
+<%doc>
+	Created: 28Mar2024
+</%doc>

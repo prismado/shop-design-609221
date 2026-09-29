@@ -1,0 +1,213 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+
+	my $categs = $A->get_categories() if defined $A;
+	# XX -- 19Aug2026 -- my $categs = $A->get_categories();
+
+	my %supercat = ();
+	my @subcat = ();
+	my %subc_hash = my %cat_name = my %subcat_count = ();
+
+	my %not_in = ();
+	foreach (split /,/, $C->get_safe_property('product_proposal_not_in', 'sys')) {
+		$not_in{$_} = 1;
+	}
+
+	foreach my $catdat (@{ $categs->{result} }) {
+		# -- id / label / visible
+		next unless  $catdat->{visible};
+		$cat_name{$catdat->{id}} = $catdat->{label};
+		if ($catdat->{parent_id}) {
+			push(@subcat, "$catdat->{parent_id}: $catdat->{id}, $catdat->{label}");
+			$subc_hash{"$catdat->{parent_id}.$catdat->{id}"} = "$catdat->{id}\t$catdat->{label}";
+			$subcat_count{ $catdat->{parent_id} }++;
+		}
+		else {
+			$supercat{$catdat->{id}} = $catdat->{label};
+		}
+	}
+
+	my $ext_link = 'fi fi-arrow-right-3 ml-2 fs--13 text-orange-900';
+</%init>
+<div class="collapse navbar-collapse" id="navbarMainNav">
+
+	<!-- MOBILE MENU NAVBAR -->
+	<div class="navbar-xs d-none">
+
+	<!-- mobile menu button : close -->
+	<button class="navbar-toggler pt-0" type="button" data-toggle="collapse" data-target="#navbarMainNav"
+		aria-controls="navbarMainNav" aria-expanded="false" aria-label="Toggle navigation">
+	<svg width="20" viewBox="0 0 20 20">
+	<path d="M 20.7895 0.977 L 19.3752 -0.4364 L 10.081 8.8522 L 0.7869 -0.4364 L -0.6274 0.977 L 8.6668 10.2656 L -0.6274 19.5542 L 0.7869 20.9676 L 10.081 11.679 L 19.3752 20.9676 L 20.7895 19.5542 L 11.4953 10.2656 L 20.7895 0.977 Z"></path>
+	</svg>
+	</button>
+
+<%doc>
+		Optional Mobile Menu Logo
+		Logo : height: 70px max
+</%doc>
+	<a class="navbar-brand px-4" href=".">
+		<img src="/assets/images/logo/logo_light.svg" width="110" height="70" alt="Auctionline">
+	</a>
+
+	</div>
+	<!-- /MOBILE MENU NAVBAR -->
+
+	<!-- Dropdowns -->
+	<ul class="navbar-nav align-items-center">
+
+%	# ================================================================================================================================
+	<li class="nav-item dropdown dropdown-mega">
+
+	<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="mainMegaNav">
+		<i class="fi fi-percent" style="margin-top:-2px"></i> <span>Top-Angebote</span>
+	</a>
+
+	<ul class="dropdown-menu" aria-labelledby="mainMegaNav">
+
+%	if ($debug) {
+		<li class="dropdown-item bg-transparent">
+%			foreach (keys %not_in) {
+				&bull; NOT IN: <% $_ %><br>
+%			}
+		</li>
+%	}
+
+	<li class="bg-transparent">
+<%doc>
+			for 5 columns:
+			.col-md-5th   -instead of-   .col-md-3
+</%doc>
+	    <div class="row col-border-md">
+%		my $i = 0;
+%		foreach my $sup_id (keys %supercat) {
+%			my $item_count = $A->get_category_count(cat_id=>$sup_id);
+%			next if $item_count->{count} < 1;
+%			next if $not_in{$sup_id};
+%			last if ++$i > 4;
+%			my $debug_note = '';
+%			my $proposal;
+%			$proposal = $A->get_product_proposal(cat_id=>$sup_id, limit=>5, wcl=>'discount>0');
+%			$debug_note = "$proposal->{rows} rows at 1st try";
+%			$proposal = $A->get_product_proposal(cat_id=>$sup_id, limit=>5) if $proposal->{rows} < 1;
+			<div class="col-12 col-md-3">
+				<h3 class="h6 text-muted text-uppercase fs--14 mb-3"><a class="text-muted"
+					href="/category-<% $sup_id %>-computer.html"><% $supercat{$sup_id} %></a></h3>
+				<p style="min-height:90px; max-height:90px; overflow:hidden; border-bottom: 1px solid #ddd;"><% $C->prop("_categ_desc_$sup_id") %></p>
+				<ul>
+%				foreach my $d (@{$proposal->{result}}) {
+%					(my $desc_short = $C->shorten_title($d->{desc}, 42)) =~ s/<[^>]*>//gs;
+					<li class="mb-2" style="display:block !important">
+					    <div class="row no-gutters" style="border-bottom: 1px solid #ddd;">
+						<div class="col-md-3 p--0">
+							<figure class="overflow-hidden m-0 position-relative">
+								<a href="/article-<% $d->{id} %>-produkt.html" class="text-decoration-none">
+									<img class="img-fluid lazy" src="/produkte/p<% $d->{id} %>_large.<% $d->{image}->{ext} || 'jpg' %>"
+										alt="..." data-loaded="true">
+								</a>
+							</figure>
+						</div>
+						<div class="col-9 col-md-9 p-2 overflow-hidden">
+%							if ($d->{discount}) {
+								<span class="badge badge-pink mb-1"><i
+									class="fi fi-star-full fs--10"></i> SALE <% $d->{discount} %> %</span>
+%							}
+							<h2 class="fs--18 mb-0"><a href="/article-<% $d->{id} %>-produkt.html"
+								class="text-dark font-weight-normal"><% $C->shorten_title($d->{title}, 25) %></a></h2>
+							<span class="fs--14" style="white-space:wrap;"><% $desc_short %></span>
+						</div>
+					    </div>
+					</li>
+%				}
+%			    if (  $subcat_count{$sup_id} ) {
+				<li class="dropdown-item mt-3 mb-2"><i style="margin-top:-4px"
+					class="fi fi-menu-dots fs--14 mr-1"></i> <span class="fs--20">Relevant</span></li>
+%			    }
+%				foreach (keys %subc_hash) {
+%					next unless /^$sup_id\.\d+/;
+%					my $subcat_id = (split /\./)[1];
+					<li class="dropdown-item">
+						<a class="dropdown-link p--0 ml-4"
+							href="category-<% $subcat_id %>-computer.html">&rsaquo; <% $cat_name{$subcat_id} %></a>
+					</li>
+%				}
+				</ul>
+%				if ($debug) {
+					<% $debug_note %><br>
+					<code><% $proposal->{wcl} %></code><br />
+					<% $proposal->{rows} %> rows
+%				}
+			</div>
+%		}
+	    </div>
+	</li>
+
+	<li class="dropdown-item bg-transparent mt-3 fs--14 font-weight-light text-center">
+		Weitere Angebote finden Sie in den entsprechenen Kategorien.
+	</li>
+
+	</ul>
+
+	</li>
+%	# ================================================================================================================================
+
+%    if ($perm->{is_admin}) {
+	<li class="nav-item dropdown pt-1">
+		<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true"
+			aria-expanded="false" id="mainNavHome"><i class="fi fi-shield-ok" style="margin-top:-2px"></i> <span>Admin</span></a>
+		<ul class="dropdown-menu dropdown-menu-clean" aria-labelledby="mainNavHome">
+			<li class="dropdown-item"><a class="dropdown-link" href="/adx/"><i class="fi fi-home"></i> Hauptseite</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="/adx/orders.html"><i class="fi fi-cart-1"></i> Bestellungen</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="/customers.html"><i class="fi fi-users"></i> Kunden</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="/adx/products.html"><i class="fi fi-box text-cyan-800"></i> Produkte</a></li>
+			<li class="dropdown-item"><a class="dropdown-link"
+				href="/_systex/install/help/de/"><i class="fi fi-round-question-full text-danger"></i> Online-Hilfe</a></li>
+			<li class="dropdown-item"><a class="dropdown-link"
+				href="/adx/help.html"><i class="fi fi-round-question-full text-danger"></i> Online-Hilfe (Suche)</a></li>
+%			if ($perm->{is_devel}) {
+				<li class="dropdown-item dropdown">
+					<a class="dropdown-link" href="#!" data-toggle="dropdown">
+						<i class="fi fi-shield-ok text-danger"></i> System
+					</a>
+					<ul class="dropdown-menu dropdown-menu-hover shadow-lg b-0 m-0">
+					<li class="dropdown-item"><a class="dropdown-link" href="/adx/show.html?macro=prism_sys_jobs">System Jobs</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="/adm_log.html?importance=2&filter=warn&filtertype=not">Log</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="/adx/special_keys.html?area=order">Post-processing</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="/__lab_dhl.html">DHL Lab</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="/adx/_mail_parse.html">ADX : Mail Parse</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="/adm_properties.html">Properties</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="/adx/about.html">About</a></li>
+					<li class="dropdown-item"><a class="dropdown-link"
+						href="https://dms.prismado.com/components-icons.html">Smarty Icons<i class="<% $ext_link %>"></i></a></li>
+					</ul>
+				</li>
+			<li class="dropdown-item"><a class="dropdown-link" href="/adx/config-dev.html"><i class="fi fi-cog-full text-danger"></i> Developer Summary</a></li>
+				<li class="dropdown-item"><a class="dropdown-link"
+					href="/adx/show.html?macro=prism_core_funcs"><i class="fi fi-cog-full text-danger"></i> Prismado Core</a></li>
+				<li class="dropdown-item"><a class="dropdown-link"
+					href="/adx/newsletter.html"><i
+						class="fi fi-envelope text-danger"></i> Newsletter Edit</a></li>
+				<li class="dropdown-item"><a class="dropdown-link"
+					href="https://docs.ch2.be/w/prismado-shop/"><i
+						class="fi fi-round-question-full text-danger"></i> Wiki<i class="<% $ext_link %>"></i></a></li>
+%			}
+			<li class="dropdown-item dropdown">
+				<a class="dropdown-link" href="#!" data-toggle="dropdown"><i class="fi fi-cog"></i> Etc.</a>
+				<ul class="dropdown-menu dropdown-menu-hover shadow-lg b-0 m-0">
+					<li class="dropdown-item"><a class="dropdown-link" href="/_do.html?action=edit_mode"><i class="fi fi-pencil"></i> Editier-Modus</a></li>
+					<li class="dropdown-item"><a class="dropdown-link" href="https://www.prismado.com/contact/"><i class="fi fi-support"></i> Support</a></li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+%    }
+
+	</ul>
+	<!-- /Dropdowns -->
+
+</div>

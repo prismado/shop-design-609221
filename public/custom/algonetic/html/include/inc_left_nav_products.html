@@ -1,0 +1,68 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+	my $lang  = $args{lang} || 'de';
+
+	my ($categ_ids,	$label)	= $A->get_categ_nav($lang);
+
+	# -- Ajax-Link: CSS-Klasse "js-ajax"
+</%init>
+<li class="nav-item active">
+	<a class="nav-link" href="/" style="color:black"><i class="fi fi-menu-dots"></i><b>Sortiment</b></a>
+% #	<a class="nav-link js-ajax" href="."><i class="fi fi-menu-dots"></i><b>Sortiment</b></a>
+</li>
+
+<li class="nav-item active" style="background-color:white !important">
+	<a class="nav-link nav-group" href="#">
+		<span class="group-icon	float-end">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<i class="fi fi-cart-4"></i>
+% #		<span class="badge badge-warning float-end fs--11 mt-1">new</span>
+		Top Kategorien
+	</a>
+
+	<ul class="nav flex-column">
+%		foreach my $cat_id (@{$categ_ids}) {
+%			my @ids	= split	/\t/, $cat_id;
+%			if ($#ids == 0) {
+%				my $count      = $C->query("select COUNT(*) FROM vproducts WHERE cat_id=$cat_id AND count>0 AND lang='de'")->[0];
+%				my $discount   = $A->get_categ_discount(id=>$cat_id);
+%				my $url_frndly = $C->url_friendly($label->{$cat_id});
+%				my $ajax       = $count > 1 ? 'js-ajax' : '';
+				<li class="nav-item mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+%					if ($discount->{count}) {
+						<span class="float-end fs--11 mt-2">
+							<& ../include/inc_sale_svg.html &>
+						</span>
+%					}
+%					if ($count < 1) {
+						<span class="float-end fs--16 mt-2">
+							<i style="color:black" class="fi fi-support"></i>
+						</span>
+%					}
+					<a class="nav-link font-weight-bold <% $ajax %>" href="/products/<% $url_frndly %>/<% $cat_id %>"><b
+						style="font-size:1.03rem"><% $label->{$cat_id} %></b></a>
+				</li>
+%				my $sub_categs = $A->get_visible_sub_categs($cat_id);
+%				foreach my $c_id (@{$sub_categs}) {
+%					my $label = $C->query("select label FROM categories WHERE id=$c_id AND lang='$lang'")->[0];
+%					my $url_frndly = $C->url_friendly($label);
+%					my $count = $C->query("select COUNT(*) FROM vproducts WHERE cat_id=$c_id AND count>0 AND lang='de'")->[0];
+%					my $ajax  = $count > 1 ? 'js-ajax' : '';
+					<li class="nav-item ml-3 mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+%						if ($count < 1) {
+							<span class="float-end fs--16 mt-2"><i style="color:black" class="fi fi-support"></i></span>
+%						}
+						<a class="nav-link <% $ajax %>" href="/products/<% $url_frndly %>/<% $c_id %>"><% $label %></a>
+					</li>
+%				}
+%			}
+%		}
+	</ul>
+</li>

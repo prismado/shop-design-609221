@@ -1,0 +1,21 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+</%init>
+<a class="btn btn-sm btn-success btn-soft collapsed" data-toggle="collapse" href="#collapseExample2"
+	role="button" aria-expanded="false" aria-controls="collapseExample2">
+		<span class="group-icon">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<span>Mehr Anzeigen</span>
+</a>
+
+<div class="collapse" id="collapseExample2">
+	<div class="card card-body">
+		<% $C->now(2) %>
+		Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid.
+		Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+	</div>
+</div>

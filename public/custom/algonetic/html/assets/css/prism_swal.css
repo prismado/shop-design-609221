@@ -1,0 +1,25 @@
+<style>
+	.dummy404221_2 { } /* Diese Zeile muss bestehen bleiben. Andernfalls wird die 1. CSS-Klasse nicht verarbeitet von SWAL (SWAL/Browser-Bug?) */
+
+	.custom-swal-title {
+		/* font-size: 0.8em; */
+		/* color: red !important; */
+	}
+
+	.custom-swal {
+		border: 12px green solid !important;
+	}
+
+	.custom-swal-pop {
+		/* border: 12px lightblue solid !important; */
+		width: 380px !important;
+		padding: 0px !important;
+		padding-bottom: 10px !important;
+	}
+
+	.custom-swal-alert {
+		border: 10px red solid !important;
+	}
+</style>
+
+/* Created: 21Apr2024 */

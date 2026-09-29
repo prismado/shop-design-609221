@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+
+	my $info  = $args{info}  || '* No info *';
+	my $icon  = $args{icon}  || 'fi-cart-1';
+	my $color = $args{color} || ''; # -- e.g. "text-danger";
+	my $badge = $args{badge} || ''; # -- e.g. "new"
+	my $time  = $args{time}  || '* No time *';
+</%init>
+<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover bg-theme-color-light">
+%		foreach my $b (split /,/, $badge) {
+%			my ($bad, $col) = split /\:/, $b;
+%			$col ||= 'success';
+			<span class="badge badge-<% $col %> float-end font-weight-normal mt-1"><% $bad %></span>
+%		}
+		<i class="fi <% $icon %> <% $color %> d-middle float-start fs--20 bg-light w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal"><% $info %></p>
+		<small class="d-block fs--11 text-muted"><% substr($time, 0, 16) %></small>
+	</a>
+<!-- /NOTIFICATION -->
+
+% # XXX <span class="badge badge-danger float-end font-weight-normal mt-1">urgent</span>

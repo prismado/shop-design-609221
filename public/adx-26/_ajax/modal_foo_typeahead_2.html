@@ -1,0 +1,71 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+
+	my $std_labels = $A->get_std_labels();
+	my @labels = ();
+	foreach my $key (@{ $std_labels->{ident} }) {
+		push(@labels, qq~{ id: '\-$key', name: '$std_labels->{caption}->{$key}' }~);
+	}
+
+	my @lbl2 = ();
+	push(@lbl2, qq~{ id: '-foo', name: 'adsf xx'  }~);
+	push(@lbl2, qq~{ id: '-fox', name: 'badsf xx' }~);
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Typeahead &middot; Demo V2</h5>
+
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<p>Template: <code><% $C->this() %></code></p>
+
+				<div class="float-left">
+					<input class="ta_404031_33 form-control" type="text" style="min-width:20vw" autocomplete="off"
+						id="inp_404031_34_supprWarn" placeholder="Produkte-Eigenschaften...">
+				</div>
+
+				<div class="float-left ml-4">
+					<input class="ta_404031_36 form-control XXXmt-3" type="text" style="min-width:20vw" autocomplete="off"
+						id="inp_404031_37_supprWarn" placeholder="Suchbegriffe eingeben...">
+				</div>
+
+				<br clear="all" />
+
+				<p class="mt-3">
+				<tt><% join "<br>\n", @labels %></tt><br />
+%				foreach ($cgi->all_parameters) {
+					X -- <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%				}
+				</p>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150">
+					<i class="fi fi-check"></i> Okay
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<& ../_includes/inc_typeahead_v2024_js.html, i_class=>'ta_404031_33', suggest_data=>\@labels, A=>$A &>
+<& ../_includes/inc_typeahead_v2024_js.html, i_class=>'ta_404031_36', suggest_data=>\@lbl2,   A=>$A &>

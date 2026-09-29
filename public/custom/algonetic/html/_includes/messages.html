@@ -1,0 +1,123 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+
+	my $now = $C->now(2);
+</%init>
+	<!-- messages  d-none d-md-inline-block -->
+	<li class="list-inline-item ml--6 mr--6 dropdown">
+
+	<a href="#" id="dropdownMessageOptions" class="btn btn-sm rounded-circle btn-light dropdown-toggle" data-toggle="dropdown"
+		aria-expanded="false" aria-haspopup="true">
+
+	<!-- badge -->
+	<span class="badge badge-danger shadow-danger-md animate-pulse fs--10 p--3 mt--n3 position-absolute end-0">1</span>
+
+	<span class="group-icon">
+		<i class="fi fi-envelope-2"></i>
+		<i class="fi fi-close"></i>
+	</span>
+	</a>
+
+	<div aria-labelledby="dropdownMessageOptions"
+		class="dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+
+	<div class="dropdown-header fs--14 py-3">
+
+	<a href="#!" class="js-ajax-modal btn btn-sm btn-primary btn-soft b-0 px-2 py-1 m-0 fs--12 mt--n3 float-end"
+		data-href="_ajax/admin_modal_message_write.html"
+		data-ajax-modal-size="modal-md"
+		data-ajax-modal-centered="false"
+		data-ajax-modal-backdrop="static">
+		+ WRITE
+	</a>
+	1 NEx MESSAGE
+	</div>
+
+	<div class="dropdown-divider"></div>
+
+	<div class="max-h-50vh scrollable-vertical">
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover bg-theme-color-light">
+
+		<span class="badge badge-success float-end font-weight-normal mt-1">new</span>
+		<span class="badge badge-danger float-end font-weight-normal mt-1">urgent</span>
+
+		<!-- image -->
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start"
+			style="background-image:url('../../html_frontend/demo.files/images/icons/user80.png')"></div>
+
+		<!-- author -->
+		<strong class="d-block text-truncate">John Doe</strong>
+
+		<!-- subject -->
+		<p class="fs--14 m-0 text-truncate font-weight-normal">
+	Spartanx has no weekends, so neither you!
+		</p>
+
+		<!-- date -->
+		<small class="d-block fs--11 text-muted">
+	Jan 22, 2019 / 02:21:46pm
+		</small>
+
+	</a>
+	<!-- /MESSAGE -->
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover">
+
+		<!-- image -->
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start"
+			style="background-image:url('../../html_frontend/demo.files/images/unsplash/team/michael-dam-mEZ3PoFGs_k-unsplash.jpg')"></div>
+
+		<!-- author -->
+		<strong class="d-block text-truncate">Michael Dam</strong>
+
+		<!-- subject -->
+		<p class="fs--14 m-0 text-truncate font-weight-normal">
+	Go with Smarty, you can't go wrong, trust me
+		</p>
+
+		<!-- date -->
+		<small class="d-block fs--11 text-muted">
+	Jan 22, 2019 / 02:21:46pm
+		</small>
+
+	</a>
+	<!-- /MESSAGE -->
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start"
+			style="background-image:url('../../html_frontend/demo.files/images/unsplash/team/joseph-gonzalez-iFgRcqHznqg-unsplash.jpg')"></div>
+		<!-- author -->
+		<strong class="d-block text-truncate">Joseph Gonzalez</strong>
+		<!-- subject -->
+		<p class="fs--14 m-0 text-truncate font-weight-normal">RE: No Subject</p>
+		<small class="d-block fs--11 text-muted">Jan 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /MESSAGE -->
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start"
+			style="background-image:url('../../html_frontend/demo.files/images/unsplash/team/valerie-elash-9IL_stSpvOU-unsplash.jpg')"></div>
+		<strong class="d-block text-truncate">Valerie Elash</strong>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">RE: No Subject</p>
+		<small class="d-block fs--11 text-muted">Jan 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /MESSAGE -->
+	</div>
+
+	<div class="dropdown-divider mb-0"></div>
+	<a href="#!" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+		<i class="fi fi-arrow-end fs--11"></i>
+		<span class="d-inline-block pl-2 pr-2">View all</span>
+	</a>
+	</div>
+
+	</li>

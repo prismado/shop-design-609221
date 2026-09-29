@@ -1,0 +1,60 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $order_id = ($C->{CGI}->param('order_id') + 0) || $C->query('select max(id) from orders where status=4')->[0];
+	my $sig    = $C->md5_secret($SID);
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">DHL Express</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<form method="post" name="f308281" action="/_sub.html">
+	<input type="hidden" name="sig"    value="<% $sig %>">
+% #	<input type="hidden" name="action" value="tbd">
+
+% #	<p><% $C->now(2) %> / <span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span></p>
+%	if ($perm->{is_devel}) {
+	<p><% $this %> &mdash; SID: <% $SID %> &rarr; <% $sig %></p>
+%	}
+	<p>
+		Bitte best&auml;tigen Sie die Neu-Generierung der DHL-Etikette durch Dr&uuml;cken des Buttons.
+	</p>
+
+	<& ../include/inc_text_edit.html, label=>'Test Action', value_enc=>'dhl_send_shipment', info=>'Actions: dhl_send_shipment / mail_pdf_bill', id=>50 &>
+	<& ../include/inc_text_edit.html, label=>'Test Param Order-ID', value_enc=>"$order_id", info=>'Info', id=>70 &>
+	<& ../include/inc_text_edit.html, label=>'E-Mail', value_enc=>'foo@eshop.pub', info=>'Info', id=>80 &>
+	<& ../include/inc_text_edit.html, label=>'Debug', value_enc=>0, info=>'Debug', id=>98 &>
+
+<%doc>
+XXX:
+	<p>
+%	foreach (sort keys %{$perm}) {
+%		next if /^\_.+/;
+		&bull; <% $_ %> = <% $perm->{$_} %><br>
+%	}
+	</p>
+/XXX
+</%doc>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Close
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> DHL-Bestellung Senden
+			</button>
+		</div>
+
+	</form>
+</div>

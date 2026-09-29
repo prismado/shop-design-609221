@@ -1,0 +1,169 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi     = $C->{CGI};
+	my $css_id  = $cgi->param('css_id') || 'exampleModalFull';
+	my $f_id_de = $cgi->param('f_id')   || 0; $f_id_de += 0;
+	my $debug   = $C->getSessData('debug') || 0;
+	my $perm    = $C->get_user_perm();
+
+	my ($label, $featkey, $val_de, $id) = @{$C->query("select featname, featkey, `description`, product_id from products_feat where id=$f_id_de")};
+	my ($f_id_en, $val_en)              = @{$C->query("select id, `description` from products_feat where product_id=$id and featkey='$featkey' and lang='en'")};
+	my ($f_id_fr, $val_fr)              = @{$C->query("select id, `description` from products_feat where product_id=$id and featkey='$featkey' and lang='fr'")};
+
+	$A->set_feature_v2(id=>$id, name=>$label, key=>$featkey, lang=>'en', description=>$val_de) unless $f_id_en;
+	$A->set_feature_v2(id=>$id, name=>$label, key=>$featkey, lang=>'fr', description=>$val_de) unless $f_id_fr;
+
+	$val_en ||= $val_de;
+	$val_fr ||= $val_de;
+
+	my $len_val = length($val_de);
+
+	my $size = $len_val > 50 ? 'lg' : 'md';
+	   $size = 'xl' if $len_val > 240;
+</%init>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+	.swal2-actions {
+		display: flex;
+		flex-direction: row-reverse; /* Kehrt die Reihenfolge der Flex-Items um */
+		justify-content: flex-end;
+	}
+</style>
+
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-<% $size %> modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>"><% $label %> &middot; <small>[ <% uc $featkey %> ] &middot; Prod-ID <% $id %></small>
+%				if ($debug) {
+					&rarr; <code><% $C->this() %></code>
+%				}
+				</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form name="f404011_26" onsubmit="return validateForm404011()">
+
+			<div class="modal-body">
+%				if ($len_val > 50) {
+					<textarea name="val_de" rows="8" class="form-control text-dark mb-2"><% $val_de %></textarea>
+%				}
+%				else {
+	<& ../_includes/inc_text_input.html, label=>$label,        value_enc=>$val_de, write=>1, id=>"feat_$f_id_de", tx_class=>'fs--18 font-weight-bold', name=>"val_de" &>
+%				}
+%	unless ($label eq '_exclude') {
+	<& ../_includes/inc_text_input.html, label=>"$label - en", value_enc=>$val_en, write=>1, id=>"feat_$f_id_en", tx_class=>'fs--18 font-weight-bold', name=>"val_en" &>
+	<& ../_includes/inc_text_input.html, label=>"$label - fr", value_enc=>$val_fr, write=>1, id=>"feat_$f_id_fr", tx_class=>'fs--18 font-weight-bold', name=>"val_fr" &>
+%	}
+%				if (length($val_de) > 240 or $perm->{is_devel}) {
+%					my $s_token = $C->md5_secret('products_feat');
+					<center>
+					<a href="/adm_db_edit.html?table=products_feat&wcl=id%3D<% $f_id_de %>&s_token=<% $s_token %>"><small>Large Edit</small></a>
+					</center>
+%				}
+			</div>
+
+			<div class="modal-footer">
+%			    unless ($label eq '_exclude' && $featkey =~ /^EDI\_.+/ && !$perm->{is_devel}) {
+				<button type="button" class="btn btn-sm btn-soft btn-danger w--150" id="del_404080_49" XXXonclick="validateForm404011('del')">
+					<i class="fi fi-thrash"></i>
+				</button>
+%			    }
+
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+%			    unless ($label eq '_exclude' && $featkey =~ /^EDI\_.+/ && $featkey ne 'EDI_SKIP' && !$perm->{is_devel}) {
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="validateForm404011()">
+					<i class="fi fi-check"></i> Update
+				</button>
+%			    }
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm404011(mode) {
+		if (mode == 'del') {
+			if (confirm('Diese Produkte-Eigenschaft wirklich loeschen?')) {
+				alert('XX constr');
+				return false;
+			}
+			else {
+				return false;
+			}
+		}
+		document.f404011_57.val_de.value = document.f404011_26.val_de.value;
+%		unless ($label eq '_exclude') {
+		document.f404011_57.val_en.value = document.f404011_26.val_en.value;
+		document.f404011_57.val_fr.value = document.f404011_26.val_fr.value;
+%		}
+		document.f404011_57.submit();
+		return false;
+	}
+
+document.getElementById('del_404080_49').addEventListener('click', function() {
+  Swal.fire({
+    title: '<% $C->txt('delete') %>?',
+    text: "Dies kann nicht rückgängig gemacht werden!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#f1f3f3',
+    confirmButtonText: 'Ja, löschen!',
+    cancelButtonText: 'Abbrechen',
+  customClass: {
+    confirmButton: 'btn btn-primary w--150',
+    cancelButton:  'btn XXXbtn-danger  w--150 text-dark'
+  }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire(
+        'Gelöscht!',
+        'Der Eintrag wurde geloescht.',
+        'success'
+      )
+      // Führe hier die Löschoperation aus
+	$.ajax({
+		url: '/_ajax/proc_del_feat_from_prod.html?f_id_de=<% $f_id_de %>&f_id_en=<% $f_id_en %>&f_id_fr=<% $f_id_fr %>',
+		type: 'GET',
+		dataType: 'html',
+		success: function(response) {
+% #			$('#ajx_404051_46').html(response);
+			reloadRootWindow();
+		},
+		error: function(xhr, status, error) {
+			console.error(error);
+		}
+	});
+    }
+  })
+});
+</script>
+
+<form action="/_update_prodfeat.html" name="f404011_57">
+	<input type="hidden" name="f_id_de" value="<% $f_id_de %>">
+	<input type="hidden" name="f_id_en" value="<% $f_id_en %>">
+	<input type="hidden" name="f_id_fr" value="<% $f_id_fr %>">
+	<input type="hidden" name="val_de">
+	<input type="hidden" name="val_en">
+	<input type="hidden" name="val_fr">
+</form>
+
+<%doc>
+	Created: 01Apr2024
+</%doc>

@@ -1,0 +1,116 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $table    = $cgi->param('table');
+	my $status   = $cgi->param('status');
+	my $q        = $cgi->param('q');
+	my $show_all = $cgi->param('show_all');
+	my $debug    = $cgi->param('debug');
+
+	my $src = 'customers';
+	   $src = 'orders' if $table eq 'vorders';
+</%init>
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+<link rel="stylesheet" type="text/css" href="assets/css/prism_datatables_1_10_x.css">
+
+% # -- DataTables 1.10.18
+<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+% if ($debug) {
+	<table class="table table-sm border col-6">
+		<tr><td style="width:20%">This</td><td><code><% $C->this() %></code></td></tr>
+		<tr><td>Ajax Source</td><td><code>adx/_ajax/server_processing_<% $src %></code> &mdash; Table: <code><% $table %></code></td></tr>
+		<tr><td>DataTables</td><td><b>1.10.18</b> / CSS: DataTables <b>1.13.4</b> &mdash; <a href="assets/js/datatables.min.js">datatables.min.js</a></td></tr>
+	</table>
+% }
+%	if ($table eq 'vorders') {
+		<p class="mb-0 mt-2 hidden-md-down" style="position:absolute !important; margin-left:150px; z-index: 1 !important">
+			Kundenbestellungen &ndash;
+%				if ($show_all) {
+					<a class="link-muted" href="orders.html">Abgeschlossene anzeigen</a>
+%				}
+%				else {
+					<a class="link-muted" href="orders.html?show_all=1">Alle anzeigen</a>
+%				}
+		</p>
+%	}
+
+	<table id="example" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+%		if ($table eq 'vusers') {
+			<th style="width:82px" nowrap>Kunden-Nr</th>
+			<th style="min-width:110px">Vorname</th>
+			<th style="min-width:148px">Nachname</th>
+			<th>Firma</th>
+			<th style="min-width:183px">Ort</th>
+			<th style="min-width:108px">Telefon</th>
+			<th>E-Mail</th>
+			<th>L-&Auml;nd.</th>
+%		}
+%		else {
+			<th>Best.-Nr</th>
+			<th>Bestellzeit</th>
+			<th>Kunde</th>
+			<th>Produkte</th>
+			<th>Total <% $C->{CONFIG}->{default_curr} %></th>
+			<th>Bezahlung</th>
+			<th><span class="float-end">Status</span></th>
+%		}
+	    </tr>
+	</thead>
+<%doc>
+	<tfoot>
+	    <tr>
+		<th>ID</th>
+		...
+	    </tr>
+	</tfoot>
+</%doc>
+	</table>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 15,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Suchbegriff oder Kunden-Nr"
+	},
+	"ajax": "_ajax/server_processing_<% $src %>.html?status=<% $status %>&q=<% $q %>&show_all=<% $show_all %><% $debug ? "&debug=$debug" : '' %>",
+	"order": []
+    } );
+<%doc>
+	var oTable = $('#example').dataTable();
+	    oTable.fnSort( [ [0,'desc'] ] );
+</%doc>
+
+	$('.dataTables_filter input').css({'width': '255px', 'border-radius': '8px'});
+	$('.dataTables_filter input').removeClass('form-control-sm');
+	$('.dataTables_filter input').attr('id', 'customSearchInput40130');
+
+	document.getElementById('customSearchInput40130').focus();
+
+% #	$('.custom-select').addClass('font-weight-bold');
+} );
+</script>
+
+% if ($debug) {
+%	foreach ($cgi->all_parameters) {
+%		next if $_ eq 'debug';
+		[ cgi ] &middot; <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%	}
+% }

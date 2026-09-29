@@ -1,0 +1,50 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+	my $lang  = $args{lang} || 'de';
+
+	my ($categ_ids,	$label)	= $A->get_categ_nav($lang);
+
+	# -- Ajax-Link: CSS-Klasse "js-ajax"
+</%init>
+<li class="nav-item mt-5">
+	<a class="nav-link" href="#" style="color:#a8a8a8;"><i class="fi fi-home"></i><b>Unternehmen</b></a>
+</li>
+
+<li class="nav-item activx bg-dark" stylx="background-color:white !important">
+	<a class="nav-link" style="color:#a8a8a8;" href="#">
+		<span class="group-icon	float-end">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<i class="fi fi-squared-info"></i> &Uuml;ber uns
+	</a>
+
+	<ul class="nav flex-column">
+
+	<li class="nav-item mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+		<a class="nav-link js-ajax" href="info_help.html">&Uuml;ber uns</a>
+	</li>
+
+	<li class="nav-item mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+		<a class="nav-link js-ajax" href="/info-services.html">Dienstleistungen</a>
+	</li>
+
+	<li class="nav-item mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+		<a class="nav-link js-ajax" href="/newsletter.html">Newsletter</a>
+	</li>
+
+	<li class="nav-item mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+		<a class="nav-link js-ajax" href="contact.html">Impressum</a>
+	</li>
+
+	<li class="nav-item mr-3" style="border-bottom:1px solid; color:#d6e4ef">
+		<a class="nav-link js-ajax" href="info_datenschutz.html">Datenschutz</a>
+	</li>
+
+	</ul>
+</li>

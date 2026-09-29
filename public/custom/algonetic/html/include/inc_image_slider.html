@@ -1,0 +1,170 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $debug     = $args{debug};
+	my $perm      = $args{perm};
+	my $title     = $args{title} || 'Bild 1';
+	my $xtra_imgs = $args{xtra_imgs};
+	my $cur_ext   = $args{cur_ext} || 'jpg';
+
+	my %images = ();
+	$images{$title} = "produkte/p$args{id}_large.$cur_ext";
+	my $ii = 1;
+	foreach (@{ $xtra_imgs->{pics} }) {
+		$ii++;
+		$images{"Bild $ii"} = $_;
+	}
+	my $img_index = $#{ $xtra_imgs->{pics} } + 1;
+
+	my $modal_size = 'modal-xl'; # -- modal-lg / modal-full / modal-xl
+</%init>
+% if ($debug) {
+	<code>inc_image_slider / cur_ext="<b><% $cur_ext %></b>"</code><br>
+%	foreach (keys %{ $xtra_imgs->{excl} }) {
+		X -- <b><% $_ %></b> = "<% $xtra_imgs->{excl}->{$_} %>"<br>
+%	}
+% }
+  <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="9000">
+    
+    <!-- Slides -->
+    <div class="carousel-inner">
+%	my $i = 0;
+%	foreach (sort keys %images) {
+		<div class="carousel-item<% !$i ? ' active' : '' %>">
+			<center>
+			<img class="img-fluid img111_307022 cursor-pointer" src="/<% $images{$_} %>" alt=""
+				style="max-height:33vh"
+				data-target="#myCarousel"
+				data-slide-to="<% $i %>"
+				data-x-img="<% $_ %>">
+			</center>
+		</div>
+%		$i++;
+%	}
+    </div>
+    
+    <!-- Controls -->
+    <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+  </div>
+
+  <!-- Thumbnails -->
+  <div class="row hidden-sm-down">
+% #  <div class="d-flex justify-content-center mt-3">
+  <center>
+<%doc>
+XXX:
+/XXX
+</%doc>
+  <div class="col-md-12 col-sm-12 mt-2 justify-contenx-center" stylx="">
+%	my $j = 0;
+%	foreach (sort keys %images) {
+%		(my $img = $images{$_}) =~ s/\_large\./\_thmb\./;
+%		(my $img_short = $img) =~ s/^produkte\/p$args{id}\_//;
+%		    $img_short = (split /\_thmb\./, $img_short)[0];
+%		$j++;
+%		next if $xtra_imgs->{excl}->{$img_short} == 2;
+		<img src="/<% $img %>" alt="Thumbnail" title="<% $_ %>" class="thumbnail" data-target="#myCarousel" style="opacity:0.75" data-slide-to="<% $j - 1 %>">
+%	}
+  </div>
+  </center>
+  </div>
+
+% unless ($args{suppress_modal}) {
+% # ================================================================================================================================
+  <!-- Modal -->
+  <div id="imageModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered <% $modal_size %>" style="margin-top:-80px">
+      <div class="modal-content">
+
+	<div class="modal-header">
+		<h5 class="modal-title" id="ref65_307022">Fotos</h5>
+		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span class="fi fi-close fs--18" aria-hidden="true"></span>
+		</button>
+	</div>
+
+        <div class="modal-body" style="min-height:750px">
+		<p class="float-end">
+			<a href="#" class="tp-rightarrow tparrows" onclick="myNext()"><i class="fi fi-arrow-right-full text-white pt-2"></i></a>
+		</p>
+		<p>
+			<a href="#" class="tp-leftarrow tparrows" onclick="myPrev()"><i class="fi fi-arrow-left-full text-white pt-2"></i></a>
+		</p>
+	  	<center>
+			<img src="" alt="" id="modalImage" style="width:60%">
+	  	</center>
+        </div>
+
+      </div>
+    </div>
+  </div>
+% # ================================================================================================================================
+% }
+
+  <script>
+    $(document).ready(function() {
+
+      // Open modal on thumbnail click
+      $('.thumbnail').click(function() {
+	var index = $(this).data('slide-to');
+	indx = index;
+	$('#imageModal').modal('show');
+	var info = $('.carousel-item').eq(index).find('img').attr('data-x-img');
+	$('#modalImage').attr('src', $('.carousel-item').eq(index).find('img').attr('src'));
+	document.getElementById('ref65_307022').innerHTML=info;
+      });
+
+      // Open modal on click
+      $('.img111_307022').click(function() {
+	var index = $(this).data('slide-to');
+	indx = index;
+	$('#imageModal').modal('show');
+	$('#modalImage').attr('src', $('.carousel-item').eq(index).find('img').attr('src'));
+	$('#modalImag2').attr('src', $('.carousel-item').eq(index).find('img').attr('src'));
+	$('#modalImag3').attr('src', $('.carousel-item').eq(index).find('img').attr('src'));
+      });
+
+      $('.carousel-control-prev').hover(function() {
+		var elements = document.getElementsByClassName('carousel-control-prev-icon');
+		var firstElement = elements[0];
+		firstElement.classList.add('carousel-control-prev-myicon');
+      });
+
+      $('.carousel-control-next').hover(function() {
+		var elements = document.getElementsByClassName('carousel-control-next-icon');
+		var firstElement = elements[0];
+		firstElement.classList.add('carousel-control-next-myicon');
+      });
+
+    });
+
+	var indx = 0;
+
+	function myPrev() {
+		indx -= 1;
+		if (indx < 0) { indx = <% $img_index %> }
+		var info = $('.carousel-item').eq(indx).find('img').attr('data-x-img');
+		document.getElementById('ref65_307022').innerHTML=info;
+		$('#modalImage').attr('src', $('.carousel-item').eq(indx).find('img').attr('src'));
+		$('#modalImag2').attr('src', $('.carousel-item').eq(indx).find('img').attr('src'));
+		$('#modalImag3').attr('src', $('.carousel-item').eq(indx).find('img').attr('src'));
+	}
+
+	function myNext() {
+		indx += 1;
+		if (indx > <% $img_index %>) { indx = 0 }
+		var info = $('.carousel-item').eq(indx).find('img').attr('data-x-img');
+		document.getElementById('ref65_307022').innerHTML=info;
+		$('#modalImage').attr('src', $('.carousel-item').eq(indx).find('img').attr('src'));
+		$('#modalImag2').attr('src', $('.carousel-item').eq(indx).find('img').attr('src'));
+		$('#modalImag3').attr('src', $('.carousel-item').eq(indx).find('img').attr('src'));
+	}
+  </script>

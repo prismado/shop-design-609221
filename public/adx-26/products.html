@@ -1,0 +1,130 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 28Apr2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $narrow = $cgi->param('narrow');
+	my $fil    = $cgi->param('fil'); # -- 15Feb2024
+	my $chk    = $cgi->param('chk'); # -- 15Feb2024
+	my $omit   = $cgi->param('omit'); # -- 16Feb2024
+	my $theme  = $cgi->param('theme'); # -- 18Feb2024
+
+	# XXX my $debug = $C->getSessData('debug') || 0;
+	my $debug = 0; # -- 07Sep2026
+	my $perm  = $C->get_user_perm();
+	my $appenv= $C->get_safe_property('SHOP_CONFIG_ENV', 'sys'); # -- 07Sep2026
+
+	my $chv = '';
+	if ($fil) { $chv = $chk eq substr($C->md5_secret($fil), 0, 6) ? 1 : 0; }
+	   $chv = 1; # -- 13Sep2024
+
+	my $mdata = $C->prism_get_macro_param(macro=>'products', debug=>$debug);
+	foreach (split /,/, $omit) {
+		$mdata->{para}->{'db_col_$_\_omit'} = 1;
+	}
+
+	(my $hdr_macro_name = $mdata->{para}->{desc_header_macro}) =~ tr/\t//d;
+	my $header_macro;
+	if ($hdr_macro_name) {
+		$header_macro = $C->exec(comp_file=>"$hdr_macro_name\.html", fil=>"$fil", chv=>$chv, macro=>'products',
+					perm=>$perm, dir=>'macros', A=>$A, debug=>$debug, call_src=>'adx/show');
+	}
+
+	(my $body_macro_name = $mdata->{para}->{desc_body_macro}) =~ tr/\t//d;
+	my $body_macro;
+	if ($body_macro_name) {
+		$body_macro = $C->exec(comp_file=>"$body_macro_name\.html", macro=>'products',
+					perm=>$perm, dir=>'macros', A=>$A, debug=>$debug, call_src=>'adx/show');
+	}
+
+	my @breadcrumb = ();
+	if ($mdata->{para}->{desc_breadcrumb_de}) {
+		foreach (split /\|\|/, $mdata->{para}->{desc_breadcrumb_de}) {
+			my @bc = split /\:\=/;
+			$bc[0] =~ tr/\[\]\n\t//d;
+			$bc[1] =~ tr/\[\]\n\t //d;
+			push(@breadcrumb, \@bc);
+		}
+	}
+	my @bc1 = ('Produkte', '');
+	push(@breadcrumb, \@bc1);
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Produkte | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="stylesheet" href="assets/css/<% $narrow ? 'core.min.css' : 'core_x_wide.min.css' %>">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<meta name="theme-color" content="#377dff">
+% # XXX	<script src="assets/js/prism_datatable.js" defer></script>
+	<script src="assets/js/core.min.js"></script>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm => $perm, C => $C, A => $A, show_logo => $narrow ? 0 : 1, appenv => $appenv &>
+% # XXX		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, show_logo=>$narrow ? 0 : 1, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+% if ($narrow) {
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm=>$perm, C=>$C &>
+			</aside>
+% }
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+%					if ($debug) {
+					<div class="float-end mt-3 mr-3">
+						<a href="#" class="js-ajax-modal text-dark" data-href="/_ajax/modal_adm_cmds.html"
+								data-toggle="tooltip" data-placement="bottom" data-original-title="tbd xx"
+								data-ajax-modal-size="modal-md"
+								data-ajax-modal-centered="true"
+								data-ajax-modal-backdrop="static">
+								<span><i class="fi fi-cog"></i></span>
+						</a>
+					</div>
+%					}
+
+%					if ($mdata->{para}->{icon}) {
+% # XXX						<img class="float-start mt-2" style="max-width:1.5vw" src="/<% $mdata->{para}->{icon} %>">
+%					}
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><a class="text-dark text-decoration-none"
+						href="show.html?macro=products&narrow=<% $narrow ? 0 : 1 %>">&laquo;</a> <% $mdata->{name_de} %>
+							&middot; <small><% $mdata->{para}->{label_de} %></small></h1>
+					<% $header_macro->{out} %><br clear="all" />
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& _includes/products.html, mdata=>$mdata, macro=>'products', fil=>$fil, chk=>$chk, chv=>$chv,
+								body_macro_name=>$body_macro_name, body_macro=>$body_macro,
+								omit=>$omit, theme=>$theme, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+% # XXX	<script src="assets/js/core.min.js"></script>
+	</body>
+</html>

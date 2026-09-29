@@ -1,0 +1,132 @@
+<%init>
+	use JSON;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $json = JSON->new();
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	unless ($perm->{is_admin}) {
+		$m->out('Access denied');
+		$m->abort();
+	}
+
+	my $cgi  = $C->{CGI};
+	my $sortcol   = $cgi->param('order[0][column]') || 0;
+	my $search    = $cgi->param('search[value]');
+	my $direction = $cgi->param('order[0][dir]') || 'desc';
+	my $length    = $cgi->param('length') + 0; $length ||= 10;
+	my $start     = $cgi->param('start') + 0;
+	my $draw      = $cgi->param('draw')  + 0; # -- https://datatables.net/manual/server-side
+	my $show_all  = $cgi->param('show_all');
+	my $show_edi  = $cgi->param('show_edi');
+	my $debug     = $cgi->param('debug') + 0;
+
+	my %status_hr = (
+		1=>'Neu', 3=>'Storno', 4=>'Okay', 5=>'Unterwegs', 6=>'Zugestellt'
+	);
+
+	my $pmeths = $A->get_payment_methods();
+	my @paym_hr = ();
+	foreach my $pm (@{$pmeths->{all}}) {
+		$paym_hr[$pm->{num}] = $pm->{psp};
+	}
+
+	($search ||= $cgi->param('q')) =~ s/'/''/g;
+	 $search =~ s/ $//; # -- 12Sep2024
+	my $search_num = $search =~ /^\d+$/ ? 1 : 0;
+	my $search_phone = ($search =~ /^0\d\d.+/) ? 1 : 0;
+
+	my $area = '';
+	if ($start && length != -1) {
+		$area = "LIMIT $start, $length";
+	}
+	elsif ($length > 0) {
+		$area = "LIMIT $length";
+	}
+
+	my @db_cols = qw(id instime lastname id amount_incl_vat pay_meth status firstname company uname);
+
+	my $order_by = $db_cols[$sortcol];
+
+	my @wcl = ();
+
+	push(@wcl, 'status=4') unless $show_all;
+	push(@wcl, q~id IN (select order_id from orders_details where xkey='x_order_id')~) if $show_edi;
+
+	if ($search_num) {
+		push(@wcl, "id=$search");
+	}
+	elsif (length($search) > 1) {
+		push(@wcl, "(lastname LIKE '%$search%' OR firstname LIKE '%$search%' OR company LIKE '%$search%')");
+	}
+
+	my $wcl_str = join ' AND ', @wcl;
+	   $wcl_str = "WHERE $wcl_str" if @wcl;
+
+	if ($debug) { print STDERR "[Debug] $wcl_str\n"; }
+
+	my $stmt = 'select ' . (join ', ', @db_cols) . ", TIMESTAMPDIFF(HOUR, instime, NOW()) from vorders_custname $wcl_str ORDER BY $order_by $direction $area";
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute();
+
+	print STDERR "$stmt\n" if $debug > 1;
+
+	my $row_count = $C->query("select count(*) from vorders_custname $wcl_str")->[0];
+
+	my @json = ();
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $instime, $name, $products, $amount, $pay_meth, $status, $firstname, $company, $uname, $age_h) = @{$r};
+		my $badge_type = $status == 4 ? 'badge-success' : 'badge-warning';
+		   $badge_type = 'badge-info' if $status == 1;
+		$name = "$name $firstname $company";
+		my $guest_ord = $uname =~ /^anonymous\d+$/ ? '<span style="float:right; padding-right:3px">&#128694;</span>' : '';
+		$amount = sprintf('%.2f', $amount);
+		my $dn_cr = '';
+		if ($show_edi) {
+			my $dn_created = $C->query("select created_at from orders_status where order_id=$id and status_id=104")->[0] || '';
+			$dn_cr = !$dn_created ? q~<span data-toggle="tooltip" data-placement="top" data-original-title="Lieferschein noch nicht erstellt"
+						class='badge badge-warning fs--14 w--50 float-right mt-1'>LS!</span>~ : '';
+		}
+		else {
+			if ($age_h < 168) {
+				my $dn_created = $C->query("select created_at from orders_status where order_id=$id and status_id=104")->[0] || '';
+				$dn_cr = !$dn_created ? qq~<span data-toggle="tooltip" data-placement="top" data-original-title="Lieferschein noch nicht erstellt"
+						class='badge badge-warning fs--14 w--50 float-right mt-1'>LS!</span>~ : '';
+			}
+			$dn_cr .= ' <span class="fs--10 ml-1 text-gray-600">EDI</span>'
+				if $C->query("select id from orders_details where xkey='x_order_id' and order_id=$id")->[0];
+		}
+		if ($age_h < 2880) { # -- 120 days // 23Aug2026
+			my $on_the_way = $C->query("select id from orders_status where order_id=$id and status_id=250 limit 1")->[0];
+			my $delivered  = $C->query("select id from orders_status where order_id=$id and status_id=251 limit 1")->[0];
+			if ($delivered)     { $status = 6; $badge_type = 'btn_delivered'; }
+			elsif ($on_the_way) { $dn_cr .= ' &#9951;'; $status = 5; $badge_type = 'badge-warning'; }
+		}
+		my $stat_hr = $status_hr{$status} || "* $status *";
+		   $stat_hr = "<span class='badge $badge_type fs--13 w--80 float-right mr-1'>$stat_hr</span>";
+		my @row = ();
+		push(@row, qq~<a href='/adm_order.html?id=$id'><b>$id</b></a>~);
+		push(@row, '<nobr>' . $C->trans_date_short($instime) . "$dn_cr</nobr>");
+		push(@row, '<b>' . $C->web_enc($C->shorten_title($name, 33)) . "</b>$guest_ord");
+		push(@row, $C->utf2iso($A->get_products_html_compact($id, 35)));
+		push(@row, "<span class='float-right' style='margin-right:20px'>$amount</span>");
+		push(@row, $paym_hr[$pay_meth]);
+		push(@row, $stat_hr);
+		push(@json, \@row);
+	}
+
+	my $JSON =  $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+  "draw": <% $draw %>,
+  "recordsTotal": <% $row_count %>,
+  "recordsFiltered": <% $row_count %>,
+  "data": <% $JSON %>
+}
+

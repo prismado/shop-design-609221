@@ -1,0 +1,34 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $id = $args{id}; # -- Product ID
+	my $lang = $args{lang} || 'de';
+
+	my $res = $A->get_options($id, $lang);
+
+	my $C = $A->{C};
+
+	my $missing_feat_id = 0;
+	if ($args{msg} =~ /Missing mandatory feature ID \[(\d+)\]$/) {
+		$missing_feat_id = $1;
+	}
+</%init>
+% foreach (@{$res}) {
+%	my ($opt_id, $style, $label, $desc, $val) = split /\t/;
+%	next unless $style == $args{type};
+%	my $value = $C->getSessData("prod_id_$id\_$opt_id");
+%	   $value = '' if $value eq '-';
+	<div class="pull-left">
+%		my $warn_style = $missing_feat_id == $opt_id ? 'color:red;' : '';
+%		if ($args{debug}) {
+			<span style="font-weight:normal"><%$C->html_debug(qq~Type $args{type},
+				Opt ID $opt_id $warn_style~, 'product_options_textinput')%></span>
+%		}
+		<b style="<%$warn_style%>"><%$desc%></b><br />
+		<input type="text" name="opt_<%$opt_id%>" style="width:88px" id="<%$val%>" 
+			onblur="$('#ajx_641').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$id%>&opt_id=<%$opt_id%>&rnd=<%rand()%>');"
+			value="<%$value%>"><br />
+	</div>
+% }
+
+<div id='ajx_641'></div>

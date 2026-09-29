@@ -1,0 +1,91 @@
+<%init>
+	# -- Only if logged in
+
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $lang  = $args{lang};
+	my $debug = $args{debug};
+
+	my $udat = $C->get_user(id=>$perm->{uid});
+
+	my $last_login = $C->now(2);
+</%init>
+% #	<& notifications.html, C=>$C, debug=>$debug &>
+% #	<& messages.html, C=>$C &>
+
+	<!-- account -->
+	<li class="list-inline-item ml--6 mr--6 dropdown">
+
+	<a href="#" id="dropdownAccountOptions" class="btn btn-sm btn-light dropdown-toggle btn-pill pl--12 pr--12"
+		data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+		<span class="group-icon m-0">
+			<i class="fi w--15 fi-user-male"></i>
+			<i class="fi w--15 fi-close"></i>
+		</span>
+		<span class="fs--14 d-none d-sm-inline-block font-weight-medium"><% $udat->{firstname} %> &middot;
+			<% (split /\@/, $perm->{uname})[0] %></span>
+	</a>
+<%doc>
+	Dropdown Classes
+	.dropdown-menu-dark             - dark dropdown (desktop only, will be white on mobile)
+	.dropdown-menu-hover            - open on hover
+	.dropdown-menu-clean            - no background color on hover
+	.dropdown-menu-invert           - open dropdown in oposite direction (left|right, according to RTL|LTR)
+	.dropdown-click-ignore          - keep dropdown open on inside click (useful on forms inside dropdown)
+
+	Dropdown prefix icon (optional, if enabled in variables.scss)
+		.prefix-link-icon .prefix-icon-dot              - link prefix
+		.prefix-link-icon .prefix-icon-line     - link prefix
+		.prefix-link-icon .prefix-icon-ico              - link prefix
+		.prefix-link-icon .prefix-icon-arrow    - link prefix
+
+		.prefix-icon-ignore                                     - ignore, do not use on a specific link
+
+</%doc>
+	<div aria-labelledby="dropdownAccountOptions"
+	class="prefix-link-icon prefix-icon-dot dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+
+	<div class="dropdown-header fs--14 py-4">
+		<!-- profile image -->
+		<div class="w--60 h--60 rounded-circle bg-light bg-cover float-start"
+			style="background-image:url('/assets/images/icons/user80.png')"></div>
+
+		<!-- user detail -->
+		<span class="d-block font-weight-medium text-truncate fs--16"><% "$udat->{firstname} $udat->{lastname}" %></span>
+		<span class="d-block text-muted font-weight-medium text-truncate"><% $perm->{email} %></span>
+		<small class="d-block text-muted"><b>Last Login:</b> <% $last_login %></small>
+%		if ($debug) {
+			DN59 &rarr; <code>options</code> (via header) / UID <% $perm->{uid} %>
+%		}
+	</div>
+
+	<div class="dropdown-divider"></div>
+
+	<a href="/account.html" class="dropdown-item text-truncate font-weight-medium">
+		<% $C->txt('account', $lang) %>
+		<small class="d-block text-muted">Profil, Passwort, Adressen</small>
+	</a>
+
+<%doc>
+	<a href="#!" target="_blank" class="dropdown-item text-truncate font-weight-medium">
+		<span class="badge badge-success float-end font-weight-normal mt-1">0 neu</span>Nachrichten
+		<small class="d-block text-muted">Interne Nachrichten</small>
+	</a>
+
+	<a href="#!" target="_blank" class="dropdown-item text-truncate font-weight-medium">
+		<span class="badge badge-danger float-end font-weight-normal mt-1">1 unpaix</span> Invoices
+		<small class="d-block text-muted">montly billing</small>
+	</a>
+</%doc>
+
+	<div class="dropdown-divider mb-0"></div>
+
+	<a href="/_logout.html" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+	<i class="fi fi-power float-start"></i> Log Out</a>
+
+	</div>
+
+	</li>

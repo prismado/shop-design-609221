@@ -1,0 +1,35 @@
+<%init>
+	use ScreenPoint::Core;
+	use File::Copy;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $SID = $C->getSID();
+
+	my $cgi = $C->{CGI};
+
+	my $ifile = $cgi->param('upload') || '';
+	my $upload_tempfilename = $cgi->tmpFileName($ifile);
+
+	my $funcNum = 1;
+	my $message = '';
+	unless ($upload_tempfilename) {
+		$message = 'ERROR';
+	}
+
+	# (my $prod_id = $ENV{HTTP_REFERER}) =~ s/.+id=(\d+)$/$1/;
+	my $prod_id = 0;
+
+	(my $extension = $ifile) =~ s/.+\.(jpg|png)$/$1/;
+	my $target_file = "img_prod_$prod_id\.$extension";
+
+	copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/zz_temp/tmp/$target_file";
+
+	my $url = "/zz_temp/tmp/$target_file";
+
+	$C->log( msg=>"N403131: Prod-ID $prod_id: $target_file", service=>'_uploader_upload', importance=>2 );
+</%init>
+<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction(<%$funcNum%>, '<%$url%>', '<%$message%>');</script>
+<%doc>
+	Created: 13Mar2024
+</%doc>

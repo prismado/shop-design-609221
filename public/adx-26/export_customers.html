@@ -1,0 +1,63 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $debug = $cgi->param('debug') || $C->getSessData('debug') || 0;
+	my $code  = $cgi->param('code')  || 'iso';
+
+	my $perm = $C->get_user_perm();
+
+	$m->abort unless $perm->{is_admin};
+
+	my $sth = $C->{dbh}->prepare(q~
+		SELECT	DISTINCT email, dob, firstname, lastname, zip, city, phone
+		FROM	users u, users_addr a
+		WHERE	u.id=a.user_id AND u.id > 200
+		ORDER	BY u.id DESC
+		LIMIT	50000
+	~);
+	$sth->execute();
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+Email,First Name,Last Name,Country,Zip,Phone
+% while(my $r = $sth->fetch()) {
+%	my ($email, $dob, $first, $last, $zip, $city, $phone) = @{$r};
+%
+%	next if $email =~ /^no-reply\@.+/;
+%
+%	$email =~ s/,/\./g;
+%	$last  =~ s/,/\./g;
+%	$city  =~ s/,/\./g;
+%	$zip += 0; $zip ||= '';
+%
+%	(my $phone_compact = $phone) =~ tr/[ \+\-\(\)]//d;
+%	    $phone_compact =~ s/^0//;
+%	    $phone_compact =~ s/^410/0/;
+%	    $phone_compact =~ s/^41//;
+%	    $phone_compact =~ s/^0//;
+%
+%	next if length($phone_compact) < 9 or length($phone_compact) > 13;
+%	next unless $phone_compact =~ /^\d+$/;
+%
+%	$phone_compact = "41$phone_compact";
+%	$phone_compact =~ s/^4141/41/ if length($phone_compact) > 12;
+%
+%	my $first_enc = my $last_enc = my $city_enc = '';
+%
+%	if ($code eq 'utf') {
+%		$first_enc = $C->toUTF($first);
+%		$last_enc  = $C->toUTF($last);
+%		$city_enc  = $C->toUTF($city);
+%	}
+%	else {
+%		$first_enc = $C->utf2iso($first);
+%		$last_enc  = $C->utf2iso($last);
+%		$city_enc  = $C->utf2iso($city);
+%	}
+<% lc $email %>,<% lc $first_enc %>,<% lc $last_enc %>,CH,<% $zip %>,<% $phone_compact %>
+% }

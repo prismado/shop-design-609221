@@ -1,0 +1,167 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C        = $s{C};
+	my $A        = $s{A};
+	my $lang     = $s{lang}  || 'de';
+	my $x_ref    = $s{x_m_ref} || $$;
+	my $debug    = $s{x_debug} || 0;
+
+	use ScreenPoint::PDF;
+
+	my $P = ScreenPoint::PDF->new( $C );
+
+	my $pdfconf = $C->load_config(table=>'pdf_config');
+
+	my $company   = $s{x_company};
+	my $addr_name = $C->utf2iso('Auftragsbestätigung');
+	my $street    = "$s{x_street} $s{x_addr_2}";
+	my $zip       = $s{x_zip};
+	my $city      = $s{x_city};
+	my $save_as   = "produkte/p-$x_ref.pdf";
+
+	my @checkboxes = qw(access_w_trailer_allowed vehicle_allowed_to_leave loading_ramp_avail mat_in_basements pallet_elevator mat_acc_w_pallet_trolley mat_only_at_one_site);
+
+	my $pdf_res = $P->create(
+		addr_name   => $addr_name || '',
+		addr_company=> $C->utf2iso($company),
+		addr_street => $C->utf2iso($street),
+		addr_zip    => $zip,
+		addr_city   => $C->utf2iso($city),
+		logo_path   => '',
+		logo_width  => $pdfconf->{logo_width},
+		logo_height => $pdfconf->{logo_height},
+		marker_text => "Prismado E-Commerce - Collect-Order V0.8003 / PDF V{{VERSION}} / Erstellt am " . $C->now(3)
+	);
+
+	my @etc_array = my @array = ();
+	my $i = 1;
+
+	foreach my $cb (sort @checkboxes) {
+		my $val   = $s{"x_check_$cb"} || 'Nein';
+		my $label = $C->shorten_title( $C->utf2iso( $C->txt("check_$cb") ), 65 );
+		my $i2    = sprintf('%02d', $i);
+		push(@array, "$i2\t$label\t$val\{b=1\}");
+		$i++;
+	}
+
+	outer: foreach my $k (sort keys %s) {
+		next unless $k =~ /^x\_(.+)/;
+		next unless length( $s{$k} );
+		foreach (@checkboxes) {
+			next outer if $k eq "x_check_$_";
+		}
+		my $var = $1;
+		next if $var eq 'company' or $var eq 'city' or $var eq 'street' or $var eq 'zip' or $var eq 'addr_2' or $var eq 'firstname' or $var eq 'lastname' or $var eq 'phone' or $var eq 'ref' or $var =~ /^pickup_.*time$/ or $var =~ /^add\_email\_\d+$/ or $var eq 'm_ref' or $var eq 'mobile' or $var eq 'collect_contact_site' or $var eq 'collect_contact_deliv' or $var eq 'debug' or $var eq 'collect_pickup_place' or $var eq 'collect_adv_booking';
+		my $label = $C->shorten_title( $C->utf2iso($C->txt($var)), 42 );
+		my $val   = $C->utf2iso($s{$k});
+		   $val   = "[$var $debug] $val" if $debug > 1;
+		my $i2 = sprintf('%02d', $i);
+		push(@etc_array, "$i2\t$label\t$val\{b=1\}");
+		$i++;
+	}
+
+	my @addmails = ();
+	push(@addmails, "M $s{x_mobile}")  if $s{x_mobile};
+	push(@addmails, $s{x_add_email_1}) if $s{x_add_email_1};
+	push(@addmails, $s{x_add_email_2}) if $s{x_add_email_2};
+	my $add_mails = join ' / ', @addmails;
+	   $add_mails = ", $add_mails" if @addmails;
+
+	$s{x_ref} ||= '(Keine)';
+	my $collect_adv = $s{x_collect_adv_booking} ? " / Voranmeldung $s{x_collect_adv_booking}" : '';
+	my @conta_block = my @empty = ();
+	push(@conta_block, "Ihre Referenz{b=1}\t$s{x_ref}");
+	push(@conta_block, "Abhol-Zeit{b=1}\t$s{x_pickup_time}$collect_adv");
+	push(@conta_block, "Ausweich-Zeit{b=1}\t$s{x_pickup_alt_time}") if $s{x_pickup_alt_time};
+	push(@conta_block, "Abholstandort{b=1}\t" . $C->utf2iso($s{x_collect_pickup_place}));
+	push(@conta_block, " \t");
+	push(@conta_block, "Kontakt{b=1}\t" . $C->utf2iso("$s{x_firstname} $s{x_lastname}$add_mails"));
+	push(@conta_block, "Am Abholstandort{b=1}\t" . $C->utf2iso("$s{x_collect_contact_site}"));
+	push(@conta_block, "Am Lieferstandort{b=1}\t" . $C->utf2iso("$s{x_collect_contact_deliv}"));
+	push(@conta_block, "Telefon{b=1}\t$s{x_phone}");
+
+	$P->{x_pos} = $pdfconf->{default_margin_left_a4p};
+	$P->{y_pos} -= 60;
+
+	$P->txt("Abholauftrag - Ref. $x_ref", 12, {b=>1});
+
+	my $created = 'Erstellt am ' . $C->now(3);
+	$P->{text_h}->font($P->{font}, 7.5);
+	my $indent = $P->{text_h}->advancewidth($created);
+	$P->{x_pos} = 557 - $indent;
+	$P->{y_pos} += 13;
+	$P->txt($created, 7.5);
+	$P->{y_pos} -= 5;
+
+	# ========================================================================= Initialblock
+	$P->table_generic(
+		tab_stops   => [qw(62 172)], header => \@empty,
+		recs        => \@conta_block,
+		font_size   => 9.5,
+		line_height => 16,
+		alt_col     => 0, underline => 0, lcol => 'white'
+	);
+
+	$P->{y_pos} -= 10; # -- Space between tables
+
+	# ========================================================================= 1. Block
+	$P->{x_pos} = $pdfconf->{default_margin_left_a4p};
+
+	my @hdr_checkboxes = qw(Pos  DUMMY  Angabe);
+	   $hdr_checkboxes[1] = $C->utf2iso('Informationen über Abhol-/Materialstandort');
+	my $res_pdf_t = $P->table_generic(
+		tab_stops   => [qw(62  95  557)],
+		recs        => \@array, header => \@hdr_checkboxes,
+		font_size   => 9.5,
+		line_height => 16,
+		alt_col     => 1, fillcolor => '#dce8f6',
+		underline   => 1, lcol      => '#7f7f7f'
+	);
+
+	$P->{y_pos} -= 20; # -- Space between tables
+
+	# ========================================================================= 2. Block
+	$P->{x_pos} = $pdfconf->{default_margin_left_a4p};
+
+	my @hdr_arr = qw(Pos  Weitere_Angaben  Angaben);
+	$res_pdf_t = $P->table_generic(
+		header      => \@hdr_arr,
+		tab_stops   => [qw(62    95    557)],
+		recs        => \@etc_array,
+		font_size   => 9.5,
+		line_height => 16,
+		alt_col     => 1, fillcolor => '#dce8f6',
+		underline   => 1, lcol      => '#7f7f7f'
+	);
+
+	# ====================================================================== Page Break
+	$P->{page} = $P->{pdf}->page(0);
+	$P->{page}->mediabox('A4');
+	$P->{text_h} = $P->{page}->text;
+	$P->{gfx}    = $P->{page}->gfx();
+
+	$P->{y_pos} = 770;
+
+	foreach my $info (split /\n/, $C->txt('collect_final_info')) {
+		$info =~ s/\{\{REF\}\}/$x_ref/;
+		$P->txt($C->utf2iso($info), 9.5);
+	}
+
+	$P->{y_pos} -= 20;
+	$P->txt($C->utf2iso('Freundliche Grüsse'), 9.5);
+	$P->{y_pos} -= 10;
+	$P->txt($C->utf2iso('Swiss Solution Group AG'), 9.5, {b=>1});
+	$P->txt($C->utf2iso($pdfconf->{company_slogan}), 9.5);
+
+	$pdf_res->{pdf}->saveas("$C->{CONFIG}->{DOCUMENT_ROOT}/$save_as");
+</%init>
+% foreach (sort keys %{$pdfconf}) {
+	[ pdfconf ] - <% $_ %> = <% $pdfconf->{$_} %><br>
+% }
+<br>
+% foreach (sort keys %{$pdf_res}) {
+	[ pdf_res ] - <% $_ %> = <% $pdf_res->{$_} %><br>
+% }
+<br>
+<% $save_as %>

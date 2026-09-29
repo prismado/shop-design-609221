@@ -1,0 +1,15 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $status   = $cgi->param('status') || 'N/A';
+	my $debug    = $cgi->param('debug');
+
+	$C->create_toast_note(body=>"status $status");
+</%init>
+<%doc>
+	Created: 27Mar2024
+</%doc>

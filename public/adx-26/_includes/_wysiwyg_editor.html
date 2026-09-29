@@ -1,0 +1,45 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Foo / Sub Title</span>
+</div>
+
+<div class="portlet-body">
+
+	<p>
+		<a href="/custom/algonetic/html/plugins-vendor-summernote.html">Demo / Documentation</a>
+	</p>
+
+	<form method="post" id="f403281_18">
+
+	<div class="position-relative">
+		<textarea class="form-control summernote-editor" name="mytxt"
+			data-placeholder="Type yout text here..."
+			data-min-height="300"
+			data-max-height="1000"
+			data-focus="true"
+			data-lang="en-US"
+			data-toolbar='[
+			    ["style", ["style"]],
+			    ["font", ["bold", "italic", "underline", "clear"]],
+			    ["fontname", ["fontname"]],
+			    ["color", ["color"]],
+			    ["para", ["ul", "ol", "paragraph"]],
+			    ["height", ["height"]],
+			    ["table", ["table"]],
+			    ["insert", ["link", "picture", "video", "hr"]],
+			    ["view", ["fullscreen", "codeview"]],
+			    ["help", ["help"]]
+			  ]'
+		><% $args{mytxt} %></textarea>
+	</div>
+
+	<input type="submit" class="btn btn-success mt-2" name="bSave" value="Speichern">
+	</form>
+
+</div>

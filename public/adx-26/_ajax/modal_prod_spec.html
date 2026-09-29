@@ -1,0 +1,188 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 19Mar2025
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+
+	my $prd = $A->get_product_v2(id=>$id);
+	my $fls = $A->get_product_files(id=>$id);
+
+	my $spec = $A->get_specification_edi(prod_id=>$id);
+
+	my $type = $prd->{cat_names} =~ /Monitor/i ? 'display' : '_generic';
+	   $type = 'pc'       if $prd->{cat_names} =~ /Computer/i; # -- 27Jan2026
+	   $type = 'docking'  if $prd->{cat_names} =~ /Docking/i;
+	   $type = 'notebook' if $prd->{cat_names} =~ /Notebook/i;
+
+	# -- SpecificationKey
+	my @keys            = @{ $A->get_spec_keys_article(type=>$type)->{keys} };
+	my $elem_count      = $#keys + 1;
+	my $elem_count_half = sprintf('%.0f', ($#keys + 1.5) / 2);
+</%init>
+<style>
+	.btn-primary:disabled { background-color: #6c757d; cursor: not-allowed; }
+</style>
+
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Produktspezifikation &ndash; <small>Provider Key <% $id %></small></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form method="post" id="myForm503301" name="f503301" action="/adx/_create_prod_spec.html">
+			<input type="hidden" name="id"    value="<% $id %>">
+			<input type="hidden" name="title" value="<% $prd->{title} %>">
+			<input type="hidden" name="l_cnt" value="<% $spec->{line_count} %>">
+			<input type="hidden" name="corr"  value="0">
+
+			<div class="modal-body">
+				<p class="fs--11">
+					Wird automatisch aus <a target="_blank"
+						href="https://chatgpt.com/share/67d065c2-b3c4-800d-9968-c01e6af1fb88">ChatGPT</a> erstellt
+				</p>
+%				if (@{ $fls->{files} }) {
+					<h5 class="mt-4 fs--17">Bereits verf&uuml;gbare Daten</h5>
+%				}
+%				foreach (@{ $fls->{files} }) {
+					&bull; <a href="/produkte/docs/<% $_ %>"><% $_ %></a><br>
+%				}
+				&bull; <a target="_blank" href="/produkte/docs/SpecificationData_ssg.csv">SpecificationData_ssg.csv</a> (alle)<br>
+
+%				if ($spec->{line_count}) {
+					<p class="mt-2 mb-1">Aktuelle EDI-Daten (<% $spec->{line_count} %> Eintr&auml;ge)</p>
+					<table class="table table-sm table-hover XXXmt-1">
+%					foreach my $d (@{ $spec->{spec} }) {
+%						my $key_esc  = $C->url_friendly($d->{key});
+%						(my $prop_val = $C->web_enc($d->{val})) =~ s/"/&quot;/g;
+						<tr style="line-height:16px !important;">
+% # XXX							<td class="font-weight-bold"><% $C->toUTF($d->{key}) %></td>
+							<td class="font-weight-bold"><% $C->web_enc( $d->{key} ) %></td>
+							<td class="pl-5">
+								<span id="ro-<% $key_esc %>"><% $prop_val %></span>
+								<input type="text" class="hide" name="nv__<% $key_esc %>" id="prop-<% $key_esc %>" value="<% $prop_val %>">
+							</td>
+							<td><i class="fi fi-pencil cursor-pointer" onclick="edit_506_161('<% $key_esc %>')"></i></td>
+						</tr>
+%					}
+					</table>
+%				}
+%				else {
+					<% $C->bootstrap_alert('Noch keine Daten in der Schnittstellen-Datei', 'success', 'margin-top:10px;') %>
+%				}
+
+				<h5 class="mt-4 fs--17">Erforderliche Werte bei Artikeltyp <tt class="ml-2 mr-2"><% ucfirst $type %></tt>
+					<i class="fi fi-pencil cursor-pointer" onclick="change_product_type();"></i>
+	<div class="form-label-group mt-1 mb-3 hide" id="sel505261">
+		<select id="select_options" name="type" class="form-control bs-select">
+			<option value="<% $type %>" selected>(Unver&auml;ndert)</option>
+			<option value="_generic">(Generisch)</option>
+			<option value="display">Monitor / Bildschirm</option>
+			<option value="docking">Dockingstation</option>
+			<option value="notebook">Notebook</option>
+			<option value="pc">PC</option>
+		</select>
+		<label for="select_options">Produkte-Typ (<% $type %>)</label>
+	</div>
+%					if ($spec->{line_count}) {
+						<a href="#"
+					onclick="this.style.display='none'; document.getElementById('div_504141_properties').style.display='';">Anzeigen</a>
+%					}
+				</h5>
+
+				<div class="row col-border mt-3" id="div_504141_properties" style="display:<% $spec->{line_count} ? 'none' : '' %>;">
+					<div class="col-md-6 col-12">
+						<ol>
+%							for (my $i=0; $i < int($#keys+1)/2; $i++) {
+								<li><% $keys[$i] %></li>
+%							}
+						</ol>
+					</div>
+
+					<div class="col-md-3 col-6">
+						<ol start="<% $elem_count_half + 1 %>">
+%							for (my $i=int($#keys+1)/2+0.5; $i < $#keys+1; $i++) {
+								<li><nobr><% $C->shorten_title($keys[$i], 42) %></nobr></li>
+%							}
+						</ol>
+					</div>
+				</div>
+			</div>
+
+%		if ($spec->{line_count} or 1==1) {
+			<div class="float-end mr-3">
+				<div class="float-end mr-3 pb-2 cursor-pointer" onclick="this.style.display='none'; prepareEscalate();">
+					<i class="fi fi-help"></i> Eskalieren
+				</div>
+%			    if ($spec->{line_count}) {
+				<label class="form-switch form-switch-primary ZZd-block">
+					<input type="checkbox" name="cb_overwrite" value="1">
+						<i data-on="&#10004;" data-off="&#10005;"></i>
+					&Uuml;berschreiben
+				</label>
+%			    }
+			</div><br clear="all" />
+%		}
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary w--200" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="submit" id="submitBtn" class="btn btn-primary">
+					<i class="fi fi-check"></i> Spezifikation Erstellen
+				</button>
+
+				<button type="submit" id="b505231" class="btn btn-warning w--200 animate-pulse hide" name="bEscalate">
+					<i class="fi fi-help"></i> Eskalieren
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script>
+  $(document).ready(function(){
+	const form = document.getElementById('myForm503301');
+	const submitBtn = document.getElementById('submitBtn');
+	const statusDiv = document.getElementById('status');
+	    
+	form.addEventListener('submit', function(event) {
+		event.preventDefault();
+		submitBtn.disabled = true;
+		submitBtn.innerHTML = '<i class="fi fi-spinner"></i> Wird verarbeitet...';
+		document.f503301.submit();
+	});
+  });
+
+	function prepareEscalate() {
+		document.getElementById('b505231').classList.remove('hide');
+		document.getElementById('submitBtn').classList.add('hide');
+		document.getElementById("myForm503301").action = "/adx/_escalate_article.html";
+	}
+
+	function change_product_type() {
+		document.getElementById('sel505261').classList.remove('hide');
+	}
+
+	function edit_506_161(key) {
+		document.getElementById('prop-' + key).classList.remove('hide');
+		document.getElementById('ro-' + key).classList.add('hide');
+		document.f503301.corr.value='1';
+	}
+</script>

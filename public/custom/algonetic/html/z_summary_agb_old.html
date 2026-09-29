@@ -1,0 +1,77 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+	my $SID = $C->getSID();
+	my $lang = $C->getSessData('_current_lang') || 'de';
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>AGB's <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+% # XX <&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('agbs_long') %></h1>
+</div>
+
+<div id="contentBlock">
+
+
+<div id="stepWrapper">
+<div class="span3"><div class="stepBox"><span class="badge label-normal">1</span> <% $C->prop('order_finalize') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-success">2</span> <% $C->prop('agbs') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">3</span> <% $C->prop('payment') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">4</span> <% $C->prop('confirmation') %></div></div>
+</div>
+
+<div id="checkoutContent">
+<p><span style="height:20px; font-weight:normal; padding-top:4px; font-size:12px; color:red;"><% $C->prop('attention_text') %></span></p>
+
+<div id="scrollbox" style="height:300px;overflow:auto;">
+<&include/info_agbs_de.html&>
+</div>
+
+<form name="agb" action="payment.html" method="post">
+
+ <div class="radio radio-inline">
+	         <input type="radio" id="agb_check" name="agb_check"  value="accept" checked="checked"/>
+	          <label for="agb_check"><% $C->prop('agb_accept') %></label>
+	       	  </div>
+<div class="radio radio-inline">
+	         <input type="radio" id="agb_check1" name="agb_check"  value="notaccept"/>
+	          <label for="agb_check1"><% $C->prop('agb_nonaccept') %></label>
+
+</div>
+
+<div class="buttons">
+	<input id="submit_agb" class="btn btn-checkout" type="submit" name="submit_agb" value="<% $C->prop('btn_continue') %>">
+	<a class="btn btn-grey" href="javascript:history.back()"><% $C->prop('btn_return') %></a>
+
+</div>
+
+</form>
+
+</div><!-- End checkoutBlock -->
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+<script type='text/javascript' src='js/jquery.tools.min.js'></script>
+
+</BODY>
+</HTML>

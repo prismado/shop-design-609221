@@ -1,0 +1,53 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi   = $C->{CGI};
+	my $id    = $cgi->param('id') + 0;
+	my $count = $cgi->param('count') || 1;
+	my $delid = $cgi->param('delid');
+	my $debug = $cgi->param('debug');
+
+	my $SID = $C->getSID(); # -- important
+	my $mob = $C->is_smartphone();
+
+	my ($rc, $msg) = $A->add2basket_details( id=>$id, count=>$count, debug=>$debug ) if $id;
+
+	# $A->adjust_basket_count($SID); # -- Fix over-ordered products in basket
+
+	my $bsk = $A->get_basket(
+		hide_img    => $mob ? 1 : 0,
+		hide_subdsc => 1,
+		hide_ppp    => 1,
+		lightbox    => 1,
+		img_max_w   => '62px',
+		img_min_w   => '62px',
+		add_vat     => 1
+	);
+</%init>
+% if ($rc) {
+	<script language="JavaScript">
+		document.location="product.html?id=<%$id%>&msg=<%$msg%>";
+	</script>
+% }
+<div id="AABB<%$id%>" class="overlayBasket">
+	<table style="background-color:white" class="table table-hover">
+	<% $bsk->{out} %>
+	</table>
+
+% if ($bsk->{item_count}) {
+% #	<input onclick="document.location='basket.html'"   type=button class="btn btn-basket"   value="<% $C->prp('to_basket') %>">
+	<input onclick="document.location='checkout.html'" type=button class="btn btn-checkout" value="<% $C->prp('to_payment') %>">
+% }
+
+<input  data-dismiss="modal" aria-hidden="true" type=button class="btn btn-grey" value="<% $C->prp('close') %>">
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+	$('[data-toggle="tooltip"]').tooltip();   
+});
+</script>

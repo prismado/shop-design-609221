@@ -1,0 +1,136 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my @msgs = (); my $rc = 0;
+
+	my $SID      = $C->getSID();
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $debug    = $C->{CGI}->param('debug') || $C->getSessData('debug') || 0;;
+	my $id       = $C->{CGI}->param('id') + 0; # -- Order-ID
+	my $is_admin = $C->is_admin();
+	my $UA       = $ENV{HTTP_USER_AGENT};
+	my $gr_tot   = $A->get_order_grand_total(debug=>$debug); # -- Total inkl. Mwst.
+	my $perm     = $C->get_user_perm();
+
+	$m->redirect('/service-portal/checkout') if $perm->{is_service_user}; # -- 28Oct2024
+
+	if ($id) {
+		$A->{check} = $C->{CGI}->param('check');
+		($rc, my $msg) = $A->refill_basket($id); # -- Order ID
+		push(@msgs, $msg) if $rc;
+
+		my $rc_note = $rc ? "<br><small>RC $rc</small>" : '';
+		$C->create_toast_note(body=>"$msg$rc_note",
+			title => $C->prop('basket') . ' Re-fill', delay=>9000,
+			type  => ($rc ? 'danger' : 'success'),
+			style => '.toast, .max-w-300 { max-width: 450px !important; opacity: 0.95; }');
+		$A->set_order_status( $id, 103, "Re-fill basket: $msg", 'checkout' );
+	}
+
+	my $bsk = $A->get_basket(
+		add_vat     => 1, 
+		mode        => 'checkout', 
+		theme       => $C->{CONFIG}->{theme},
+		hide_subtot => 1, 
+		debug       => $debug,
+		img_min_w   => '65px', # -- 100% / 95px
+		img_max_w   => '55%'
+	);
+
+	unless ($id) {
+	$m->redirect('.') unless $bsk->{item_count};
+	}
+
+	my $null_positions = $C->query("select id from basket where sid=$SID and count=0 LIMIT 1")->[0];
+	my $basket_count   = $C->query("SELECT COUNT(*) FROM basket WHERE sid=$SID")->[0];
+
+	if ($null_positions) {
+		$C->{dbh}->do("delete FROM basket WHERE sid=$SID and count=0");
+		push(@msgs, 'Leere Position(en) wurde(n) entfernt');
+	}
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+
+	my $msg = join "<br>\n", @msgs;
+
+	my @breadcrumb = ();
+	my @bc1 = ('Warenkorb', 'basket.html');
+	my @bc2 = ('Kasse', 'checkout.html');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+
+	$r->content_type('text/html; charset=utf-8');
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Checkout - <%$C->{CONFIG}->{site_title}%></title>
+% #     <meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<& include/inc_header_seo.html,	C=>$C &>
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+% #	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+% # 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=<% $C->uri_esc($font_1) %>:wght@400&family=<% $C->uri_esc($font_2) %>:wght@400&display=swap">
+	<style>
+		.product-name {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.prism-limit-len-450-405041 {
+			max-width: 450px !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		p, td           { font-family: '<% $font_1 %>', sans-serif; color: #333; }
+		h5, h6, th      { font-family: '<% $font_1 %>', sans-serif; font-weight: bold; }
+		li, .breadcrumb { font-family: '<% $font_2 %>', sans-serif; }
+	</style>
+	
+% #     <link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+</head>
+
+<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, A=>$A, C=>$C &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><% $C->prop('checkout') %></h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet pb-2">
+							<& include/checkout.html, msg=>$msg, rc=>$rc, SID=>$SID, bsk=>$bsk, gr_tot=>$gr_tot,
+								perm=>$perm, A=>$A, C=>$C, lang=>$lang, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+</body>
+</html>

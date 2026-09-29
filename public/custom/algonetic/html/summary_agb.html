@@ -1,0 +1,15 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	# XXX $C->saveSessData('xmsg', $C->txt('instruction', 'de', 'custom/auctionline/html/summary_agb'));
+	$C->saveSessData('xmsg', $C->txt('gtc_note', 'de'));
+
+	$m->redirect('summary.html');
+</%init>
+<%doc>
+	AGBs were not accepted.
+
+	Created: 09Jul2023
+</%doc>

@@ -1,0 +1,97 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $is_admin = $C->is_admin();
+	my $pw_sent  = my $error = 0;
+	my $email_in = my $email_to = '';
+	my $SID      = $C->getSID();
+
+	if ($C->{CGI}->param('pwd_send')) {
+		($email_in = $C->{CGI}->param('email_pwd')) =~ tr/[';]//d;
+		my $response = $A->mail_login(uname=>$email_in, lang=>$lang);
+		unless ($response->{rc}) {
+			$pw_sent = 1;
+			$email_to = $response->{email_db};
+		}
+		else {
+			$error = 1;
+		}
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Send Password - <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<& include/content_header.html, SID=>$SID, C=>$C, lang=>$lang, is_admin=>$is_admin &>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid ps-content">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('pwd_title') %></h1>
+</div>
+
+
+<div id="contentBlock">
+
+
+<p>
+% if ($pw_sent) {
+	<% $C->prop('pwd_sended') %> <% $email_to %>.<br>
+% }
+% else {
+<% $C->prop('pwd_text') %>
+
+% if ($error) {
+		<b style='color:red'><% $C->prop('error_email') %></b>
+% }
+</p>
+
+<form method="post">
+
+ <div class="no-more-tables">
+ <table class="table table-hover">
+ <tr>
+              <td> <label class="input_tag" for="mail"><% $C->prop('emailadress') %> <em>*</em></label></td>
+<td><input id="mail" type="text" name="email_pwd" value="<%$email_in%>"
+					 placeholder="example@example.com"></td>
+ </tr>
+ </table>
+   </div><!-- end no-more-tables   -->
+
+
+<input id="pwd_send" class="btn btn-checkout" type="submit" name="pwd_send" value="<% $C->prop('pwd_button') %>">
+
+
+</form>
+% }
+
+<br /><br />
+
+</div><!-- End contentBlock -->
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<& include/footer.html, lang=>$lang, C=>$C &>
+
+</BODY>
+</HTML>
+
+
+

@@ -1,0 +1,38 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+
+	# my $lang = $C->getSessData('_current_lang') || 'de';
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$C->{CONFIG}->{site_title}%> -  Zahlung</title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<&include/payment_pp.html, A => $A, C => $C&>
+
+</div><!-- End container -->	
+</div><!-- End row -->	
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+</body>
+</html>

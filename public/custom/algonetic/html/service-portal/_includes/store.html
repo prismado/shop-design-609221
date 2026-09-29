@@ -1,0 +1,30 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+
+	my $stu = $C->{dbh}->prepare(q~select user_id, uname, email, substr(xkey, 17, 15), xval
+				from users_details, users u where xkey LIKE 'perm_is_service_%' and u.id=user_id
+				order	by 2~);
+	   $stu->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $s_cat_id = $perm->{is_service_user} || $perm->{is_service_manager} || $perm->{is_service_admin};
+
+	my @cat_ids = ();
+	push(@cat_ids, $s_cat_id);
+	my $prods = $A->get_products_by_cat_ids(\@cat_ids);
+</%init>
+<div class="portlet-body">
+
+	<& idx_role_usr.html, prd=>$prd, perm=>$perm, C=>$C, A=>$A &>
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+	</p>
+
+</div>

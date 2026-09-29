@@ -1,0 +1,37 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span><% $C->{CONFIG}->{site_title} %></span>
+</div>
+
+<div class="portlet-body">
+
+	<center>
+		<img class="img-fluid max-w-150 mb-3" src="/assets/images/e404.svg">
+
+		<p class="fs--20 mb-5">
+			<% $C->shorten_title( $ENV{REQUEST_URI}, 50 ) %><br /><br />
+
+			<b>Die angeforderte Seite konnte leider nicht gefunden werden.</b>
+		</p>
+	</center>
+	<hr />
+
+	<h5>Vorschl&auml;ge aus unserem Sortiment</h5>
+	<div class="row">
+%		my $i = 0;
+%       	foreach (@{$A->promo_ids()}) {
+%			last if ++$i > 4;
+			<& inc_render_prod.html, id=>$_, SID=>$args{SID}, laytst=>$args{laytst}, A=>$A, C=>$C &>
+%       	}
+	</div>
+
+</div>
+
+<& inc_add2basket_js.html &>

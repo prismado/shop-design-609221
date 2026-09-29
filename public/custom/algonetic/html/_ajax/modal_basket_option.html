@@ -1,0 +1,74 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $this  = $C->this();
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid}
+
+	my $css_id   = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $order_id =($C->{CGI}->param('order_id') + 0) || $C->query('select max(id) from orders where status=4')->[0];
+	my $bid      = $C->{CGI}->param('bid') + 0;
+	my $opt_id   = $C->{CGI}->param('opt_id') + 0;
+
+	my $label   = $C->query("select label from options_desc where option_id=$opt_id and lang='de'")->[0];
+	my $prod_id = $C->query("select prod_id from basket where id=$bid")->[0];
+	my $prd_inf = $A->get_product($prod_id);
+
+	my $opt_det = $A->get_opt_details($opt_id);
+	my $vat_perc = $C->{CONFIG}->{vat_1} + 0;
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0"><i class="mt-1 fi fi-round-question mr-1"></i>
+		<span class="text-gray-700">Empfohlene Zusatz-Option f&uuml;r:</span>
+		<span class="ml-1 text-dark font-weight-bold"><% $C->shorten_title($prd_inf->{title}, 45) %></span></h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<form method="post" name="f309061" action="/_sub.html">
+	<input type="hidden" name="action" value="add_basket_option">
+	<input type="hidden" name="bid"    value="<% $bid %>">
+	<input type="hidden" name="opt_id" value="<% $opt_id %>">
+
+	<p class="fs--19 font-weight-bold text-dark"><% $label %></p>
+
+%	my $i = 0;
+	<table class="table table-sm table-hover border">
+%	foreach (@{ $opt_det }) {
+%		my ($opt_id, $style, $label, $desc, $ref, $amount, $stock) = split /\t/;
+		<tr>
+			<td nowrap>
+			    <div class="mt--5">
+				<label class="form-radio form-radio-primary">
+					<input type="radio" <% !$i ? 'checked' : '' %> name="opt_sel" value="<% $ref %>">
+					<i class="mt--1"></i>
+				</label>
+			    </div>
+			</td>
+			<td><div class="mt--4"><% $desc %></div></td>
+			<td>
+				<div class="mt--5 mr-3 float-end">
+					<% sprintf('%.2f', $amount * (1 + $vat_perc / 100)) %> CHF
+				</div>
+			</td>
+		</tr>
+%		$i++;
+%	}
+	</table>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Nicht hinzuf&uuml;gen
+			</button>
+			<button type="button" class="btn btn-success btn-sm w--200" onclick="document.f309061.submit()">
+				<i class="fi fi-check"></i> Hinzuf&uuml;gen
+			</button>
+		</div>
+
+	</form>
+</div>

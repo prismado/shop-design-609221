@@ -1,0 +1,42 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Editor</span>
+</div>
+
+<div class="portlet-body">
+	<p>
+		<a href="plugins-vendor-summernote.html">Docu</a>
+	</p>
+
+	<textarea class="form-control summernote-editor"
+		data-placeholder="Type yout text here..."
+		data-min-height="300"
+		data-max-height="1000"
+		data-focus="false"
+		data-lang="en-US"
+		data-toolbar='[
+		    ["style", ["style"]],
+		    ["font", ["bold", "italic", "underline", "clear"]],
+		    ["fontname", ["fontname"]],
+		    ["color", ["color"]],
+		    ["para", ["ul", "ol", "paragraph"]],
+		    ["height", ["height"]],
+		    ["table", ["table"]],
+		    ["insert", ["link", "picture", "hr"]],
+		    ["view", ["fullscreen", "codeview"]],
+		    ["help", ["help"]]
+		  ]'
+	></textarea>
+
+<%doc>
+XXX:
+/XXX
+</%doc>
+
+</div>

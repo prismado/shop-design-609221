@@ -1,0 +1,52 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $is_smartphone = $C->is_smartphone();
+	my $is_admin = $C->is_admin();
+
+	# my $lang = $C->getSessData('_current_lang') || 'de';
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$C->{CONFIG}->{site_title}%> - Start</title>
+<&include/meta_head.html&>
+% # -- <&css/_refs.html&>
+<link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css">
+<script src="lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="lib/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+<style>
+.aktionsOfferSmall{display:block; position:absolute; width:40px; height:auto; z-index:5000; margin-top:40px !important margin-left:60px;}
+.aktionsOffer{display:block; position:absolute; width:45px; height:auto; z-index:5000; margin-top:40px !important margin-left:60px;}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="pull-right" style='width:65%; background-color:#F5F5F5; position:absolute; bottom:1%; right:25%; -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75); -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75); box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);' id="ajx_noti"></div>
+<&include/top_area.html, is_admin=>$is_admin, C=>$C&>
+<hr>
+<h3>Aktuelle Produkte</h3>
+
+<div class="alert alert-success fade in">
+	<b>Holy guacamole!</b> &ndash; Das aktuelle Theme ist &laquo;<%$C->{CONFIG}->{theme}%>&raquo; &ndash;
+		Eine empfohlene Auswahl aktueller Produkte
+</div>
+
+<hr>
+<&promo_products.html, is_smartphone=>$is_smartphone, A=>$A, C=>$C&>
+</div>
+<&include/footer.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,75 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+
+	my $stu = $C->{dbh}->prepare(q~select user_id, uname, substr(xkey, 17, 15), xval
+				from users_details, users u where xkey LIKE 'perm_is_service_%' and u.id=user_id~);
+	   $stu->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my @cat_ids = ();
+	push(@cat_ids, $perm->{is_service_user});
+	my $prods = $A->get_products_by_cat_ids(\@cat_ids);
+</%init>
+<div class="portlet-body">
+
+%    if ($perm->{is_service_admin}) {
+	<h3 class="fs--20">Benutzerliste &ndash; Cat-ID <% $perm->{is_service_user} %></h3>
+
+	<table class="table table-sm border table-hover">
+%	while(my $r = $stu->fetch()) {
+%		my ($uid, $uname, $key, $val) = @{$r};
+		<tr>
+			<td><% $uname %></td>
+			<td><a href="/adm_user.html?id=<% $uid %>"><% $uid %></a></td>
+			<td><% ucfirst $key %></td>
+			<td class="float-end"><% $val %></td>
+		</tr>
+%	}
+	</table>
+%    }
+
+%	if ($perm->{is_devel}) {
+%	foreach (sort keys %{ $perm }) {
+%		next unless /^is_service_/;
+		[ perm ] &middot; <% $_ %> = <% $perm->{$_} %><br>
+%	}
+	<br />
+%	}
+
+	<h3 class="fs--20">Verf&uuml;gbare Ger&auml;te</h3>
+
+	<table class="table table-hover border">
+%	foreach my $prod_id (@{ $prods }) {
+%		my $prd = $A->get_product_v2(id=>$prod_id);
+		<tr>
+		<td><a href="/service-product.html?id=<% $prod_id %>">Prod-ID <% $prod_id %></a></td>
+		<td><b><% $prd->{title} %></b></td>
+		<td><% $prd->{desc_keyw} %></td>
+		<td><span class="float-end"><% $prd->{price_incl_vat} %> CHF</span></td>
+		<td><a href="/adx/edit-product.html?id=<% $prod_id %>">Edit</a></td>
+		</tr>
+%	}
+	</table>
+	<br />
+
+%	if ($perm->{is_devel} && 1==2) {
+		<p>
+			<a href="/_systex/install/help/de/11/4/?filter=cat">$A-&gt;...</a> (Category Functions)<br>
+			<a href="/adx/edi.html">EDI</a><br>
+			<a href="/adx/manage-property.html?area=40227111_func_2">func_2</a> &ndash;
+				 <a href="/adx/manage-property.html?area=40227111_func">func</a>
+		</p>
+% # XXX		<img class="img-fluid" src="assets/images/overview_410262.webp">
+%	}
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+	</p>
+
+</div>

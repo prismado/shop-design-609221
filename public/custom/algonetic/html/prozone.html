@@ -1,0 +1,164 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	# use utf8; # -- 23Feb2026
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $bGo   = $cgi->param('bGo');
+	my $email = $cgi->param('email');
+	my $id    = $cgi->param('id') || 0; # -- Product-ID / 25Jun2024
+
+	my $token = $C->getSessData('token');
+	my $debug = $C->getSessData('debug') || $cgi->param('debug') || 0; $debug += 0;
+	my $perm  = $C->get_user_perm();
+	my $company_id = 0;
+	my $company_name = '';
+
+	my @msgs = ();
+
+	if ($token) {
+		($company_id, $company_name) = @{$C->query("select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
+		push(@msgs, $C->prp('prozone_okay') . "<br>PRO-Zone Token ist aktiv: <b>$company_name</b>");
+	}
+
+	if ($bGo && length($email) > 4) {
+		my $maildom = (split /\@/, $email)[1];
+		my $second_level_dom = $C->grep_2nd_level_dom($maildom);
+		$company_id =   $C->query("select company_id from campaign_maildom where mail_domain='$maildom' order by id desc limit 1")->[0];
+		$company_id ||= $C->query("select company_id from campaign_maildom where mail_domain='*\.$second_level_dom' order by id desc limit 1")->[0];
+		if ($company_id) {
+			my ($token, $token_id) = @{$C->query(
+			"select token, id from campaign_data where company_id=$company_id order by id desc limit 1")};
+			my $count   = $C->query("select count(*) from products where campaign_id=$token_id and `count` > 0")->[0];
+			$company_name = $C->query("select name from companies where id=$company_id")->[0];
+			my $site_email = $C->prp('site_email');
+			(my $mailtext = $C->prp('prozone_mailtext')) =~
+				s/\{\{prozone_url\}\}/https:\/\/$C->{CONFIG}->{HTTP_HOST}\/token.html?token=$token/g;
+			    $mailtext =~ s/\{\{count\}\}/$count/;
+			    $mailtext =~ s/\{\{company_name\}\}/$company_name/;
+			    $mailtext =~ s/\{\{site_email\}\}/$site_email/;
+			    $mailtext =~ s/\{\{HTTP_HOST\}\}/$C->{CONFIG}->{HTTP_HOST}/;
+			my $sender = 'NoReply.ProZone@' . $C->grep_2nd_level_dom((split /\@/, $C->{CONFIG}->{order_email_sender})[1]);
+			my $green_circle = $C->get_safe_property('unicode_green_circle_128994', 'sys');
+			my $subject_b64  = $C->base64($green_circle . " Zugang zum PRO-Bereich - $company_name"); chomp $subject_b64;
+			   $subject_b64 =~ tr/\n\r//d; # -- 26Aug2026
+			   $subject_b64  = '=?UTF-8?B?' . $subject_b64 . '?=';
+
+			# eval {
+				$C->mail_x(
+					sender  => $sender,
+					to      => $email,
+					subject => $subject_b64,
+					caller  => 'prozone',
+					localtime => [ localtime(time) ],
+					data    => \$mailtext
+				);
+				$C->create_toast_note(body=>"Ihre Firma wurde erkannt:<br>$company_name", title=>'Hinweis',
+											type=>'success', delay=>30000, fs=>17);
+				my $sid = $C->getSID();
+				$C->set_workval("prozone_sid_$sid\_email", $email);
+				my $uid = $C->query("select id from users where email='$email' order by id desc limit 1")->[0];
+				$A->add_user_hist( id=>$uid, key=>'PRO-Zone', val=>"Freischalt-Link f&uuml;r $company_name gesendet an $email" )
+			# };
+		}
+		else {
+			$C->create_toast_note(body=>qq~
+				Leider k&ouml;nnen wir keine keine PRO-Zone zuordnen.
+				Bitte versuchen Sie es mit einer anderen E-Mail-Adresse.
+			~, title=>'Fehler', type=>'danger', delay=>60000);
+			$bGo = 0;
+		}
+	}
+
+	my @breadcrumb = ();
+	my @bc1 = ('Haupt-Sortiment', '/');
+	my @bc2 = ('PRO-Zone', 'prozone.html');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+
+	if ($company_name) {
+		my @bc3 = ($company_name, '');
+		push(@breadcrumb, \@bc3);
+	}
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>PRO-Zone &middot; <% $C->{CONFIG}->{site_title} %></title>
+	<meta name="description" content="PRO-Zone, Mitarbeiter-Shop Auctionline">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload"    href="/assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="/assets/css/core.min.css">
+	<link rel="stylesheet" href="/assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="/favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<link rel="manifest" href="/assets/images/manifest/manifest.json">
+	<meta name="theme-color" content="#377dff">
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, A=>$A, C=>$C &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+%				if ($perm->{is_devel}) {
+					<div class="float-end"><& include/inc_debug.html, C=>$C &></div>
+%				}
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><i class="fi fi-users"></i> PRO-Zone
+%						if ($company_name) {
+							&middot; <% $company_name %>
+%						}
+					</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& include/prozone.html, C=>$C, bGo=>$bGo, msg=>(join "<br>\n", @msgs), email=>$email,
+								token=>$token, id=>$id,
+								perm=>$perm, company_id=>$company_id, company_name=>$company_name, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="/assets/js/core.min.js"></script>
+
+	<script	language="JavaScript">
+		$(document).ready(function () {
+		    $('#f309200').submit(function () {
+%			# // Deaktivieren Sie den Submit-Button, um mehrfache Klicks zu	verhindern
+			$('#btn309200').prop('disabled', true);
+			return true; //	Das Formular wird weiterhin gesendet
+		    });
+		});
+	</script>
+
+% #	<div id="page_js_files"><!-- specific page javascript files here --></div>
+
+	</body>
+</html>

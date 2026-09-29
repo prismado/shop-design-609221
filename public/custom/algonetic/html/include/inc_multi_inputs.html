@@ -1,0 +1,27 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my @fields = split /,/, $args{fields};
+	my $lang   = $args{lang} || 'de';
+	my $uinf   = $args{uinf};
+	my $C      = $args{C};
+
+	my $tx_class = 'font-weight-bold fs--17 text-dark';
+</%init>
+
+<div class="row">
+% foreach my $fld (@fields) {
+%	my $value_enc = $C->getSessData("frm_$fld") || $uinf->{$fld};
+
+	<div class="col-md-6">
+		<& inc_text_input.html,
+			label     => $C->txt($fld, $lang),
+			name      => "frm_$fld",
+			value_enc => $value_enc,
+			tx_class  => $tx_class,
+			write     => $args{write},
+			id        => "i_$fld" &>
+	</div>
+% }
+
+</div>

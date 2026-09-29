@@ -1,0 +1,23 @@
+<%init>
+	my %args = $m->caller_args(0);
+</%init>
+
+<div class="col-12 col-md-4 order-xs-2 order-md-4 order-lg-4 p--10 mt-0">
+
+	<span class="btn btn-sm btn-block bg-secondary text-white text-center mb-1 fs--14 d-none d-lg-block">
+		<i class="fi fi-star"></i> <% $args{title} || '* Leistung # X *' %>
+	</span>
+
+	<ul class="bg-light h-100-xs p-3 list-unstyled rounded mb-2 fs--15 text-muted">
+		<li class="clearfix"><i class="fi fi-check float-start"></i> Lagerlogistik, Staging, Rollout</li>
+		<li class="clearfix"><i class="fi fi-check float-start"></i> Datenl&ouml;schung (Wiping, Datentr&auml;gervernichtung)</li>
+		<li class="clearfix"><i class="fi fi-check float-start"></i> Remarketing</li>
+		<li class="clearfix"><i class="fi fi-close float-start"></i> Recycling</li>
+	</ul>
+
+	<a href="#!" class="btn btn-sm btn-block btn-warning fs--14 m-0 d-none d-lg-block">
+		<i class="fi fi-phone"></i> Kontakt
+	</a>
+
+</div>
+

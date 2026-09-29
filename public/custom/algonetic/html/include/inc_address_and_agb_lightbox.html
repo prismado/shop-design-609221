@@ -1,0 +1,54 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+</%init>
+
+<!-- Adress Lightbox =======-->
+<div id="adressLightbox" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="adressen" aria-hidden="false">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h4><% $C->prop('adress_input') %></h4>
+	</div>
+
+	<div class="modal-body">
+		<div id="ajx_adress"></div>
+	</div>
+</div>
+
+
+ <!-- AGB Lightbox =======-->
+<div id="agbLightbox" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="AGB's" aria-hidden="false">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h4 class="modal-title text-center text-uppercase"><% $C->prop('agbs_long') %></h4>
+	</div>
+
+	<div class="modal-body">
+		<div id="ajx_agb"></div>
+	</div>
+</div>
+
+
+<!-- Datenschutz Lightbox =======-->
+<div class="modal fade" id="policyLightbox" tabindex="-1" role="dialog" aria-label="<% $C->prop('agbs') %>" aria-hidden="true">
+	<div class="modal-dialog modal-md-middle">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</span></button>
+				<h4 class="modal-title text-center text-uppercase">
+					<% $C->prop('policy') %>
+				</h4>
+			</div>
+
+			<div class="modal-body">
+				<div id="ajx_policy"></div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+

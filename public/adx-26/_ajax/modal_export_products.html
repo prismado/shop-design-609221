@@ -1,0 +1,121 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $debug  = $cgi->param('debug')  || 0; $debug += 0;
+
+	my $outfile = "upload/zz_trash_out$$\.xls";
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	DISTINCT id, instime, brand, title, getProdFeat(id,'GTIN'), `count`, extra, price
+		from	vproducts
+		where	`count` > 0 AND campaign_id=0 and lang='de'
+		order	by id desc
+		limit	999
+	~);
+	$sth->execute();
+
+	my %map_extra = (
+		1=>'NEW', 2=>'REFURB'
+	);
+
+	my @rows = ();
+	my $exp_count = 0;
+	open(F, ">$C->{CONFIG}->{DOCUMENT_ROOT}/$outfile");
+	print F "ProviderKey\tRestockDate\tBrand\tModel\tGTIN\tQuantityOnStock\tCondition\tPurchasePriceExclVat_CHF\tSuggestedRetailPriceInclVat_CHF\tVatRatePercentage\tImg_1\tImg_2\tImg_3\n";
+	while(my $r = $sth->fetch()) {
+		my %d = ();
+		($d{id}, $d{instime}, $d{brand}, $d{title}, $d{gtin}, $d{count}, $d{extra}, $d{price}) = @{$r};
+		next unless length( $d{gtin} );
+		$exp_count++;
+		my $prd  = $A->get_product_v2(id=>$d{id});
+		$d{price_orig_excl_vat} = sprintf('%.2f', $prd->{price_orig});
+		$d{price_incl_vat}      = sprintf('%.2f', $prd->{price_incl_vat});
+		$d{condition}           = $map_extra{$d{extra}} || 'REFURB';
+		$d{title_enc}           = $prd->{title_enc};
+		$d{imgs}                = $A->get_product_extra_images($d{id});
+		$d{instime}             = $C->trans_date_short_nt( $d{instime} );
+		($d{title}              = $C->trim( $d{title} )) =~ tr/[\t,]/ /;
+		$d{title_2}             = $prd->{pfeat}->{"-001\t_exclude\ttitle"} || $d{title};
+		$d{img_1}               = "https://$C->{CONFIG}->{HTTP_HOST}/produkte/p$d{id}_large.jpg";
+		$d{img_2}               = '';
+		$d{img_3}               = '';
+		if ($d{imgs}->[0]) { $d{img_2} = "https://$C->{CONFIG}->{HTTP_HOST}/$d{imgs}->[0]_large.jpg"; }
+		if ($d{imgs}->[1]) { $d{img_3} = "https://$C->{CONFIG}->{HTTP_HOST}/$d{imgs}->[1]_large.jpg"; }
+		push(@rows, \%d);
+		print F "$d{id}\t$d{instime}\t$d{brand}\t$d{title_2}\t$d{gtin}\t$d{count}\t$d{condition}\t$d{price_orig_excl_vat}\t$d{price_incl_vat}\t8.1\t$d{img_1}\t$d{img_2}\t$d{img_3}\n";
+	}
+	close(F);
+
+	$C->create_toast_note(body=>"<center>$exp_count Produkte exportiert</center>");
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-full" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Produkte-Export &middot; debug=<% $debug %></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<span class="float-end mt--n10 mb-2">
+					<a href="/<% $outfile %>" class="btn btn-sm btn-secondary">
+						<i class="fi fi-arrow-download m-0-md"></i>
+						<span class="d-none d-lg-inline-block">Download</span>
+					</a>
+				</span>
+				<table class="table table-sm fs--14 table-responsive">
+				<tr>
+					<th>ProviderKey</th>
+					<th>Brand</th>
+					<th>Model</th>
+					<th>GTIN</th>
+					<th>QuantityOnStock</th>
+					<th>Condition</th>
+					<th class="float-right mr-3">PurchasePriceExclVat_CHF</th>
+					<th clasx="">SuggestedRetailPriceInclVat_CHF</th>
+					<th>VatRatePercentage</th>
+					<th>TradeUnit</th>
+					<th>RestockTime</th>
+				</tr>
+%				foreach my $d (@rows) {
+					<tr>
+					<td><% $d->{id} %></td>
+					<td><% $d->{brand} %></td>
+					<td nowrap><% $d->{title} %></td>
+					<td><% $d->{gtin} %></td>
+					<td><% $d->{count} %></td>
+					<td><% $map_extra{$d->{extra}} || 'REFURB' %></td>
+					<td><% $d->{price_orig_excl_vat} %></td>
+					<td><% $d->{price_incl_vat} %></td>
+					<td>8.1</td>
+					<td>CH</td>
+					<td><% $d->{instime} %></td>
+					</tr>
+%				}
+				</table>
+			</div>
+
+			<div class="modal-footer">
+<%doc>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="document.location='/<% $outfile %>'">
+					<i class="fi fi-check"></i> Okay
+				</button>
+</%doc>
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>

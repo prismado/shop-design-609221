@@ -1,0 +1,179 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $uuid  = $args{uuid};
+	my $show_sid = $args{show_sid};
+	my $q        = $args{q};
+
+	my $wcl = $q ? "WHERE `notes` LIKE '%$q%'" : '';
+
+	my $st2 = $C->{dbh}->prepare(qq~
+		select	id, tag, tstamp, notes
+		from	pt_tags $wcl
+		order	by 1 DESC
+		limit	1000
+	~);
+	   $st2->execute();
+
+	my @filtered_pt_tags = my @pt_tags = ();
+	while(my $r = $st2->fetch()) {
+		my ($id, $tag, $ts, $notes) = @{$r};
+		push(@filtered_pt_tags, "'$tag'");
+		push @pt_tags, { id => $id, tag => $tag, ts => $ts, notes => $notes };
+	}
+
+	my $wcl2 = $q ? ('AND xval IN (' . (join ', ', @filtered_pt_tags) . ')' ) : '';
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, SUBSTR(k, 11, 32), xval, tstamp
+		from 	work 
+		where 	k like 'track\_tag\_%' $wcl2
+		order 	by id desc 
+		limit 	500
+	~);
+	   $sth->execute() or $m->out("ERR $DBI::errstr<br>");
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>Tag Management System (TMS)</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<div class="float-end mb-2 mt--n5">
+		<a href="/__foo.html">Test it</a> &ndash;
+		<a href="https://docs.ch2.be/w/prismado-shop/feat-tag-tracking">Wiki Help</a> &ndash;
+		<& inc_modal_link.html, label => 'Hinweise', size => 'lg', url => "_ajax/modal_help_tms.html" &> &ndash;
+		<a href="tms.html?bAdd=1"><i class="fi fi-plus-squared fs--25"></i></a>
+	</div>
+	<p>
+		Mit Session-ID:
+%		if ($args{show_sid}) {
+			Ja
+%		}
+%		else {
+			<a href="tms.html?show_sid=1">Aktivieren</a>
+%		}
+%		if ($args{q}) {
+			&ndash; <a href="tms.html">Reset</a>
+%		}
+%		if ($debug) {
+			XX Debug
+%		}
+	</p><br clear="all" />
+
+	<form method="get" name="f406092_55" class="col-6 pl-0">
+		<& ../_includes/inc_text_input_write.html, label=>'Tag Filter', value_enc=>$args{q}, write=>1, id=>406092, name=>'q' &>
+	</form>
+
+	<h5 class="mt-3"><% $st2->rows() %> P-Tags</h5>
+
+	<table class="table table-hover mt-3">
+	<tr>
+		<th>P-Tag</th>
+		<th>Label / Kampagne</th>
+		<th>Erstellt am</th>
+		<th>Conversions</th>
+		<th><span class="float-end">Zuletzt</span></th>
+		<th></th>
+	</tr>
+%	foreach my $d (@pt_tags) {
+%		my ($latest, $order_id) = @{$C->query(qq~
+%			select	created_at, order_id from orders_status
+%			where	status_id=220 and (xval like '%P-Tag \[ $d->{notes}%' OR xval like '%P-Tag $d->{tag}%')
+%			order	by 1 desc limit 1
+%		~)};
+		<tr>
+		<td><a href="/adm_db_edit.html?table=pt_tags&wcl=id%3D<% $d->{id} %>&s_token=<% $args{s_tok} %>"><span
+			class="badge badge-pill badge-indigo fs--15"><% $d->{tag} %></span></a></td>
+		<td class="prism-limit-len-300"><% $d->{notes} %></td>
+		<td nowrap><% $C->trans_date_short($d->{ts}) %></td>
+		<td class="text-center"><% $C->get_workval("ptag_$d->{tag}_count")+0 %>
+%			if ($perm->{is_devel}) {
+				<a href="/adm_db_edit.html?table=work&wcl=`k`=%27ptag_<% $d->{tag} %>_count%27"><i class="fi fi-pencil"></i></a>
+%			}
+		</td>
+		<td nowrap><span class="float-end"><% $C->trans_date_short($latest) %></span></td>
+		<td nowrap><span class="float-end"><a href="/?pt=<% $d->{tag} %>">Tag-Test</a></span></td>
+		</tr>
+%	}
+
+<%doc>
+XXX:
+%	while(my $r = $st2->fetch()) {
+%		my ($id, $tag, $ts, $notes) = @{$r};
+%		my ($latest, $order_id) = @{$C->query(qq~
+%			select	created_at, order_id from orders_status
+%			where	status_id=220 and (xval like '%P-Tag \[ $notes%' OR xval like '%P-Tag $tag%')
+%			order	by 1 desc limit 1
+%		~)};
+%		push(@filtered_pt_tags, $tag);
+		<tr>
+		<td><a href="/adm_db_edit.html?table=pt_tags&wcl=id%3D<% $id %>&s_token=<% $args{s_tok} %>"><span
+			class="badge badge-pill badge-indigo fs--15"><% $tag %></span></a></td>
+		<td class="prism-limit-len-300"><b><% $notes %></b></td>
+		<td nowrap><% $C->trans_date_short($ts) %></td>
+		<td class="text-center"><% $C->get_workval("ptag_$tag\_count")+0 %>
+%			if ($perm->{is_devel}) {
+				<a href="/adm_db_edit.html?table=work&wcl=`k`=%27ptag_<% $tag %>_count%27"><i class="fi fi-pencil"></i></a>
+%			}
+		</td>
+		<td nowrap><a href="/admix.html?func=orders&id=<% $order_id %>"><% $C->trans_date_short($latest) %></a></td>
+		<td nowrap><span class="float-end"><a href="/?pt=<% $tag %>">Tag-Test</a></span></td>
+		</tr>
+%	}
+/XXX
+</%doc>
+	</table>
+
+	<h5>Sessions</h5>
+
+	<table class="table table-hover mt-3">
+	<tr>
+		<th style="width:15%">Zeit</th>
+		<th style="width:13%">P-Tag</th>
+		<th>Zweck</th>
+		<th style="padding-left:45px">Fingerprint (UUID-2)</th>
+		<th class="float-end">SID</th>
+	</tr>
+%	my %notes = ();
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $k, $tag, $ts) = @{$r};
+%		my $sid = $args{show_sid} ? $C->query("select sid from log where action like '%$k' order by id desc limit 1")->[0] : 0;
+%		$notes{$tag} ||= $C->query("select notes from pt_tags where tag='$tag'")->[0] || '';
+		<tr>
+		<td nowrap><% $C->trans_date_short($ts) %></td>
+		<td nowrap>
+			<a class="float-end" href="/adm_db_edit.html?table=work&wcl=id%3D<% $id %>"><i class="fi fi-pencil"></i></a>
+			<b><% $tag %></b>
+		</td>
+		<td><% $notes{$tag} %></td>
+		<td style="padding-left:45px"><% $k %>
+%			if ($k eq $uuid->{uuid2}) {
+				<i>(Sie)</i>
+%			}
+		</td>
+		<td clasx="float-end">
+			<span class="float-end">
+			<a href="/adm_log.html?importance=5&sid=<% $sid %>&debug=1"><% $sid %></a>
+			</span>
+		</td>
+		</tr>
+%	}
+	</table>
+
+<%doc>
+	<div>
+		<& xx_list.html &>
+	</div><hr />
+
+	<p>Output von Makro <code>custom/<% $C->{CONFIG}->{theme} %>/macros/_foo.html</code>:</p>
+	<div class="alert alert-info">
+		<% $macro->{out} %>
+	</div>
+</%doc>
+
+</div>

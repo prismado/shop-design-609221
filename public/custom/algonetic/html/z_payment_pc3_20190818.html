@@ -1,0 +1,41 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+
+	my $debug = $C->getSessData('debug') + 0;
+
+	# my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $mode = ($C->{CONFIG}->{payment_gw_merchantId} eq '1100004677' or $C->{CONFIG}->{payment_gw_merchantId} eq '1100018748') ?
+		'test' : '';
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Kreditkarten Zahlung - <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+% # <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+<script src="https://<%$mode eq 'test' ? 'pilot' : 'payment'%>.datatrans.biz/upp/payment/js/datatrans-1.0.0.js"></script>
+</head>
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<& include/payment_pc3.html, A=>$A, C=>$C, mode=>$mode, debug=>$debug &>
+</div><!-- End container -->	
+</div><!-- End row -->	
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C=>$C&>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $debug   = $C->getSessData('debug') || 0;
+	my $cgi     = $C->{CGI};
+	my $css_id  = $cgi->param('css_id') || 'exampleModalFull';
+	my $id      = $cgi->param('id')     || 0; $id += 0;
+	my $bUpdate = $cgi->param('bUpdate');
+
+	my $prd_dat = $A->get_product_v2(id=>$id);
+	my $cat_ids = $prd_dat->{cat_ids};
+	my $perm    = $C->get_user_perm();
+
+	my @labels = ();
+
+	my $sth = $C->{dbh}->prepare(qq~
+				select	xkey, xval
+				from	categ_meta
+				where	cat_id IN ($cat_ids) and lang='de'
+					AND xkey NOT IN (SELECT featkey FROM products_feat WHERE product_id=$id AND lang='de')
+	~); # -- 14Sep2024
+	   $sth->execute();
+
+	while(my $r = $sth->fetch()) {
+		my ($xkey, $xval) = @{$r};
+		push(@labels, qq~{ id: '\-$xkey', name: '<i>$xval</i>' }~);
+	}
+
+	my $std_labels = $A->get_std_labels( unassigned_from=>$id );
+	foreach my $key (@{ $std_labels->{ident} }) {
+		push(@labels, qq~{ id: '\-$key', name: '<i>$std_labels->{caption}->{$key}</i>' }~);
+	}
+	push(@labels, qq~{ id: '\-(GTIN)',    name: '<i>GTIN / EAN / ISBN</i>' }~);
+	push(@labels, qq~{ id: '\-(raw_weight)', name: '<i>Gewicht in kg</i>' }~);
+	push(@labels, qq~{ id: '\-(EXCLUDE)', name: '<i>Sprachunabh&auml;ngig</i>' }~);
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-md modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Artikel-Eigenschaft</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+%				if ($perm->{is_devel}) {
+					<p>Dev: <a target="_blank"
+					href="categ-setting.html?id=<% $prd_dat->{cat_id} %>">Category Settings</a> <small><% $prd_dat->{cat_ids} %></small></p>
+%				}
+%				if ($debug) {
+					<p>DN404051-32: This &rarr; <code><% $C->this() %></code></p>
+%				}
+
+				<p>
+					<input type="text" class="ta_404031_29 form-control text-monospace text-dark font-weight-bold"
+						style="min-width:25vw; letter-spacing:1px; background-color:#f0f0f0;"
+						id="in_404061_44" autocomplete="off" placeholder="Code? (Klick-Auswahl)">
+				</p>
+
+				<p>
+					<input type="text" class="form-control" onfocus="focus409291_102()" autocomplete="off"
+						style="min-width:20vw" id="in_404061_49" placeholder="Wert">
+				</p>
+
+				<abbr title="&Uuml;bernehmen">
+				<ul class="ml--n10" id="help409291" style="cursor:pointer"></ul>
+				</abbr>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="subm404051_57()">
+					<i class="fi fi-plus"></i> Hinzuf&uuml;gen
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<& ../_includes/inc_typeahead_v2024_js.html, i_class=>'ta_404031_29', suggest_data=>\@labels, A=>$A &>
+
+<script>
+	function subm404051_57() {
+		key = document.getElementById('in_404061_44').value;
+		val = document.getElementById('in_404061_49').value;
+		$.ajax({
+			url: '/_ajax/proc_update_product.html?id=<% $id %>&t=products_feat&key=' + key + '&val=' + val,
+			type: 'GET',
+			dataType: 'html',
+			success: function(response) {
+				$('#<% $css_id %>').modal('hide');
+				reloadRootWindow();
+			},
+			error: function(xhr, status, error) {
+				console.error(error);
+				alert("Error E404061-78: Status = " + status);
+			}
+		});
+	}
+
+	function focus409291_102() {
+		getData(document.getElementById('in_404061_44').value);
+	}
+
+	async function getData(xcode) {
+		url = '/_systex/common_lib/item_property.html?code=' + xcode + '&cat_id=<% $prd_dat->{cat_ids} %>';
+		try {
+			const response = await fetch(url);
+			if (!response.ok) { throw new Error('Netzwerk-Fehler'); }
+			const data = await response.json(); // oder .text()
+			let myData = data;
+			let decodedJson = myData.DESC.replace(/\\n/g, '').replace(/\\"/g, '"').trim();
+			let jsonArray   = JSON.parse(decodedJson);
+			let resultArray = [];
+			let resultArr2  = [];
+			jsonArray.forEach(function(item) {
+				resultArray.push(item);
+				resultArr2.push('<li>' + item + '</li>');
+			});
+			let proposal = resultArray.join(', ');
+			let prop_lst = resultArr2.join('');
+			document.getElementById('in_404061_49').placeholder = myData.LABEL;
+			if (proposal.startsWith("Wert von")) { document.getElementById('help409291').innerHTML = ''; }
+			else {
+				document.getElementById('help409291').innerHTML = prop_lst;
+			}
+		} catch (error) { console.error('Es gab ein Problem mit der Fetch-Operation:', error); }
+	}
+
+	document.addEventListener("click", function(event) {
+		if (event.target && event.target.nodeName === "LI" && event.target.closest("#help409291")) {
+			document.getElementById('in_404061_49').value = event.target.textContent;
+		}
+	});
+</script>
+
+<%doc>
+	Created: 01Apr2024
+</%doc>

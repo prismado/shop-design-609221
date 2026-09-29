@@ -1,0 +1,135 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C            = $args{C};
+	my $A            = $args{A};
+	my $order_id     = $args{order_id};
+	my $edi_order_id = $args{edi_order_id};
+	my $edi          = $args{edi};
+	my $ediparse     = $args{ediparse};
+	my $inpt         = $args{inpt};
+	my $debug        = $args{debug};
+
+	(my $out = $edi->{out}) =~ s/\</&lt;/g;
+	    $out =~ s/\>/&gt;/g;
+
+	# use Data::Dumper;
+
+	my $exmpls = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/upload/examples/EDI", '^G.+\.xml$', 0, '');
+</%init>
+<div class="portlet-body">
+
+	<div class="float-end w--200">
+		<& inc_select_redir_405141.html, this=>$C->this(), order_id=>$order_id, edi_order_id=>$edi_order_id &>
+	</div>
+
+	<h4 class="fs--20">Order Placement &middot; <small><% $ediparse->{item_count} %> items</small></h4>
+	<p>
+		<b>Parse only:</b> Order Placement (XML) wird gelesen<br>
+		<b>Parse &amp proc:</b> Benutzer wird angelegt und Order erstellt. Anschliessend muss die
+			<a href="dev-edi-parse-order.html?order-id=<% $order_id %>&parse_only=1&i=<% $inpt %>">ORDERRESPONSE</a>
+				an den Partner zur&uuml;ckgeliefert werden
+	</p>
+
+	<h5>Beispiel-Daten &middot; (upload/examples/EDI/G*.xml)</h5>
+
+	<table class="table table-sm table-hover">
+%	foreach my $f (sort {$a cmp $b} @{ $exmpls }) {
+%		my $inf = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/upload/examples/EDI/$f");
+%		(my $f_disp = $f) =~ s/\.xml$//;
+%		    $f_disp =~ s/^GORDP\_/<span class="text-dark">Order Placement<\/span> /;
+		<tr>
+		<td>
+			<a class="<% $f eq $inpt ? 'font-weight-bold text-dark' : '' %>"
+				href="/upload/examples/EDI/<% $f %>"><code class="fs--17"><% $f_disp %></code></a>
+%			if ($f =~ /^GORDP\_10391065\_.+/) {
+				&middot; GALAXUS
+%			}
+		</td>
+		<td><code><% $f %></code></td>
+		<td class="pr-5"><span class="float-end"><% $inf->{size} %> B</span></td>
+		<td><% $C->trans_date_short( $inf->{mod} ) %></td>
+		<td><span class="float-end"><a style="color:red"   href="dev-edi-parse-order.html?order-id=<% $order_id %>&i=<% $f %>">Process</a></span></td>
+		<td><span class="float-end"><a style="color:green" href="dev-edi-parse-order.html?order-id=<% $order_id %>&parse_only=1&i=<% $f %>">Parse only</a></span></td>
+		</tr>
+%	}
+	</table>
+
+%	my @ekeys      = sort keys  %{ $ediparse->{dta} };
+%	my $total_keys = scalar @ekeys;
+%	my $half       = int($total_keys / 2);
+
+	<div class="row">
+%	# =============================================================================================================
+	<div class="col-6">
+		<table class="table table-sm table-hover">
+%		for my $i (0 .. $half - 1) {
+%			my $key = $ekeys[$i];
+			<tr>
+				<td class="font-weight-bold fs--17" style="width:45%"><nobr><code><% $key %></code></nobr></td>
+				<td class="font-weight-bold"><% $ediparse->{dta}->{$key} %></td>
+			</tr>
+%		}
+		</table>
+	</div>
+
+	<div class="col-6">
+		<table class="table table-sm table-hover">
+%		for my $i ($half .. $total_keys - 1) {
+%			my $key = $ekeys[$i];
+			<tr>
+				<td class="font-weight-bold fs--17" style="width:45%"><nobr><code><% $key %></code></nobr></td>
+				<td class="font-weight-bold"><% $ediparse->{dta}->{$key} %></td>
+			</tr>
+%		}
+		</table>
+	</div>
+%	# =============================================================================================================
+	</div>
+
+	<div class="row <% $args{inpt} ? '' : 'hide-force' %>">
+	    <div class="col-6">
+		<table class="table table-sm">
+%		foreach (sort keys %{ $ediparse->{customer} } ) {
+%			next unless length( $ediparse->{customer}->{$_} );
+			<tr>
+				<td><b><% $_ %></b></td><td><tt>"<% $ediparse->{customer}->{$_} %>"</tt></td>
+			</tr>
+%		}
+		</table>
+	    </div>
+	    <div class="col-6">
+		<h4 class="fs--16">Items</h4>
+%		foreach my $itm (@{ $ediparse->{items} } ) {
+			&bull; <% $itm->{qty} %> &times; Prod-ID <% $itm->{prod_id} %><br>
+%			foreach (sort keys %{ $itm }) {
+%				next if /^qty$/ or /^prod_id$/;
+				X -- <% $_ %> = <% $itm->{$_} %><br>
+%			}
+%		}
+		<p class="mt-3"><a href="/adm_user.html?id=<% $args{c_uid} %>">UID <% $args{c_uid} %></a></p>
+%		foreach (sort keys %{ $args{bask} }) {
+			[ bask ] &middot; <b><% $_ %></b> = <% $args{bask}->{$_} %><br>
+%		}
+%		foreach (sort keys %{ $args{ord} }) {
+			[ ord ] &middot; <b><% $_ %></b> = <% $args{ord}->{$_} %><br>
+%		}
+	    </div>
+	</div>
+
+	<table class="table table-sm col-4 table-hover mt-3 border">
+%	foreach (sort keys %{ $edi->{exec} }) {
+%		next if $_ eq 'VERSION' or $_ eq 'arg_debug' or $_ eq 'out' or /dir$/ or $_ eq 'check_mason' or /^arg_theme$/ or /^arg\_odat$/ or /call_src$/ or /^user$/ or /^arg_ver$/;
+%		next unless length( $edi->{exec}->{$_} );
+		<tr>
+			<td style="width:65%;" nowrap>[ EDI | exec ] &middot; <code><% $_ %></code></td>
+			<td><% $edi->{exec}->{$_} %></td>
+		</tr>
+%	}
+	</table>
+
+	<h6 class="mb-3">$A-&gt;get_order_edi( id=&gt;<b style="color:maroon"><% $order_id %></b> ) &mdash; <% $edi->{tpl} %>, rc <% $edi->{rc} %></h6>
+
+	<pre class="line-numbers" data-start="1"><code class="language-xml"><% $out %></code></pre>
+
+</div>

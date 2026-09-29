@@ -1,0 +1,171 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my %args = $m->caller_args(0); # -- In case it's called by a web function
+
+	my $order_id = $C->{CGI}->param('order_id') || $args{order_id};
+	   $order_id += 0;
+	my $debug = $C->{CGI}->param('debug');
+	my $pay_terms = $C->{CGI}->param('pay_terms');
+
+	my $order_stmt = $A->get_order_statement(order_id=>$order_id, add_vat=>1, debug=>$debug);
+	my $odat = $A->get_order_prepare(order_id=>$order_id);
+	my $uinf = $A->get_user_info($odat->{uid});
+
+	my $lang_sess = $C->getSessData('_current_lang') || 'de';
+	my $lang      = $C->{CGI}->param('lang') || $args{lang} || $uinf->{lang} || $lang_sess;
+	$C->saveSessData('_current_lang', $lang);
+
+	(my $logo_src = $C->grep_2nd_level_dom( $C->{CONFIG}->{HTTP_HOST} )) =~ tr/\./\_/;
+
+	my %ship_meth_hr_map = (
+		std => $C->prop('standard_shipping'),
+		exp => $C->prop('delivery_method_title0'),
+		postpac_prio => $C->prop('delivery_method_title_postpac_prio'),
+		pic => 'Pickup'
+	);
+
+	my %pay_meth_hr_map = (
+		inv => $C->prop('invoice'),
+		pre => $C->prop('prepay'),
+		pp  => 'PayPal',
+		pc3 => $C->prop('creditcard'),
+		prx => $C->prop('creditcard'),
+		six => $C->prop('creditcard')
+	);
+
+	my $proto = 'http';
+	   $proto = 'https' if $ENV{HTTPS} eq 'on' or $ENV{HTTP_X_FORWARDED_PROTO} eq 'https';
+
+	my $tax_amount = $C->query("SELECT xval+0 FROM `orders_details` where order_id=$order_id and xkey='vat_amount'")->[0];
+</%init>
+<& mail_v2.css &>
+<style>
+	.td_410051 {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width:280px;
+	}
+</style>
+
+	<img style="margin-top:0px; margin-bottom:15px" width="180" XXheight="62"
+		src="https://<% $C->{CONFIG}->{HTTP_HOST} %>/images/logo_mailtemplate_<% $logo_src %>.png">
+
+<p style="margin-left:5px; font-size:0.95rem">
+%	if ($odat->{gender} == 2) {
+		<% $C->web_enc($C->prp('mail_salutation_woman') . ' ' . $C->web_enc($odat->{lastname})) %>
+%	}
+%	else {
+		<% $C->web_enc($C->prp('mail_salutation_man') . ' ' . $C->web_enc($odat->{lastname})) %>
+%	}
+	<br><br>
+
+	<% $C->web_enc($C->prop('mail_order_thanks')) %><br />
+</p>
+
+<& includes/key_value_table.html,
+	data=>{
+		mail_order_time      => $odat->{instime_swiss},
+		mail_invoice_nr      => $order_id,
+		mail_payment_method  => $C->web_enc( $pay_meth_hr_map{$odat->{checkout_zahlungsart_select}} ),
+		mail_customer_ust_id => $odat->{ust_id}
+	},
+	lang=>$lang, C=>$C &>
+<br />
+
+% if ($odat->{street} eq $odat->{deliv_street} && $odat->{company} eq $odat->{deliv_company}) {
+	<table cellspacing=0 cellpadding=2 style="font-size:0.95rem"><tr><td>
+	<b><% $C->prop('invoice') %> / <% $C->prop('deliv_addr') %></b><br>
+	<% $C->web_enc($odat->{company}) %><br>
+	<% $C->web_enc("$odat->{firstname} $odat->{lastname}") %><br>
+	<% $C->web_enc($odat->{street}) %><br>
+	<% $odat->{zip} %> <% $C->web_enc($odat->{city}) %><br>
+	<% $C->web_enc($odat->{country_decoded}) %>
+	</td></tr></table>
+% }
+% else {
+	<table border="0" style="font-size:0.95rem; line-height:18px">
+	<tr><td><b><% $C->prop('invoice') %></b></td>  <td><b><% $C->prop('deliv_addr') %></b></td></tr>
+	<tr>
+	<td style="padding-right:60px">
+		<% $C->web_enc($odat->{company}) %><br>
+		<% $C->web_enc("$odat->{firstname} $odat->{lastname}") %><br>
+		<% $C->web_enc($odat->{street}) %><br>
+		<% $odat->{zip} %> <% $C->web_enc($odat->{city}) %><br>
+		<% $C->web_enc($odat->{country_decoded}) %>
+	</td>
+
+	<td>
+		<% $C->web_enc($odat->{deliv_company}) %><br>
+		<% $C->web_enc("$odat->{deliv_firstname} $odat->{deliv_lastname}") %><br>
+		<% $C->web_enc($odat->{deliv_street}) %><br>
+		<% $odat->{deliv_zip} %> <% $C->web_enc($odat->{deliv_city}) %><br>
+		<% $C->web_enc($odat->{deliv_country_decoded}) %>
+	</td>
+	</tr>
+	</table>
+% }
+<br />
+
+% if ($debug) {
+	<code>my $order_stmt = $A->get_order_statement(order_id=><% $order_id %>, add_vat=>1, debug=><% $debug %>);</code>
+% }
+<table cellspacing=0 cellpadding=2 style="font-size:0.95rem;" width="99%">
+<% ${$order_stmt->{out}} %>
+</table>
+
+% if ($pay_terms) {
+	<p style="margin-left:5px; font-size:0.95rem">
+		<% $pay_terms %>
+	</p>
+% }
+
+<table style="font-size:0.95rem">
+<tr><td>
+% if ($odat->{pay_meth} == 6) {
+	<br>
+	<b><% $C->web_enc($C->prop('mail_prepayment_text')) %>:</b><br /><br />
+
+	<% $C->prp('site_iban') %><br>
+	<% $C->prp('site_bank_name') %><br><br>
+
+	<b><% $C->web_enc($C->prp('mail_note_order_nr')) %>: <% $order_id %></b><br>
+	<% $C->web_enc($C->prp('mail_receipt_payment')) %><br>
+% }
+
+% if ($odat->{order_status} == 4 && ($odat->{pay_meth} == 4 or $odat->{pay_meth} == 16)) {
+%	# -- Betrag dankend erhalten
+	<p style="margin-top:15px">
+		<b><% $C->prop('amount_received') %></b>
+	</p>
+% }
+
+<% $C->web_enc($C->prop('mail_following_link_text')) %>:<br>
+<a href='https://<% $C->{CONFIG}->{HTTP_HOST} %>/account.html'>https://<% $C->{CONFIG}->{HTTP_HOST} %>/account.html</a><br>
+
+% if ($odat->{dhl_shipmentTrackingNumber}) {
+	<center>
+%	# -- f8faa7
+%	my $dhl_link = "https://www.dhl.com/ch-de/home/tracking/tracking-express.html?submit=1&tracking-id=$odat->{dhl_shipmentTrackingNumber}";
+	<p style="border: 1px solid #bbbbbb; padding:4px; line-height:22px; background-color:#fcde9e; margin-top:15px; text-align:center; max-width:70%">
+		<span style="font-size:1.3rem">&#9951;</span> <b>DHL Sendungs-Nr.</b> <span
+			style="color:#CD5C5C;font-family:Courier; font-size:1.15rem"><b><% $odat->{dhl_shipmentTrackingNumber} %></b></span><br>
+		<a href="<% $dhl_link %>"><u>Link zur Paket-Sendungsverfolgung</u></a>
+	</p>
+	</center>
+% }
+
+% # -- Wenn Sie uns kontaktieren m...
+<% $C->web_enc($C->prop('mail_inquiries_text')) %>
+
+<& includes/company_signature.html, lang=>$lang, C=>$C &>
+</td></tr></table>
+% $C->saveSessData('_current_lang', $lang_sess);
+
+<br>
+<span style="font-size:0.66rem; color:#b0b0b0"><center>[ Vorlage V # 308311-3A &ndash; Prismado E-Commerce &ndash; confirm_cust_inc_de ]</center></span>

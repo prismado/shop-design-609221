@@ -1,0 +1,89 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $order_id = $s{order_id};
+	my $odat     = $s{odat};
+	my $lang     = $s{lang} || 'de';
+
+	# Test it:
+	# https://shopd.algonetic.ch/user.html?id=1864&debug=2
+</%init>
+<div style="font-family:Roboto, Arial; font-size:15px; color:#414141; line-height:125%">
+
+<span style="color:#515151; font-size:0.85rem">
+	[ Betrifft Bestell-Nr. <% $order_id %> von <% $odat->{instime_swiss} %> Uhr ]<br>
+</span>
+
+<p>Sehr geehrt<% $odat->{gender} == 2 ? 'e Frau' : 'er Herr'%> <% $odat->{lastname} %></p>
+
+<% $C->txt('cancel_order_text', $lang) %>
+
+<table cellspacing="0" cellpadding="2" border="0" width="99%">
+% foreach my $prod (@{ $odat->{_products} }) {
+%	my ($prod_id, $count, $price) = split /\t/, $prod;
+%	my $prd_inf = $A->get_product($prod_id);
+%	my $link    = "https://$C->{CONFIG}->{HTTP_HOST}/article\-$prod_id\-$prd_inf->{title_enc}\.html";
+	<tr valign="top">
+	<td style="padding-right:20px">
+		<img style="max-width:62px" src="https://<% $C->{CONFIG}->{HTTP_HOST} %>/produkte/p<% $prod_id %>_thmb.jpg">
+	</td>
+	<td>
+		<div style="font-size:1.15rem; color:black"><b><% $C->shorten_title($prd_inf->{title}, 42) %></b></div>
+
+		<table cellspacing="0" cellpadding="0" border="0" style="color:#515151; margin-top:15px; line-height:150%" width="55%">
+		<tr>
+			<td>Angefragt</td>
+			<td style="text-align:right"><% $count %> Stk.</td>
+		</tr>
+		<tr>
+			<td style="padding-right:40px" nowrap><nobr>Aktuell auf Lager</nobr></td>
+			<td style="text-align:right" nowrap><% $prd_inf->{count_product} %>&nbsp;Stk.</td>
+% # XXX			<td style="text-align:right" nowrap><% $prd_inf->{count} %>&nbsp;Stk. / qqq <% $prd_inf->{count_product} %></td>
+		</tr>
+		</table><br>
+	</td>
+
+	<td nowrap style="padding-top:4px; padding-left:20px; padding-right:20px">
+		CHF <% $prd_inf->{price_incl_vat} %>
+	</td>
+	</tr>
+
+	<tr>
+		<td></td>
+		<td colspan="2">
+			Link zum Produkt:<br>
+			<a href="<% $link %>"><% $C->shorten_title($link, 72) %></a>
+		</td>
+	<tr>
+	<tr><td colspan="3"><hr noshade size="1" /></td></tr>
+% }
+</table>
+<br /><br />
+
+Freundliche Gr&uuml;sse / Meilleures salutations / Kind regards<br><br>
+
+<b><big>Auctionline.ch</big></b><br />
+<small>
+Ein Webshop der <% $C->prp('site_company') %><br /><br />
+
+<% $C->{CONFIG}->{order_email_sender} %> | <a href="https://<% $C->{CONFIG}->{HTTP_HOST} %>">https://<% $C->{CONFIG}->{HTTP_HOST} %></a>
+</small>
+<br /><br />
+
+<hr noshade size="1" style="color:#717171; max-width:340px; margin-left:0" />
+<span style="color:#717171">
+  <small>
+	<b><% $C->prp('site_company') %> | <% $C->prp('site_addr') %> | <% $C->prp('site_zip') %> <% $C->prp('site_city') %></b>
+  </small>
+</span>
+
+</div>
+
+<br>
+<span style="font-size:0.66rem; color:#b0b0b0"><center>[ Vorlage V # 310161-3A &ndash; Prismado &ndash; cancel_order ]</center></span>
+<%doc>
+	Created: 16Oct2023
+</%doc>

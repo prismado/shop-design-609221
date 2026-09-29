@@ -1,0 +1,70 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-body">
+
+	<h4 class="fs--20">Standard CSS-Klassen f&uuml;r (<i class="fi fi-plus text-blue-400"></i>)&ndash;Buttons:</h4>
+	<br clear="all" />
+
+	<pre class="fs--17">${ $A-&gt;modal(
+	label  =&gt; '&lt;i class="<b class="text-red-800">fi fi-plus pl--10</b>"&gt;&lt;/i&gt;',
+	css_id =&gt; "404011_341",
+	class  =&gt; '<b class="text-red-800">btn btn-sm btn-soft btn-pill btn-primary p--5</b>',
+	url    =&gt; "/adx/_ajax/modal_add_prodfeat.html?id=$args{id}&css_id=404011_341&size=md") }</pre>
+
+	<% ${ $A->modal(
+		label  => '<i class="fi	fi-plus	pl--10"></i>',
+		css_id => "404011_341",
+		class  => 'btn btn-sm btn-soft btn-pill	btn-primary p--5',
+		url    => "/adx/_ajax/modal_add_prodfeat.html?id=$999999&css_id=404011_341&size=md") } %>
+
+
+	<h4 class="fs--20 mt-5 mb-3">Dropdown</h4>
+
+<div class="form-label-group mb-3">
+        <select id="sel_406210_31" class="form-control bs-select">
+		<option value="foo">Foo</option>
+		<option value="bar" selected>Bar</option>
+        </select>
+        <label for="select_options">BT Slct example</label>
+</div>
+
+	<pre class="line-numbers" data-start="10"><code class="language-html">&lt;div class="form-label-group mb-3"&gt;
+        &lt;select id="select_options" class="form-control bs-select"&gt;
+			&lt;option value="foo"&gt;Foo&lt;/option&gt;
+			&lt;option value="bar" selected&gt;Bar&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;label for="select_options"&gt;BT Slct example&lt;/label&gt;
+&lt;/div&gt;</code></pre>
+
+	<hr />
+	<div class="form-label-group mb-3">
+		<input placeholder="First Name" id="first_name" type="text" value="" autocomplete="given-name" class="form-control">
+		<label for="first_name">First Name</label>
+	</div>
+
+
+	<h4 class="fs--20 mt-5 mb-3">Dialog</h4>
+	<ul>
+		<li><a href="dev-webc-prism-dialog.html">Prismado-Dialoge</a><br>
+			Kleine Pop-ups f&uuml;r Eingaben</li>
+	</ul>
+
+	<h4 class="fs--20 mt-5 mb-3">Siehe auch</h4>
+	<ul>
+		<li><a target="_blank" href="/__foo2.html">Foo-Vorlage</a> (&ouml;ffentlich)</li>
+		<li><a href="dev-typeahead.html">Typeahead Demo</a></li>
+		<li><a href="dev-copy-code.html">Syntax Highlighting</a></li>
+		<li><a href="https://dms.prismado.com/components-forms.html"><code>&lt;form&gt;</code>-Komponenten</a>
+			&ndash; <a href="config-dev.html"><code>&lt;select&gt;</code>-Beispiel</a>
+		</li>
+		<li><a href="https://dms.prismado.com/components-buttons.html">Buttons</a></li>
+	</ul>
+
+</div>

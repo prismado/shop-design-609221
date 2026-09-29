@@ -1,0 +1,168 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $files    = $args{files};
+	my $debug    = $args{debug};
+
+	my $cgi = $C->{CGI};
+
+	my $edi_order_nr = $cgi->param('edi_order_nr') + 0;
+
+	my $specfiles = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs", '^p\d+\-specificationdata\-.+\_de\.csv$');
+	my $specfile  = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs", '^specificationdata\-.+\.csv$');
+	# my $specfile  = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs", 'SpecificationData\_.+\.csv$');
+
+	my @ProdIDs = `cut -d';' -f1 $C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs/specificationdata-ssg.csv | sort -u`;
+	# my @ProdIDs = `cut -d';' -f1 $C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs/SpecificationData_ssg.csv | sort -u`;
+
+	my $file_inf = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs/$specfile->[0]");
+
+	my $doSearch = 0;
+</%init>
+<div class="portlet-body">
+
+	<div class="row">
+		<div class="col-6">
+			<h3 class="fs--19">Letzte Produktekatalog-Daten (alle) &ndash; <span
+				class="fs--13"><a href="edi.html">Refurbished und Neuware</a></span></h3>
+			<p>Aktuelle Preise und Lagerbestand</p>
+%			my $i = 0;
+			<table class="table table-sm table-hover mt-3">
+%			foreach my $f (sort { $b cmp $a } @{ $files }) {
+%				last if ++$i > 5;
+				<tr>
+					<td><a href="/upload/<% $f %>"><% $f %></a></td>
+				</tr>
+%			}
+			</table>
+		</div>
+
+		<div class="col-6">
+			<h3 class="fs--19 mb-3">Refurbished: Produkte-Spezifikationen &ndash; <span class="fs--13">(Semikolon-getrennt)</span></h3>
+
+			<p>Detaillierte Artikelbeschreibungen bei Refurbished-Artikeln<br>
+			<a target="_blank" href="/produkte/docs/SpecificationData_ssg.csv">SpecificationData_ssg.csv</a> &#8599; &ndash;
+				Letzte &Uuml;bermittlung an <a target="_blank" href="https://partner.galaxus.ch/MyCatalogueFeeds">EDI-Partner</a>:
+					<b><% $C->trans_date_short($C->txt('50424151_latest_trans', 'sys', '_core')) %></b>
+			</p>
+
+%			my $f_count = 0;
+			<table class="table table-sm table-hover mt-3">
+%			foreach my $f (sort {$b cmp $a} @{ $specfile }) {
+%				my $file_inf = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs/$f");
+				<tr>
+					<td><a target="_blank" href="/produkte/docs/<% $f %>"><% $f %></a> &#8599;</td>
+					<td><% $file_inf->{size} %> Bytes</td>
+					<td class="mr-2"><span class="float-end"><% $C->trans_date_short($file_inf->{mod}) %></span></td>
+				</tr>
+%				last if ++$f_count > 3;
+%			}
+			</table>
+
+			<span class="text-blue-500 fs--11 cursor-pointer"
+				onclick="document.getElementById('t504241').style.display='';">Letzte Spezifikationen je Artikel</span>
+
+			<table class="table table-sm table-hover mt-3 ZZhide" id="t504241" style="display:none;">
+%			foreach my $f (@{ $specfiles }) {
+%				my $prod_id = 0;
+%				my $partner = '';
+%				if ($f =~ /^p(\d+)\-specificationdata\-(.+)\_de\.csv$/) {
+%					$prod_id = $1;
+%					$partner = $2;
+%				}
+				<tr>
+					<td><a target="_blank" href="/produkte/docs/<% $f %>"><% $f %></a> &#8599;</td>
+					<td><% $partner %></td>
+					<td class="float-end mr-2"><a href="/adx/edit-product.html?id=<% $prod_id %>"><% $prod_id %></a></td>
+				</tr>
+%			}
+			</table>
+
+%			foreach (sort keys %{$file_inf}) {
+%				next if /^ext$/ or $_ eq 'file_short' or /^size/ or $_ eq 'mod' or $_ eq 'acc' or $_ eq 'cha';
+				&bull; <% $_ %> = <% $file_inf->{$_} %><br>
+%			}
+		</div>
+	</div>
+
+
+	<div class="row mt-2">
+		<div class="col-12">
+			<h3 class="fs--19 mt-10">Enthaltene Refurbished Artikel</h3>
+			<table class="table table-sm table-hover mt-3">
+			<thead>
+				<tr>
+					<th>Provider Key</th>
+					<th>Artikelbezeichnung</th>
+					<th>Bezeichn. auf EDI-Plattform</th>
+					<th>Kategorie</th>
+					<th>Energie-Zertifikat</th>
+					<th>EDI-Kategorie</th>
+					<th><span class="float-end">Lagerbestand</span></th>
+					<th><span class="float-end">Preis</span></th>
+				</tr>
+			</thead>
+%			my $refurb_count = 0;
+%			foreach (@ProdIDs) {
+%				next unless /^(\d+)$/;
+%				my $prod_id = $1;
+%				$refurb_count++;
+%				my $edicat = $A->get_product_edi_cat(id=>$prod_id);
+%				my $prd    = $edicat->{product};
+%				my $x_url  = $prd->{pfeat}->{"-001\t_exclude\tEDI_EXTERNAL_URL"};
+%				my $edi_skip = $prd->{pfeat}->{"-001\t_exclude\tEDI_SKIP"} || 0;
+%				my $energy_cert = $C->query("select `description` from products_feat where product_id=$prod_id and featkey='ENERGY_CLASS_URL'")->[0] || '';
+				<tr>
+					<td style="width:155px;">
+						<a target="_blank" href="/adx/edit-product.html?id=<% $prod_id %>"><% $prod_id %></a> &#8599;
+							<span class="float-end fs--11 pr-5">(<% $refurb_count %>)</span>
+					</td>
+					<td nowrap>
+%						if ($prd->{count_product} < 1 or $edi_skip) {
+							<s class="text-gray-500"><% $C->shorten_title($prd->{title}, 25) || 'N/A' %></s>
+%						}
+%						else {
+%							if ($x_url) {
+								<a target="_blank"
+									href="<% $x_url %>"><% $C->shorten_title($prd->{title}, 25) || 'N/A' %></a> &#8599;
+%							}
+%							else {
+								<% $C->shorten_title($prd->{title}, 25) || 'N/A' %>
+%							}
+%						}
+					</td>
+					<td nowrap class="prism-limit-len-200"><span class="fs--13"><% $prd->{pfeat}->{"-001\t_exclude\ttitle"} %></span></td>
+					<td><span class="fs--13"><% $C->shorten_title($prd->{cat_names}, 20) %></span></td>
+					<td>
+%						if ($energy_cert) {
+%							(my $url_disp = $C->get_short_file_name($energy_cert)) =~ s/\.jpg$//;
+							<a target="_blank" href="<% $energy_cert %>"><span class="fs--13"><% $url_disp %></span></a>
+%						}
+					</td>
+					<td><span class="fs--13"><% $edicat->{name} %></span></td>
+					<td><span class="float-end font-weight-bold <% $prd->{count_product} < 1 ? 'animate-pulse' : '' %>">
+							<% $prd->{count_product} %>
+					</span></td>
+					<td><span class="float-end ZZfont-weight-bold"><% $prd->{price_incl_vat_fmt} %></span></td>
+				</tr>
+%			}
+			</table>
+		</div>
+	</div>
+
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" target="_blank" href="https://cmi.digitecgalaxus.ch/de/CustomerReturnRegistration/ShowCustomerReturns">CMI</a>
+		&ndash; <a class="fs--13" href="/adm_masterdata.html?pane=2">Upload</a>
+	</p>
+
+</div>
+
+<%doc>
+<script>
+	document.f412160.edi_order_nr.focus();
+</script>
+</%doc>

@@ -1,0 +1,53 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prod_id  = $args{prod_id};
+	my $prd      = $args{prd};
+	my $debug    = $args{debug};
+</%init>
+<div class="portlet-body">
+
+	<div class="float-end">
+		<a href="https://prismjs.com/">PrismJS.com</a>
+	</div>
+
+	<h3 class="fs--25 mb-4">PrismJS 1.15.0</h3>
+
+	<h4 class="fs--18 mt-4">Kurz vor dem schliessenden <code>&lt;/head&gt;</code></h4>
+
+	<pre class="line-numberx" data-start="101"><code class="language-html">&lt;link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix /&gt;
+&lt;script src="/adx/assets/js/prism-code.js"&gt;&lt;/script&gt;</code></pre>
+	<br />
+
+	<pre class="line-numbers" data-start="101"><code class="language-perl">my $foo = 'tbd <% $$ %>';
+%	for (my $i=1; $i<4; $i++) {
+my $bar_<% $i %> = "x-<% $i * 20 %>";
+% }
+</code></pre>
+
+	<h4 class="fs--18 mt-4">Mit CSS-Klasse <code>form-control-lg</code></h4>
+
+	<pre class="line-numbers" data-start="101"><code class="language-perl form-control-lg">my $foo = 'tbd <% $$ %>';
+%	for (my $i=1; $i<4; $i++) {
+my $bar_<% $i %> = "x-<% $i * 20 %>";
+% }
+</code></pre>
+
+	<h4 class="fs--18 mt-4">Mit CSS-Klasse <code>fs--15</code></h4>
+
+	<pre class="line-numbers" data-start="101"><code class="language-perl fs--15">my $foo = 'tbd <% $$ %>';
+%	for (my $i=1; $i<4; $i++) {
+my $bar_<% $i %> = "x-<% $i * 20 %>";
+% }
+</code></pre>
+
+% #	<table class="table table-sm table-hover mt-0 border"> </table>
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+	</p>
+
+</div>

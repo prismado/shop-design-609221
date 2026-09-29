@@ -1,0 +1,53 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $id = $args{id}; # -- Product ID
+	my $debug = $args{debug};
+	my $lang = $args{lang} || 'de';
+
+	my $res = $A->get_options($id, $lang);
+
+	my $C = $A->{C};
+</%init>
+% foreach (@{$res}) {
+%	my ($opt_id, $style, $label, $desc, $val, $amount) = split /\t/;
+%	next unless $style == $args{type};
+%	$amount *= (1 + $C->{CONFIG}->{vat} / 100);
+
+%		if ($debug) {
+			(debug)
+%		}
+<div class="pull-left">
+				<b><%$desc%>:</b><br>
+		<input type="number" maxlength="2" min ="1" max="99"  oninput="maxLengthCheck(this)" onblur="saveNum('<%$val%>')" style="width:60px; text-align:center; font-weight:bold" id="<%$val%>" value="<%$C->getSessData("prod_id_$id\_playnum")%>" name="<%$val%>">
+
+	</div>
+% }
+<script language="JavaScript">
+	function saveNum(ref) {
+		var mytxt = document.getElementById(ref).value;
+%		if ($debug) {
+			alert('saveNum: ' + mytxt);
+%		}
+		$('#ajx_3').load('_ajx_set_playnum.html?id=<%$id%>&txt=' + encodeURI(mytxt));
+	}
+</script>
+<script>
+ //Input Number max lenght
+  function maxLengthCheck(object) {
+    if (object.value.length > object.maxLength)
+      object.value = object.value.slice(0, object.maxLength)
+  }
+
+  function isNumeric (evt) {
+    var theEvent = evt || window.event;
+    var key = theEvent.keyCode || theEvent.which;
+    key = String.fromCharCode (key);
+    var regex = /[0-9]|\./;
+    if ( !regex.test(key) ) {
+      theEvent.returnValue = false;
+      if(theEvent.preventDefault) theEvent.preventDefault();
+    }
+  }
+</script>
+<div id='ajx_3'></div>

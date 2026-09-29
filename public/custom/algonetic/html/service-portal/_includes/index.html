@@ -1,0 +1,84 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $bask_itms= $args{bask_itms};
+	my $debug    = $args{debug};
+
+	my $stu = $C->{dbh}->prepare(q~select user_id, uname, email, substr(xkey, 17, 15), xval
+				from users_details, users u where xkey LIKE 'perm_is_service_%' and u.id=user_id
+				order	by 2~);
+	   $stu->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $s_cat_id = $perm->{is_service_user} || $perm->{is_service_manager} || $perm->{is_service_admin};
+
+	my @cat_ids = ();
+	push(@cat_ids, $s_cat_id);
+	my $prods = $A->get_products_by_cat_ids(\@cat_ids);
+</%init>
+<div class="portlet-body">
+
+%	if ($perm->{is_service_admin}) {
+		<& idx_role_adm.html, perm=>$perm, C=>$C, A=>$A &>
+%	}
+
+%	if ($perm->{is_service_manager}) {
+		<& idx_role_mgr.html, perm=>$perm, C=>$C, A=>$A &>
+%	}
+%	elsif ($perm->{is_service_user}) {
+		<& idx_role_usr.html, prd=>$prd, perm=>$perm, C=>$C, A=>$A &>
+
+%		if (@{ $bask_itms->{items} }) {
+			<h3 class="fs--19 mt-5 mb-3">Pendente Bestellung &ndash; <a href="/basket.html">&Auml;ndern</a></h3>
+			<table class="table table-borderless" stylx="">
+%			foreach my $itm (@{ $bask_itms->{items} }) {
+				<tr stylx="">
+					<td stylx=""><% $itm->{count} %> &times;</td>
+					<td><% $itm->{prod_id} %></td>
+					<td><% $itm->{pdata}->{title} %></td>
+					<td>
+						<% $C->trans_date_short($itm->{pdata}->{instime}) %>
+%						foreach (sort keys %{ $itm }) {
+%						next if /^prod_id$/ or /^basket_id$/ or /^pdata$/ or /^count$/ or /^price/ or /^upsell$/ or /^instime$/ or /^vat_perc$/;
+							X -- <b><% $_ %></b> = <% $itm->{$_} %><br>
+%						}
+					</td>
+					<td class="fs--10"><% $itm->{vat_perc} %> % MwSt.</td>
+					<td>
+						<span class="float-end"><% $itm->{pdata}->{price_incl_vat} %></span><br>
+						<span class="float-end"><% $itm->{upsell} %></span>
+					</td>
+				</tr>
+%			}
+			<tr>
+				<td colspan="5"><b>Total</b></td>
+				<td><span class="float-end font-weight-bold">CHF <% sprintf('%.2f', $bask_itms->{basket_total}) %></span></td>
+			</tr>
+			</table>
+			<p><a href="checkout.html">Abschliessen</a></p>
+%		}
+%	}
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+%		if ($perm->{is_service_user}) {
+			<span class="float-end mt-5"><a class="link-muted fs--11" target="_blank"
+                		href="https://claude.site/artifacts/d5289931-eb1e-44e6-a77d-b2e83c2f72bf">C-Entwurf: User</a>
+			</span>
+%		}
+%		if ($perm->{is_devel}) {
+			&ndash; <a href="/adx/manage-property.html?area=40227111_func_2">func_2</a> &ndash;
+				 <a href="/adx/manage-property.html?area=40227111_func">func</a>
+			<img class="img-fluid" src="assets/images/overview_410262.webp">
+%			foreach (sort keys %{ $perm }) {
+%				next unless /^is_service_/;
+				[ perm ] &middot; <% $_ %> = <% $perm->{$_} %><br>
+%			}
+%		}
+	</p>
+
+</div>

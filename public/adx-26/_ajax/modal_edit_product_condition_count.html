@@ -1,0 +1,86 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 21Jun2024
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	# my $perm = $C->get_user_perm();
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $what   = $cgi->param('what')   || '';
+	my $val    = $cgi->param('val')    || '';
+	my $mul_ln = $cgi->param('multilingual');
+	my $size   = $cgi->param('size')   || 'lg';
+
+	my $lang = $C->getSessData('xlang') || 'de';
+
+	my $cfunc = $what;
+	   $cfunc = 'vat' if $what eq 'prod_type';
+	my $addinf = $C->get_core_feat_info(what=>$cfunc);
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-<% $size %> modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">St&uuml;ckzahl-Verhalten &middot; <small>Prod-ID <% $id %></small></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form onsubmit="return validateForm403151()">
+
+			<div class="modal-body">
+
+				<div class="form-label-group mb-3">
+					<select id="sel_406210_41" class="form-control bs-select">
+						<option value="SO" <% $val eq 'SO' ? 'selected' : '' %>>SO &middot; Stock only (empfohlen)</option>
+						<option value="OR" <% $val eq 'OR' ? 'selected' : '' %>>OR &middot; Allow overrun</option>
+						<option value="IN" <% $val eq 'IN' ? 'selected' : '' %>>IN &middot; Invisible</option>
+						<option value="IP" <% $val eq 'IP' ? 'selected' : '' %>>IP &middot; Info Page</option>
+					</select>
+					<label for="sel_406210_41">St&uuml;ckzahl-Verhalten / Aktuell: <% $val %></label>
+				</div>
+
+%				if ($addinf->{info}->{id}) {
+					<h3 class="fs--20 mt-4"><% $addinf->{info}->{title_de} %></h3>
+					<% ${ $addinf->{summary} } %>
+					<p class="mb-0 fs--17" style="line-height:165%">
+% 					foreach (sort keys %{$addinf->{info}->{add_setting_url}}) {
+						&bull; <a class="link-muted" href="<% $addinf->{info}->{add_setting_url}->{$_} %>"><% $_ %></a><br>
+% 					}
+					&bull; <a class="link-muted" href="<% $addinf->{info}->{wiki_url} %>">Wiki Infos</a>
+					</p>
+%				}
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150"
+					onclick="validateForm403151()">
+					<i class="fi fi-check"></i> Update
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm403151() {
+		update('<% $what %>', document.getElementById('sel_406210_41').value);
+		update_subm();
+		return false;
+	}
+</script>

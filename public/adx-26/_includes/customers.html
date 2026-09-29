@@ -1,0 +1,26 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $dt_ver = $args{dt_ver} || '(Std)';
+	my $C      = $args{C};
+	my $debug  = $args{debug};
+</%init>
+<div class="portlet-body">
+%	if ($debug) {
+		<p class="mb-0">
+			DT Ver: <b><big><% $dt_ver %></big></b>&nbsp;&nbsp;&mdash;&nbsp;&nbsp;[
+			<a href="customers.html" class="mr-2">V 1.10.18</a> <small class="mr-2">Standard</small> &mdash;
+			<a href="customers.html?dt_ver=1.9.1" class="ml-2">V 1.9.1</a> ]<br>
+
+			&bull; Prismado Tag: <code>&lt;prism-datatable table="<span style="color:black">vusers</span>"
+					dt_ver="<span style="color:black"><% $dt_ver %></span>"
+						role="admin">&lt;/prism-datatable></code>
+		</p>
+%	}
+
+	<prism-datatable table="vusers" dt_ver="<% $dt_ver %>" debug="<% $debug %>" role="admin"></prism-datatable>
+
+	<p>
+		<a class="fs--12" href="/adm_import_customers.html">Import</a>
+	</p>
+</div>

@@ -1,0 +1,23 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+</%init>
+
+<table border="0" cellpadding="0" cellspacing="0">
+<tr>
+<td
+colspan="2" valign="top">
+% # XXX <p> <strong><% $C->prop('agbs_long') %></strong> </p>
+
+	<% $C->get_property('content', 'custom/auctionline/html/info_agb', $lang) %>
+</p>
+</td>
+</tr>
+</table>

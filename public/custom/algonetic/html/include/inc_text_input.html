@@ -1,0 +1,55 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	(my $value_enc = $args{value_enc}) =~ s/[\n\r]//g;
+	    $value_enc =~ s/'/\\'/g;
+	    $value_enc =~ s/"/&quot;/g; # -- 13Apr2024
+
+	(my $val_enc = $args{value_enc}) =~ s/"/&quot;/g; # -- 16Mar2024
+
+	my $r_only = 'readonly';
+	   $r_only = '' if $args{write}; # -- 17Nov2023
+
+	my $input_args = $args{input_args} || ''; # -- e.g required // 13Jan2024
+	my $req_flag   = $input_args =~ /required/ ? ' <sup>*</sup>' : '';
+</%init>
+<div class="input-group-over <% $args{class} %>">
+
+	<div class="form-label-group mb-3">
+		<input <% $r_only %> <% $input_args %> placeholder="" id="txe_<% $args{id} %>" name="<% $args{name} %>"
+			type="<% $args{type} || 'text' %>" class="form-control <% $args{tx_class} %>" value="<% $val_enc %>">
+		<label for="txe_<% $args{id} %>"><% $args{label} %><% $req_flag %></label>
+	</div>
+
+%	if ($args{delete}) {
+		<a href="#" class="js-ajax-modal mb-1" style="padding-right:32px !important"
+			data-href="_ajax/modal_delete_<% $args{del_meth} || 'record' %>.html?id=<% $args{id} %>"
+			data-ajax-modal-size="modal-md"
+			data-ajax-modal-centered="true"
+			data-ajax-modal-backdrop="static">
+		<img class="float-right" style="width:20px; margin-right:6px" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8' standalone='no'?><svg xmlns='http://www.w3.org/2000/svg' version='1.2' baseProfile='tiny' viewBox='0.00 0.00 128.00 128.00'><path fill='%23fe0000' d='M 121.51 64.00 A 57.51 57.51 0.0 0 1 64.00 121.51 A 57.51 57.51 0.0 0 1 6.49 64.00 A 57.51 57.51 0.0 0 1 64.00 6.49 A 57.51 57.51 0.0 0 1 121.51 64.00 Z M 116.40 64.00 A 52.40 52.40 0.0 0 0 64.00 11.60 A 52.40 52.40 0.0 0 0 11.60 64.00 A 52.40 52.40 0.0 0 0 64.00 116.40 A 52.40 52.40 0.0 0 0 116.40 64.00 Z '/><path fill='%23fe0000' d='M 64.44 59.94 L 82.44 41.93 A 2.21 2.20 -46.1 0 1 85.49 41.87 Q 86.62 42.92 86.51 44.58 Q 86.47 45.15 86.07 45.55 L 68.31 63.32 Q 67.63 64.00 68.31 64.68 Q 76.48 72.87 85.00 81.37 C 88.53 84.90 84.86 88.51 81.43 85.06 Q 72.94 76.52 64.39 68.02 Q 64.01 67.64 63.63 68.02 Q 54.65 76.92 45.83 85.81 C 43.49 88.17 39.64 84.77 42.71 81.68 Q 51.25 73.10 59.86 64.53 A 0.74 0.74 0.0 0 0 59.86 63.49 Q 51.13 54.74 42.19 45.81 C 40.43 44.05 41.82 41.03 44.88 41.60 Q 45.30 41.68 45.61 41.99 L 63.56 59.94 Q 64.00 60.37 64.44 59.94 Z '/></svg>">
+		</a>
+%	}
+
+	<a id="tx_edit_show_<% $args{id} %>" href="javascript:;" class="fs--16 p--8 mr-1 text-dark"
+		onclick="jQuery('#txe_<% $args{id} %>').attr('readonly', false); jQuery('#txe_<% $args{id} %>').attr('type', 'text'); jQuery('#tx_edit_show_<% $args{id} %>, #tx_edit_info_<% $args{id} %>').addClass('hide'); jQuery('#tx_edit_hide_<% $args{id} %>, #tx_edit_info_<% $args{id} %>').removeClass('hide');jQuery('#txe_<% $args{id} %>').val('<% $value_enc %>').focus();">
+			<i class="fi fi-pencil m-0"></i>
+	</a>
+
+	<a id="tx_edit_hide_<% $args{id} %>" href="javascript:;" class="btn fs--12 hide"
+		onclick="jQuery('#txe_<% $args{id} %>').attr('readonly', true); jQuery('#tx_edit_show_<% $args{id} %>, #tx_edit_info_<% $args{id} %>').removeClass('hide'); jQuery('#tx_edit_hide_<% $args{id} %>, #tx_edit_info_<% $args{id} %>').addClass('hide'); jQuery('#txe_<% $args{id} %>').val('<% $value_enc %>');">
+			<i class="fi fi-close m-0"></i>
+	</a>
+
+</div>
+
+
+
+% if ($args{info}) {
+	<div id="tx_edit_info_<% $args{id} %>" class="mt-1 mb-4 fs--13 text-muted hide">
+		<% $args{info} %>
+%		if ($args{delete}) {
+			<a href="/adm_db_edit.html?table=config&wcl=%60key%60%3D%27<% $args{label} %>__explain%27"><i class="fi fi-pencil"></i></a>
+%		}
+	</div>
+% }

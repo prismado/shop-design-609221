@@ -1,0 +1,163 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $id       = $args{id};
+	my $c_ids    = $args{cat_nav_ids};
+	my $c_lbl    = $args{cat_nav_label};
+	my $perm     = $args{perm};
+	my $expand   = $args{expand};
+	my $debug    = $args{debug};
+
+	my $this_label = $C->query("select label from categories where id=$id and lang='de'")->[0];
+	my $std_labels = $A->get_std_labels();
+	my @labels = ();
+
+	push(@labels, '<table class="mt-3 mb-5 table-hover bg-white border border-gray-300 w--800">');
+
+	foreach my $key (sort keys %{ $std_labels->{link} }) {
+		my $desc = $C->txt("choice_\{$key\}", 'de');
+		if ($desc =~ /^\* .+/) {
+			$desc = $perm->{is_devel} ? qq~<small>* <a class="text-muted"
+				href="manage-property.html?area=choice_\{$key\}">Missing Choice</a> *</small>~ : '';
+		}
+		else {
+			$desc = $C->shorten_title($desc, 45);
+			$desc = qq~<a href="manage-property.html?area=choice_\{$key\}"><i>$desc</i></a>~;
+		}
+
+		push(@labels, qq~<tr class="border-b border-gray-300">
+				<td class="py-1 px-2" nowrap><code class="font-weight-bold">$key</code></td>
+				<td class="pl-5 py-1 px-2">$std_labels->{caption}->{$key}</td>
+				<td>$desc</td>
+				<td class="pl-5">
+					<span class="float-end mr-3">
+						<a href="manage-property.html?area=label_{$key}"><i class="fi fi-pencil"></i></a>
+					</span>
+				</td>
+				</tr>~);
+	}
+
+	push(@labels, '</table>');
+
+	my $daily_offer = $C->query("select cat_id from categ_meta where xkey='daily_offer' and xval='1' limit 1")->[0];
+
+	my $st1 = $C->{dbh}->prepare('select distinct xkey from categ_meta order by 1');
+	   $st1->execute();
+
+	my $sth = $C->{dbh}->prepare("select id, xkey, lang, xval from categ_meta where cat_id=$id order by 2");
+	   $sth->execute();
+
+	my $s_token = $C->md5_secret('categ_meta');
+</%init>
+<div class="portlet-body">
+
+	<span class="float-end">
+%		foreach (sort keys %{ $c_lbl }) {
+			<a href="categ-setting.html?id=<% $_ %>"><% $_ %></a> = <% $c_lbl->{$_} %><br>
+%		}
+		<a href="categ-setting.html?id=<% $daily_offer %>"><% $daily_offer %></a> = Daily_Offer
+	</span>
+
+	<span class="float-end mr-5">
+%	while(my $r = $st1->fetch()) {
+		&bull; <code><% $r->[0] %></code><br>
+%	}
+	</span>
+
+	<h3 class="fs--25">Einstellungen Kategorie
+%		if ($id) {
+			ID <% $id %> &middot; <a href="/products/x/<% $id %>"><% $this_label %></a>
+%		}
+	</h3>
+
+%	if ($id) {
+		<h5 class="mt-5 mb-3">Artikeleigenschaften f&uuml;r <% $this_label %> &middot; <small>
+%			if ($expand) {
+				<a href="categ-setting.html?id=<% $id %>">Kompakt</a>
+%			}
+%			else {
+				<a href="categ-setting.html?id=<% $id %>&expand=1">Erweitern</a>
+%			}
+			</small>
+		</h5>
+%	}
+
+%	if ($id) {
+		<%
+			${ $A->modal(
+				label  => '<span style="color:#377dff">Hinzuf&uuml;gen</span>',
+				url    => "/adx/_ajax/modal_add_std_label_cat.html?css_id=409151_55&id=$id",
+				css_id => '409151_55') }
+		%>
+%	}
+
+%	my $xkey_before = '';
+	<table class="mt-3 table table-sm table-hover mt-1 border w--800">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $xkey, $lang, $xval) = @{$r};
+%		my $desc = $C->txt("choice_\{$xkey\}", $lang);
+%		if ($desc =~ /^\* .+/) {
+%			$desc = q~<span class="fs--12 text-gray-800">* keine Vorgabe *</span>~;
+%		}
+%		else { ($desc = $C->shorten_title($desc, 48)) =~ s/<[^>]*>//gs; }
+%		if ($expand) {
+			<tr>
+			<td><% $lang %></td>
+			<td nowrap>
+%				if ($xkey ne $xkey_before) {
+					<code class="font-weight-bold"><% $xkey %></code>
+%				}
+			</td>
+			<td nowrap><% $xval %></td>
+			<td><a href="manage-property.html?area=choice_{<% $xkey %>}"><i><% $desc %></i></a></td>
+			<td><span class="float-end mr-3">
+				<a href="/adm_db_edit.html?table=categ_meta&wcl=id%3D<% $id %>&s_token=<% $s_token %>"><i class="fi fi-pencil"></i></a>
+				</span>
+			</td>
+			</tr>
+%			$xkey_before = $xkey;
+%		}
+%		else {
+%			next unless $lang eq $C->{CONFIG}->{default_lang};
+			<tr>
+			<td nowrap><code class="font-weight-bold"><% $xkey %></code></td>
+			<td nowrap><% $xval %></td>
+			<td><a href="manage-property.html?area=choice_{<% $xkey %>}"><i><% $desc %></i></a></td>
+			<td><span class="float-end mr-3">
+				<a href="/adm_db_edit.html?table=categ_meta&wcl=id%3D<% $id %>&s_token=<% $s_token %>"><i class="fi fi-pencil"></i></a>
+				</span>
+			</td>
+			</tr>
+%		}
+%	}
+	</table>
+
+	<h5 class="mt-4 mb-4">Generische Produkte-Label / -Eigenschaften &middot; <small>f&uuml;r alle Kategorien</small></h5>
+
+	<%
+		${ $A->modal(
+			label  => '<span style="color:#377dff">Hinzuf&uuml;gen</span>',
+			url    => '/adx/_ajax/modal_add_std_label.html?css_id=409151_80',
+			css_id => '409151_80') }
+	%> &ndash; <a href="content.html">Bearbeiten</a>
+
+	<% join '', @labels %>
+
+	<h5 class="mb-4">Kodierung vorgegebener Eigenschaftswerte</h5>
+	<pre class="line-numbers" data-start="10"><code class="language-json">[
+	"rot",
+	"gr&uuml;n",
+	"blau"
+]</code></pre>
+
+	<hr class="float-start" style="width:50%" /><br cleax="all" /><br />
+
+	<ul class="mb-0">
+		<li><a href="/_systex/install/help/de/13/5/">Hilfe</a> f&uuml;r Artikeleigenschaften</li>
+		<li>Daily Offer: <tt><% $daily_offer %></tt></li>
+		<li>Programmierung der Kategorie: <a class="fs--13" href="/_systex/install/help/de/11/4/?filter=categ">Funktionen</a></li>
+	</ul>
+
+</div>

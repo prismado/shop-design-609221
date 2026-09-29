@@ -1,0 +1,158 @@
+<%init>
+	use utf8;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Prism; # -- 21Apr2026
+	use Prismado::API; # -- 06Jun2026
+	use Prismado::Shop; # -- 17Juni2026
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+	my $P = ScreenPoint::Prism->new(dbh => $C->{dbh});
+	my $PA= Prismado::API->new(dbh => $C->{dbh}); # -- 06Jun2026
+	my $PS= Prismado::Shop->new(dbh => $C->{dbh}); # -- 17Jun2026
+
+	my $cgi = $C->{CGI};
+	my $debug  = $cgi->param('debug') || $C->getSessData('debug') || 0;
+	my $email  = $cgi->param('email');  # -- 21Jun2025
+	my $bMailX = $cgi->param('bMailX');
+	my $bMailC = $cgi->param('bMailC'); # -- Mail Check / 21Jun2025
+	my $bReset = $cgi->param('bReset'); # -- Reset Cookie(s) etc
+	my $bTopNo = $cgi->param('bTopNo');
+
+	my $perm = $C->get_user_perm();
+	my $host_env_prim = $C->get_safe_property('host_env_primary', 'sys');
+
+	my $res_mail_x;
+	if ($bMailX) {
+		my $to = 'dev-x@ch2.be';
+		my $mailbody = 'Test';
+		my $now2     = $C->now(2);
+
+		$res_mail_x = $C->mail_x(
+			to            => $to,
+			sender        => $C->{CONFIG}->{tech_email_sender}, # -- Optional
+			from_realname => "Dev Lab - " . ($host_env_prim eq 'yes' ? 'Devel Host' : 'Prod'),
+			subject       => "tesx an $to von $C->{CONFIG}->{HTTP_HOST} $now2",
+			caller        => 'dev-lab',
+			data          => \$mailbody
+		);
+
+		$C->create_toast_note(body=>"<center>Gesendet an $to<br>Von: $C->{CONFIG}->{tech_email_sender}</center>", width=>'555px');
+	}
+	elsif ($bMailC) {
+		my $res_check_mail = $C->validate_email(email=>$email);
+		$C->create_toast_note(body=>qq~<center>$email<br>
+						Valid: $res_check_mail->{valid}~, width=>'555px', delay=>11000);
+	}
+
+	if ($bReset) {
+		$C->set_cookie('onload_modal_shop', 0, '/',    '-3d');
+		$C->set_cookie('onload_modal_shop', 0, '/adx', '-3d');
+		$m->redirect('dev-lab.html');
+	}
+
+	if ($bTopNo) {
+		my $active = $cgi->param('active') + 0;
+		my $res = $PS->update_top_notch(
+			body => q~<span style="background-color:#1A1A2E; color:#f0f0f0; padding:4px;">
+				⚠️ <b>Warm Standby</b> – Dieses System ist nicht produktiv. 
+				Bitte bestellen Sie auf <a style="color:#4FC3F7;" href="https://www.auctionline.ch">auctionline.ch</a>
+				</span>~,
+			active => $active
+		);
+		   $res->{msg} = $C->toUTF($res->{msg});
+		$C->create_toast_note(body=>"<center>Top Notch, active: $active:<br>$res->{rc} $res->{msg}</center>", width=>'500px');
+	}
+
+	my @breadcrumb = ();
+	push(@breadcrumb, ['Config Dev', 'config-dev.html']);
+	push(@breadcrumb, ['Copy Code',  'dev-copy-code.html']);
+	push(@breadcrumb, ['Time Tests', 'dev-time.html']);
+	push(@breadcrumb, ['Dev Lab', '']);
+</%init>
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Dev Lab <% $C->{CONFIG}->{HTTP_HOST} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="/assets/css/prism_typeahead.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<link rel="manifest" href="assets/images/manifest/manifest.json">
+	<meta name="theme-color" content="#377dff">
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm=>$perm, C=>$C &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<div class="float-end w--200 mt--n10">
+					<& _includes/inc_select_redir.html, this=>$C->this() &>
+				</div>
+
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal">Dev Lab <% $host_env_prim eq 'yes' ? '<i>on Development Platform</i>' : '' %></h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& _includes/dev-lab.html, C=>$C, A=>$A, P=>$P, perm=>$perm, bMailX=>$bMailX, res_mail_x=>$res_mail_x,
+								PA => $PA,
+								PS => $PS,
+								email=>$email, host_env_prim=>$host_env_prim, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+
+% #	================================================================================================
+	<!--
+		SHOP AJAX MODAL : ON LOAD 
+			Note: #onload_modal_shop is also used inside the modal
+		for the button "stop showing" to set a cookie!
+	-->
+	<div id="onload_modal_shop" class="hide js-onload js-ajax-modal" 
+	    data-href="/_ajax/modal_shop_smarty_orig.html" 
+	    data-ajax-modal-delay="2000" 
+	    data-ajax-modal-size="modal-lg" 
+	    data-ajax-modal-centered="true" 
+	    data-ajax-modal-backdrop=""></div>
+% #	================================================================================================
+
+
+	<script src="assets/js/core.min.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.3.1/typeahead.bundle.min.js"></script>
+
+	</body>
+</html>

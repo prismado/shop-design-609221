@@ -1,0 +1,55 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $id = $C->{CGI}->param('id') + 0;
+
+	my $prdinf = $A->get_product($id);
+
+	# my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+	my $sig  = $C->md5_secret($SID);
+
+	my $date_from = $C->now(4, 86400 *  1) . ' 06:00';
+	my $date_to   = $C->now(4, 86400 * 10) . ' 23:59';
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Geplanter Rabatt</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<div class="float-end">
+		Aktueller Verkaufs-Preis: <b>CHF <% $prdinf->{price_incl_vat} %></b>
+	</div>
+	<span class="float-left"><% $C->shorten_title($prdinf->{title}, 60) %> (ID <% $id %>)</span>
+	<br /><br />
+
+	<form method="post" name="f308281" class="mt-2" action="/_sub.html">
+	<input type="hidden" name="id"     value="<% $id %>">
+	<input type="hidden" name="sig"    value="<% $sig %>">
+	<input type="hidden" name="action" value="add_future_discount">
+
+% #	<span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span>
+
+	<& ../include/inc_text_edit.html, label=>'Datum von', value_enc=>$date_from, write=>1, id=>10 &>
+	<& ../include/inc_text_edit.html, label=>'Datum bis', value_enc=>$date_to,   write=>1, id=>20 &>
+	<& ../include/inc_text_edit.html, label=>'Rabatt %',  value_enc=>'10.00',    write=>1, id=>30 &>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Cancel
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> Speichern
+			</button>
+		</div>
+
+	</form>
+</div>

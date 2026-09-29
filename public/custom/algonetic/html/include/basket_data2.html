@@ -1,0 +1,313 @@
+<%init>
+	# -- Used by checkout.html
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $gr_tot = $args{gr_tot};
+	my $perm   = $args{perm} || $C->get_user_perm();
+
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id') + 0; # -- Order ID
+
+	my @appmsg = ();
+	push(@appmsg, $args{msg}) if $args{msg};
+	push(@appmsg, q~<a href="/service-portal/checkout.html">Bestellung Service-Portal?</a>~) if $perm->{is_service_user};
+
+	if ($id) {
+		$A->{check} = $cgi->param('check');
+		my ($rc, $msg) = $A->refill_basket($id); # -- Order ID
+	}
+
+	if ($cgi->param('src') eq 'basket') {
+		$A->update_basket_by_id();
+	}
+
+	my $vat_factor = 1 + $C->{CONFIG}->{vat} / 100;
+	my $total    = $gr_tot->{subtotal_basket_incl_vat};
+
+	my $cc_amount = sprintf('%.2f', $C->{CONFIG}->{pay_cost_cc}  * $vat_factor); # -- or $A->{'ship_tot_cc'}
+
+	my $std_amount = $gr_tot->{shipping_amount}; # -- 18Sep2023: Changed from shipping_amount_std to shipping_amount
+	my $exp_amount = sprintf('%.2f', $C->{CONFIG}->{ship_exp} * $vat_factor);
+	my $pri_amount = $gr_tot->{shipping_amount_prio} || sprintf('%.2f', $C->{CONFIG}->{ship_postpac_prio} * $vat_factor);
+	my $ins_amount = sprintf('%.2f', $C->{CONFIG}->{ship_ins} * $vat_factor);
+	my $inv_amount = sprintf('%.2f', $C->{CONFIG}->{pay_cost_inv} * $vat_factor);
+	   $std_amount = '0.00' unless $C->{CONFIG}->{shipping_free_as_of} > $total;
+
+	# my $total_1 = $C->decimal_mark($C->round_amount($total + $A->{ship_tot_cc} + $cc_amount + $std_amount)); # -- cc
+	my $total_1 = sprintf('%.2f', $C->round_amount($total + $A->{ship_tot_cc} + $cc_amount + $std_amount)); # -- cc
+	my $total_2 = $C->decimal_mark($total + $A->{ship_tot_cod});
+	my $total_3 = $C->decimal_mark($total + $C->{CONFIG}->{ship_std} * $vat_factor);
+	my $total_6 = $C->decimal_mark($total + $C->{CONFIG}->{ship_pic});
+	my $total_7 = $C->decimal_mark($total + $C->{CONFIG}->{ship_postpac_prio});
+
+	my $vat_list = $A->get_vat_list(theme=>$C->{CONFIG}->{theme});
+</%init>
+% if ($args{debug}) {
+	<&page_info.html, 'START'&>
+%	my $shipping_vat = $gr_tot->{shipping_amount} * $C->{CONFIG}->{vat} / 100;
+	<% $C->html_debug(qq~
+		Basket Total is being calculated by <code>\$A-&gt;get_basket_total_v3()</code>.<br><br>
+
+		Test Result via <code>\$A-&gt;get_order_grand_total()</code>:<br>
+		Grand Total: CHF <u>$gr_tot->{grand_total}</u><br>
+		Shipping Amount (Model $gr_tot->{shipping_model}): $gr_tot->{shipping_amount} including $shipping_vat VAT<br><br>
+
+		$vat_list->{out}
+		Total VAT: CHF $vat_list->{total_vat}~) %>
+% }
+% if (@appmsg) {
+%	my $msg = join '<br>', @appmsg;
+	<br clear="all" />
+%	if ($args{rc} == 2) {
+		<% $C->bootstrap_alert($C->prop('order_cancelled'), 'danger', 'margin-top:-5px; margin-bottom:10px; text-align:center') %>
+%	}
+%	else {
+		<% $C->bootstrap_alert($msg, $args{rc} ? 'danger' : 'success', 'margin-top:-5px; margin-bottom:10px; text-align:center') %>
+%	}
+% }
+<form name="checkout" clasx="form-control" action="summary.html" method="post">
+
+% unless ($args{rc}) {
+	<table class="table table-sm table-responsive ZZtable-striped border">
+		<% $args{bsk}->{out} %>
+%		if ($gr_tot->{voucher_value}) {
+			<tr>
+			<td colspan="<% $args{bsk}->{colspan} %>">
+				<div class="float-right mt-2 mr-1" stylx="padding-top:10px">
+					<i><% sprintf('-%.2f', $gr_tot->{voucher_value_incl_vat}) %></i>
+				</div>
+				<h5 class="mt-2">Voucher <% $gr_tot->{voucher_code} %></h5>
+			</td>
+			</tr>
+%		}
+	</table>
+% }
+
+<!-- ######################################################################################################## -->
+% # -- Bitte w&auml;hlen Sie Ihre Zahlungs- Lieferart
+<!-- ######################################################################################################## -->
+% # -- Zahlungsart
+<h6><% $C->txt('payment_method', $args{lang}) %></h6>
+ <table class="table table-sm table-hover">
+
+% # =====================================  Kreditkarten Payrexx ========================================================
+% if ($C->{CONFIG}->{pay_meth_prx}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('creditcard'), num=>1, cost=>$A->{ship_tot_cc}, checked=>'checked',
+		A=>$A, C=>$C, code=>'prx', debug=>$args{debug}&>
+% }
+
+% # =========================================  Kredikarten ============================================================
+% if ($C->{CONFIG}->{pay_meth_pc3}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('creditcard'), num=>1, cost=>$A->{ship_tot_cc}, checkex=>'checked',
+		A=>$A, C=>$C, code=>'pc3', debug=>$args{debug}&>
+% }
+
+% # =========================================  TWINT ============================================================
+% if ($C->{CONFIG}->{pay_meth_twi}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('twint'), num=>1, cost=>$cc_amount,
+		A=>$A, C=>$C, code=>'twi', debug=>$args{debug}&>
+% }
+
+% # =========================================  Rechnung ============================================================
+% if ($C->{CONFIG}->{pay_meth_inv}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('invoice'), num=>4, cost=>$inv_amount,
+		checked=>($C->{CONFIG}->{pay_meth_pc3} or $C->{CONFIG}->{pay_meth_prx}) ? '' : 'checked',
+			A=>$A, C=>$C, code=>'inv', debug=>$args{debug}&>
+% }
+
+% # =========================================  Nachnahme ============================================================
+% if ($C->{CONFIG}->{pay_meth_cod}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('cod'), num=>2, cost=>$A->{ship_tot_cod}, checked=>$C->{CONFIG}->{pay_meth_cod} ? '' : 'checked',
+		A=>$A, C=>$C, code=>'cod', debug=>$args{debug}&>
+% }
+
+% # =========================================  Paypal ============================================================
+% if ($C->{CONFIG}->{pay_meth_pp}) {
+	<&inc_pay_meth_line.html, label=>'PayPal', num=>1, cost=>$cc_amount,
+		A=>$A, C=>$C, code=>'pp', debug=>$args{debug}&>
+% }
+
+% # =========================================  Postcard ============================================================
+% if ($C->{CONFIG}->{pay_meth_pc}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('postcard'), num=>3, cost=>$cc_amount,
+		A=>$A, C=>$C, code=>'pc', debug=>$args{debug}&>
+% }
+% # ========================================= Vorauszahlung ============================================================
+% if ($C->{CONFIG}->{pay_meth_pre}) {
+	<&inc_pay_meth_line.html, label=>$C->prop('prepay'), num=>3, cost=>0.00, checkex=>'checked',
+		A=>$A, C=>$C, code=>'pre', debug=>$args{debug}&>
+% }
+
+</table>
+
+
+ <!-- ##################################### Versand Optionen ################################################################### -->
+
+% # =========================================  Standart Versand  ============================================================
+<h6><% $C->prop('delivery_options') %></h6>
+<table class="table table-sm">
+
+	<tr>
+             <td style="width:7%;" clasx="first_td">
+		<label class="form-radio form-radio-primary">
+		<input type="radio" name="ship_meth" id="checkout_versandart_select" value="std" checked="checked"
+			onClick="updateTotShip(4)"/> <i></i>
+		</label>
+		</td>
+%	# -- Standard-Versand:
+            <td><%$C->prop('delivery_method_title')%>
+%		if ($perm->{is_devel}) {
+			<a target="_blank" href="/adx/manage-property.html?area=delivery_method_title"><i class="fi fi-pencil ml-1"></i></a>
+%		}
+	    </td>
+             <td>
+%	if ($args{debug}) {
+		[4] &ndash; (<% $gr_tot->{shipping_amount} %> <tt>$std_amount</tt>)
+%	}
+%		unless ($std_amount + 0) {
+			kostenlos
+%		}
+		</td>
+              <td  colspan="2"><span class="float-right mr-2"><% $std_amount || '0.00' %></span></td>
+	</tr>
+
+
+% # =========================================  Express Versand  ============================================================
+% unless ($C->{CONFIG}->{shipping_inact_exp}) {
+	<tr>
+	  <td class="first_td">
+		  <div class="radio radio-inline">
+		  <input type="radio" name="ship_meth" id="checkout_versandart_select_exp" value="exp" onClick="updateTotShip(7)"/>
+	            <label for="checkout_versandart_select_exp"></label>
+		</div>
+		</td>
+		<td><% $C->prop('delivery_method_title0') %></td>
+             <td>
+%	if ($args{debug}) {
+		[7] &ndash;
+%	}
+		 <%$C->prop('post')%></td>
+	  <td colspan="2" clasx="last_td_large"><span class="float-right"><%$exp_amount%></span></td>
+	</tr>
+% }
+
+% # =========================================  Priority Versand  ============================================================
+% unless ($C->{CONFIG}->{shipping_inact_postpac_prio}) {
+	<tr>
+	  <td clasx="first_td">
+		<label class="form-radio form-radio-primary">
+		  <input type="radio" name="ship_meth" id="checkout_versandart_select_postpac_prio" value="postpac_prio" onClick="updateTotShip(8)"/>
+			<i></i>
+		</label>
+		</td>
+		<td><% $C->prop('delivery_method_title_postpac_prio') %></td>
+             <td>
+%	if ($args{debug}) {
+		[8] &ndash;
+			<% $pri_amount %>
+%	}
+		 Schweizer Post</td>
+	  <td colspan="2"><span class="float-right mr-2"><% $pri_amount %></span></td>
+	</tr>
+% }
+
+% # =========================================  Versicherter Versand   ============================================================
+% unless ($C->{CONFIG}->{shipping_inact_ins}) {
+            <tr>
+            <td class="first_td">
+	  <div class="radio radio-inline">
+		<input type="radio" name="ship_meth" id="checkout_versandart_select1" value="ins"
+			onClick="updateTotShip(5)" class="regular-radio"/>
+	     			<label for="checkout_versandart_select1"></label>
+	     		  </div>
+			</td>
+            <td><div><% $C->prop('delivery_method_title1') %></div></td>
+             <td>
+%	if ($args{debug}) {
+		[5] &ndash;
+%	}
+		<% $C->prop('post') %></td>
+             <td colspan="2" class="last_td_large">CHF&nbsp;<% $ins_amount %></td>
+          </tr>
+% }
+
+
+% # =========================================  Abholung   ============================================================
+% unless ($C->{CONFIG}->{shipping_inact_pic}) {
+	<tr>
+        <td>
+	    <div class="radio radio-inline">
+		<label class="form-radio form-radio-primary">
+	<input type="radio" name="ship_meth" id="checkout_versandart_select2" value="pic" onClick="updateTotShip(6)"i /> <i></i>
+	    </label>
+		</td>
+            <td><a style="text-decoration:underline !important;" target="_blank" href="info_selbstabholer.html"><%$C->prop('pickup')%> in <%$C->prop('site_city')%></a></td>
+           <td>
+%	if ($args{debug}) {
+		[6] &ndash;
+%	}
+		<a style="text-decoration:underline !important;" target="_blank" href="info_selbstabholer.html"><%$C->prop('pickup_short_info')%></a></td>
+             <td colspan="2" clasx=""><span class="float-right mr-2"><% $C->{CONFIG}->{ship_pic} %></span></td>
+	</tr>
+% }
+
+</table>
+
+% # -- Total inkl. MwSt.
+<table class="table">
+<tr>
+	<td colspan="3"><span class="fs--20"><% $C->prop('sum_total') %> <% $C->prop('mwst') %></span>
+%		if ($args{debug}) {
+		  <% $C->html_debug("\$A->get_order_grand_total(): \$total_1 | \$gr_tot->{grand_total}=$gr_tot->{grand_total} | Voucher: $gr_tot->{voucher_value} $gr_tot->{voucher_value_incl_vat}") %>
+			Shipping Model <b><% $gr_tot->{shipping_model} %></b>
+			<table class="table table-striped" style="width:70%">
+%			foreach (sort keys %{$gr_tot}) {
+%				next if $_ !~ /^ship/ or $_ eq 'shipping_model';
+				<tr><td style="width:210px"><b><% $_ %></b></td><td><% $gr_tot->{$_} %></td></tr>
+%			}
+			</table>
+			<% $gr_tot->{out_str} %><br>
+			<hr noshade />
+%			foreach (sort keys %{$gr_tot}) {
+%				next if length($gr_tot->{$_}) == 0 or $_ =~ /^ship/ or $_ eq 'out_str' or /^z/ or $gr_tot->{$_} == 0 or $_ eq 'debug';
+				X -- <% $_ %> = <b><% $gr_tot->{$_} %></b><br>
+%			}
+%		}
+	</td>
+%	# -- font-weight-medium
+	<td colspan="2" class="fs--20 font-weight-bold"><span class="float-right">CHF&nbsp;<span id=dynTot><% $total_1 %></span></span></td>
+</tr>
+</table>
+  <!-- ######################################################################################################## -->
+
+
+%	if ($perm->{is_admin}) {
+		<span class="float-end mr-2"><a href="/adx/manage-property.html?area=voucer_text"><i class="fi fi-pencil"></i></a></span>
+%	}
+	<div class="form-label-group mt--n2">
+		<input placeholder="" type="text" name="voucher" id="i409230_289" value="<% $gr_tot->{voucher_code} %>" class="form-control w--220">
+		<label for="i409230_289"><% $C->prop('voucer_text') %></label>
+	</div>
+
+	<p class="mb-0 mt-4"><% $C->prop('cust_ref') %> (optional)</p>
+	<input name="checkout_referenz" type="text" class="form-control" maxlength="30" type="text" placeholder="Optional" value="<% $C->getSessData('checkout_referenz') %>">
+
+	<p class="mt-3 mb-0"><% $C->prop('comment') %></p>
+	<textarea name="checkout_bemerkungen" class="form-control mb-3" placeholder="Optional"><% $C->getSessData('checkout_bemerkungen') %></textarea>
+
+<div class="float-right">
+	<a class="btn" href="javascript:document.location='/basket.html'"><% $C->prop('btn_return') %></a>
+%	unless ($args{rc}) {
+		<button type="submit" class="btn btn-success btn-lg ZZw--220" xnclick="document.location='checkout.html'">
+			<% $C->prop('btn_continue_overview') %> <i class="fi fi-arrow-right ml-2 mr-0"></i>
+		</button>
+%	}
+</div>
+
+</form>
+
+<& inc_paymeth_and_shipping_js.html, total=>$total, total_1=>$total_1, total_2=>$total_2, total_3=>$total_3, total_6=>$total_6,
+	std_amount=>$std_amount, pri_amount=>$pri_amount, C=>$C, A=>$A &>
+

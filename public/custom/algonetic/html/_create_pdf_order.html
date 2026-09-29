@@ -1,0 +1,211 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use PDF::API2;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id  = $cgi->param('id'); # -- Order-ID
+	my $key = $cgi->param('key');
+
+	$m->abort unless $key eq $C->{CONFIG}->{md5_secret};
+
+	my $d = $A->get_order($id);
+	   $d->{contact} ||= '* Unknown *';
+
+	my $currency = $C->{CONFIG}->{default_curr};
+	my $shipping_tot = $d->{'XX shipping'};
+	if ($d->{ship_meth}) {
+		$shipping_tot += $d->{ship_meth_amount};
+	}
+
+	my $pdf = PDF::API2->new();
+
+	my $created_at = substr($C->now(2), 0, 16);
+
+	my $page = $pdf->page(); # -- Add a blank page
+	   $page->mediabox('A4');
+	   # $page->mediabox(842, 595);
+
+	our $text = $page->text();
+	my $content = $page->gfx();
+	my $page_break_at = 30;
+	my $left_margin = 56;
+
+	$C->{pdf} = $pdf;
+	$C->{pdf_text_h} = $text;
+	$C->{pdf_line_height} = 16;
+	$C->{pdf_font} = $pdf->corefont('Helvetica');
+
+	$C->{pdf_x_pos} = 555;
+	$C->{pdf_y_pos} = 779;
+	$C->pdf_text_right((split / /, $C->trans_date_short($d->{instime}))[0], 10);
+
+	$C->{pdf_x_pos} = $left_margin;
+	$C->{pdf_y_pos} = 795;
+
+	# -- Page Header
+	$C->pdf_page_header(
+		size_1 => 13, size_2 => 9,
+		font_1 => 'Helvetica-Bold', font_2 => 'Helvetica',
+		logo => $C->prop('pdf_shop_logo'), logo_scale => 0.3, logo_x_offset => -30,
+		noline => 1,
+		content => $content
+	);
+
+	my $address_pos = 335;
+	my $pos1 = 56; my $pos2 = 100; my $pos3 = 150; my $pos4 = 460; my $pos5 = 530;
+	my @report_labels = ();
+	eval (qq~\@report_labels = qw( Count:$pos1 ID:$pos2 Product:$pos3 PPU:$pos4 Price:$pos5 );~);
+
+	$C->{pdf_x_pos} = $left_margin;
+	$C->{pdf_y_pos} -= 50;
+
+	$C->{pdf_font} = $pdf->corefont('Helvetica-Bold');
+	$C->{pdf_x_pos} = $address_pos;
+
+	$C->pdf_text($C->utf2iso("$d->{firstname} $d->{lastname}"), 10);
+	$C->{pdf_x_pos} = $address_pos;
+
+	$C->pdf_text($C->utf2iso($d->{street}), 10);
+	$C->{pdf_x_pos} = $address_pos;
+
+	$C->pdf_text($C->utf2iso("$d->{zip} $d->{city}"), 10);
+	$C->pdf_text('', 10);
+	$C->{pdf_x_pos} = $address_pos;
+
+	$C->{pdf_font} = $pdf->corefont('Helvetica');
+	$C->{pdf_x_pos} = $left_margin;
+	$C->{pdf_y_pos} -= 10;
+
+	$C->pdf_label_value('Delivery Date', $d->{delivery_date}, 10);
+	$C->pdf_label_value('Payment Method', ucfirst $d->{checkout_zahlungsart_select}, 10);
+	$C->pdf_label_value('Customer No', $d->{uid}, 10);
+	$C->pdf_label_value('Order ID', $id, 10);
+
+	$C->{pdf_y_pos} -= $C->{pdf_line_height} * 2;
+	# XXX $C->{pdf_y_pos} -= $C->{pdf_line_height} * 2;
+
+	$content->linewidth(1);
+
+	$content->move($left_margin, $C->{pdf_y_pos} + 12);
+	$content->strokecolor('black');
+	$content->hline(555); $content->stroke;
+
+	$C->{pdf_font} = $pdf->corefont('Helvetica-Bold');
+	$C->pdf_header(labels => \@report_labels, size => 10);
+	$C->{pdf_font} = $pdf->corefont('Helvetica');
+	$C->{pdf_y_pos} -= 16;
+
+	$content->move($left_margin, $C->{pdf_y_pos} + 12);
+	$content->strokecolor('black');
+	$content->hline(555); $content->stroke;
+	$C->{pdf_y_pos} -= $C->{pdf_line_height} / 2;
+
+	$C->{pdf_x_pos} = $left_margin;
+
+	my %prod_price = ();
+	foreach (@{$d->{_products}}) {
+		my ($prod_id, $count, $price, $line_id) = split /\t/;
+		my $price_incl_vat = $d->{"prod_id_$prod_id\_price_incl_vat"};
+		$prod_price{$prod_id} = sprintf('%.2f', $price_incl_vat);
+
+		my $title = $C->query("select title from products_desc WHERE product_id=$prod_id AND lang='de'")->[0];
+
+		$C->pdf_text($count, 10);	$C->{pdf_x_pos} = $pos2; $C->{pdf_y_pos} += $C->{pdf_line_height};
+		$C->pdf_text($prod_id, 10);	$C->{pdf_x_pos} = $pos3; $C->{pdf_y_pos} += $C->{pdf_line_height};
+		$C->pdf_text($C->utf2iso($title), 10); $C->{pdf_x_pos} = $pos4 + 20; $C->{pdf_y_pos} += $C->{pdf_line_height};
+		$C->pdf_text_right($prod_price{$prod_id}, 10); $C->{pdf_x_pos} = $pos5 + 25; $C->{pdf_y_pos} += $C->{pdf_line_height};
+		$C->pdf_text_right(sprintf('%.2f', $count * $prod_price{$prod_id}) . " $currency", 10);
+
+		my $feat = $A->get_features_from_order_line($line_id);
+		foreach (sort keys %{$feat}) {
+			my ($feat_id, $label) = split /\t/;
+			$label = $C->utf2iso($label);
+			my $feat_val = $feat->{$_};
+			my $inc_art_no = $C->query("select inc_art_no FROM options WHERE id=$feat_id")->[0];
+			if ($inc_art_no) {
+			  $feat_val = $C->query("SELECT `description` ref FROM voptions where id=$feat_id and ref='$feat->{$_}' and lang='de'")->[0];
+			}
+			$C->{pdf_x_pos} = $pos3;
+			$C->{pdf_y_pos} += 3;
+			$C->pdf_text("$label: $feat_val", 8);
+		}
+
+		$C->{pdf_x_pos} = $left_margin;
+
+		$content->move($C->{pdf_x_pos} - 1, $C->{pdf_y_pos} + 12);
+		$content->linewidth(1);
+		$content->strokecolor('darkgrey');
+		$content->hline(555); $content->stroke;
+		$C->{pdf_y_pos} -= 4;
+	}
+
+
+	# =====================  Shipping  =====================
+	$C->pdf_text('Shipping', 10); $C->{pdf_x_pos} = $pos4 + 20; $C->{pdf_y_pos} += $C->{pdf_line_height};
+	$C->{pdf_x_pos} = $pos5 + 25;
+	$C->pdf_text_right(sprintf('%.2f', $shipping_tot) . " $currency", 10);
+	$C->{pdf_x_pos} = $left_margin;
+
+
+		$content->move($C->{pdf_x_pos} - 1, $C->{pdf_y_pos} + 12);
+		$content->linewidth(1);
+		$content->strokecolor('darkgrey');
+		$content->hline(555); $content->stroke;
+		$C->{pdf_y_pos} -= 4;
+
+
+	# =====================  Total  =====================
+	$C->{pdf_font} = $pdf->corefont('Helvetica-Bold');
+	$C->pdf_text('Total', 10); $C->{pdf_x_pos} = $pos4 + 20; $C->{pdf_y_pos} += $C->{pdf_line_height};
+	$C->{pdf_x_pos} = $pos5 + 25;
+	$C->pdf_text_right(sprintf('%.2f', $d->{amount_incl_vat}) . " $currency", 10);
+	$C->{pdf_x_pos} = $left_margin;
+	$C->{pdf_font} = $pdf->corefont('Helvetica');
+
+
+		$content->move($C->{pdf_x_pos} - 1, $C->{pdf_y_pos} + 12);
+		$content->linewidth(2);
+		$content->strokecolor('black');
+		$content->hline(555); $content->stroke;
+		$C->{pdf_y_pos} -= 4;
+
+
+	$C->{pdf_y_pos} -= $C->{pdf_line_height} * 1;
+	# $C->pdf_text("Payment Costs: $currency $d->{pay_cost}", 8);
+
+	$C->{pdf_x_pos} = $address_pos;
+	$C->{pdf_y_pos} -= $C->{pdf_line_height} * 1;
+
+	$C->pdf_text($C->utf2iso("Freundliche Grüsse"), 10);
+	$C->pdf_text($C->{CONFIG}->{site_title}, 10);
+
+	my $file = "images/z_order_$id\.pdf";
+	my $path = $C->{CONFIG}->{DOCUMENT_ROOT};
+	   $path = "$C->{CONFIG}->{DOCUMENT_ROOT}/custom/$C->{CONFIG}->{theme}/html" if $C->{CONFIG}->{custom};
+
+	$pdf->saveas("$path/$file");
+
+	$C->delay_delete("$path/$file", 22);
+
+	$r->content_type('text/pdf');
+	$m->redirect("$file?pdf=$$");
+</%init>
+<%doc>
+_prod_feature = HASH(0x7f92a4786eb8)
+company = SPAG
+contact = * Unknown *
+email = reto@x.userleaks.com
+gender = 1
+remarks = zuerst pic3 gewÃ¤hlt
+ship_meth = pic
+ship_meth_amount = 0.00
+vat_amount = 0.29
+</%doc>
+<%doc>
+	__METACLONING__
+</%doc>

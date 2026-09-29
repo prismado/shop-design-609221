@@ -1,0 +1,66 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+
+	# my $perm  = $args{perm};
+
+	my $bask = $A->get_basket_items_v2();
+</%init>
+<li class="list-inline-item ml--6 mr--6 dropdown">
+
+	<a href="#" id="dropdownNotificationOptions" class="btn btn-sm rounded-circle btn-light dropdown-toggle"
+		data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+%		if ($bask->{item_count}) {
+			<span class="badge badge-success fs--10 p--3 mt--n3 position-absolute end-0 animate-pulse"
+				style="animation-duration:1s; animation-iteration-count:3">
+				<% $bask->{item_count} %>
+			</span>
+%		}
+
+		<span class="group-icon">
+			<i class="fi fi-cart-1"></i>
+			<i class="fi fi-close"></i>
+		</span>
+	</a>
+
+	<div aria-labelledby="dropdownNotificationOptions"
+		class="dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+		<div class="dropdown-header fs--14 py-3">
+			<% $bask->{item_count} %> Artikel
+%			if ($debug) {
+				DN37 &rarr; <code>include/cart</code>
+%			}
+		</div>
+		<div class="dropdown-divider"></div>
+
+		<div class="max-h-50vh scrollable-vertical" style="z-index:2">
+
+% #		<& inc_cart.html, info=>'abc', icon=>'fi-cart-1',   small_tx=>'gaga', badge=>'new:warning,old:success', C=>$C &>
+%		foreach my $d (@{$bask->{items}}) {
+%			my $prod_title = $C->query("select title from products_desc where product_id=$d->{prod_id} and lang='de'")->[0];
+			<& inc_cart.html, info=>"<span class='fs--16'>$prod_title</span>", icon=>'fi-cart-2',
+				small_tx=>'CHF ' . sprintf('%.2f', $d->{price}), badge=>"$d->{count}&times;:success", C=>$C &>
+%		}
+
+		</div>
+
+%		if ($bask->{item_count}) {
+		<div class="dropdown-divider mb-0"></div>
+
+		<a href="basket.html" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+			<i class="fi fi-arrow-end fs--11"></i>
+			<span class="d-inline-block pl-2 pr-2">Zum Warenkorb</span>
+		</a>
+
+		<a href="checkout.html" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+			<i class="fi fi-arrow-end fs--11"></i>
+			<span class="d-inline-block pl-2 pr-2">Zur Kasse</span>
+		</a>
+%		}
+	</div>
+
+</li>
+

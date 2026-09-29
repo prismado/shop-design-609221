@@ -1,0 +1,136 @@
+<%init>
+	use JSON;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $json = JSON->new();
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	unless ($perm->{is_admin}) {
+		$m->out('Access denied');
+		$m->abort();
+	}
+
+	my $cgi  = $C->{CGI};
+	my $sortcol   = $cgi->param('order[0][column]') || 0;
+	my $search    = $cgi->param('search[value]');
+	my $direction = $cgi->param('order[0][dir]') || 'desc';
+	my $length    = $cgi->param('length') + 0; $length ||= 10;
+	my $start     = $cgi->param('start') + 0;
+	my $draw      = $cgi->param('draw')  + 0; # -- https://datatables.net/manual/server-side
+	my $table     = $cgi->param('table');
+	my $macro     = $cgi->param('macro');
+	my $fil       = $cgi->param('fil');
+	my $debug     = $cgi->param('debug') + 0;
+
+	my $mdata = $C->prism_get_macro_param(macro=>$macro);
+	foreach (split /,/, $cgi->param('omit')) {
+		$mdata->{para}->{"db_col_$_\_omit"} = 1;
+	}
+
+	($search ||= $cgi->param('q')) =~ s/'/''/g;
+	my $search_num = $search =~ /^\d+$/ ? 1 : 0;
+
+	my $area = '';
+	if ($start && length != -1) {
+		$area = "LIMIT $start, $length";
+	}
+	elsif ($length > 0) {
+		$area = "LIMIT $length";
+	}
+
+	my @db_cols = qw(id NULL brand title art_no price `count` extra instime `condition`);
+	my @dbcols_vis = ();
+	foreach my $col (@db_cols) {
+		next if $mdata->{para}->{"db_col_$col\_omit"};
+		push(@dbcols_vis, $col);
+	}
+	my $order_by = $dbcols_vis[$sortcol]; # -- 17Feb2024
+
+	my @wcl = ();
+	push(@wcl, $mdata->{para}->{wcl}) if $mdata->{para}->{wcl};
+	push(@wcl, $fil) if length($fil);
+
+	if ($search_num && length($search) > 3) { # -- 03May2024
+		push(@wcl, "id=$search");
+	}
+	elsif (length($search) > 1) {
+		$search = $C->utf2iso($search);
+		(my $search_wcl = $mdata->{para}->{wcl_filter}) =~ s/\{\{search\}\}/$search/g;
+		push(@wcl, $search_wcl);
+	}
+
+	my $wcl_str = join ' AND ', @wcl;
+	   $wcl_str = "WHERE $wcl_str" if @wcl;
+
+	if ($debug) { print STDERR "[Debug] $wcl_str\n"; }
+
+	my $stmt = 'select DISTINCT ' . (join ', ', @db_cols) . " from $table $wcl_str ORDER BY $order_by $direction $area";
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $C->create_toast_note(body=>$DBI::errstr, type=>'danger', title=>'Error E402161-67',
+					delay=>15000, style=>q~.toast, .max-w-300 { max-width: 400px !important; opacity: 0.95; }~);
+
+	print STDERR "$stmt\n" if $debug > 1;
+	my $row_count = $C->query("select count(*) from $table $wcl_str")->[0];
+
+	my @json = ();
+
+	if ($debug > 1) {
+		my @d_row = split / /, $mdata->{para}->{db_cols};
+		$d_row[1] = "$macro / $#d_row / $d_row[1]";
+		push(@json, \@d_row);
+	}
+
+	while(my $r = $sth->fetch()) {
+		my @row = ();
+		my $id = $r->[0];
+		my $img = $A->get_product_image(id=>$id);
+		my $col_start = 0;
+		if ($mdata->{para}->{db_edit} eq '(STD)' or length($mdata->{para}->{db_edit}) < 1) {
+			push(@row, qq~<a href='/adm_db_edit.html?table=$table&wcl=id\%3D$id'><b>$id</b></a>~);
+			$col_start = 1;
+		}
+		for (my $i=$col_start; $i < $#{ $r } + 1; $i++) {
+			my $val = $r->[$i];
+
+			if ($i == 0) {
+				$val = qq~<a class="text-dark" href="edit-product.html?id=$val"><i class="fi fi-pencil"></i> $val</a>~;
+			}
+			elsif ($i == 1) {
+				$val = qq~<img style="width:3.2vw; height:3.2vh; object-fit:cover; box-shadow: 7px 7px 4px #888888;"
+						src="/produkte/p$r->[0]_thmb.$img->{ext}">~;
+			}
+			elsif ($db_cols[$i] eq 'title') {
+				$val = $C->web_enc_v2( $C->shorten_title($val, 42) );
+			}
+			elsif ($db_cols[$i] eq 'extra') {
+				$val = $val == 1 ? '<span class="badge badge-primary w-50">Neu</span>' : 'Refurb.';
+			}
+			elsif ($db_cols[$i] eq '`count`') {
+				$val = "$val / $r->[9]";
+			}
+			elsif ($db_cols[$i] eq 'price') {
+				$val = sprintf('%.2f', $val);
+				$val = "<span class='float-end mr-3'>$val <small>CHF</small></span>";
+			}
+			elsif ($db_cols[$i] eq 'instime') {
+				$val = $C->trans_date_short_nt($val);
+			}
+
+			push(@row, $val);
+		}
+		push(@json, \@row);
+	}
+
+	my $JSON =  $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+  "draw": <% $draw %>,
+  "recordsTotal": <% $row_count %>,
+  "recordsFiltered": <% $row_count %>,
+  "data": <% $JSON %>
+}

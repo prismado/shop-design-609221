@@ -1,0 +1,23 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $lang = $C->getSessData('_current_lang') || 'dx';
+
+	my $resp = $A->foo();
+</%init>
+<h4>Kaninchenbau</h4>
+
+Time: <b><% $C->now(2) %></b> / lang: <b><% $lang %></b><br><br>
+
+% foreach (sort keys %{$resp}) {
+	($A) <% $_ %> = <% $resp->{$_} %><br>
+% }
+<br />
+
+% foreach (sort keys %s) {
+%	next if $_ eq 'A' or $_ eq 'C';
+	&bull; <b><%$_%></b> = "<% $s{$_} %>"<br>
+% }

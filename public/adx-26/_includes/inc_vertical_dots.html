@@ -1,0 +1,105 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C  = $args{C};
+	my $id = $args{id} + 0;
+</%init>
+<a href="#" class="btn btn-sm btn-light rounded-circle" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+	<span class="group-icon">
+		<i class="fi fi-dots-vertical-full"></i>
+		<i class="fi fi-close"></i>
+	</span>
+</a>
+
+<div class="dropdown-menu dropdown-menu-clean dropdown-click-ignore max-w-220">
+		
+	<div class="scrollable-vertical max-h-50vh">
+		<a class="dropdown-item text-truncate" href="#">
+			<i class="fi fi-pencil"></i>Anpassen
+		</a>
+
+		<a href="#" class="dropdown-item text-truncate js-ajax-confirm" 
+			data-href="/_systex/common_lib/categ.html?id=<% $id %>&action=set_active"
+			data-ajax-confirm-method="GET" 
+			data-ajax-confirm-mode="ajax" 
+			data-ajax-confirm-size="modal-md" 
+			data-ajax-confirm-centered="false" 
+			data-ajax-confirm-callback-function="f312260_callback" 
+			data-ajax-confirm-title="Bitte best&auml;tigen" 
+			data-ajax-confirm-body="Diese Kategorie aktivieren?"
+			data-ajax-confirm-btn-yes-text="Confirm" 
+			data-ajax-confirm-btn-yes-class="btn-sm btn-success" 
+			data-ajax-confirm-btn-yes-icon="fi fi-check" 
+			data-ajax-confirm-btn-no-text="Cancel" 
+			data-ajax-confirm-btn-no-class="btn-sm btn-light" 
+			data-ajax-confirm-btn-no-icon="fi fi-close">
+			<i class="fi fi-check"></i>
+			Aktivieren
+		</a>
+
+		<a href="#" class="dropdown-item text-truncate js-ajax-confirm" 
+			data-href="/_systex/common_lib/categ.html?id=<% $id %>&action=set_inactive"
+			data-ajax-confirm-method="GET" 
+			data-ajax-confirm-mode="ajax" 
+			data-ajax-confirm-size="modal-md" 
+			data-ajax-confirm-centered="false" 
+			data-ajax-confirm-callback-function="f312260_callback" 
+			data-ajax-confirm-title="Please Confirm" 
+			data-ajax-confirm-body="Are you sure? Set this product to inactive?" 
+			data-ajax-confirm-btn-yes-text="Confirm" 
+			data-ajax-confirm-btn-yes-class="btn-sm btn-warning" 
+			data-ajax-confirm-btn-yes-icon="fi fi-check" 
+			data-ajax-confirm-btn-no-text="Cancel" 
+			data-ajax-confirm-btn-no-class="btn-sm btn-light" 
+			data-ajax-confirm-btn-no-icon="fi fi-close">
+			<i class="fi fi-close"></i>
+			Inaktiv / unsichtbar
+		</a>
+
+		<a href="#" class="dropdown-item text-truncate js-ajax-confirm" 
+			data-href="/_systex/common_lib/categ.html?id=<% $id %>&action=redir"
+			data-ajax-confirm-method="GET" 
+			data-ajax-confirm-mode="ajax" 
+			data-ajax-confirm-size="modal-md" 
+			data-ajax-confirm-centered="false" 
+			data-ajax-confirm-callback-function="f409141_callback_redir"
+			data-ajax-confirm-title="Umleitung zu Spezialfunktion"
+			data-ajax-confirm-body="Sie gelangen zu den erweiterten Einstellungn dieser Kategorie"
+			data-ajax-confirm-btn-yes-text="Zu den Einstellungen" 
+			data-ajax-confirm-btn-yes-class="btn-sm btn-warning" 
+			data-ajax-confirm-btn-yes-icon="fi fi-check" 
+			data-ajax-confirm-btn-no-text="Abbrechen" 
+			data-ajax-confirm-btn-no-class="btn-sm btn-light" 
+			data-ajax-confirm-btn-no-icon="fi fi-close">
+			<i class="fi fi-cog"></i>
+			Einstellungen
+		</a>
+
+<%doc>
+		The request is sent by ajax to data-href="..."
+		To change to regular submit, change:
+		data-ajax-confirm-mode="regular" 	(or simply remove this param)
+</%doc>
+		
+		<a href="#" class="dropdown-item text-truncate js-ajax-confirm" 
+			data-href="components-tables.html"
+			data-ajax-confirm-method="GET" 
+			data-ajax-confirm-mode="ajax" 
+			data-ajax-confirm-size="modal-md" 
+			data-ajax-confirm-centered="false" 
+			data-ajax-confirm-callback-function="" 
+			data-ajax-confirm-title="Please Confirm" 
+			data-ajax-confirm-body="Are you sure? Delete this product? <span class='d-block fs--12 mt--3'>Please note: this is a permanent action!</span>" 
+			data-ajax-confirm-btn-yes-text="Confirm" 
+			data-ajax-confirm-btn-yes-class="btn-sm btn-danger" 
+			data-ajax-confirm-btn-yes-icon="fi fi-check" 
+			data-ajax-confirm-btn-no-text="Cancel" 
+			data-ajax-confirm-btn-no-class="btn-sm btn-light" 
+			data-ajax-confirm-btn-no-icon="fi fi-close">
+			<i class="fi fi-thrash text-danger"></i>
+			Delete
+		</a>
+
+		</div>
+</div>
+

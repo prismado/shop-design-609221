@@ -1,0 +1,32 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C  = $s{C};
+	my $id = $s{id};
+	my $uid = $s{uid};
+	my $pay_meth = $s{pay_meth};
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	SUBSTR(xkey, 5, 31), xval
+		from 	orders_details 
+		where 	order_id=$id and (xkey like 'pay\_res%' OR xkey like 'pay\_upp%' OR xkey LIKE 'pay\_%code%' OR xkey='pay_status' OR xkey='pay_pmethod')
+	~);
+	$sth->execute() or $m->out("ERR $DBI::errstr");
+</%init>
+
+% if ($sth->rows()) {
+	<br />
+	<table class="mytable table-hover">
+
+%	while(my $r = $sth->fetch()) {
+%		my ($xkey, $val) = @{$r};
+%		    $xkey =~ s/^res//;
+		<tr>
+		<td style="width:30%"><b><% $xkey %></b></td>
+		<td><% $val %></td>
+		</tr>
+%	}
+
+	</table>
+% }
+

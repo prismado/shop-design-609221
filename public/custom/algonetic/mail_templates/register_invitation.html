@@ -1,0 +1,68 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::M; # -- Pseudo Mason object
+
+	my $m = ScreenPoint::M->new();
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my %s = %HTML::Mason::Commands::session;
+
+	my $uinf = $s{uinf};
+	my $lang = $s{lang} || 'de';
+
+	my $latest_oid = $C->query("select id from orders where uid=$s{id} order by 1 desc limit 1")->[0];
+
+	my ($info_exists, $info_cr, $inf_src, $inf_xtra_txt) = @{$C->query(qq~
+		SELECT	id, created_at, src, xval
+		FROM	orders_status
+		WHERE	order_id=$latest_oid AND status_id IN (250, 251, 801)
+		ORDER	BY 2 DESC
+		LIMIT	1
+	~)};
+
+	# Test it:
+	# https://shopd.algonetic.ch/user.html?id=1864&debug=2
+</%init>
+<div style="font-family:Roboto, Arial; font-size:15px; color:#414141; line-height:125%">
+<p>Sehr geehrt<% $uinf->{gender} == 2 ? 'e Frau' : 'er Herr'%> <% $uinf->{lastname} %></p>
+
+<% $C->txt('invitation_to_registration', $lang) %>
+
+% # <p>Ihre E-Mail: <% $uinf->{email} %></p>
+
+<p>
+	Pers&ouml;nliches <a
+		href="https://<% $C->{CONFIG}->{HTTP_HOST} %>/send_pwd.html?email_pwd=<% $uinf->{email} %>&pwd_send=1">Passwort abrufen</a>
+</p>
+
+% if ($info_exists) {
+	<h4>P.S. <% $C->txt('additional_info', $lang) %></h4>
+	<p>
+		Ihre Bestell-Nr. <% $latest_oid %>:<br>
+		<% $C->trans_date_short($info_cr) %> &ndash; <% $inf_src %>: <% $inf_xtra_txt %>
+	</p><br>
+% }
+<br>
+
+Freundliche Gr&uuml;sse / Meilleures salutations<br><br>
+
+<b><big>Auctionline.ch</big></b><br />
+<small>
+Ein Webshop der <% $C->prp('site_company') %><br /><br />
+
+<% $C->{CONFIG}->{order_email_sender} %> | <a href="https://<% $C->{CONFIG}->{HTTP_HOST} %>">https://<% $C->{CONFIG}->{HTTP_HOST} %></a>
+</small>
+<br /><br />
+
+<hr noshade size="1" style="color:#717171; max-width:340px; margin-left:0" />
+<span style="color:#717171">
+  <small>
+	<b><% $C->prp('site_company') %> | <% $C->prp('site_addr') %> | <% $C->prp('site_zip') %> <% $C->prp('site_city') %></b><br>
+	<a href="<% $C->txt('site_url_google_business') %>">Bewerten Sie uns auf Google</a> &#11088;&#11088;&#11088;&#11088;&#11088;
+  </small>
+</span>
+
+</div>
+
+<br>
+<div style="color:#b0b0b0;"><small>[ Vorlage V # 310011-2C &ndash; Prismado &ndash; register_invitation - <% $lang %> ]</small></div>

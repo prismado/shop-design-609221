@@ -1,0 +1,61 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $this    = 'macros/products_list_no_promo';
+
+	my $sth = $C->{dbh}->prepare(q~
+		SELECT  p.id, p.brand, d.title, p.price, p.`count`, p.extra
+
+                FROM    products p
+			JOIN products_desc d on p.id=d.product_id
+                	LEFT JOIN promo_prods q ON q.product_id = p.id
+                
+                WHERE   p.id = d.product_id
+                	AND q.id IS NULL
+                        AND d.lang='de'
+                        AND p.`count` > 0
+                        AND p.`condition` != 'IP'
+                        AND p.campaign_id = 0
+		ORDER	by 1 DESC LIMIT 15
+	~);
+	$sth->execute();
+
+	my %map_extra = ( 1=>'Neu', 2=>'Refurb.' );
+
+	my $exp_count = $sth->rows();
+
+	$C->create_toast_note(body=>qq~<center>
+			X -- constr
+		</center>~,
+		style => '.toast, .max-w-300 { max-width: 580px !important; opacity: 0.85; }',
+		title => 'Hinweis - tbd',
+		delay => 2000) if 1==2;
+</%init>
+<% $sth->rows() %> Produkte ohne Promotion
+<hr />
+
+<table class="table table-sm ZZcol-10 table-hover">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $brand, $title, $price, $count, $extra) = @{$r};
+%		my $label = $C->query("SELECT label FROM products2categ p, categories c WHERE product_id=$id AND cat_id=c.id LIMIT 1")->[0];
+		<tr>
+		<td><a href="/adx/edit-product.html?id=<% $id %>">ID <% $id %></a></td>
+		<td><% $brand %></td>
+		<td><% $C->web_enc($label) %></td>
+		<td><% $C->web_enc($title) %></td>
+		<td><% $map_extra{$extra} || "* $extra *" %></td>
+		<td><span class="float-right"><% sprintf('%.2f', $price) %> <small>CHF</small></span></td>
+		<td><span class="float-end"><% $count %> Stk</span></td>
+		</tr>
+%	}
+</table>
+
+% # XX if ($s{debug}) {
+% # XX }
+
+<%doc>
+	Created: 26Jul2025
+</%doc>

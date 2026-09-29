@@ -1,0 +1,21 @@
+<%init>
+	use ScreenPoint::Core;
+	# use ScreenPoint::Auctionline;
+
+	# -- Created: 26Dec2023
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	# my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+
+	my @vars = ();
+	foreach ($cgi->all_parameters) {
+		push(@vars, "$_ = " . $cgi->param($_));
+	}
+
+	$C->create_toast_note(body=>"A Test " . join "<br>\n", @vars);
+</%init>

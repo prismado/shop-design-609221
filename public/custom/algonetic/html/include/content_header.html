@@ -1,0 +1,109 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $SID  = $C->getSID();
+	my $this = $C->this();
+	   $this =~ s/^custom\/auctionline\/html\///;
+	my $is_logged_in = $C->is_logged_in();
+
+	my $basket_count = $args{basket_count} || $C->query("SELECT COUNT(*) FROM basket WHERE sid=$args{SID}")->[0];
+	my $is_smartphone = $C->is_smartphone();
+
+	my %nav = (
+		a0_index     => $C->prop('home'),    # -- Home
+		a1_prozone   => $C->prop('prozone'),
+		a3_info_help => $C->prop('about'),   # -- Über uns
+		a4_contact   => $C->prop('contact'), # -- Kontakt
+	);
+	if ($is_logged_in) {
+		$nav{a7_account3} = $C->prop('account'), # -- Mein Konto
+	}
+	else {
+		$nav{a8_registration} = $C->prop('registration');
+	}
+	my %active = (); $active{$this} = 1;
+
+	my $q = '';
+</%init>
+<div class="float-right">
+	<% $C->prop('choose_language') %>:
+	<a href="_change_lang.html?lang=de"><% $C->prop('german') %></a>
+	<a href="_change_lang.html?lang=en"><% $C->prop('english') %></a>
+	<a href="_change_lang.html?lang=fr"><% $C->prop('french') %></a>
+</div>
+
+<div class="mt-2">
+	<& logo_and_basket.html, SID=>$SID, is_logged_in=>$is_logged_in, C=>$C, A=>$A &>
+</div>
+
+<div>
+        <form action="search.html" method="get">
+                <input type="text" class="form-control" name="q" id="top_search_m" maxlength="128"
+                        placeholder="<% $C->prop('product_search') %>..." value="<%$q%>">
+
+                <input type="submit" class="btn btn-info" value="<% $C->prop('search') %>" />
+        </form>
+</div>
+
+<!-- Navigation =========-->
+<div class="container">
+	<div class="row-fluid navbar">
+		<div class="span10" id="hideMenu">
+			<ul id="topMenu" class="nav">
+%			foreach my $page (sort keys %nav) {
+%				(my $page_url = $page) =~ s/^a\d\_(.+)/$1/;
+				<li class="mr-4">
+					<a href="<%$page_url eq 'index' ? '.' : "$page_url\.html"%>"><%$nav{$page}%></a>
+				</li>
+%			}
+%		if ($args{is_admin}) {
+			<li><a href="__dashboard.html">Admin</a></li>
+%		}
+%		else {
+			<li><a href="#login" role="button" class="btn btn-sm btn-login" data-toggle="modal"><% $C->prop('login') %></a></li>
+%		}
+			</ul>
+		</div>
+       	</div>
+</div>
+ <!-- End  Navigation =========-->
+
+
+
+
+	<&login_center.html, CORE=>$C&>
+
+	<form method=post action="/account3.html" name="logoutForm">
+	<input type="hidden" name="action" value="logout">
+	</form>
+
+
+<!-- Basket Lightbox =======-->
+<div id="basketLightbox" class="modal hide fade in" style="<% $is_smartphone ? '' : 'min-width:660px; max-width:880px' %>" tabindex="-1"
+	role="dialog" aria-labelledby="login" aria-hidden="false">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h4><i class="fa fa-shopping-cart"></i> <% $C->prop('basket') %></h4>
+	</div>
+
+	<div class="modal-body">
+		<div id="ajx_noti"></div>
+	</div>
+</div>
+ <!-- End Basket Lightbox =======-->
+
+
+% # ============================== NEU: ============================== #
+<script language=JavaScript>
+var x_interval = 0;
+function updateDiv() {
+% unless ($this eq 'basket') {
+	x_interval++;
+	$('#autoUpdate').load('ajx_basket_link.html?rand=<%rand()%>&sid=<%$args{SID}%>&i=' + x_interval);
+% }
+}
+</script>

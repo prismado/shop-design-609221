@@ -1,0 +1,98 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $hl    = $args{hl};
+	my $max_w = $args{max_w} || '25vw';
+	my $img_w = $args{img_w} + 0 || 188;
+
+	my $pic_count = $#{ $hl->{xtra_imgs} } + 1;
+
+	my $css_id = "carouselIndicator$hl->{id}";
+
+	my $sq_class_1 = 'p-5 px-2 rounded z-index-1 text-center overlay-dark-hover overlay-opacity-3 bg-cover lazy position-relative overflow-hidden m-0';
+	   $sq_class_1 = 'p-5 px-2 rounded z-index-1 text-right  overlay-dark-hover overlay-opacity-3 bg-cover lazy';
+	   $sq_class_1 = 'z-index-1 bg-cover text-right lazy';
+
+	my $max_pics = 3 - 1;
+
+	my $disc_perc = sprintf('%.0f', $hl->{discount_perc});
+</%init>
+<div id="<% $css_id %>" class="carousel slide" data-ride="carousel" data-interval="<% 6000 + int(rand() * 4000) %>">
+
+%    if ($args{is_mobile}) {
+		    <a href="/product/<% $hl->{title_enc} %>/<% $hl->{id} %>">
+			<center>
+				    <div class="z-index-1" style="max-width: <% $max_w %>; max-height: 205px">
+
+					<img width="<% $img_w %>" height="<% $img_w %>" class="img-fluid lazy" alt="Produkt <% $hl->{title_enc} %>"
+						data-src="/produkte/p<% $hl->{id} %>_large.<% $hl->{ext_main_pic} %>" data-loaded="false"
+						src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 <% $img_w %> <% $img_w %>%22 /%3E">
+%				if ($disc_perc) {
+					<& inc_discount_label.html, disc_perc=>$disc_perc, is_mobile=>$args{is_mobile} &>
+%				}
+				    </div>
+			</center>
+		    </a>
+%    }
+%    else {
+	<ol class="carousel-indicators">
+			<li data-target="#<% $css_id %>" data-slide-to="0" class="active"></li>
+%		for (my $j=1; $j < $pic_count + 1; $j++) {
+%			last if $j > $max_pics;
+			<li data-target="#<% $css_id %>" data-slide-to="<% $j %>"></li>
+%		}
+	</ol>
+
+	<div class="carousel-inner">
+		<div class="carousel-item active">
+
+		    <a href="/product/<% $hl->{title_enc} %>/<% $hl->{id} %>">
+			<center>
+				    <div class="z-index-1" style="max-width: <% $max_w %>; max-height: 205px">
+
+					<img width="<% $img_w %>" height="<% $img_w %>" class="img-fluid lazy" alt="Produkt <% $hl->{title_enc} %>"
+						data-src="/produkte/p<% $hl->{id} %>_large.<% $hl->{ext_main_pic} %>" data-loaded="false"
+						src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 <% $img_w %> <% $img_w %>%22 /%3E">
+%				if ($disc_perc) {
+					<& inc_discount_label.html, disc_perc=>$disc_perc &>
+%				}
+				    </div>
+			</center>
+		    </a>
+
+		</div>
+
+%		my $i = 0;
+%		foreach (@{$hl->{xtra_imgs}}) {
+%			last if ++$i > $max_pics; # -- 17Nov2024 (Load Boost)
+			<div class="carousel-item">
+			    <a href="/product/<% $hl->{title_enc} %>/<% $hl->{id} %>">
+				<center>
+				    <div class="z-index-1" style="max-width: <% $max_w %>; max-height: 205px">
+
+					<img width="<% $img_w %>" height="<% $img_w %>" class="img-fluid lazy"
+						data-src="/<% $_ %>" data-loaded="false" alt="Produkt <% $hl->{title_enc} %>"
+						src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 <% $img_w %> <% $img_w %>%22 /%3E">
+
+				    </div>
+				</center>
+			    </a>
+			</div>
+%		}
+	</div>
+%    }
+
+<%doc>
+	<a class="carousel-control-prev" href="#<% $css_id %>" role="button" data-slide="prev">
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+		<span class="sr-only">Previous</span>
+	</a>
+
+	<a class="carousel-control-next" href="#<% $css_id %>" role="button" data-slide="next">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span>
+		<span class="sr-only">Next</span>
+	</a>
+</%doc>
+
+</div>

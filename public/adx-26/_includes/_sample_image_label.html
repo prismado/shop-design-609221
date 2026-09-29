@@ -1,0 +1,35 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+
+	$m->out(q~
+		Label rechts &uuml;ber Bild (text-right)
+	~);
+
+	my @images = ();
+	push(@images, 'example_printer_1402x673');
+	push(@images, 'example_printer_800x800');
+
+	# <div class="p-5 ...">
+	# transition-hover-zoom-img
+	# overlay-dark-hover
+
+	my $image = 'example_printer_1402x673';
+</%init>
+
+<div class="p-5 px-2 XXm-0 text-right rounded z-index-1 overlay-dark-hover overlay-opacity-3 rounded overflow-hidden bg-cover lazy"
+	data-loaded="true"
+	style="background-image: url(&quot;../assets/images/manifest/<% $image %>.jpg&quot;); max-width: 20vw;">
+		
+% #	<!-- empty image -->
+	<img class="w-100" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="..."> 
+
+% #	<!-- hover visible (always visible on mobile) -->
+	<div class="absolute-full z-index-3 text-white mt-2 show-hover-item">
+		<a href="../assets/images/manifest/<% $image %>.jpg"
+			style="letter-spacing:1px"
+			class="fs--15 animate-pulse pl-2 btn p-1 mr-2 mt-2 text-white badge-pink transition-hover-top">SALE 20 %</a>
+	</div>
+</div>
+

@@ -1,0 +1,68 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C      = $args{C};
+	my $A      = $args{A};
+	my $orders = $args{orders};
+	my $perm   = $args{perm};
+	my $PMs    = $args{PMs};
+	my $debug  = $args{debug};
+
+	my %status_hr = (1=>'New', 3=>'Storniert', 4=>'Abgeschlossen' );
+
+	my %pm_hr = ();
+	foreach my $pm (@{ $PMs->{all} }) {
+		$pm_hr{ $pm->{num} } = "$pm->{pmeth} &middot; $pm->{psp}";
+	}
+</%init>
+% if ($perm->{uid} > 0) {
+<div class="portlet-header border-bottom">
+	<span>Ihre Bestellungen &middot; Ihre Kundennummer: <% $perm->{uid} %></span>
+</div>
+% }
+% else {
+	<div class="alert alert-warning" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span class="fi fi-close" aria-hidden="true"></span>
+		</button>
+		Sie m&uuml;ssen sich zuerst einloggen, um Ihre Bestellungen anzuzeigen
+	</div>
+
+	<span class="fs--20 font-weight-bold text-center">
+		<& inc_prism_login_ajax.html, title=>'Einloggen', C=>$C &>
+	</span>
+% }
+
+<div class="portlet-body">
+
+	<table class="table table-sm table-striped table-hover">
+%	if ($perm->{uid} > 0) {
+	<thead>
+		<th>Bestell-Zeit</th>
+		<th style="width:10%" nowrap>Auftrags-Nr.</th>
+		<th><span class="float-right">Totalbetrag</span></th>
+		<th style="padding-left:20px">Zahlung</th>
+		<th style="padding-left:10px">&nbsp;</th>
+		<th>Status</th>
+	</thead>
+%	}
+	<tbody>
+%	foreach my $d (@{$orders}) {
+		<tr>
+		<td><% $C->trans_date_short($d->{instime}) %></td>
+		<td><a class="link-muted" href="order_detail.html?id=<% $d->{id} %>"><% $d->{id} %></a></td>
+		<td><span class="float-right"><% sprintf('%.2f', $d->{amount_incl_vat}) %> CHF</span></td>
+		<td style="padding-left:20px"><% $pm_hr{ $d->{pay_meth} } %></td>
+		<td style="padding-left:10px">
+%		foreach (sort keys %{$d}) {
+%			next if $_ eq 'id' or $_ eq 'instime' or $_ eq 'amount_incl_vat' or $_ eq 'sid' or $_ eq 'status' or $_ eq 'pay_meth';
+			&bull; <% $_ %> = <% $d->{$_} %><br />
+%		}
+		</td>
+		<td><% $status_hr{ $d->{status} } || "* $d->{status} *" %></td>
+		</tr>
+%	}
+	</tbody>
+	</table>
+
+</div>

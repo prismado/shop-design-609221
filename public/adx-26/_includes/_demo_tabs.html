@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+<h4 class="mt-3 fs--20">Feature: Tabs</h4>
+<!--
+	To remember last tab, add:
+	.nav-link.nav-link-remember
+-->
+
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+	<li class="nav-item">
+		<a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">
+			Home
+		</a>
+	</li>
+
+	<li class="nav-item">
+		<a class="nav-link" ZZid="profile-tab" data-toggle="tab" href="#profile408251" role="tab" ZZaria-controls="profile" aria-selected="false">
+			Profile
+		</a>
+	</li>
+
+	<li class="nav-item">
+		<a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">
+			Contact
+		</a>
+	</li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+
+	<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+		<div class="p--15">
+			<p>Quis anim sit do amet fugiat dolor velit sit ea ea do reprehenderit culpa duis.
+			Nostrud aliqua ipsum fugiat minim proident occaecat excepteur aliquip culpa aute tempor reprehenderit.
+			Deserunt tempor mollit elit ex pariatur dolore velit fugiat mollit culpa irure ullamco est ex ullamco excepteur.</p>
+		</div>
+	</div>
+
+	<div class="tab-pane fade" id="profile408251" role="tabpanel" ZZaria-labelledby="profile-tab">
+		<div class="p--15">
+			<p>Profile: Ex consequat commodo adipisicing exercitation aute excepteur occaecat ullamco duis aliqua id magna ullamco eu.
+			Do aute ipsum ipsum ullamco cillum consectetur ut et aute consectetur labore.
+			Fugiat laborum incididunt tempor eu consequat enim dolore proident.
+			Qui laborum do non excepteur nulla magna eiusmod consectetur in.
+			</p>
+		</div>
+	</div>
+
+	<div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+		<div class="p--15">
+			<p>Quis anim sit do amet fugiat dolor velit sit ea ea do reprehenderit culpa duis.
+			Nostrud aliqua ipsum fugiat minim proident occaecat excepteur aliquip culpa aute tempor reprehenderit.
+			Deserunt tempor mollit elit ex pariatur dolore velit fugiat mollit culpa irure ullamco est ex ullamco excepteur.
+			</p>
+		</div>
+	</div>
+
+</div>

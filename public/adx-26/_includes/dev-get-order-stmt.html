@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $order_id = $args{order_id};
+	my $debug    = $args{debug};
+
+	my $order_stmt = $A->get_order_statement(order_id=>$order_id, link_products=>1, add_vat=>1, debug=>$debug);
+	my $order_stm2 = $A->get_order_statement(order_id=>$order_id, link_products=>1, add_vat=>0, debug=>$debug);
+</%init>
+<div class="portlet-body">
+
+	<p class="float-end">Get <a href="dev-get-order.html?order-id=548">Order-ID x</a></p>
+
+	<p>Gehe zu <a href="/admix.html?func=orders&id=<% $order_id %>">Order-ID <% $order_id %></a></p>
+
+	<h4 class="fs--20">get_order_statement(order_id=&gt;<% $order_id %>, add_vat=&gt;1)</h4>
+
+	<table class="table table-sm col-6 table-hover mt-3 border">
+%	foreach (sort keys %{$order_stmt}) {
+%		next if $_ eq 'out';
+		<tr>
+			<td style="width:30%" class="font-weight-bold"><% $_ %></td>
+			<td>
+%				if ($_ eq 'vat_summary') {
+%					foreach my $v (sort keys %{ $order_stmt->{$_} }) {
+						&bull; <b><% $v %> %</b> = <% $order_stmt->{$_}->{$v} %><br>
+%					}
+%				}
+%				else {
+					<code><% $order_stmt->{$_} %></code>
+%				}
+			</td>
+		</tr>
+%	}
+	</table>
+
+	<table class="table table-sm col-10 table-hover">
+		<% ${$order_stmt->{out}} %>
+	</table>
+
+%	# --------------------------------------------------------------------------------------------------------- #
+
+	<h4 class="fs--20 mt-5">get_order_statement(order_id=&gt;<% $order_id %>, add_vat=&gt;0)</h4>
+
+	<table class="table table-sm col-6 table-hover mt-3 border">
+%	foreach (sort keys %{$order_stm2}) {
+%		next if $_ eq 'out';
+		<tr>
+			<td style="width:30%" class="font-weight-bold"><% $_ %></td>
+			<td><code><% $order_stm2->{$_} %></code></td>
+		</tr>
+%	}
+	</table>
+
+	<table class="table table-sm col-10 table-hover mt-3">
+		<% ${$order_stm2->{out}} %>
+	</table>
+
+</div>

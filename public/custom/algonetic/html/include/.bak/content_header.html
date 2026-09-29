@@ -1,0 +1,130 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $this = $C->this();
+	   $this =~ s/^custom\/dabamed\/html\///;
+
+    my $basket_count = $args{basket_count} || $C->query("SELECT COUNT(*) FROM basket WHERE sid=$args{SID}")->[0];
+
+	my %nav = (
+		a0_index     => $C->prop('home'),    # -- Home
+		a1_contact   => $C->prop('contact'), # -- Kontakt
+		a2_info_help => $C->prop('about'),   # -- Über uns
+		a3_account3  => $C->prop('account'), # -- Mein Konto
+		a4_website   => $C->prop('website'), # -- Website
+#		a9_vereine   => $C->prop('vereine'), # -- Vereine
+	);
+	my %active = (); $active{$this} = 1;
+
+	delete $nav{basket2} if $basket_count == 0;
+</%init>
+  <div id="header">
+        <div id="topSection">
+            <div class="container">
+                <div id="topHeaderline" class="row">
+                    <div class="span6">
+                        <a class="btn btn-success navbar-toggle"><% $C->prop('btn_categories') %></a>
+                    </div>
+
+                    <div class="span6">
+                        <a href="#topMenu"  onclick="toggle_visibility('hideMenu');" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample" class="btn btn-success menu-toggle"><% $C->prop('btn_menu') %></a><a href="#login" role="button" class="btn btn-sm btn-login" data-toggle="modal">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div><!-- End container -->
+
+
+
+<div id="fixedSpace"></div>
+<div id="logoWrapper" class="row-fluid">
+<div class="container">
+<div class="span12">
+<h1 class="logo">
+<a href="." rel="nofollow" title="<%$C->{CONFIG}->{site_title}%>">
+<img class="hide-mobile" src="images/logo-full-width-mobile.png" onerror="this.src=images/logo-full-width-mobile.png; this.onerror=null;"  alt="dabamed Shop">
+<img class="hide-desktop" src="images/logo-full-width.png" onerror="this.src=images/logo-full-width.png; this.onerror=null;"  alt="dabamed Medizintechnik Shop">
+  <span>dabamed Medizintechnik Shop</span>
+</a>
+</h1>
+</div>
+</div><!-- End container  -->
+ </div><!-- End logoWrapper  -->
+
+        <!-- Navigation =========-->
+
+        <div id="headerSection">
+            <div class="container">
+	              <div class="row-fluid navbar">
+                 <div class="span10" id="hideMenu">
+% # <%$this%>
+  <ul id="topMenu" class="nav no-transition">
+% if ($args{debug}) {
+	<li><a href="#">Debug (inc) content_header</a></li>
+% }
+% foreach my $page (sort keys %nav) {
+%	(my $page_url = $page) =~ s/^a\d\_(.+)/$1/;
+	<li<%$active{$page_url} ? ' class="active"' : ''%>><a href="<%$page_url eq 'index' ? '.' : "$page_url\.html"%>"><%$nav{$page}%></a></li>
+% }
+% if ($args{is_admin}) {
+	<li><a href="__dashboard.html">Admin</a></li>
+% }
+% if ($C->is_logged_in()) {
+<li class=""><a href="#login"  onclick='JavaScript:document.logoutForm.submit()' role="button">Logout</a></li>
+% }
+% else {
+<li class="listLogin"><a href="#login" role="button" class="btn btn-sm btn-login" data-toggle="modal"><% $C->prop('login') %></a></li>
+% }
+</ul>
+</div>
+<div class="span2 hideBasket">
+<div class="topBasket" id="autoUpdate">
+% if ($basket_count && $this ne 'basket' && $this ne 'checkout') {
+	<&mini_basket.html, SID=>$args{SID}, A=>$A, C=>$C, basket_count=>$basket_count&>
+% }
+</div>
+            </div>
+        </div>
+</div>
+</div>
+ <!-- End  Navigation =========-->
+
+
+
+    </div><!-- End header  -->
+
+
+<&login_center.html, CORE=>$C&>
+
+ <form method=post action="/account3.html" name="logoutForm">
+<input type="hidden" name="action" value="logout"></form>
+
+
+<!-- Basket Lightbox =======-->
+ <div id="basketLightbox" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+                            <h4><i class="fa fa-shopping-cart"></i> <% $C->prop('basket') %></h4>
+                        </div>
+
+                        <div class="modal-body">
+                           <div id="ajx_noti"></div>
+                        </div>
+      </div>
+ <!-- End Basket Lightbox =======-->
+
+
+% # ============================== NEU: ============================== #
+<script language=JavaScript>
+var x_interval = 0;
+function updateDiv() {
+% unless ($this eq 'basket') {
+	x_interval++;
+	$('#autoUpdate').load('ajx_basket_link.html?rand=<%rand()%>&sid=<%$args{SID}%>&i=' + x_interval);
+% }
+}
+</script>

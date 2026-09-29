@@ -1,0 +1,76 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $d         = $args{d};
+	my $basket_id = $args{basket_id};
+	my $upsellpos = $args{upsell_positions};
+
+	# XXX my $stmt = qq~
+	# XXX		SELECT	feature_id, ref, label
+	# XXX		FROM	basket_details b, options_desc o
+	# XXX 		WHERE	feature_id=option_id AND basket_id=$basket_id
+	# XXX			AND lang='de'~;
+
+	my $upsell_pri = sprintf('%.2f', $upsellpos->{price_total} * (1 + $d->{vat} / 100));
+	my $price      = $d->{price_incl_vat} + $upsell_pri;
+	my $total_line = $price * $args{count};
+</%init>
+<tr>
+<td><img src="produkte/p<%$args{prod_id}%>_mini.jpg"></td>
+<td>
+<nobr>
+	<input class="btn btn-grey small" type="button" id="min_qty"  value="-" onclick='icount_sub(<%$args{basket_id}%>)'>
+	<input name="count_<%$basket_id%>" type="text" value="<%$args{count}%>" style='margin-top:10px; width:20px; text-align:center'
+		maxlength="3" id='count_<%$basket_id%>' size="2">
+	<input class="btn btn-grey small" type="button" id="max_qty" value="+" onclick="icount_add(<%$args{basket_id}%>)">
+</nobr>
+</td>
+
+<td style="padding-top:10px">
+<a href="/product.html?id=<%$args{prod_id}%>"><%$d->{title}%></a>
+%	if ($d->{discount_perc} > 0.0) {
+		<span style="color:red">
+			&middot; Aktion <% sprintf('%.0f', $d->{discount_perc}) %> %
+		</span>
+%	}
+<br>
+% if ($args{debug}) {
+	<% $C->html_debug("Debug: lang=$args{lang}, VAT: $d->{vat} %", 'include/basket_row') %>
+	<% $C->html_debug("Upsell: CHF $upsell_pri") %>
+%	if ($args{is_admin}) {
+%		my $token = $C->query(
+%		"select substr(featkey, 11, 255) from config_prod_feat where featkey like 'api_token_%' and lang='sys' limit 1")->[0];
+		<a style="text-decoration:underline !important; font-weight:normal"
+		href="API/?action=get_basket_options_by_basket_id_v2&basket_id=<%$args{basket_id}%>&token=<%$token%>">API Test</a>
+		<br>
+%	}
+% }
+<span>
+<%substr($d->{description}, 0, 77)%><br>
+
+% if ( $upsell_pri > 0 ) {
+	<small>(CHF <% $d->{price_incl_vat} %> + CHF <% $upsell_pri %>)</small><br>
+% }
+
+% if ( @{$upsellpos->{array}} ) {
+	<div style="margin-top:10px">
+%	foreach (@{$upsellpos->{array}}) {
+%		my ($label, $desc, $ref, $opt_id, $price) = split /\t/;
+		&bull; <% $label %>: <% $desc %>
+%		if ($price > 0) {
+			, CHF <% sprintf('%.2f', $price * (1 + $d->{vat} / 100)) %>
+%		}
+		<br>
+%	}
+	</div>
+% }
+</span>
+</td>
+
+<td nowrap style="text-align:right"><% $C->decimal_mark($price) %></td>
+<td nowrap style="text-align:right"><%$C->decimal_mark($total_line)%></td>
+<td class="last_td_small">
+<input type=button onclick="document.location='basket2.html?action=del&id=<%$args{basket_id}%>'" class="btn btn-warning" value="X" />
+</td>
+</tr>

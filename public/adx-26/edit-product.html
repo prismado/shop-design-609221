@@ -1,0 +1,281 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use CGI qw(-utf8); # -- 07Jan2026
+	use utf8; # -- 07Jan2026
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $info      = $cgi->param('info');
+	my $id        = $cgi->param('id') + 0;
+	my $del_disc  = $cgi->param('del_disc') + 0;
+	my $action    = $cgi->param('action');
+	my $narrow    = $cgi->param('narrow');
+	my $jsFunc    = $cgi->param('jsFunc'); # -- 12Sep2024
+	my $bCopyProd = $cgi->param('bCopyProd');
+
+	# XX my $debug     = $C->getSessData('debug') || 0;
+	my $debug     = 0; # -- 07Sep2026
+	my $lang      = $C->getSessData('xlang') || 'de';
+	my $appenv    = $C->get_safe_property('SHOP_CONFIG_ENV', 'sys'); # -- 07Sep2026
+
+	if ($del_disc) {
+		$C->{dbh}->do("delete from products_feat where id=$del_disc");
+		$C->create_toast_note(body=>"Gel&ouml;scht: ID $del_disc");
+	}
+
+	if ($bCopyProd) {
+		my $new_id = $A->copyproduct(id=>$id);
+		if ($new_id) {
+			$C->create_toast_note(body=>"Produkt-ID $id kopiert");
+			$A->add_product_history(id=>$id,     code=>4, action=>"Produkt kopiert zu Prod-ID $new_id");
+			$A->add_product_history(id=>$new_id, code=>5, action=>"Kopie von Produkt-ID $id");
+			$m->redirect("edit-product.html?id=$new_id");
+		}
+	}
+
+	my $perm      = $C->get_user_perm();
+	my $prdinf    = $A->get_product_v2(id=>$id, lang=>'de');
+	my $prdinf_fr = $A->get_product_v2(id=>$id, lang=>'fr');
+	my $prdinf_en = $A->get_product_v2(id=>$id, lang=>'en');
+	my $res_opt   = $A->get_opt_from_product($id, 'de');
+	my $has_qty_o = $A->product_has_quantity_option(id=>$id);
+	my $fls       = $A->get_product_files(id=>$id);
+	my $option_chk= $A->get_option_id_with_art_no($id); # -- 11Dec2024
+
+	if ($option_chk < 0) {
+		$C->create_toast_note(body=>"ERR E412112: Bitte zugewiesene Optionen &uuml;berpr&uuml;fen ($option_chk)", type=>'error');
+	}
+
+	if ($prdinf->{_rc}) {
+		$C->create_toast_note(body=>"ERR $prdinf->{_msg}", type=>'error');
+	}
+
+	if ($action eq 'update') {
+		foreach ($cgi->all_parameters) {
+			next unless /^temp_upd_(.+)/;
+			my $attr = $1;
+			my $val  = $cgi->param($_);
+			   $val  = uc $val if $attr eq 'condition';
+			if ($attr eq 'price_orig') {
+				if ($cgi->param('temp_upd_f_final_buyer_price') eq 'YES') {
+					my $calc_price = $val / (1 + $prdinf->{vat} / 100);
+					   $calc_price /= (1 - $prdinf->{discount_perc} / 100);
+					my $calc_price_disp = sprintf('%.2f', $calc_price);
+					my $val_disp        = sprintf('%.2f', $val);
+					$C->create_toast_note(body=>qq~<span class='text-dark'>
+						<b>CHF $val_disp</b> &rarr; $calc_price_disp mit <b>$prdinf->{discount_perc} \%</b> Rabatt<br>
+						<small>$prdinf->{vat} % MwSt</small></span>~,
+						type=>'info', delay=>9000);
+					$val = $calc_price;
+				}
+			}
+			elsif ($attr eq 'discount_perc') {
+				if ($cgi->param('temp_upd_f_discount_is_amount') eq 'YES') {
+					$val = sprintf('%.2f', $val);
+					my $price_orig_incl_vat = $prdinf->{price_orig_incl_vat} + 0;
+					my $discount_perc = $val * 100 / ($price_orig_incl_vat || 0.00000001);
+					   $discount_perc = 100 if $discount_perc > 100;
+					$C->create_toast_note(body=>qq~Rabatteingabe &lsaquo;$val&rsaquo; als Betrag<br>
+						CHF $price_orig_incl_vat - $val &rarr; $discount_perc %~, title=>'Hinweis', type=>'pink');
+					$val = $discount_perc;
+				}
+			}
+			$C->saveSessData("upd_$id\_$attr", $val);
+		}
+	}
+	elsif ($action eq 'save') {
+		$prdinf->{brand}  = $cgi->param('brand') || '* No Brand *';
+		$prdinf->{title}  = $cgi->param('title_de');
+
+		my $title_fr      = $cgi->param('title_fr');
+		my $title_en      = $cgi->param('title_en');
+
+		$prdinf->{price} = $prdinf->{price_orig};
+		$A->update_product_desc(title=>$title_fr, lang=>'fr', id=>$id);
+		$A->update_product_desc(title=>$title_en, lang=>'en', id=>$id);
+
+		$prdinf_fr->{title} = $title_fr;
+		$prdinf_en->{title} = $title_en;
+
+		if ($cgi->param('f_cache_data')) {
+			my %data = ();
+			foreach ($cgi->all_parameters) {
+				next unless /^upd\_(.+)/;
+				$data{$1} = $cgi->param($_);
+				$prdinf->{$1} = $data{$1};
+			}
+			$prdinf->{count} = $prdinf->{count_product} unless $has_qty_o->{has_qty_option}; # -- 20Jun2024
+
+			my @infos = ();
+
+			$A->update_product_desc(description=>$data{description_en}, lang=>'en', id=>$id) if defined $data{description_en};
+			$A->update_product_desc(description=>$data{description_fr}, lang=>'fr', id=>$id) if defined $data{description_fr};
+
+			if (defined $data{price_orig}) {
+				$data{price_orig} += 0;
+				$prdinf->{price_orig} = $prdinf->{price} = $data{price_orig};
+				push(@infos, 'Preis wurde aktualisiert: ' . sprintf('%.2f', $data{price_orig}));
+			}
+			if (defined $data{discount_perc}) {
+				my $set_disc = $A->set_product_discount(id=>$id, discount=>$data{discount_perc});
+				push(@infos, "Rabatt $data{discount_perc} %") unless $set_disc->{rc};
+			}
+			if (defined $data{count_product}) {
+				$prdinf->{count} = $data{count_product};
+				push(@infos, "St&uuml;ckzahl wurde aktualisiert: $data{count_product}");
+			}
+			$C->create_toast_note(body=>(join '<br>', @infos), type=>'info', delay=>9000,
+				style=>q~.toast, .max-w-300 { max-width: 450px !important; opacity: 0.75; }~) if @infos;
+			$C->del_sess_array("upd_$id");
+		}
+		my $cur_opt_ids = $A->get_opt_from_product($id);
+		foreach (keys %{ $cur_opt_ids }) {
+			$C->log(msg=>"N406201-83: Product-ID $id: Option-ID $_", service=>'adx/edit-product');
+			$prdinf->{"cb_opt_$_"} = 1;
+		}
+		$prdinf->{count} = $prdinf->{count_product} if $prdinf->{count} > 8388607; # -- 20Jun2024
+		my ($rc, $msg) = $A->update_product($id, $prdinf);
+		if ($rc) {
+			$C->create_toast_note(body=>"RC $rc &middot; $msg<br><br>Lagerverhalten: $prdinf->{condition} / $prdinf->{count}",
+				type=>'danger', title=>'Error E406201-83', width=>'550px', delay=>25000);
+			$C->log(msg=>"ERROR E406201-83 at Prod-ID $id", service=>'adx/edit-product', importance=>1);
+		}
+		else {
+			$C->create_toast_note(body=>"<center>Erfolgreich aktualisiert</center>");
+		}
+		$prdinf    = $A->get_product_v2(id=>$id); # -- Refresh
+		$prdinf_fr = $A->get_product_v2(id=>$id, lang=>'fr');
+		$prdinf_en = $A->get_product_v2(id=>$id, lang=>'en');
+	}
+	elsif ($action eq 'revert') {
+		$C->del_sess_array("upd_$id");
+		$C->create_toast_note(body=>'<center>&Auml;nderungen verworfen</center>', type=>'info');
+	}
+	elsif ($action eq 'del_product') {
+		my $has_orders = $cgi->param('has_orders');
+		if ($has_orders) {
+			$C->create_toast_note(body=>"Zugeh&ouml;rige Bestellungen vorhanden!");
+		}
+		else {
+			my ($rc, $msg) = $A->del_product($id);
+			$C->create_toast_note(body=>"RC $rc $msg");
+			$m->redirect('products.html');
+		}
+	}
+
+	my $cur_ext = $prdinf->{image}->{ext};
+
+	my $imginf = $C->get_image_info(img_path=>"produkte/p$id\_large.$cur_ext", debug=>$debug);
+	my $imgf_i = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_large.$cur_ext");
+
+	my $cache_data = $C->get_sess_array_hash("upd_$id", 'ASC');
+	my $cache_count = 0;
+	foreach my $key (sort keys %{$cache_data}) {
+		(my $key_short = $key) =~ s/^upd\_$id\_//;
+		$prdinf->{$key_short} = $cache_data->{$key}; # Overrride
+		$cache_count++;
+	}
+
+	$C->create_toast_note(body=>'<center style="color:black">Nochmals &laquo;Jetzt Speichern&raquo; klicken, um zu ver&ouml;ffentlichen</center>',
+		type=>'warning', delay=>40000,
+		style=>q~.toast, .max-w-300 { max-width: 550px !important; opacity: 0.75; }~) if $cache_count;
+
+	my @breadcrumb = ();
+	my @bc1 = ('Produkte', '/adx/show.html?macro=products');
+	my @bc2 = ('Alter Edit', "/adm_edit_product.html?id=$id&stay=1");
+	my @bc3 = ("Produkt-ID $id", "");
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+	push(@breadcrumb, \@bc3);
+
+	# XX $r->content_type('text/html; charset=utf-8');
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Edit Product <% $id %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/<% $narrow ? 'core.min.css' : 'core_x_wide.min.css' %>">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="/assets/css/prism_typeahead.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+
+	<meta name="theme-color" content="#377dff">
+	<style>
+		.prism-limit-len-400 {
+			max-width: 400px !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	</style>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm => $perm, C => $C, A => $A, show_logo => $narrow ? 0 : 1, appenv => $appenv &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+% if ($narrow) {
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm=>$perm, C=>$C &>
+			</aside>
+% }
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs" style="margin-bottom:0px !important">
+					<div class="float-end mt-3 mr-3">
+						Erstellt am <% $C->trans_date_short($prdinf->{instime}) %>
+					</div>
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><a class="text-dark text-decoration-none"
+						href="edit-product.html?id=<% $id %>&narrow=<% $narrow ? 0 : 1 %>">&laquo;</a>
+							<b><% $prdinf->{title} %></b> <span class="ml-2 mr-2">&bull;</span> Produkt-ID <% $id %></h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm" stylx="border: 3px solid red !important">
+					<div class="col-12 mb-3 p-0">
+						<div class="portlet">
+							<& _includes/edit_product.html, prdinf=>$prdinf, prdinf_fr=>$prdinf_fr, prdinf_en=>$prdinf_en,
+								has_qty_o=>$has_qty_o, fls=>$fls,
+								id=>$id, res_opt=>$res_opt, cache_count=>$cache_count, cache_data=>$cache_data, lang=>$lang,
+							imginf=>$imginf, imgf_i=>$imgf_i, cur_ext=>$cur_ext, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.3.1/typeahead.bundle.min.js"></script>
+
+%	if ($jsFunc) {
+		<script type="text/javascript">
+			$(document).ready(function(){
+				<% $jsFunc %>();
+			});
+		</script>
+%	}
+
+	</body>
+</html>

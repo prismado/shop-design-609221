@@ -1,0 +1,64 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	# my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $UID =  $C->getUID;
+	my $is_admin = $C->is_admin();
+
+	my $SID = $C->getSID();
+
+	my $files;
+	if ($UID) {
+		$files = $C->get_user_docs($UID);
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Vereine &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+<link rel="stylesheet" href="css/formelements.css"/>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, is_admin=>$is_admin, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+
+	<div class="well"><h1><% $C->prop('vereine') %></h1></div>
+
+	<div id="contentBlock">
+%	if ($C->is_logged_in()) {
+		<&include/verein_on.html, UID=>$UID, files=>$files, C=>$C&>
+%	}
+%	else {
+		<&include/verein_off.html, C=>$C&>
+%	}
+	</div>
+
+</div>
+
+
+
+</div> <!-- End row -->
+</div> <!-- End row -->
+</div> <!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	use utf8; # -- 22Jan2026
+
+	my $lang     = $s{lang}  || 'de';
+	my $debug    = $s{debug} || 0;
+
+	my @checkboxes = qw(access_w_trailer_allowed vehicle_allowed_to_leave loading_ramp_avail mat_in_basements pallet_elevator mat_acc_w_pallet_trolley mat_only_at_one_site);
+
+	my $left_col = '385px';
+</%init>
+<style>
+	.row_small td {
+		/* border:        1px solid #e8e8e8 !important; */
+		border-top:    1px solid #cccccc !important;
+		line-height:   24px;
+	}
+
+	h3, h4 { color: black }
+</style>
+
+<div style="font-family:Roboto, Arial; font-size:15px; color:#414141; line-height:125%">
+
+<span style="color:#515151; font-size:0.85rem">
+    <center>
+	Abholauftrag <b>CL-<% $s{x_ref} %></b>
+%	if ($debug) {
+		/ Debug: <% $debug %>
+%	}
+    </center>
+    <br>
+</span>
+
+<table cellspacing=0 cellpadding=4 width="98%">
+	<tr class="row_small" valign="top">
+		<td style="width:<% $left_col %>"><b>Kunde</b></td>
+		<td>
+			<% $s{frm_company} %><br>
+			<% $s{frm_street} %><br>
+%		    if ($s{frm_addr_2}) {
+			<% $s{frm_addr_2} %><br>
+%		    }
+			<% $s{frm_zip} %> <% $s{frm_city} %><br><br>
+
+			Tel. <% $s{frm_phone} %> <% $s{frm_mobile} ? " / $s{frm_mobile} " : '' %>
+			<br><br>
+		</td>
+	</tr>
+
+	<tr class="row_small" valign="top">
+		<td><b>Abholstandort</b></td> <td><% $s{frm_collect_pickup_place} %></td>
+	</tr>
+
+	<tr class="row_small" valign="top">
+		<td><b>Auftraggeber</b></td> <td><% $s{frm_collect_principal_name} %></td>
+	</tr>
+
+	<tr class="row_small" valign="top">
+		<td><b>Gew&uuml;nschtes Abholdatum</b></td>
+		<td><% $s{frm_pickup_time} %>
+%			if (length($s{frm_pickup_alt_time}) > 1) {
+				<br>Ausweich-Datum: <% $s{frm_pickup_alt_time} %>
+%			}
+		</td>
+	</tr>
+
+	<tr class="row_small" valign="top">
+		<td><b>Kontakt(e)</b></td>
+		<td><% "$s{frm_firstname} $s{frm_lastname}" %><br>
+			<% $s{frm_add_email_1} %> <% $s{frm_add_email_2} %>
+		</td>
+	</tr>
+
+	<tr class="row_small" valign="top">
+		<td><b>Kontakt am Abholstandort</b></td> <td><% $s{frm_collect_contact_site} %></td>
+	</tr>
+
+	<tr class="row_small" valign="top">
+		<td><b>Kontakt am Lieferstandort</b></td> <td><% $s{frm_collect_contact_deliv} %></td>
+	</tr>
+</table><br />
+
+<h3>Informationen &uuml;ber Abhol-/Materialstandort</h3>
+
+<table cellspacing=0 cellpadding=4 width="98%">
+% foreach my $cb (@checkboxes) {
+	<tr class="row_small">
+		<td style="width:<% $left_col %>"><b><% $C->web_enc( $C->txt("check_$cb") ) %></b></td>
+		<td><% $s{"frm_check_$cb"} || 'Nein' %></td>
+	</tr>
+% }
+</table><br>
+
+<h3>&Uuml;brige Daten</h3>
+% my $i = 0;
+<table cellspacing=0 cellpadding=4 width="98%">
+%	outer: foreach (sort keys %s) {
+%		next unless /^frm_(.+)$/;
+%		foreach my $cb (@checkboxes) {
+%			next outer if $1 eq "check_$cb";
+%		}
+%		next if $_ eq 'frm_company' or /^frm_addr_.+/ or $_ eq 'frm_zip' or $_ eq 'frm_city' or $_ eq 'frm_phone' or $_ eq 'frm_mobile' or /^frm_pickup_.+/
+%			or /^frm_add_email_.+/ or $_ eq 'frm_collect_principal_name' or $_ eq 'frm_collect_contact_deliv'
+%			or $_ eq 'frm_collect_pickup_place' or $_ eq 'frm_street' or $_ eq 'frm_firstname' or $_ eq 'frm_lastname' or $_ eq 'frm_collect_contact_site';
+		<tr class="row_small">
+			<td style="width:<% $left_col %>" nowrap>
+% # XXX				<small>[ <% ++$i %> ]</small> &middot; <b><% $C->shorten_title($C->txt($1), 40) %></b>
+				<small>[ <% ++$i %> ]</small> &middot; <b><% $C->shorten_title( $C->web_enc( $C->txt($1) ), 48) %></b>
+			</td>
+			<td>
+%				if ($debug > 1) {
+					[ <% $_ %> ] &middot;
+%				}
+				<code><% $s{$_} %></code>
+			</td>
+		</tr>
+%	}
+</table>
+<br />
+
+Freundliche Gr&uuml;sse / Meilleures salutations / Kind regards<br><br>
+
+<b><big>Auctionline.ch</big></b><br />
+<small>
+Ein Webshop der <% $C->prp('site_company') %><br /><br />
+
+<% $C->{CONFIG}->{order_email_sender} %> | <a href="https://<% $C->{CONFIG}->{HTTP_HOST} %>">https://<% $C->{CONFIG}->{HTTP_HOST} %></a>
+</small>
+<br /><br />
+
+<hr noshade size="1" style="color:#717171; max-width:340px; margin-left:0" />
+<span style="color:#717171">
+  <small>
+	<b><% $C->prp('site_company') %> | <% $C->prp('site_addr') %> | <% $C->prp('site_zip') %> <% $C->prp('site_city') %></b>
+  </small>
+</span>
+
+</div>
+
+<br>
+<span style="font-size:0.66rem; color:#b0b0b0"><center>[ Vorlage V # 401181-2A &ndash; Prismado &ndash; fb_form_collect ]</center></span>
+<%doc>
+	Created: 14Jan2024
+</%doc>

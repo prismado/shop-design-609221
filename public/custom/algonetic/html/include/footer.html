@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $lang = $args{lang} || $C->getSessData('_current_lang') || 'de';
+</%init>
+<!-- Footer ================================================================== -->
+<div  id="footerSection">
+	<div class="container">
+		<div class="row-fluid">
+			<div id="footerBox1" class="span3">
+				<% $C->render_property('footer_adress', $lang) %>
+				<% $C->prop('footer_block1') %>
+			</div>
+
+			<div id="footerBox2"  class="span3"><% $C->render_property('footer_contact', $lang) %></div>
+			<div id="footerBox3"  class="span3"><div><% $C->prop('footer_block3') %></div></div>
+			<div id="socialMedia" class="span3"><div><% $C->prop('footer_block4') %></div></div>
+		 </div>
+	</div>
+	<!-- Container End -->
+
+	<div id="subFooter"><% $C->prop('footer_subline') %></div>
+
+ </div><!-- Container End -->
+
+% # XXX	</div>
+
+	<script src="js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="js/carousel.js"></script>
+	<script src="js/sidemenu.js"></script>
+	<script src="js/respimage.min.js"></script>
+    <script src="js/jquery.lightbox-0.5.js"></script>
+    <script src="js/main.js"></script>
+
+<!-- Menu Jump on top by Scolling-->
+<script type="text/javascript">
+
+$("document").ready(function($){
+    var nav = $('#headerSection');
+
+    $(window).scroll(function () {
+        if ($(this).scrollTop() > 125) {
+            nav.addClass("f-nav");
+        } else {
+            nav.removeClass("f-nav");
+        }
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+$('[data-toggle="popover"]').popover({
+    trigger: 'hover',
+    html: 'true',
+	'placement': 'top'
+});
+</script>
+

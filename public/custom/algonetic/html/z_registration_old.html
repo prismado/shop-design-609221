@@ -1,0 +1,101 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $SID  = $C->getSID();
+
+	my %empty = ();
+	my $rdata = \%empty;
+
+	if ($C->{CGI}->param('bSend')) {
+		my ($rc, $msg) = $A->registration();
+		if ($rc) {
+			$rdata = $A->{'registration_data'};
+			($rdata->{'_rc'}, $rdata->{'_msg'}) = ($rc, $msg);
+		}
+		else {
+			$C->framework_login( uname => $A->{registration_data}->{cust_email} );
+			$m->redirect('/account.html');
+		}
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Registration | <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+
+<!-- AGB Lightbox =======-->
+ <div id="agbLightbox" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="<% $C->prop('agbs_long') %>" aria-hidden="false">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+                            <h4 class="modal-title text-center text-uppercase"><% $C->prop('agbs_long') %></h4>
+                        </div>
+
+            <div class="modal-body">
+              <div id="ajx_agb"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+ <!-- lightbox =======-->
+
+<!-- Datenschutz Lightbox =======-->
+    <div class="modal fade" id="policyLightbox" tabindex="-1" role="dialog" aria-label=" <% $C->prop('policy') %>" aria-hidden="true">
+      <div class="modal-dialog modal-md-middle">
+        <div class="modal-content">
+          <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h4 class="modal-title text-center text-uppercase">
+          <% $C->prop('policy') %>
+            </h4>
+          </div>
+
+            <div class="modal-body">
+             <div id="ajx_policy"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+ <!-- lightbox =======-->
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('registration') %></h1>
+</div>
+
+<div id="checkoutBlock">
+<div class="no-more-tables-responsive">
+<button data-target="#login" class="btn btn-checkout" type="button" data-toggle="modal" ><% $C->prop('already_user') %></button>
+<br><br>
+ </div>
+
+<& include/reg.html, data => $rdata, CORE => $C &>
+
+<br /><br />
+</div><!-- End productBlock -->
+</div><!-- End checkoutBlock -->
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>

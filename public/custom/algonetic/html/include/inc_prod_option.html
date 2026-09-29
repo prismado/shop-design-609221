@@ -1,0 +1,133 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	use utf8; # -- 02Apr2026
+
+	my $A      = $args{A};
+	my $C      = $A->{C};
+	my $id     = $args{id} + 0; # -- Product-ID
+	my $opt_id = $args{opt_id} + 0; 
+	my $lang   = $args{lang} || 'de';
+	my $debug  = $args{debug} + 0; 
+
+	my $vat_fact  = 1 + ($C->{CONFIG}->{vat_1} + 0) / 100;
+	my $cur_sel   = $C->getSessData("prod_id_$id\_$opt_id");
+	my $mandatory = $C->query("select mandatory from options where id=$opt_id")->[0];
+
+	my $animate = $mandatory && (!$cur_sel or $cur_sel eq '-') ? ' animate-pulse' : '';
+
+	my $elems = $A->get_opt_details($opt_id, $lang, 0, 'ref ASC');
+
+	my $opt_count   = $#{$elems} + 1;
+	my $choice_text = $opt_count > 1 ? "Bitte w&auml;hlen: $opt_count Varianten" : 'Bitte w&auml;hlen';
+</%init>
+% # -- 07Jan2024
+% if ($opt_count > 6) {
+	<a href="#" onclick="act_sel_<% $opt_id %>_401062('de')" class="ml-2">DE</a> &middot;
+	<a href="#" onclick="act_sel_<% $opt_id %>_401062('en')">EN</a> &middot;
+	<a href="#" onclick="act_sel_<% $opt_id %>_401062('fr')">FR</a>
+%	if ( $C->{CONFIG}->{multi_lang_codes} =~ /,it/ ) {
+	&middot; <a href="#" onclick="act_sel_<% $opt_id %>_401062('it')">IT</a>
+%	}
+
+	<select name="opt_<% $opt_id %>" class="form-control mb-2 fs--14<% $animate %>" id="X401062_DE" style="width:98%"
+		onchange="$('#ajx_1').load('/_ajx_set_opt.html?opt=' + this.value + '&id=<% $id %>&opt_id=<% $opt_id %>&rnd=<% rand() %>');">
+		<option value="">Bitte w&auml;hlen (Deutsch)</option>
+%	foreach my $o (@{$elems}) {
+%		my ($id, $style, $label, $desc,	$ref, $amount, $stock) = split /\t/, $o;
+%		next unless $ref =~ /\-DE\-/;
+%		my $price_hint = $amount ? (' &ndash; zzgl. CHF ' . sprintf('%.2f', $amount * $vat_fact)) : '';
+		<option <% $ref eq $cur_sel ? 'selected' : '' %> value="<% $ref %>"><% $desc %><% $price_hint %></option>
+%	}
+	</select>
+
+	<select name="opt_<% $opt_id %>" class="form-control mb-2 fs--14<% $animate %>" id="X401062_EN" style="width:98%; display:none"
+		onchange="$('#ajx_1').load('/_ajx_set_opt.html?opt=' + this.value + '&id=<% $id %>&opt_id=<% $opt_id %>&rnd=<% rand() %>');">
+		<option value="">Bitte w&auml;hlen (Englisch)</option>
+%	foreach my $o (@{$elems}) {
+%		my ($id, $style, $label, $desc,	$ref, $amount, $stock) = split /\t/, $o;
+%		next unless $ref =~ /\-EN\-/;
+%		my $price_hint = $amount ? (' &ndash; zzgl. CHF ' . sprintf('%.2f', $amount * $vat_fact)) : '';
+		<option <% $ref eq $cur_sel ? 'selected' : '' %> value="<% $ref %>"><% $desc %><% $price_hint %></option>
+%	}
+	</select>
+
+	<select name="opt_<% $opt_id %>" class="form-control mb-2 fs--14<% $animate %>" id="X401062_FR" style="width:98%; display:none"
+		onchange="$('#ajx_1').load('/_ajx_set_opt.html?opt=' + this.value + '&id=<% $id %>&opt_id=<% $opt_id %>&rnd=<% rand() %>');">
+		<option value="">Bitte w&auml;hlen (Franz&ouml;sisch)</option>
+%	foreach my $o (@{$elems}) {
+%		my ($id, $style, $label, $desc,	$ref, $amount, $stock) = split /\t/, $o;
+%		next unless $ref =~ /\-FR\-/;
+%		my $price_hint = $amount ? (' &ndash; zzgl. CHF ' . sprintf('%.2f', $amount * $vat_fact)) : '';
+		<option <% $ref eq $cur_sel ? 'selected' : '' %> value="<% $ref %>"><% $desc %><% $price_hint %></option>
+%	}
+	</select>
+
+	<select name="opt_<% $opt_id %>" class="form-control mb-2 fs--14<% $animate %>" id="X401062_IT" style="width:98%; display:none"
+		onchange="$('#ajx_1').load('/_ajx_set_opt.html?opt=' + this.value + '&id=<% $id %>&opt_id=<% $opt_id %>&rnd=<% rand() %>');">
+		<option value="">Bitte w&auml;hlen (Italienisch)</option>
+%	foreach my $o (@{$elems}) {
+%		my ($id, $style, $label, $desc,	$ref, $amount, $stock) = split /\t/, $o;
+%		next unless $ref =~ /\-IT\-/;
+%		my $price_hint = $amount ? (' &ndash; zzgl. CHF ' . sprintf('%.2f', $amount * $vat_fact)) : '';
+		<option <% $ref eq $cur_sel ? 'selected' : '' %> value="<% $ref %>"><% $desc %><% $price_hint %></option>
+%	}
+	</select>
+
+	<script language="JavaScript">
+		function act_sel_<% $opt_id %>_401062 (lang) {
+			if (lang == 'de') {
+				document.getElementById('X401062_DE').style.display='';
+				document.getElementById('X401062_EN').style.display='none';
+				document.getElementById('X401062_FR').style.display='none';
+				document.getElementById('X401062_IT').style.display='none';
+			}
+			else if (lang == 'en') {
+				document.getElementById('X401062_DE').style.display='none';
+				document.getElementById('X401062_EN').style.display='';
+				document.getElementById('X401062_FR').style.display='none';
+				document.getElementById('X401062_IT').style.display='none';
+			}
+			else if (lang == 'fr') {
+				document.getElementById('X401062_DE').style.display='none';
+				document.getElementById('X401062_EN').style.display='none';
+				document.getElementById('X401062_FR').style.display='';
+				document.getElementById('X401062_IT').style.display='none';
+			}
+			else if (lang == 'it') {
+				document.getElementById('X401062_DE').style.display='none';
+				document.getElementById('X401062_EN').style.display='none';
+				document.getElementById('X401062_FR').style.display='none';
+				document.getElementById('X401062_IT').style.display='';
+			}
+			else {
+				alert('Sprach-Code ' + lang + ' ist derzeit nicht unterstützt');
+			}
+		}
+%		if ($cur_sel =~ /\-EN\-/) {
+			act_sel_<% $opt_id %>_401062('en');
+%		}
+%		elsif ($cur_sel =~ /\-FR\-/) {
+			act_sel_<% $opt_id %>_401062('fr');
+%		}
+	</script>
+% }
+% else {
+<select class="form-control mb-2 fs--14<% $animate %>" name="opt_<% $opt_id %>" style="width:98%"
+	onchange="$('#ajx_1').load('/_ajx_set_opt.html?opt=' + this.value + '&id=<% $id %>&opt_id=<% $opt_id %>&rnd=<% rand() %>');">
+		<option value=""><% $choice_text %><% $debug ? ' DN308282' : '' %></option>
+%	foreach my $o (@{$elems}) {
+%		my ($id, $style, $label, $desc,	$ref, $amount, $stock) = split /\t/, $o;
+%		(my $ref_enc = $ref) =~ tr/ /\+/; # -- 29Sep2024
+%		my $price_hint = $amount ? (' &ndash; zzgl. CHF ' . sprintf('%.2f', $amount * $vat_fact)) : '';
+		<option <% $ref eq $cur_sel ? 'selected' : '' %> value="<% $ref_enc %>"><% $desc %><% $price_hint %></option>
+%	}
+</select>
+% }
+
+<%doc>
+	<select clasx="detailform" name="opt_<% $opt_id %>"
+	onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$id%>&opt_id=<%$opt_id%>&rnd=<%$$%>');">
+
+	Uncaught ReferenceError: dynTotal is not defined
+</%doc>

@@ -1,0 +1,73 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{CORE};
+	my $A    = $args{A};
+	my $lang = $args{lang};
+	my $sth  = $args{sth};
+
+	my $cat_id = $C->{CGI}->param('id') || 1;
+	my $pkg    = $C->{CGI}->param('pkg');
+	my $id     = $args{id};
+	my $sc_url = $ENV{SCRIPT_URL} || 'categ.html';
+
+	my $selected_lo = $C->{CGI}->param('order') eq '4,a' ? 'selected ' : '';
+	my $selected_hi = $C->{CGI}->param('order') eq '4,d' ? 'selected ' : '';
+
+	my $search_enc = $C->uri_esc($args{search_orig});
+</%init>
+% if ($args{debug} or $C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+<div id="productBlock" class="span9">
+<div class="well">
+<div class="span4">&nbsp;</div>
+<div class="span8 pull-right filterSortlist">
+ <select id="sort" name="sort" onchange="location = this.options[this.selectedIndex].value;">
+<option value="#"><% $C->prop('opt_choose') %></option>
+<option <%$selected_lo%>value='<%$sc_url%>?id=<%$cat_id%>&order=4,a&q=<%$search_enc%>&pkg=<%$pkg%>'><% $C->prop('price_low') %></option>
+<option <%$selected_hi%>value='<%$sc_url%>?id=<%$cat_id%>&order=4,d&q=<%$search_enc%>&pkg=<%$pkg%>'><% $C->prop('price_high') %></option>
+</select>
+<a href="category2.html?id=<%$cat_id%>&q=<%$search_enc%>" title="Anzeigen als Gitter"><i class="fa fa-th"></i></a>
+</div>
+</div>
+
+<div id="ajx_noti"></div>
+
+<script language=JavaScript>
+function addtobasket (id, b) {
+	$('#ajx_noti').load('ajx_overlap_basket.html?id=' + id + '&rand=0.693944289611853')
+	b.disabled='disabled';
+	document.getElementById('product_area_' + id).style.display='';
+	document.getElementById('pic' + id).className='blur'
+}
+</script>
+
+<div class="tab-pane" id="listView">
+% if ($sth->rows() == 0) {
+	<%$C->prop('no_items')%><br>
+% }
+% while(my $r = $sth->fetch()) {
+%       my ($id, $price, $title, $desc, $count, $campaign_id, $extra, $condition) = @{$r};
+%	my $prod_info = $A->get_product($id);
+%	$price = $prod_info->{price_orig_incl_vat};
+
+%	my $has_mandatory_options = $C->query(qq~SELECT mandatory FROM voptions WHERE mandatory=1 AND
+%		id IN (SELECT substr(featkey, 3, 8) from products_feat WHERE product_id=$id AND featkey LIKE '_o%') and lang='de'
+%		LIMIT 1
+%	~)->[0];
+%	my $in_basket = $C->query("select id FROM basket WHERE sid=$args{SID} AND prod_id=$id")->[0];
+%	my $is_offer = my $discount_ref = $C->query("SELECT id FROM products_discount WHERE product_id=$id")->[0];
+%	my $price_orig = 0;
+%	if ($is_offer) {
+%		# XXX my $d = $A->get_product($id);
+%		$price_orig = $prod_info->{price_orig_incl_vat};
+%		$price      = $prod_info->{price_incl_vat};
+%	}
+	<& prod_compact_list.html, prod_info=>$prod_info, id=>$id, title=>$title, desc=>$desc, in_basket=>$in_basket,
+		price_orig=>$price_orig, price=>$price, is_offer=>$is_offer, C=>$C &>
+% }
+
+</div><!-- End ListView -->
+<br>
+</div>

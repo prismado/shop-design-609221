@@ -1,0 +1,210 @@
+<%init>
+	# -----------------------------------------------------------
+	# -- Verfuegbare Variablen und Dokumentation siehe:
+	# -- http://www.swissremarketing.pgate.net/cmx/emailtpl
+	# -----------------------------------------------------------
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my %args = $m->caller_args(0); # -- In case it's called by a web function
+
+	my $order_id = $C->{CGI}->param('order_id') || $args{order_id};
+	   $order_id ||= $C->query("SELECT MAX(id) FROM orders")->[0];
+
+	my $data = $A->get_order($order_id, 1); # -- $data->{uid}
+
+    my %ship_meth_hr_map = (
+		std => 'Standard-Versand',
+		exp => 'Express-Versand',
+		ins => 'Versand A-Post',
+		pic => 'Selbstabholung',
+	);
+
+	my %pay_meth_hr = (
+		inv => 'Rechnung',
+		pp  => 'PayPal',
+		pc3 => 'Kreditkarte'
+	);
+</%init>
+%
+<& mail.css &>
+<table border="0" cellpadding="0" width="853">
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr style="">
+        <td><img src="http://<%$C->{CONFIG}->{HTTP_HOST}%>/images/logo.png" title="Logo" width="220" /></td>
+        <td width="431"></td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td><h2 style="padding-top:4px;padding-bottom: 4px;"><strong><% $C->prop('order') %> <% $order_id %></strong> &Iota; <% $C->prop('oder_mail_ordertime') %> <% $C->trans_date_short($data->{instime}) %></h2><br>
+    <h3><strong><% $C->prop('payment_method') %>:</strong> <%$pay_meth_hr{$data->{checkout_zahlungsart_select}} || "* $data->{checkout_zahlungsart_select} *"%>
+		&nbsp;&nbsp;&Iota;&nbsp;&nbsp;
+		<strong><% $C->prop('delivery_method') %>:</strong> <%$ship_meth_hr_map{$data->{ship_meth}}%></h3>
+	    </td>
+  </tr>
+  <tr>
+    <td> <table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr>
+        <td colspan="2"><br>
+% if ($data->{ref}) {
+          <strong><% $C->prop('referenz') %>:</strong><br /><% $data->{ref} %><br /><br />
+% }
+        </td>
+      </tr>
+      <tr>
+        <td class="greyback"width="50%" valign="top"><p><strong><% $C->prop('bill_addr') %></strong><br />
+          <%$data->{gender} == 2 ? 'Frau' : 'Herr'%><br />
+          <% $data->{firstname} %> <% $data->{lastname} %><br />
+          <% $data->{street} %><br />
+          <% $data->{zip} %> <% $data->{city} %><br />
+          Schweiz<br /><br />
+
+          <% $C->prop('emailadress') %>: <a href="mailto:<%$data->{email}%>"><%$data->{email}%></a></p></td>
+        <td class="greyback" width="50%" valign="top"><p><strong><% $C->prop('deliv_addr') %></strong><br />
+          <%$data->{gender} == 2 ? 'Frau' : 'Herr'%><br />
+          <% $data->{deliv_firstname} %> <% $data->{deliv_lastname} %><br />
+          <% $data->{deliv_street} %><br />
+          <% $data->{deliv_zip} %> <% $data->{deliv_city} %><br />
+          Schweiz<br /><br />
+
+          <% $C->prop('telephone') %>: <% $data->{deliv_phone} %><br />
+          <% $C->prop('emailadress') %>: <a href="mailto:<% $data->{email} %>"><% $data->{email} %></a></p></td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td>
+    <table class="price_block" border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr><td colspan="5" valign="top">&nbsp;</td></tr>
+      <tr class="price_block_header">
+        <td width="62" height="32" valign="top"><p align="right"><% $C->prop('count') %></p></td>
+        <td width="94" valign="top"><p align="center"><% $C->prop('artikelnr') %></p></td>
+        <td width="216" valign="top"><% $C->prop('product') %></td>
+        <td width="131" valign="top"><p align="right"><% $C->prop('price_p_piece') %></p></td>
+        <td width="106" valign="top"><p align="right"><% $C->prop('total') %></p></td>
+      </tr>
+      <tr class="price_block_row">
+        <td colspan="5" valign="top"></td>
+        </tr>
+
+ <!-- Generated Product row -->
+% foreach (@{$data->{_products}}) {
+%	my ($id, $count, $price, $line_id) = split /\t/;
+%	my $d = $A->get_product($id);
+%	my $price_incl_vat = $data->{"prod_id_$id\_price_incl_vat"};
+%	my $custom_text = $data->{"prod_id_$id\_customtext"};
+%	my $custom_nr   = $data->{"prod_id_$id\_playnum"};
+%	my $title       = $C->web_enc($d->{title});
+%	my $description = $C->web_enc($d->{description});
+%	my $article_no = $C->query("select xval FROM orders_details WHERE order_id=$order_id AND xkey='prd_id_$id\_artno'")->[0] || $d->{art_no};
+      <tr class="price_block_row">
+        <td width="62" valign="top"><p align="right"><b><% $count %></b> x</p></td>
+        <td width="94" valign="top"><p align="center"><%$article_no%></p></td>
+        <td width="216" valign="top"><strong><%$title%></strong><br />
+%	if ($custom_nr) {
+		Spielnummer: <b><%$custom_nr%></b><br>
+%	}
+%	if ($custom_text) {
+		Individueller Text:<br>
+			<b><%$custom_text%></b><br>
+%	}
+         <%$description%><br><br>
+
+%	my $feat = $A->get_features_from_order_line($line_id);
+	<table class=table style='margin-top:5px; width:80%'>
+%	foreach (sort keys %{$feat}) {
+%		my ($feat_id, $label) = split /\t/;
+%		my $inc_art_no = $C->query("select inc_art_no FROM options WHERE id=$feat_id")->[0];
+%		$label = $C->web_enc($label);
+%		my $description = $C->query("SELECT `description` FROM `voptions` where id=$feat_id and lang='de' and ref='$feat->{$_}'")->[0];
+		<tr><td style='width:122px'><b><%$label%></b></td>
+		<td nowrap style='text-align:right'>
+%		if ($inc_art_no) {
+%		}
+%		if ($description) {
+			<%$description%>
+%		}
+%		else {
+			<%$feat->{$_}%>
+%		}
+		</td></tr>
+%	}
+	</table><br>
+
+%	if ($data->{"prod_id_$id\_201"}) {
+%		(my $r = $data->{"prod_id_$id\_201"}) =~ s/^AxisCylinder_R//;
+%	}
+
+%	if ($data->{"prod_id_$id\_501"}) {
+%		(my $r = $data->{"prod_id_$id\_501"}) =~ s/^Diameter_R//;
+%	}
+
+	</td>
+        <td width="131" valign="top"><p align="right"><% $price_incl_vat %></p></td>
+        <td width="106" valign="top"><p align="right"><% sprintf('%.2f', $count * $price_incl_vat) %></p></td>
+      </tr>
+% }
+      <tr class="row_small">
+% #   <td colspan="3" valign="top"><p><strong>Gesamtsumme inkl. <% $C->{CONFIG}->{vat}%> % MWST&nbsp;</strong></p></td>
+      <td colspan="3" valign="top"><p><strong><% $C->prop('sum_total') %> <% $C->prop('mwst') %>&nbsp;</strong></p></td>
+        <td colspan="2" valign="top"><p align="right"><% $data->{"XX total_incl_vat"} %></p></td>
+        </tr>
+
+% my $shipping_tot = $data->{'XX shipping'};
+      <tr  class="row_small">
+        <td colspan="3" valign="top"><p>
+%	if ($data->{ship_meth}) {
+%		$shipping_tot += $data->{ship_meth_amount};
+		<%$ship_meth_hr_map{$data->{ship_meth}}%>
+%	}
+</p></td>
+        <td colspan="2" valign="top"><p align="right"><%sprintf('%.2f', $shipping_tot)%></p></td>
+        </tr>
+% if ($data->{pay_cost} > 0.01) {
+	<tr class="row_small">
+		<td colspan="3" valign="top">Zahlungskosten</td>
+		<td colspan="2" valign="top"><p align="right"><%$data->{pay_cost}%></p></td>
+	</tr>
+% }
+      <tr  class="row_small_d">
+        <td colspan="3" valign="top"><p><strong><% $C->prop('order_mail_invoce_total') %> <% $C->prop('mwst') %></strong></p></td>
+        <td colspan="2" valign="top"><p align="right"><strong><% sprintf('%.2f', $data->{amount_incl_vat}) %></strong></p></td>
+        </tr>
+        <tr class="row_small">
+% #    <td colspan="3" valign="top"><% $C->prop('sum_total') %> <% $C->{CONFIG}->{vat}%> % MWST</td>
+        <td colspan="3" valign="top"><% $C->prop('order_email_included_vat') %> <% $C->prop('mwst') %></td>
+        <td colspan="2" valign="top"><p align="right"><% $data->{vat_amount} %></p></td>
+        </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr><td><p>&nbsp;</p></td></tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr>
+        <td>
+% if ($data->{ship_meth} eq 'pic') {
+	***** <b>Ware wird vom Kunden abgeholt</b> *****
+% }
+% if ($data->{remarks}) {
+	Bemerkungen:
+	<% $data->{remarks} %><br>
+% }
+          <br />
+
+</td>
+      </tr>
+    </table></td>
+  </tr>
+
+</table><br>
+

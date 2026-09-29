@@ -1,0 +1,42 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+
+	my $col_1 = 6;
+	my $col_2 = 3;
+</%init>
+<div class="row no-gutters">
+
+	<div class="col-<% $col_1 %> col-md-<% $col_2 %> p--0">
+		<figure class="overflow-hidden text-center clearfix d-block m-0 position-relative">
+			<a href="niche.classifieds-item.html" class="text-decoration-none">
+				<img class="img-fluid lazy"
+					src="demo.files/images/unsplash/products/barrett-ward-cOJgO4Zzs-w-unsplash-min.jpg"
+						alt="..." data-loaded="true">
+			</a>
+		</figure>
+	</div>
+
+	<div class="col-12 mt-3 d-block d-sm-none"><!-- mobile spacer --></div>
+
+	<div class="col-12 col-md-<% $col_1 %> order-xs-3 order-md-2 order-lg-2 p-0">
+		<div class="px-3 p-0-xs">
+			<h2 class="fs--18 mb-0">
+				<a href="niche.classifieds-item.html" class="text-danger">
+					Lorem ipsum dolor sit amet adipiscium
+				</a>
+			</h2>
+
+			<p class="m-0">
+				<span class="d-block fs--14">
+					Merc c180 avantgarde new model 2015. unregistered. japan. local ap holder. white ...
+				</span>
+				<span class="d-block fs--20 mt-3 text-dark">
+					$158.95
+				</span>
+			</p>
+		</div>
+	</div>
+
+</div>

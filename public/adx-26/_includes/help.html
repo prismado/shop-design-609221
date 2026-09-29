@@ -1,0 +1,104 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $mdata = $args{mdata};
+	my $chv   = $args{chv} || 0; # -- check valid? 1 | 0
+	my $fil   = $chv ? $args{fil} : '';
+	my $q     = $args{q};
+	my $omit  = $args{omit}; # -- Comma-separated
+	my $theme = $args{theme};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	(my $table = $mdata->{para}->{source}) =~ tr/\t//d;
+
+	my @header = ();
+	foreach (split /\|\|/, $mdata->{para}->{db_cols_de}) {
+		push(@header, $C->trim($_));
+	}
+</%init>
+<div class="portlet-body">
+
+<%doc>
+	<prism-datatable table="<% $table %>" macro="<% $args{macro} %>" dt_ver="1.10.18" theme="<% $theme %>"
+			debug="<% $debug %>" fil="<% $C->uri_esc($fil) %>" q="<% $C->uri_esc($q) %>" omit="<% $omit %>" role="admin">
+	</prism-datatable>
+</%doc>
+
+	<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+%	if ($theme) {
+	<link rel="stylesheet" type="text/css" href="/adx/assets/css/prism_datatables_1_10_color_<% $theme %>.css">
+%	}
+%	else {
+	<link rel="stylesheet" type="text/css" href="assets/css/prism_datatables_1_10_x.css">
+%	}
+
+% #	DataTables 1.10.18
+	<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+	<table id="example" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+%		if ($perm->{is_devel}) {
+% # XXX		<th>ID</th>
+%		}
+		<th>Titel</th>
+		<th>Mnemonic</th>
+		<th>Beschreibung</th>
+		<th>Area</th>
+		<th>Sub Area</th>
+%		if ($perm->{is_devel}) {
+		<th>Zielgr.</th>
+		<th>Erstellt</th>
+%		}
+		<th>Aktualisiert</th>
+	    </tr>
+	</thead>
+	</table>
+
+%	if ($perm->{is_devel}) {
+		<p>
+			<a href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_<% $args{macro} %>_sys%27+AND+page%3D%27_macro%27"><i
+				class="fi fi-pencil"></i> Edit XML</a> &mdash;
+			<a class="fs--13 link-muted"
+				href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_products_sys%27+AND+page%3D%27_macro%27">Example</a>
+		</p>
+%	}
+
+</div>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 15,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Suchbegriffe: +{BEGRIFF}* +{BEGRIFF_2}*"
+	},
+	"ajax": "_ajax/server_processing_help.html?table=<% $table %>&q=<% $q %>&fil=<% $fil %>&macro=help&omit=<% $omit %><% $debug ? "&debug=$debug" : '' %>",
+	"order": []
+    } );
+	// var oTable = $('#example').dataTable();
+	//     oTable.fnSort( [ [0,'desc'] ] );
+
+	$('.dataTables_filter input').css({'width': '255px', 'border-radius': '8px'});
+	$('.dataTables_filter input').removeClass('form-control-sm');
+	$('.dataTables_filter input').attr('id', 'customSearchInput40130');
+
+% #	$('.custom-select').addClass('font-weight-bold');
+
+	document.getElementById('customSearchInput40130').focus();
+	document.getElementById('customSearchInput40130').style='width:450px !important';
+} );
+</script>

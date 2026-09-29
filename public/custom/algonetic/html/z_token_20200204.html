@@ -1,0 +1,57 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $is_admin = $C->is_admin();
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $SID      = $C->getSID();
+
+	my $debug       = $C->{CGI}->param('debug');
+	my $token       = $C->{CGI}->param('token') || $C->getSessData('token');
+	my ($token_id, $company_id) = @{$C->query("SELECT id, company_id FROM campaign_data WHERE token='$token'")};
+	my $teaser_text = $C->query("SELECT description FROM prozone_teaser WHERE campaign_id=$token_id")->[0] || '';
+
+	$C->saveSessData('token', $token);
+	$C->saveSessData('token_id', $token_id);
+
+	my $basket_count = $C->query("SELECT COUNT(*) FROM basket WHERE sid=$SID")->[0];
+
+	my ($sort, $order) = split /,/, $C->{CGI}->param('order');
+	    $sort += 0;
+	$order = 'a' unless ($order eq 'a' or $order eq 'd');
+
+	my $company = $C->query("select name from companies where id=$company_id")->[0] || 'N/A';
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><% $C->prop('prozone') %> | <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+<body>
+<& include/content_header.html, basket_count=>$basket_count, SID=>$SID, is_admin=>$is_admin, lang=>$lang, C=>$C &>
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid ps-content">
+<&include/content_sideblock.html, cat_id=>0, C=>$C, A=>$A&>
+
+<div id="productBlock" class="span9">
+	<div class="well ps-categorie">
+		<div class="span4"><h1><i class="fa fa-users"></i> <% $C->prop('prozone') %> &middot; <% $company %></h1></div>
+	</div>
+
+	<& include/token.html, SID=>$SID, sort=>$sort, order=>$order, lang=>$lang, debug=>$debug,
+		token=>$token, token_id=>$token_id, teaser_text=>$teaser_text, A=>$A, C=>$C &>
+</div>
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+</body>
+</html>

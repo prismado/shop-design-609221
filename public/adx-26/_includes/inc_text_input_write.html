@@ -1,0 +1,31 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	# -- Created: 09Jun2024
+
+	(my $value_enc = $args{value_enc}) =~ s/[\n\r]//g;
+	    $value_enc =~ s/'/\\'/g;
+	    $value_enc =~ s/"/&quot;/g; # -- 13Apr2024
+
+	(my $val_enc = $args{value_enc}) =~ s/"/&quot;/g; # -- 16Mar2024
+
+	my $r_only = 'readonly';
+	   $r_only = '' if $args{write}; # -- 17Nov2023
+
+	my $input_args = $args{input_args} || ''; # -- e.g required // 13Jan2024
+	my $req_flag   = $input_args =~ /required/ ? ' <sup>*</sup>' : '';
+</%init>
+<div class="input-group-over <% $args{class} %>">
+
+	<div class="form-label-group mb-3">
+		<input <% $r_only %> <% $input_args %> placeholder="" id="txe_<% $args{id} %>" name="<% $args{name} %>"
+			type="<% $args{type} || 'text' %>" class="form-control <% $args{tx_class} %>" value="<% $val_enc %>">
+		<label for="txe_<% $args{id} %>"><% $args{label} %><% $req_flag %></label>
+	</div>
+
+	<a id="tx_edit_show_<% $args{id} %>" href="javascript:;" class="fs--16 p--8 mr-1 text-dark"
+		onclick="document.getElementById('txe_<% $args{id} %>').value=''"><i class="fi fi-close m-0"></i>
+	</a>
+
+</div>
+

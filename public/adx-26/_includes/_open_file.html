@@ -1,0 +1,24 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $data = $C->slurp_file("/tmp/zz_trash_$args{file}");
+</%init>
+<div class="portlet-header border-bottom">
+	<span><% $args{file} || '* No file *' %></span>
+</div>
+
+<div class="portlet-body">
+
+	<pre><% ${$data} %></pre>
+
+%    if ($perm->{is_devel}) {
+	<div class="float-right ml-5">
+		&bull; <a href="_debug.html">Debug Level <% $debug %></a>
+	</div>
+%    }
+
+</div>

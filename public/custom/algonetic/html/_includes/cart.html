@@ -1,0 +1,59 @@
+<%init>
+
+#	*******************************************
+#	***                                     ***
+#	***     MOVED TO: include/cart.html     ***
+#	***                                     ***
+#	*******************************************
+
+
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+
+	my $bask = $A->get_basket_items_v2();
+
+	my @result = ();
+	foreach my $d (@{$bask->{items}}) {
+		foreach (sort keys %$d) {
+			next if $_ eq 'instime' or $_ eq 'upsell' or $_ eq 'vat_perc';
+			push(@result, "$_=$d->{$_}");
+		}
+		push(@result, '-----');
+	}
+</%init>
+<li class="list-inline-item ml--6 mr--6 dropdown">
+
+	<a href="#" id="dropdownNotificationOptions" class="btn btn-sm rounded-circle btn-light dropdown-toggle"
+		data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+		<span class="badge badge-success fs--10 p--3 mt--n3 position-absolute end-0"><% $bask->{item_count} %></span>
+
+		<span class="group-icon">
+			<i class="fi fi-cart-1"></i>
+			<i class="fi fi-close"></i>
+		</span>
+	</a>
+
+	<div aria-labelledby="dropdownNotificationOptions"
+		class="dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+		<div class="dropdown-header fs--14 py-3"><% $bask->{item_count} %> Artikel</div>
+		<div class="dropdown-divider"></div>
+		<div class="max-h-50vh scrollable-vertical">
+
+		<& inc_cart.html, info=>'abc', icon=>'fi-cart-1',   small_tx=>'gaga', badge=>'new:warning,old:success', C=>$C &>
+		<& inc_cart.html, info=>'tbx', icon=>'fi-database', small_tx=>'gugu', badge=>'', C=>$C &>
+		<& inc_cart.html, info=>(join '<br>', @result), icon=>'fi-database', small_tx=>'gugu', badge=>'', C=>$C &>
+	</div>
+
+	<div class="dropdown-divider mb-0"></div>
+		<a href="basket.html" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+			<i class="fi fi-arrow-end fs--11"></i>
+			<span class="d-inline-block pl-2 pr-2">XY View all</span>
+		</a>
+	</div>
+
+</li>
+

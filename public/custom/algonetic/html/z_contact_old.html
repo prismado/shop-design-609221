@@ -1,0 +1,130 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID      = $C->getSID();
+	my $is_admin = $C->is_admin();
+	my $cgi      = $C->{CGI};
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+
+	my $f_okay = $cgi->param('bSubmit') && $cgi->param('captcha') eq $C->getSessData('captcha') ? 1 : 0;
+
+	my $addr = $A->get_address(1); # -- Owner Data
+
+	if ($f_okay) {
+		my @maildata = ();
+		my $message = $cgi->param('message') || '(leer)';
+
+		push(@maildata, "Nachricht von " . $cgi->param('contact_email') . '<br><br>');
+		push(@maildata, "Betreff: <b>" . $cgi->param('contact_subject') . '</b><br><br>');
+
+		push(@maildata, "$message<br>");
+
+		foreach my $con_key ($cgi->all_parameters) {
+			next if $con_key eq 'contact_email' or $con_key eq 'message' or $con_key eq 'bSubmit' or $con_key eq 'captcha' or $con_key eq 'contact_subject';
+			my $data = $cgi->param($con_key);
+			$con_key =~ s/^contact_//;
+			push(@maildata, "&bull; $con_key = $data") if $data;
+		}
+		push(@maildata, qq~<br><hr noshade size=1>
+			<small>
+			IP = $ENV{REMOTE_ADDR}<br>
+			UA = $ENV{HTTP_USER_AGENT}</small>~);
+		$C->mail_generic(
+			from_realnamx => $C->{CONFIG}->{site_title},
+			to            => $C->{CONFIG}->{order_email},
+			sender        => $C->{CONFIG}->{order_email},
+			text_path     => "$ENV{DOCUMENT_ROOT}/custom/auctionline/mail_templates/contact_de.html",
+			subject       => "Contact $C->{CONFIG}->{site_title}",
+			data          => (join '<br>', @maildata)
+		);
+	}
+
+	my $domain = $C->grep_2nd_level_dom($ENV{HTTP_HOST});
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<title>Kontakt <% $C->{CONFIG}->{site_title} %></title>
+	<&include/head_metablock.html, C=>$C&>
+	<&include/head_cssload.html&>
+</head>
+
+<body>
+
+<div class="row">
+	<div class="col-md-12">
+		<& include/content_header.html, lang=>$lang, SID=>$SID, is_admin=>$is_admin, C=>$C &>
+	</div>
+</div>
+
+
+<div class="container">
+
+% #	<& include/content_sideblock.html, lang=>$lang, C=>$C, A=>$A &>
+
+	<h1 class="mt-3"><% $C->prop('contact') %></h1>
+
+	<% $C->render_property('contact_adress', $lang) %><br>
+
+% if ($f_okay) {
+	<% $C->prop('message_sent') %><br>
+% }
+% else {
+	<% $C->prop('contact_text') %>
+	<script language="JavaScript" type="text/javascript">
+		document.write("<a href=\"mailto:sales@" + "<%$C->prp('site_corp_dom')%>\">sales" + "@" + "<%$C->prp('site_corp_dom')%>" + "</a>");
+	</script><br><br>
+
+	<b><% $C->prop('contact_text1') %></b><br><br>
+
+	<& include/contact_captcha.html, C => $C, A => $A &>
+% }
+
+</div>
+
+
+
+
+<&include/footer.html, C => $C&>
+
+<script src="js/jquery.form-validation.min.js"></script>
+
+<script>
+$(function(){
+$('#contact_form').formValidation({
+validationMessage   : 'val-message',
+requireClass        : 'required',
+errorBoxClass       : 'val-box',
+errorClass          : 'alert error',
+showErrorMsg        : true,
+consecutiveErrors   : false,
+appendErrorToTitle  : false,
+ajaxMode			: false,
+defaultErrorMsg     : "Bitte ausfüllen!",
+defaultSuggestText  : "",
+});
+});
+</script>
+
+
+<script type="text/javascript">
+// Textbegrenzung Nachricht
+$(document).ready(function() {
+   $('textarea[maxlength]').keyup(function(){
+      var max = parseInt($(this).attr('maxlength'));
+
+      if($(this).val().length > max){
+         $(this).val($(this).val().substr(0, max));
+      }
+
+      $(this).parent().find('.charleft').html(max - $(this).val().length);
+   });
+});
+</script>
+
+
+</body>
+</html>

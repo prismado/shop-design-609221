@@ -1,0 +1,85 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $lang  = $args{lang}  || 'de';
+	my $debug = $args{debug} || 0;
+
+	my $title = q~Geben Sie Ihre Suchbegriffe ein und klicken Sie auf <i class="ml-1 mr-1 text-dark fs--15 fi fi-search"></i>
+			<span class="hidden-md-down">oder dr&uuml;cken Sie Enter</span>
+			<span class="float-end hidden-md-down">
+				<small>Schliessen mit <span class="text-dark font-weight-lighter ml-1">[ Esc ]</span>&ndash;Taste</small>
+			</span>~;
+	if ($debug) {
+		$title = qq~Debug / <a href="https://docs.ch2.be/w/prismado-shop/feat-product-search">Wiki Info</a> / $title~;
+		$title = "Debug $debug" if $debug > 1;
+	}
+</%init>
+<%doc>
+	[SOW] SEARCH SUGGEST PLUGIN
+	++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++
+	PLEASE READ DOCUMENTATION
+	documentation/plugins-sow-search-suggest.html
+	++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++ ++
+</%doc>
+<form 	action="/__search-result.html"
+	method="GET" 
+	data-autosuggest="on" 
+
+	data-mode="json" 
+	data-json-max-results='10'
+	data-json-related-title='<% $title %>'
+	data-json-related-item-icon='fi fi-star-empty'
+	data-json-suggest-title='Vorschl&auml;ge'
+	data-json-suggest-noresult='No results for'
+	data-json-suggest-item-icon='fi fi-search'
+	data-json-suggest-min-score='7'
+	data-json-highlight-term='true'
+	data-contentType='application/json; charset=utf-8'
+	data-dataType='json'
+
+	data-container="#sow-search-container" 
+	data-input-min-length="2" 
+	data-input-delay="250" 
+	data-related-keywords="" 
+	data-related-url="/_ajax/search_suggest_related_json.html?lang=<% $lang %>"
+	data-suggest-url="/_ajax/search_suggest_input_json.html"
+	data-related-action="related_get" 
+	data-suggest-action="suggest_get" 
+
+	class="js-ajax-search sow-search sow-search-over hide d-inline-flex">
+
+	<div class="sow-search-input w-100">
+		<div class="input-group-over d-flex align-items-center w-100 h-100 rounded shadow-md">
+			<input placeholder="Was suchen Sie heute?" aria-label="Was suchen Sie heute?" name="s"
+				type="text" class="form-control-sow-search form-control form-control-lg shadow-xs" value="" autocomplete="off">
+
+			<span class="sow-search-buttons">
+				<button aria-label="Global Search" type="submit" class="btn bg-transparent shadow-none m-0 px-2 py-1 text-muted">
+					<i class="fi fi-search fs--20"></i>
+				</button>
+
+				<!-- close : mobile only (d-inline-block d-lg-none) -->
+				<a href="javascript:;" class="btn-sow-search-toggler btn btn-light shadow-none m-0 px-2 py-1 d-inline-block d-lg-none">
+					<i class="fi fi-close fs--20"></i>
+				</a>
+			</span>
+		</div>
+	</div>
+
+	<!-- search suggestion container -->
+	<div class="sow-search-container w-100 p-0 hide shadow-md" id="sow-search-container">
+		<div class="sow-search-container-wrapper">
+			<!-- main search container -->
+			<div class="sow-search-loader p-3 text-center hide">
+				<i class="fi fi-circle-spin fi-spin text-muted fs--30"></i>
+			</div>
+			<!-- 
+				AJAX CONTENT CONTAINER 
+				SHOULD ALWAYS BE AS IT IS : NO COMMENTS OR EVEN SPACES!
+			--><div class="sow-search-content rounded w-100 scrollable-vertical"></div>
+		</div>
+	</div>
+	<!-- /search suggestion container -->
+
+	<div class="sow-search-backdrop overlay-dark opacity-3 hide"></div>
+</form>

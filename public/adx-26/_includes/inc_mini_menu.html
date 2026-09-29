@@ -1,0 +1,81 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id     = $args{id};
+	my $imgx_s = $args{imgx_s};
+	my $ext    = $args{ext} || 'webp';
+	my $excl   = $args{excl};
+	my $perm   = $args{perm};
+
+	(my $delpic = $imgx_s) =~ s/^20//;
+</%init>
+<nav class="nav-deep nav-deep-light nav-deep-xs float-right ml--n5 mr-1">
+	<ul class="nav">
+	<li class="nav-item mr-0">
+		<a class="nav-link" href="#">
+			<span class="group-icon float-end">
+				<i class="fi fi-arrow-start-slim"></i>
+				<i class="fi fi-arrow-down-slim"></i>
+			</span> <i class="fi fi-cog mr-0"></i>
+		</a>
+							
+		<ul class="nav flex-column position-fixed bg-white p-0 z-index-99" style="border: 1px solid #b0b0b0">
+
+		<li class="nav-item">
+			<a class="nav-link"
+				href="/_product_tool.html?action=as_main_pic&id=<% $id %>&i=<% $imgx_s %>&ext=<% $ext %>">Als Hauptbild</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link"
+				href="/_reshape_image.html?id=<% $id %>&in=produkte%2Fp<% $id %>_<% $imgx_s %>_orig.<% $ext %>&x_size=1000">Zu Quadrat</a>
+		</li>
+
+		<li class="nav-item">
+%			if ($excl) {
+				<a class="nav-link"
+					href="/_product_tool.html?action=incl_img&id=<% $id %>&img=<% $imgx_s %>">Einschliessen</a>
+%			}
+%			else {
+				<a class="nav-link"
+					href="/_product_tool.html?action=excl_img&id=<% $id %>&img=<% $imgx_s %>">Ausschliessen</a>
+%			}
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link"
+				href="/_product_tool.html?action=as_ad_pic&id=<% $id %>&img=<% $imgx_s %>">Google-Hauptbild</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" href="#">
+				<span class="group-icon float-end">
+					<i class="fi fi-arrow-end-slim"></i>
+					<i class="fi fi-arrow-down-slim"></i>
+				</span>
+				L&ouml;schen
+			</a>
+
+			<ul class="nav flex-column">
+			<li class="nav-item"><a class="nav-link"
+				href="/_product_tool.html?action=del_pic&id=<% $id %>&delpic=<% $delpic %>&stay=1">Bild l&ouml;.</a></li>
+% #			<li class="nav-item"><a class="nav-link js-ajax" href="components-accordions.html">Item 2</a></li>
+			</ul>
+
+		</li>
+
+%		if ($perm->{is_devel}) {
+		    <li class="nav-item">
+			<a class="nav-link"
+			href="/adm_db_edit.html?table=products_feat&wcl=product_id%3D<% $id %>+AND+featname%3D%27_image%27+AND+featkey%3D%27<% $imgx_s %>%27">DB Edit</a>
+		    </li>
+%		}
+
+		</ul>
+
+	</li>
+	</ul>
+</nav>
+<%doc>
+	Created: 31Mar2024
+</%doc>

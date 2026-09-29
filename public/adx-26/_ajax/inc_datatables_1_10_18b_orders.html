@@ -1,0 +1,77 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+
+	my $cgi = $C->{CGI};
+
+	   $args{dt_ver} = $cgi->param('dt_ver');
+
+	my $str_enc = '';
+
+	my $q      = $cgi->param('q');
+</%init>
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+<link rel="stylesheet" type="text/css" href="assets/css/prism_datatables_1_10_x.css">
+
+% # -- DataTables 1.10.18
+<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+%	if ($args{debug}) {
+		<p class="mt-0 mb-2">
+			&bull; This: <code>adx/_ajax/inc_datatables_1_10_18b_orders</code><br>
+			&bull; Ajax Source: <code>adx/_ajax/server_processing_orders</code><br>
+			&bull; JS Source: <a href="assets/js/datatables.min.js">datatables.min.js</a> &mdash; Was very slow version for unknown reasons
+		</p>
+%	}
+	<table id="example" clasx="display" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+		<th style="width:45px">ID</th>
+		<th>Vorname</th>
+		<th>Nachname</th>
+                <th>Betrag</th>
+                <th>Produkte</th>
+                <th>Bezahlung</th>
+                <th>Status</th>
+	    </tr>
+	</thead>
+	</table>
+
+% if ($args{debug}) {
+	<code><% $C->this() %></code><br />
+%	foreach ($cgi->all_parameters) {
+		[ cgi ] &middot; <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%	}
+% }
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 25,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Suchbegriff"
+	},
+	"ajax": "_ajax/server_processing_orders.html?q=<% $q %><% $debug ? "&debug=$debug" : '' %>",
+	"order": []
+    } );
+<%doc>
+	var oTable = $('#example').dataTable();
+	    oTable.fnSort( [ [0,'desc'] ] );
+</%doc>
+
+	$('.dataTables_filter input').css({'width': '255px', 'border-radius': '10px'});
+% #     var selectElement = document.querySelector('select[name="example_length"]'); selectElement.classList.add('form-control');
+} );
+</script>

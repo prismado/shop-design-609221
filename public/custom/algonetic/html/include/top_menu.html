@@ -1,0 +1,40 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $SID = $args{SID} || $C->getSID();
+
+	my $basket_count = $args{basket_count} || $C->query("SELECT COUNT(*) FROM basket WHERE sid=$SID")->[0];
+</%init>
+<div id="topMenu">
+
+<&tmenu_link.html, 'account.html', $C->is_logged_in() ? 'Mein Konto' : 'Kunden Login','fa fa-sign-in'&>
+% if ($C->is_admin()) {
+<&tmenu_link.html, '__dashboard.html', 'Admin','fa fa-user'&>
+% }
+<&tmenu_link.html, 'contact.html', 'Kontakt', 'fa fa-envelope-o'&>
+<i class="fa fa-info-circle"></i><A href="info_customerservice.html">Info</A>
+% if ($C->is_logged_in()) {
+<A href='#logout' onclick='JavaScript:document.logoutForm.submit()'>Logout <%$C->whoami()%></A>
+% }
+
+<form method=post action="/account.html" name="logoutForm">
+<input type="hidden" name="action" value="logout"></form>
+
+% if ($basket_count) {
+%	my $A = ScreenPoint::Auctionline->new($C);
+%	my $basket_total = $A->get_basket_total();
+<div class="topBasket frameBorder frameBorder--set">
+<div class="topBasketWrap"><a href="basket.html"><i class="fa fa-shopping-cart"></i> <%$basket_count%> Artikel > <span> CHF <%$basket_total%></span></a></div>
+</div>
+% }
+</div>
+%
+<%doc>
+Im Falle von Mehrsprachigkeit
+=============================
+<A href="_change_lang.html?lang=de">DE</A>
+<A href="_change_lang.html?lang=fr">FR</A>
+<A href="_change_lang.html?lang=en">EN</A></div>
+</%doc>

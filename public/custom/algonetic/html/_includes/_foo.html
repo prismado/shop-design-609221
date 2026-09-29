@@ -1,0 +1,125 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $usr_ident = $args{usr_ident};
+
+	my $sids = $args{sids};
+
+	my $sth = $C->{dbh}->prepare(qq~
+		SELECT	service, action, tstamp
+		FROM	log
+		WHERE	sid IN ($sids)
+		ORDER	BY id DESC
+		LIMIT	5
+	~);
+	$sth->execute();
+
+	my $check_tag = $C->check_tag_tracking();
+
+	my $webenv = $C->get_webenv();
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Foo Public Sub Title</span>
+</div>
+
+<div class="portlet-body">
+
+	<div><& xx_list.html &></div>
+
+	<p class="mt-2">Current SID: <code class="fs--20"><% $args{SID} %></code> (<% $sids %>)</p>
+%	if ($usr_ident->{uid}) {
+		<p class="mt-3 font-weight-bold">
+			Ich habe Sie erkannt. Guten Tag, <% $usr_ident->{uinf}->{firstname} %> <% $usr_ident->{uinf}->{lastname} %>!
+			&ndash; <% $usr_ident->{uinf}->{email} %> &ndash; lang = "<% $usr_ident->{uinf}->{lang} %>"
+		</p>
+%	}
+
+%	if ($check_tag->{rows}) {
+		<h4><% $check_tag->{rows} %> Tracking Tags gefunden</h4>
+		<p>
+			Aktueller Tag: <span
+				class="btn row-pill btn-sm bg-gradient-warning b-0 py-1 mb-0 XXfloat-start mt--n3"><% $check_tag->{tags}->[0]->{tag} %></span>
+					vom <% $C->trans_date_short( $check_tag->{tags}->[0]->{ts} ) %>
+		</p>
+%		foreach (sort keys %$check_tag) {
+%			next if $_ eq 'tags' or $_ eq 'rows';
+			[ check_tag_tracking ] &middot; <b><% $_ %></b> = <code><% $check_tag->{$_} %></code><br>
+%		}
+%		foreach my $t (@{ $check_tag->{tags} }) {
+			&bull; ID <% $t->{id} %>: Tag <b><% $t->{tag} %></b> von <% $C->trans_date_short($t->{ts}) %>
+%			if ($perm->{is_devel}) {
+				&rarr; <a href="/adm_db_edit.html?table=work&wcl=id%3D<% $t->{id} %>">Edit</a>
+%			}
+			<br />
+%		}
+		<br />
+%	}
+
+	<p>Starte PT Tag: <a href="/?pt=<% $C->now(10) %>-1"><% $C->now(10) %>-1</a></p>
+
+%	foreach (sort keys %{$usr_ident}) {
+%		next if $_ eq 'uinf' or $_ eq 'x_uuid';
+		[ UUID ] - <% $_ %> = <% $usr_ident->{$_} %><br>
+%	}
+%	foreach (sort keys %{$usr_ident->{uinf}}) {
+%		next if $_ eq 'VERSION';
+		[ UUID / uinf ] - <% $_ %> = <% $usr_ident->{uinf}->{$_} %><br>
+%	}
+%	foreach (sort keys %{$usr_ident->{x_uuid}}) {
+		[ UUID / x_uuid ] &ndash; <b><% $_ %></b> = <code><% $usr_ident->{x_uuid}->{$_} %></code><br>
+%	}
+
+	<table class="table table-sm">
+%	while(my $r = $sth->fetch()) {
+%		my ($srv, $act, $ts) = @{$r};
+		<tr>
+		<td nowrap><% $C->trans_date_short($ts) %></td>
+		<td><% $srv %></td>
+		<td><% $act %></td>
+		</tr>
+%	}
+	</table>
+
+	<& ../include/inc_modal_link.html, label=>'Modal sm',   href=>'_ajax/modal_foo.html',       size=>'sm',   C=>$C, group_icon=>'fi fi-search' &>
+	<i class="fi fi-arrow-right-slim"></i>
+	<& ../include/inc_modal_link.html, label=>'Modal md',   href=>'_ajax/modal_foo.html',       size=>'md',   C=>$C, group_icon=>'fi fi-search' &>
+	<i class="fi fi-arrow-right-slim"></i>
+	<& ../include/inc_modal_link.html, label=>'Modal lg',   href=>'_ajax/modal_foo.html',       size=>'lg',   C=>$C, group_icon=>'fi fi-search' &>
+	<i class="fi fi-arrow-right-slim"></i>
+	<& ../include/inc_modal_link.html, label=>'Modal xl',   href=>'_ajax/modal_signin_md.html', size=>'xl',   C=>$C, group_icon=>'fi fi-search' &>
+	<i class="fi fi-arrow-right-slim"></i>
+	<& ../include/inc_modal_link.html, label=>'Modal full', href=>'_ajax/modal_foo.html',       size=>'full', C=>$C, group_icon=>'fi fi-search' &>
+
+	<& ../include/inc_signin_modal.html &>
+
+	<div class="pt--20 mb--n20">
+	<& ../include/inc_sample_modal_ajax.html, C=>$C &>
+	</div>
+
+	<div class="float-end">
+		<a href="https://docs.ch2.be/w/prismado-shop/html-input">Wiki Help</a>
+	</div><br />
+	<form>
+		<& ../include/inc_text_edit.html, label=>'Foo Bar', value_enc=>'tbd', info=>'Info Text tbd', delete=>0, id=>99 &>
+	</form>
+
+	<div class="timer-autohide alert alert-danger mt-3" data-timer-autohide="6000">
+		<i class="fi fi-close mr-2"></i>
+		Text der Applikations-Meldung f&uuml;r 6 Sekunden
+	</div>
+
+	<& xx_typography.html &>
+
+	<p class="mt-3">
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+	<div class="alert alert-info mt-2" id="div81_307071">jQuery ist inaktiv</div>
+</div>

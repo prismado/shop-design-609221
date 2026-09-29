@@ -1,0 +1,69 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	$C->redir('/_error.html') unless $perm->{is_admin};
+
+	my $SID = $C->getSID();
+	my $sig = $C->md5_secret($SID);
+
+	my ($tn_id, $last_change, $txt) =
+		@{ $C->query("select id, tstamp, val from properties where `key`='content_top_notch_de' and page='_global'") };
+
+	my ($hdr_id, $lc_header, $header) =
+		@{ $C->query("select id, tstamp, val from properties where `key`='content_top_notch_header_de' and page='_global'") };
+
+	my ($ftr_id, $lc_footer, $footer) =
+		@{ $C->query("select id, tstamp, val from properties where `key`='content_top_notch_footer_de' and page='_global'") };
+
+	my $status = $C->query("select val+0 from properties where `key`='content_top_notch_status_de' and page='_global'")->[0];
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Top-Notch Editieren</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% 'css_id_311152-19' %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<form method="post" name="f311152_20" action="/_sub.html">
+	<input type="hidden" name="sig"    value="<% $sig %>">
+	<input type="hidden" name="tn_id"  value="<% $tn_id %>">
+	<input type="hidden" name="action" value="update_top_notch">
+%	if ($perm->{is_devel}) {
+	<input type="hidden" name="hdr_id" value="<% $hdr_id %>">
+	<input type="hidden" name="ftr_id" value="<% $ftr_id %>">
+%	}
+
+% #	<span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span>
+
+	<span class="float-end mb-1 fs--13">
+		L-&Auml;nd. <% $C->trans_date_short($last_change) %>
+	</span>
+
+%	if ($perm->{is_devel}) {
+		<textarea name="hdr" rows="3" class="form-control mb-2"><% $header %></textarea>
+%	}
+
+	<textarea name="txt" rows="20" class="form-control mb-2"><% $txt %></textarea>
+
+%	if ($perm->{is_devel}) {
+		<textarea name="ftr" rows="3" class="form-control mb-2"><% $footer %></textarea>
+%	}
+
+	<& ../include/inc_text_edit.html, label=>'Status: 1=Aktiv / 0=Inaktiv', value_enc=>$status, id=>1 &>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Cancel
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft" onclick="document.f311152_20.submit()">
+				<i class="fi fi-check"></i> Speichern
+			</button>
+		</div>
+
+	</form>
+</div>

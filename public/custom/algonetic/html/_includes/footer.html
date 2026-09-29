@@ -1,0 +1,93 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+% # XX <footer id="footer" class="aside-primary text-white" style="z-index:9999;">
+<footer id="footer" class="aside-primary text-white" style="z-index:99;">
+	<table border="0" width="100%" class="mt-2">
+	<tr valign="top">
+		<td class="pl-3 fs--15" style="width:33%" nowrap>
+			<div class="hidden-lg-up mr-2 float-end">
+				<& inc_lang_sel_flag.html, a_id=>'topDDLanguage_411150', C=>$C &>
+			</div>
+			<b class="text-white"><% $C->prop('site_company') %></b><br />
+			<span class="fs--13 text-white-50"><br />
+				<div class="float-left mr-2 text-white"><i class="fi fi-pin"></i></div>
+				<div class="float-left">
+					<% $C->prp('site_addr') %><br />
+					CH-<% $C->prp('site_zip') %> <% $C->prp('site_city') %>
+				</div>
+			</span><br clear="all" />
+
+			<div class="float-left mr-2 text-white"><i class="fi fi-support mt-3"></i></div>
+			<div class="float-left text-white-50 fs--13 mt-3 mb-4">
+				<% $C->prp('site_phone') %><br>
+				<% $C->prp('site_email') %><br /><br />
+
+				&Ouml;ffnungszeiten: Mo - Fr 8:00 - 12:00 und 13:00 - 17:00 Uhr
+			</div>
+		</td>
+
+		<td style="width:33%" class="hidden-md-down" valign="bottom">
+			<table border="0" cellspacing=0 cellpadding=0 align="center">
+			<tr><td class="fs--13">
+			<a href="/info_agb.html">AGBs</a> &middot; <a href="info_datenschutz.html">Privacy</a><br />
+			<a href="/contact.html">Impressum</a><br />
+			<a href="/info-delivery.html">Lieferung, Lieferstatus</a><br />
+			<a href="/info-warranty.html">Garantie / Retouren</a><br />
+			<a href="/newsletter.html">Newsletter</a>
+			</td></tr>
+			<tr valign="bottom">
+				<td align="center">
+				<br />&nbsp;<br />
+				<center class="mb-0">
+					<a href="https://x.com/auctionline" aria-label="Auctionline auf X"><i class="fi fi-social-twitter"></i></a>
+					<a href="https://facebook.com/auctionline" aria-label="Auctionline auf Facebook"><i class="fi fi-social-facebook"></i></a>
+					<a href="https://www.linkedin.com/search/results/all/?keywords=swiss%20solution%20group%20ag" aria-label="LinkedIn"><i
+						class="fi fi-social-linkedin"></i></a>
+				</center><br />
+				</td>
+			</tr>
+			</table>
+		</td>
+
+		<td class="float-end pr-3 text-white-50 fs--13 hidden-md-down">
+			<p class="float-end mb-5">
+				<div class="float-end dropdown">
+					<& inc_lang_sel_flag.html, C=>$C &>
+				</div>
+			</p>
+
+			<br clear="all" />&nbsp;<br /><br clear="all" />
+			<br clear="all" />&nbsp;<br /><br clear="all" />
+			<br clear="all" />
+			<img id="cookie-icon" src="/assets/images/icons/cookie_transp_100_v2.webp"
+				style="width:15px; margin-right:10px; opacity:60%; cursor:pointer;">
+			&copy; 2026 | <a target="_blank" class="text-white-50" href="https://algonetic.com/prismado/">Prismado E-Commerce</a>
+		</td>
+	</tr>
+	</table>
+
+</footer>
+
+% # <!-- --------------------------- COOKIE BANNER --------------------------- -->
+% if ( $ENV{REQUEST_URI} !~ /\bsummary/ && $ENV{REQUEST_URI} !~ /\bpayment/ ) {
+
+<div id="cookie-backdrop" style="display:none; position:fixed; inset:0; z-index:9998; backdrop-filter:blur(3px); background:rgba(0,0,0,0.25);"></div>
+<div id="cookie-panel" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:50000000; background:#ffffff; border-top:1px solid var(--border); padding:2rem 2.5rem 2.5rem; max-height:90dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;">
+    <div id="cookie-panel-content" style="margin-top:-10px; margin-bottom:-10px;"></div>
+</div>
+
+
+% # -- 05Apr2026:
+<script src="/assets/js/htmx.min.js" defer></script>
+<script src="/js2/load-cookie-banner" defer></script>
+
+% }
+
+<%doc>
+# -- Variante: Preload (wenn kritisch, aber nicht blockierend) - Effekt: Browser lädt früher, ohne zu blockieren
+<link rel="preload" href="/js2/load-cookie-banner" as="script">
+<script src="/js2/load-cookie-banner" defer></script>
+</%doc>

@@ -1,0 +1,90 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my %args = ();
+	   $args{dt_ver} = $cgi->param('dt_ver');
+	# XXX    $args{debug} = $cgi->param('debug') + 0;
+
+	my $str_enc = '';
+
+	my $q      = $cgi->param('q');
+	my $debug  = $cgi->param('debug');
+</%init>
+% if ($debug) {
+	This: <code><% $C->this %></code><br>
+% }
+% if ($args{dt_ver} eq '1.9.1') {
+	<& inc_datatables_1_9_1_users.html, C=>$C &>
+% }
+% else {
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+
+<style type="text/css" media="screen">
+	table.dataTable tr.odd       { background-color: #f0f0f0; line-height: 1.6; color: black }
+	table.dataTable tr.even      { background-color: #fefefe; line-height: 1.6; color: #222222 }
+	table.dataTable td.sorting_1 { background-color: #eff0fa; font-weight: 500 }
+	table.dataTable tr:hover              { background-color: #e8e9f7 !important; }
+	table.dataTable tr:hover td.sorting_1 { background-color: #e8e9f7 !important; }
+</style>
+
+% # -- DataTables 1.10.18
+<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+%	if ($debug) {
+		<p class="mb-1">Was very slow version for unknown reasons &mdash; <a href="assets/js/datatables.min.js">datatables.min.js</a></p>
+%	}
+	<table id="example" clasx="display" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+		<th style="width:45px">ID</th>
+		<th>Vorname</th>
+		<th>Nachname</th>
+                <th>Firma</th>
+                <th>Ort</th>
+                <th>Telefon</th>
+                <th>E-Mail</th>
+                <th>L-&Auml;nd.</th>
+	    </tr>
+	</thead>
+	</table>
+
+% if ($debug) {
+	<% $C->this() %><br />
+%	foreach ($cgi->all_parameters) {
+		[ cgi ] &middot; <b><% $_ %></b> = <code><% $cgi->param($_) %></code><br>
+%	}
+% }
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 25,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Suchbegriff"
+	},
+	"ajax": "_ajax/server_processing_customers.html?q=<% $q %><% $debug ? "&debug=$debug" : '' %>",
+	"order": []
+    } );
+<%doc>
+	var oTable = $('#example').dataTable();
+	    oTable.fnSort( [ [0,'desc'] ] );
+</%doc>
+
+% #     var selectElement = document.querySelector('select[name="example_length"]'); selectElement.classList.add('form-control');
+} );
+</script>
+% }

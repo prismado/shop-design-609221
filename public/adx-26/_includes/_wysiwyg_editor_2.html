@@ -1,0 +1,30 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $prod_id = $C->query('select MAX(id) from products')->[0];
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Foo / Sub Title</span>
+</div>
+
+<div class="portlet-body">
+
+	<p>
+		<a href="edit-product.html?id=<% $prod_id %>">Edit Product</a> &mdash;
+		<a href="/custom/algonetic/html/plugins-vendor-summernote.html">Demo / Documentation</a> (Summernote)
+	</p>
+
+	<form method="post">
+
+	<textarea cols="80" id="editor1" name="mytxt" rows="10"><% $args{mytxt} %></textarea>
+	<& inc_ckeditor_v2_js.html, height=>255 &>
+
+	<input type="submit" class="btn btn-success mt-2" name="bSave" value="Speichern">
+
+	</form>
+
+</div>

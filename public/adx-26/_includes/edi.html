@@ -1,0 +1,150 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $mdata = $args{mdata};
+	my $edi   = $args{edi};
+	my $chv   = $args{chv} || 0; # -- check valid? 1 | 0
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $bCSVProd = $args{bCSVProd};
+	my $show_skp = $args{show_skp}; # -- 15Aug2024
+
+	my %cond_hr = (
+		1 => 'Neu',
+		2 => 'Refurb.'
+	);
+</%init>
+<div class="portlet-body">
+%	if ($bCSVProd) {
+		X -- <a href="/<% $args{outfile} %>"><% $args{outfile} %></a><br>
+%	}
+
+	<span class="float-right">
+		<a target="_blank" class="mr-2" href="/_systex/install/help/de/7/9/">Online-Hilfe: Refurbished</a> &middot;
+		<a href="edi-data.html" class="ml-2">Daten</a> &middot;
+		<a href="edi-search.html" class="ml-2">Erweiterte Suche</a>
+	</span>
+
+	<h4 class="fs--20">Bereite EDI-Produkte</h4>
+
+% # XX <p><% $stmt %></p>
+%	# -- dt_ver="1.10.18" / "1.9.1"
+	<prism-datatable table="vedi" dt_ver="1.10.18" macro="temp_410162" fil="" theme="" debug="0" role="admin"></prism-datatable>
+
+%	# ============================================================================================================================================
+%	# ============================================================================================================================================
+%	# ============================================================================================================================================
+	<h4 class="fs--20 mt-5 mb-3">Letzte EDI-Bestellungen &mdash; <a href="orders.html?show_edi=1">Alle anzeigen</a>
+%		if ($perm->{is_devel}) {
+			&mdash; <a href="/adm_log.html?importance=4&filter=galaxus_orders_dg2partner">Log</a>
+%		}
+	</h4>
+
+	<table class="table table-hover">
+	<tr>
+		<th>EDI Order Nr.</th>
+		<th>Order-ID</th>
+		<th>Eingang</th>
+		<th>Lieferung an</th>
+		<th>Total CHF</th>
+		<th>LS erstellt</th>
+	</tr>
+%	foreach my $d (@{ $edi->{orders} }) {
+%		my $dn_created = $C->query("select created_at from orders_status where order_id=$d->{order_id} and status_id=104")->[0] || '';
+%		my $xml        = $C->query("select xval from orders_details where order_id=$d->{order_id} and xkey='x_inpt' limit 1")->[0];
+%		my $work_id    = $C->query("select id from work where k='edi_order_GORDP_10391065_$d->{x_order_id}.xml'")->[0];
+%		my $addr       = $A->get_address_by_id($d->{uid}, 2);
+		<tr>
+		<td><b><% $d->{x_order_id} %></b></td>
+		<td nowrap><a href="/adm_order.html?id=<% $d->{order_id} %>"><% $d->{order_id} %></a>
+%			if ($d->{status} == 3) {
+				<span class="badge badge-warning">Storniert</span>
+%			}
+		</td>
+		<td nowrap><% $C->trans_date_short($d->{instime}) %> &ndash;
+			<a data-toggle="tooltip" data-placement="bottom" data-original-title="Original EDI-Bestellung" class="fs--13"
+				href="/_systex/data/import/edi/<% $xml %>"><% $xml %></a>
+%			if ($perm->{is_devel}) {
+				&ndash; Dev: <a href="/_systex/data/edi_order_response_<% $d->{order_id} %>.xml">GORDR</a>
+				&ndash; <a href="/_systex/data/GDELR_10391065_<% $d->{x_order_id} %>.xml">Disp. GDELR</a>
+%				if ($work_id) {
+				&ndash; <a href="/adm_db_edit.html?table=work&wcl=id%3D<% $work_id %>">W<% $work_id %></a>
+%				}
+%			}
+		</td>
+		<td><a href="/adm_user.html?id=<% $d->{uid} %>"><% $addr->{company} %> <% $addr->{firstname} %> <% $addr->{lastname} %></a></td>
+		<td class="font-weight-bold"><% sprintf('%.2f', $d->{amount_incl_vat}) %>
+%		foreach (sort keys %{ $d }) {
+%			next if /^order_id$/ or /^instime$/ or /^amount_incl_vat$/ or /^uid$/ or /^email$/ or /^x_order_id$/ or /^status$/;
+			XX <% $_ %> = <% $d->{$_} %><br>
+%		}
+		</td>
+		<td nowrap>
+%			if ($dn_created) {
+				<% $C->trans_date_short($dn_created) %>
+%			}
+%			else {
+%				unless ($d->{status} == 3) {
+				<a class="text-pink" href="/admix.html?func=orders&id=<% $d->{order_id} %>">Erstellen!</a>
+%				}
+%			}
+		</td>
+		</tr>
+%	}
+	</table>
+
+	<br clear="all" />
+	<hr />
+
+	<div class="row mt-2">
+
+	<div class="col-8">
+%		if ($perm->{is_devel}) {
+			<a href="manage-property.html?area=delivery_legal_note_edi">Rechtliche Hinweise</a><br>
+%		}
+
+		<h5 class="float-left">Rechtliche Hinweise</h5>
+
+		<a href="#" class="js-ajax-modal float-start"
+		data-href="/_ajax/modal_edit_property_sow.html?p=delivery_legal_note_edi&l=de"
+			data-ajax-modal-size="modal-lg"
+			data-ajax-modal-centered="true"
+			ZZdata-ajax-modal-backdrop="static">
+			<span><i class="fi fi-pencil fs--19 ml-2"></i></span>
+		</a><br clear="all" />
+
+		<p class="font-weight-bold mb-2">Hinweis auf Lieferschein an Endkunden</p>
+
+		<div class="p-3 fs--13" style="border: 2px #717171 solid">
+%			(my $deliv_legal_note = $C->txt('delivery_legal_note_edi', 'de')) =~ s/\n/<br>/g;
+			<% $deliv_legal_note %>
+		</div>
+	</div>
+
+	<div class="col-4">
+	    <div
+		class="d-block clearfix p-2 shadow-md text-decoration-none position-relative bg-white transition-all-ease-250 rounded overflow-hidden show-hover-container">
+
+		<div class="ZZp-5 px-2 m-0 text-center rounded position-relative z-index-1 overlay-dark-hover overlay-opacity-3 rounded overflow-hidden bg-cover lazy" 
+			data-loaded="true"
+				style="background-image: url(&quot;assets/images/edi_delivery_note.webp&quot;); box-shadow: 7px 7px 4px #888888; padding: 8vw !important">
+				
+			<!-- empty image -->
+			<img class="w-100" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyIDMiIC8+" alt="..."> 
+
+			<!-- hover visible (always visible on mobile) -->
+			<div class="absolute-full z-index-3 text-white text-center d-flex align-items-center justify-content-center show-hover-item">
+				<a href="assets/images/edi_delivery_note.webp" class="btn btn-sm btn-warning transition-hover-top">Volle Ansicht</a>
+			</div>
+
+		</div>
+
+		<h3 class="h6 text-center pt-3"><a target="_blank"
+			href="https://drive.google.com/file/d/1_Ed_zJdDvL7YbgNFf6ZcQC7S0oF93ezz/view?usp=sharing">Beispiel-Lieferschein f&uuml;r EDI-Bestellungen</a></h3>
+	    </div>
+	</div>
+
+	</div>
+</div>

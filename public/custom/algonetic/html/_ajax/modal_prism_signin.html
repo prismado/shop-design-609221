@@ -1,0 +1,47 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $debug = $C->getSessData('debug') || 0;
+
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<div class="modal-dialog modal-md" role="document">
+
+		<div class="modal-content">
+<%doc>
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabelFull">Modal title</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+</%doc>
+
+% #			<div class="modal-body">
+%				if ($debug) {
+					<p class="text-center mt-1"><code><% $C->this() %></code> / css_id="<% $css_id %>"</p>
+%				}
+				<& modal_signin_md.html &>
+% #			</div>
+
+<%doc>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary">
+					<i class="fi fi-check"></i> Save changes
+				</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">
+					<i class="fi fi-close"></i> Close
+				</button>
+			</div>
+</%doc>
+		</div>
+
+	</div>
+</div>
+
+<%doc>
+	Created: 11Apr2024
+</%doc>

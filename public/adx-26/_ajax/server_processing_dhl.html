@@ -1,0 +1,58 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	my $perm = $C->get_user_perm();
+	unless ($perm->{is_admin}) {
+		$m->out('Access denied');
+		$m->abort();
+	}
+
+	# sleep 5;
+	my $debug = $C->{CGI}->param('debug') + 0;
+
+	my $sth = $C->{dbh}->prepare(q~
+		SELECT	created_at, uid, src, order_id, status_id, SUBSTR(xval, 1, 190)
+		FROM	orders_status
+		WHERE	src LIKE 'dhl\_send\_ship%'
+		ORDER	BY 4 DESC
+		LIMIT	1000
+	~);
+	   $sth->execute();
+
+	my @msg = ();
+	foreach ($C->{CGI}->all_parameters) {
+		push(@msg, "$_=" . $C->{CGI}->param($_));
+	}
+	push(@msg, $sth->rows() . ' rows');
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+    "iTotalRecords": 6,
+    "iTotalDisplayRecords": 5,
+    "data": [
+%	while(my $r = $sth->fetch()) {
+%		my ($created_at, $uid, $src, $order_id, $status_id, $xval) = @{$r};
+%		(my $xval_enc = $xval) =~ s/"/'/g;
+%		    $xval_enc =~ tr/[\n\r]/ /; # -- 14Oct2024
+%		my $track_no = $C->query("select xval from orders_details where order_id=$order_id and xkey='dhl_shipmentTrackingNumber' limit 1")->[0];
+%		# XXX my $d_info = $debug ? qq~<a href='/adm_db_edit.html?table=orders_status&wcl=id%3D$id'><i class='fi fi-pencil'></i></a> ~ : '';
+		[
+			"<a href='/admix.html?func=orders&id=<% $order_id %>'><b><% $order_id %></b></a>",
+			"<nobr><i class='fi fi-truck-speed fs--20'></i> <% $src %></nobr>",
+			"<% $status_id %> <% $xval_enc %>",
+			"<% $track_no %>",
+			"<nobr><% $C->trans_date_short($created_at) %></nobr>"
+		],
+%	}
+		[
+			"<b>0000</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> tbd",
+			"tbd",
+			"99",
+			"<nobr>-</nobr>"
+		]
+    ]
+}

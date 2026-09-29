@@ -1,0 +1,37 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 23May2025
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id    = $cgi->param('id') + 0;
+
+	my $perm  = $C->get_user_perm();
+	# my $debug = $C->getSessData('debug') || 0;
+
+	my @msgs = ();
+
+	push(@msgs, q~Der Artikel wurde zur genaueren Pr&uuml;fung weitergeleitet.
+			Sie erhalten eine R&uuml;ckmeldung, sobald ein Ergebnis vorliegt.<hr />~);
+
+	# XXX foreach ($cgi->all_parameters) {
+	# XXX	push(@msgs, "$_ = " . $cgi->param($_) . '<br>');
+	# XXX }
+
+	# XX $C->{dbh}->do(qq~insert into products_feat (product_id, featname, featkey, weight, `description`) values ($id, '_exclude', 'OP_ALERT', -1, '0')~);
+	# XX $C->{dbh}->do(qq~insert into products_feat (product_id, featname, featkey, weight) values ($id, '_exclude', 'OP_RECOMM', -1)~);
+
+	$C->call_batch(call => qq~\\\$A->escalate_article(id=>$id, uid=>$perm->{uid})~); # -- 07Sep2025
+	# XXX $C->call_batch(call => qq~\\\$A->escalate_article(id=>$id)~);
+
+	$C->create_toast_note(title=>'Eskalation', delay=>30000, width=>'550px', body=>join "\n", @msgs);
+
+	# XX $A->add_product_history(id=>$id, code=>7, action=>'Eskalation. Produkt wird &uuml;berpr&uuml;ft');
+
+	$m->redirect("edit-product.html?id=$id");
+</%init>

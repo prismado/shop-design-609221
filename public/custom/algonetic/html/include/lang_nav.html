@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $lang  = $args{lang};
+	my $debug = $args{debug};
+</%init>
+<div class="collapse navbar-collapse" ix="navbarMainNav">
+
+	<ul class="navbar-nav align-items-center">
+
+	<li class="nav-item dropdown">
+		<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"
+			aria-haspopup="true" aria-expanded="false" id="mainNavHome"><% uc $lang %></a>
+
+		<ul class="dropdown-menu dropdown-menu-clean" aria-labelledby="mainNavHome">
+		<li class="dropdown-item"><a class="dropdown-link" href="/_change_lang.html?lang=de"><i class="flag flag-ch"></i> DE</a></li>
+		<li class="dropdown-item"><a class="dropdown-link" href="/_change_lang.html?lang=en"><i class="flag flag-gb"></i> EN</a></li>
+		<li class="dropdown-item"><a class="dropdown-link" href="/_change_lang.html?lang=fr"><i class="flag flag-fr"></i> FR</a></li>
+		</ul>
+	</li>
+
+	</ul>
+
+</div>

@@ -1,0 +1,17 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+</%init>
+
+<tr class="well">
+	<th></th>
+	<th style='text-align:center'><% $C->prop('count') %></th>
+	<th><% $C->prop('product') %></th>
+	<th style="text-align:right"><% $C->prop('price_p_piece') %></th>
+	<th style="text-align:right"><% $C->prop('price') %> CHF</th>
+	<th></th>
+</tr>
+<%doc>
+	__METACLONINx__
+</%doc>

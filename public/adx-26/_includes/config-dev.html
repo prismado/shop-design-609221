@@ -1,0 +1,219 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0);
+
+	my $sth = $C->{dbh}->prepare(q~select id, SUBSTR(`key`, 7, 63), val, tstamp from properties where page='_redir' and `key` LIKE 'redir\_%\_sys' order by 2~);
+	   $sth->execute();
+
+	my $std_vat = $C->{CONFIG}->{vat} + 0;
+
+	my $meta_properties = $C->mquery(stmt=>q~SELECT DISTINCT page FROM properties WHERE page LIKE '\_%' ORDER BY 1~);
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>XX Config</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<div class="float-end w--200">
+		<& inc_select_redir.html, this=>$C->this() &>
+	</div>
+
+    <div class="row">
+	<div class="col-6">
+	<ul class="list-group list-group-flush rounded overflow-hidden mt-3">
+		<& inc_aero_list_item.html, label=>"Hauptkonfiguration", url=>'special_keys.html',
+			info=>qq~Alle CONFIG-Werte &ndash; <a href="show.html?macro=mail">E-Mail-Einstellungen</a> &mdash;
+			$std_vat % MwSt~, badge=>'fi fi-cog', badge_type=>'danger', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"Safe-Properties", url=>'/adm_safe_properties.html?lang=sys',
+			info=>q~<a href="https://docs.ch2.be/w/prismado-shop/feat-safe-property">Wiki Infos</a>~,
+				badge=>'fi fi-cog-full', badge_type=>'danger', legacy=>1, C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"System Jobs", url=>'/adx/show.html?macro=prism_sys_jobs',
+			info=>'Periodische automatische Verarbeitungen', badge=>'fi fi-cog-full', badge_type=>'danger', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'PDF-Konfiguration', url=>'https://docs.ch2.be/w/prismado-shop/feat-config', legacy=>0,
+			info=>'Wiki', badge=>'fi fi-cog-full', badge_type=>'danger', C=>$C &>
+	</ul>
+	</div>
+	<div class="col-6">
+		<ul class="list-group list-group-flush rounded overflow-hidden mt-3">
+		<& inc_aero_list_item.html, label=>'Lizenz-Schl&uuml;ssel', url=>'https://docs.ch2.be/w/publigate-tech/license', legacy=>1,
+			info=>'Wiki', badge=>'fi fi-hourglass', badge_type=>'warning', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Dump Order Position(s)<sup class="fs--11 ml-1">Devel</sup>', url=>'dev-get-order.html',
+			info=>'Dump Order (Entwickler)', badge=>'fi fi-cog-full', badge_type=>'warning', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Dump (Order) Product<sup class="fs--11 ml-1">Devel</sup>', url=>'dev-get-product.html',
+			info=>'Dump Produkt (Entwickler)', badge=>'fi fi-cog-full', badge_type=>'warning', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Inhalt &amp; allg. Produkte-Eigenschaften', url=>'content.html', legacy=>0,
+			info=>'Multilinguale Produkte-Eigenschaften / Standard-Label', badge=>'fi fi-cog-full', badge_type=>'danger', C=>$C &>
+		</ul>
+	</div>
+    </div>
+
+	<h2 class="fs--30 mt-4 ml-3">Allgemeiner Tipp f&uuml;r das Editieren von DB-Werten</h2>
+	<p class="col-8">
+		Um allgemein Datenbankwerte zu editieren, kann die "Komponente" <code>adm_db_edit.html</code> auch f&uuml;r einen Nicht-Dev eingesetzt werden,
+		allerdings muss dazu eine Pr&uuml;fsumme gebeildet werden (CGI-Parameter <code>s_token=</code>{PR&Uuml;FSUMME}).<br>
+		Bsp. f. Pr&uuml;fsummenbildung: <code>my $md5_secret = $C->md5_secret('pdf_config');</code>
+	</p>
+
+%	# =================================================================================================================================
+	<h2 class="fs--30 mt-4 ml-3">Generische Admin-Funktion</h2>
+%	my $m_xml = $C->txt('macro_products', 'sys', '_macro');
+%	(my $macro_xml = $m_xml) =~ s/\</&lt;/g;
+%	    $macro_xml =~ s/\>/&gt;/g;
+%	# XX my $res = $C->parse_xml(xml=>\$m_xml);
+
+%	my $stm = $C->{dbh}->prepare("select SUBSTR(`key`, 7, 31) from properties where `key` LIKE 'macro\_%\_sys' and page='_macro' order by 1");
+%	   $stm->execute();
+
+	<p class="col-8">
+		F&uuml;r das schnelle Erstellen neuer Admin-Funktionen &ndash; um Funktionen zu <span class="text-pink">l&ouml;schen</span>, XML-Code aus der DB l&ouml;schen<br>
+
+		<p class="font-weight-bold mt-0 ml-3 mb-2"><% $stm->rows() %> Beispiel-Funktionen
+			&rarr; <a href="manage-property.html?area=macro"><b>Liste</b> <small>(SYS Properties)</small></a>
+				&ndash; <a href="https://x.prismado.com/lab/xml/?string=2">XML Lab</a>
+		</p>
+		<div class="ml-3">
+			<table class="table table-sm table-hover">
+%			while(my $r = $stm->fetch()) {
+%				(my $macro = $r->[0]) =~ s/\_sys$//;
+%				my $xml = $C->txt("macro_$macro", 'sys', '_macro');
+%				my $res = $C->parse_xml(xml=>\$xml);
+				<tr><td width="13%">
+				<a href="show.html?macro=<% $macro %>"><% ucfirst $macro %></a>
+%				if ($macro eq 'products') {
+					<small>&rarr; (Vorgabe)</small>
+%				}
+				</td>
+				<td width="26%"><span class="text-<% $res->{meta_type} eq 'DataTable' ? 'cyan-600' : 'amber-500' %>"><% $res->{meta_type} %></span>
+					&middot; <% $res->{top_label_de} %></td>
+				<td class="prism-limit-len-300">
+					<% $res->{master}->[0]->{label_de} %><br>
+%					foreach my $d (@{ $res->{master} }) {
+%						foreach my $k (sort keys %{ $d }) {
+%							(my $val = $C->trim( $d->{$k} )) =~ s/\</&lt;/g;
+%							(my $k_disp = $k) =~ s/^desc\_//;
+%							next if !length($val) or $k =~ /^sub$/ or $k =~ /^desc_css$/ or $k =~ /^icon$/ or $k =~ /^sub$/
+%								or $k =~ /^desc_breadcrumb/ or $k =~ /^label/;
+							&rsaquo; <% $k_disp %>: <% $val %><br>
+%						}
+%					}
+%					foreach (sort keys %{$res}) {
+%						next unless length($res->{$_});
+%						next if $_ eq 'rc' or $_ eq 'VERSION' or $_ eq 'top_label_de' or $_ eq 'meta_version' or $_ eq 'master'
+%								or $_ eq 'meta_id' or $_ eq 'meta_created' or $_ eq 'meta_type' or $_ eq 'meta_auth_req';
+						&rsaquo; <% $_ %>: <% $res->{$_} %><br>
+%					}
+				</td>
+				<td><% $res->{meta_auth_req} %></td>
+				<td width="5%"><a href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_<% $macro %>_sys%27+AND+page%3D%27_macro%27">XML</a>
+				<td width="8%"><span class="float-end"><% $res->{meta_created} %></span></td>
+				</tr>
+%			}
+			</table>
+
+			<span class="float-end mt-3 pr--20">
+				<a href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_products_sys%27+AND+page%3D%27_macro%27"><i
+					class="fi fi-pencil fs--20"></i></a>
+			</span>
+		</div>
+	</p>
+
+%	# =================================================================================================================================
+	<h2 class="fs--30 mt-4 ml-3">Speichern von Kontroll- und Meta-Informationen</h2>
+	<p class="col-8">
+		<ol>
+		<li><h6><a href="manage-property.html">Properties</a> mit Sprach-Code <code class="font-weight-bold fs--18">sys</code></h6>
+			Die Feldl&auml;nge von "<code>val</code>" ist sehr gross (<a
+				href="/adm_db_edit.html?table=properties&wcl=`key`=%27google_conv_tracking_tag_sys%27">16777215 Bytes</a>).<br>
+% 			my @metaprp = map {s/^\_//; qq~<code><a href="manage-property.html?area=$_">_$_</a></code>~} @{ $meta_properties->{mrows} };
+			Aktuelle und empfohlene Werte f&uuml;r <code>page</code>:&nbsp;&nbsp;<% join ' / ', @metaprp %> <small class="ml-2">(= System-Kategorien)</small><br><br>
+
+			<a href="/adx/manage-property.html?area=cfg">Verwaltung</a> (CFG) &middot;
+			Legacy-Verwaltung: <a href="/adm_properties.html?filter=google_&lang=sys">sys</a><br>
+			Abfrage mit <code>$val = $C-&gt;get_sys_config('upload_path_pic');</code><br>
+			Bsp. <a href="manage-property.html?area=google_conv_tracking">Google Conversion Tracking</a><br>
+		</li>
+		<li class="mt-4"><h6><a href="/adm_safe_properties.html?lang=sys">Safe-Properties</a></h6>
+			Derzeit <a href="/adm_db_edit.html?table=config_prod_feat&wcl=featkey=%27b2b%27">kurze Feldl&auml;ngen</a></li>
+		</ol>
+	</p>
+
+	<h2 class="fs--30 mt-4 ml-3">Admin-URLs (und <a href="manage-property.html?area=redir"><% $sth->rows() %> Redirects</a>) in Datenbank</h2>
+	<p class="col-8">
+		Bsp.: "<a href="/adm_orders.html">adm_orders.html</a>" umleiten zu neuer Funktion "adx/orders.html".<br>
+		Durch eine Datenbankabfrage der Admin-Funktionen wird dadurch auch eine automatisierte Dokumentation und Funktions-Suche m&ouml;glich.<br>
+		Weiter k&ouml;nnen aktuelle Links in E-Mail-Inhalten generiert werden.<br>
+		Aufruf mit <a href="manage-property.html?area=redir"><code>$A-&gt;prism_get_redir(in=>'tbd')</code></a><br><br>
+
+		<table class="table table-sm table-hover ml-2 col-md-8">
+		<tr>
+			<th style="width:33%">Input</th>
+			<th>Redirect</th>
+			<th>Erstellt</th>
+		</tr>
+%		while(my $r = $sth->fetch()) {
+%			my ($id, $key, $val, $ts) = @{$r};
+%			    $key =~ s/\_sys$//;
+			<tr>
+			<td><b><% $key %></b></td>
+			<td>
+%				if ($perm->{is_devel}) {
+					<a href="/adm_db_edit.html?table=properties&wcl=id%3D<% $id %>"><% $id %></a> &larr;
+%				}
+				<code><% $val %></code>
+			</td>
+			<td><% $C->trans_date_short($ts) %></td>
+			</tr>
+%		}
+		</table>
+
+%		for my $in (qw(foo adm_orders.html asdf _generic_error)) {
+			In: <b><% $in %></b><br>
+%			my $redir_test = $A->prism_get_redir(in=>$in, quiet=>1);
+%			foreach (sort keys %{$redir_test}) {
+				[ prism_get_redir ] &middot; <b><% $_ %></b> = <code><% $redir_test->{$_} %></code><br>
+%			}
+			-----------------------------------------------------------------<br>
+%		}
+	</p>
+
+%	if ($perm->{is_devel}) {
+%		my $uuid  = $C->get_uuid();
+%		my $uuid2 = $C->get_uuid(required_sid=>1);
+		<hr />
+		<a href="https://x.prismado.com/lab/layout2023/components-icons.html">Icons</a> &ndash;
+		<a href="/adm_safe_properties.html?lang=sys&filter=unicode">Unicode Symbols</a> &ndash;
+		<a href="_wysiwyg_editor.html">Wysiwyg Editor (Summernote)</a> &ndash;
+		<a href="dev-typeahead.html">Demo Typeahead</a> &ndash;
+		<a href="dev-webc-prism-dialog.html">Demo Prismado Dialog</a> &ndash;
+		<a href="https://dms.prismado.com/components-buttons.html">Components Buttons</a><br /><br />
+
+		<code>$C-&gt;{sid}</code> = <% $C->{sid} %> / <% $C->getSID() %><br><br>
+%		foreach (sort keys %{$uuid}) {
+%			next unless length($uuid->{$_});
+%			next if /^rc$/;
+			[ uuid ] &middot; <b><% $_ %></b> = <code><% $uuid->{$_} %></code><br>
+%		}
+		<br>
+%		foreach (sort keys %{$uuid2}) {
+%			next if /^rc$/;
+			[ uuid (2) ] &middot; <b><% $_ %></b> = <code><% $uuid2->{$_} %></code><br>
+%		}
+		<br>
+
+		<div class="alert alert-info"><% $macro->{out} %></div>
+%	}
+</div>

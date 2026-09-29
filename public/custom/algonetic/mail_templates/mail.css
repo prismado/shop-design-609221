@@ -1,0 +1,40 @@
+<style>
+table  {font-family:Arial, Helvetica, sans-serif;font-size: 13px; color: #5E5E5E; line-height:16px; background-color:#fff; max-width:620px; border:5px solid #fff;}
+.greyback {background-color:#fff; color:#333!important;}
+.headback {background-color:#eee !important; color:#333;}
+h2 {background-color:#eee !important; margin-bottom: 0px !important;padding-left: 8px;}
+h3 {margin-bottom: 0px !important; margin-top: 4px !important;padding-left: 4px; font-size: 14px !important; font-weight: normal !important;}
+.price_block {
+padding: 8px;
+font-family:Arial, Helvetica, sans-serif;
+font-size: 11px; color: #5E5E5E; 
+line-height:16px;
+}
+.price_block_header {
+background-color:#353D47; 
+color:#fff; 
+border: 0px solid #199de8;
+}
+.price_block_header td {
+color: #fff;
+border-bottom: 1px solid #777;
+}
+.price_block_row td {
+border-bottom: 1px solid #777;
+}
+.row_small{
+padding:2px;
+}
+.row_small td{
+border-bottom: 1px solid #777;
+}
+.row_small_d{
+padding:8px 0px 8px 0px;
+}
+.row_small_d td{
+border-bottom: 1px solid #777;
+}
+a {
+ color:#353D47;
+}
+</style>

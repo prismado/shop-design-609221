@@ -1,0 +1,57 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+
+	my $stu = $C->{dbh}->prepare(q~select user_id, uname, substr(xkey, 17, 15), xval
+				from users_details, users u where xkey LIKE 'perm_is_service_%' and u.id=user_id~);
+	   $stu->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my @cat_ids = ();
+	push(@cat_ids, $perm->{is_service_user});
+	my $prods = $A->get_products_by_cat_ids(\@cat_ids);
+</%init>
+<div class="portlet-body">
+
+	<h3 class="fs--20">Zu bewilligen</h3>
+
+	<p>
+		<a href="orders.html?show_edi=1">Alle Bestellungen</a>
+	</p>
+
+	<div class="d-flex mb-3">
+			<div class="badge badge-success badge-soft badge-ico-sm rounded-circle float-start">
+				<i class="fi fi-check"></i>
+			</div>
+
+			<p class="text-dark font-weight-light mb-0 pl--12 pr--12">
+				Flexible design
+			</p>
+	</div>
+
+%    if ($perm->{is_service_admin} && 1==2) {
+	<h3 class="fs--20">Benutzerliste &ndash; Cat-ID <% $perm->{is_service_user} %></h3>
+
+	<table class="table table-sm border table-hover">
+%	while(my $r = $stu->fetch()) {
+%		my ($uid, $uname, $key, $val) = @{$r};
+		<tr>
+			<td><% $uname %></td>
+			<td><a href="/adm_user.html?id=<% $uid %>"><% $uid %></a></td>
+			<td><% ucfirst $key %></td>
+			<td class="float-end"><% $val %></td>
+		</tr>
+%	}
+	</table>
+%    }
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+	</p>
+
+</div>

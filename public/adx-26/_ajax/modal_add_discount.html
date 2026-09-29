@@ -1,0 +1,81 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id     = $cgi->param('id') + 0;
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+
+	my $prdinf = $A->get_product_v2(id=>$id);
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-md modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Rabatt hinzuf&uuml;gen</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form onsubmit="return validateForm403170()">
+
+			<div class="modal-body">
+				<p>Basis Verkaufspreis: <b>CHF <% $C->decimal_mark($prdinf->{price_orig_incl_vat}) %></b></p>
+
+				<label class="form-switch form-switch-primary d-block mt-4">
+					<input type="checkbox" name="cb_final_buyer_price" value="1"
+						onclick="discount_is_amount_407061(this.checked)">
+						<i data-on="&#10004;" data-off="&#10005;"></i>
+							<div class="fs--16 pt-0" id="d407072_35">Eingabe in CHF statt in %</div>
+				</label>
+
+				<p class="mt-4 mb-2 text-dark fs--17"id ="p407071_30">Eingabe in <b>%</b></p>
+
+				<& ../_includes/inc_text_input.html, label=>'Rabatt in % oder CHF', value_enc=>10.0, write=>1,
+					tx_class=>'font-weight-bold fs--18', id=>403170 &>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--180" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="submit" class="btn btn-primary btn-sm w--180">
+					<i class="fi fi-check"></i> Speichern
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm403170() {
+		update('discount_perc', document.getElementById('txe_403170').value);
+		update_subm()
+		return false;
+	}
+
+	function discount_is_amount_407061(val) {
+		active = 'NO';
+		if (val === true) {
+			active = 'YES';
+			document.getElementById('p407071_30').innerHTML = 'Eingabe in <b>CHF</b>';
+			document.getElementById('d407072_35').innerHTML = '<b>Eingabe in CHF</b>';
+		}
+		else {
+			document.getElementById('p407071_30').innerHTML = 'Eingabe in <b>%</b>';
+			document.getElementById('d407072_35').innerHTML = 'Eingabe in CHF';
+		}
+		update('f_discount_is_amount', active);
+	}
+</script>

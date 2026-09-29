@@ -1,0 +1,76 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $debug    = $args{debug};
+	my $show_all = $args{show_all};
+	my $show_edi = $args{show_edi};
+</%init>
+<div class="portlet-body">
+
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+<link rel="stylesheet" type="text/css" href="assets/css/prism_datatables_1_10_x.css">
+
+% # -- DataTables 1.10.18
+<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+		<p class="mb-0 mt-2 hidden-md-down" style="position:absolute !important; margin-left:150px; z-index: 1 !important">
+			Kundenbestellungen &ndash;
+%				if ($show_all) {
+					<a class="link-muted" href="orders.html">Abgeschlossene anzeigen</a>
+%				}
+%				else {
+					<a class="link-muted" href="orders.html?show_all=1">Alle anzeigen</a>
+%				}
+		</p>
+
+	<table id="example" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+		<th>Best.-Nr</th>
+		<th style="width:172px;">Bestellzeit</th>
+		<th>Kunde</th>
+		<th>Produkte</th>
+		<th>Total <% $C->{CONFIG}->{default_curr} %></th>
+		<th>Zahlung</th>
+		<th><span class="float-end">Status</span></th>
+	    </tr>
+	</thead>
+	</table>
+
+</div>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 25,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Kundenname oder Bestell-Nr."
+	},
+	"ajax": "_ajax/server_processing_orders.html?show_all=<% $show_all %>&show_edi=<% $show_edi %><% $debug ? "&debug=$debug" : '' %>",
+        "drawCallback": function(settings) {
+            $('[data-toggle="tooltip"]').tooltip({
+                container: 'body'
+            })
+	},
+	"order": []
+    } );
+
+	$('.dataTables_filter input').css({'width': '330px', 'border-radius': '8px'});
+	$('.dataTables_filter input').removeClass('form-control-sm');
+	$('.dataTables_filter input').attr('id', 'customSearchInput40130');
+
+	document.getElementById('customSearchInput40130').focus();
+} );
+</script>

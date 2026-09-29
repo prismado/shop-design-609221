@@ -1,0 +1,45 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $labels = $args{labels};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>Foo Sub Title</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<p>Typeahead Demo</p>
+
+	<form method="post">
+		<input type=text class="ta_404031_20 form-control mt-2" style="min-width: 20vw; max-width:45vw !important" autocomplete="off"
+			id="auto404021_19" placeholder="Bindestrich &quot;-&quot; f&uuml;r Auswahl" name="tbd" value=""><br>
+
+		<input type="submit" class="btn btn-primary mt-2 mb-2" value="Go!" name="bXX">
+	</form>
+
+	<hr />
+	[ <% ${ $A->modal( label=>'Test Modal v2', class=>'text-blue-600',
+		url=>'/adx/_ajax/modal_foo_typeahead_2.html?id=4321&css_id=404031_28&foxi=932171-321', css_id=>'404031_28') } %> ]
+
+	<p class="mt-3">
+		Siehe auch<br>
+		&bull; <a href="https://dmsd.prismado.com/plugins-sow-inline-search.html">plugins-sow-inline-search</a><br>
+		&bull; <a href="https://twitter.github.io/typeahead.js/examples/">twitter.github.io/typeahead.js/examples</a>
+	</p>
+
+	<div id="div82_404021">JQuery ist inaktiv</div>
+
+	<p class="mt-3">
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+</div>

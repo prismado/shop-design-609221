@@ -1,0 +1,71 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $size   = $cgi->param('size')   || 'lg';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+</%init>
+<div class="modal fade" id="<% $css_id %>" DDtabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-<% $size %> modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Prism Modal &middot; Foo</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<p>Param ID: <b><% $id %></b> &mdash; Template: <code><% $C->this() %></code></p>
+				<p>Eine Ausgelagerte Modal-Datei mit CSS-ID <code><% $css_id %></code>.</p>
+				<p>2 plus 3 = <% 2 + 3 %> am <% $C->now(2) %></p>
+
+				<table cass="table XXtable-sm">
+%				for (my $i = 1; $i < 6; $i++) {
+					<tr style="background-color:white !important">
+						<td clasx="pl-0">
+							<& ../_includes/inc_text_input.html, label=>"Eing. Nr. $i", value_enc=>'', name=>"in_404201_33_$id",
+								tx_class=>'font-weight-bold fs--17 text-dark option-title-404171', write=>1, id=>50+$i &>
+						</td>
+						<td class="p-3">
+							<prism-dialog-sr prompt="Eing. Nr. <% $i %> (ShadowRoot)" instruction=""
+								callback="foo" timeout="1000" css_id="pd_404201_34_<% $i %>"
+								x_info="Von Eingabe Nr. <% $i %>"
+								x_gaga="gugu 12345">
+							</prism-dialog-sr>
+						</td>
+					</tr>
+%				}
+				</table>
+
+				<div class="mt-4 mb-4">
+					<prism-dialog class="mt-3" prompt="2. Eingabe" instruction=""
+						callback="foo" timeout="1000" css_id="pd_404201_36"
+						x_info="Von der 2. Eingabe"
+						x_gaga="gugu 12345">
+					</prism-dialog>
+				</div>
+
+%				foreach ($cgi->all_parameters) {
+					X -- <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%				}
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150">
+					<i class="fi fi-check"></i> Okay
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>

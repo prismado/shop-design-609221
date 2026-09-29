@@ -1,0 +1,79 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $str_enc = '';
+</%init>
+<div class="portlet-header border-bottom">
+	<div class="float-right">
+		<a href="_datatables.html">SOW Version</a> &ndash;
+% # XXX		<a href="_datatables_v2.html">V-2</a> &ndash;
+		V-3
+	</div>
+	<span>Daten</span>
+</div>
+
+<div class="portlet-body">
+
+	<table id="example" class="display" style="width:100%">
+	<thead>
+	    <tr>
+		<th style="width:45px">ID</th>
+		<th>Vorname</th>
+		<th>Nachname</th>
+		<th>Strasse</th>
+		<th>Ort</th>
+		<th>Bereich</th>
+		<th>Telefon</th>
+		<th>E-Mail</th>
+	    </tr>
+	</thead>
+	<tfoot>
+	    <tr>
+		<th>ID</th>
+		<th>Vorname</th>
+		<th>Nachname</th>
+		<th>Strasse</th>
+		<th>Ort</th>
+		<th>Bereich</th>
+		<th>Telefon</th>
+		<th>E-Mail</th>
+	    </tr>
+	</tfoot>
+	</table>
+
+<style type="text/css" media="screen">
+	table.dataTable tr.odd       { background-color: #f0f0f0; line-height: 2.2; color: black }
+	table.dataTable tr.even      { background-color: #fefefe; line-height: 2.2; color: #222222 }
+	table.dataTable td.sorting_1 { background-color: #eff0fa; font-weight: 500 }
+	table.dataTable tr:hover              { background-color: #e8e9f7 !important; }
+	table.dataTable tr:hover td.sorting_1 { background-color: #e8e9f7 !important; }
+</style>
+
+</div>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 15,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {	"sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"sSearchPlaceholder": "Suchbegriff"
+	},
+	"ajax": "_ajax/server_processing_contacts.html?status=<% $args{status} %>&q=<% $args{q} %>&str=<% $str_enc %><% $args{debug} ? "&debug=$args{debug}" : '' %>"
+    } );
+	var oTable = $('#example').dataTable();
+	    oTable.fnSort( [ [0,'desc'] ] );
+
+	var selectElement = document.querySelector('select[name="example_length"]'); selectElement.classList.add('form-control');
+} );
+</script>
+

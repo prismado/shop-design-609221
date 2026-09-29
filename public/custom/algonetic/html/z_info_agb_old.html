@@ -1,0 +1,48 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+	# $C->set_workval("sid_$SID", "IP=$ENV{REMOTE_ADDR}\tUA=$ENV{HTTP_USER_AGENT}"); # -- Start record this session
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $domain = $C->grep_2nd_level_dom($ENV{HTTP_HOST});
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$C->{CONFIG}->{site_title}%> - <% $C->prop('agbs_long') %></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid ps-content">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('agbs_long') %></h1></div>
+
+<div id="contentBlock">
+<% $C->prop('content') %>
+
+% #<&include/info_agbs_de.html&>
+
+</div><!-- End productBlock -->
+</div><!-- End contentBlock -->
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>

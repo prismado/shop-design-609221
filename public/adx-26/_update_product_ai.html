@@ -1,0 +1,60 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use Encode qw(decode); # -- 22Jan2026
+
+	use utf8; # -- 22Jan2026
+	binmode(STDERR, ':encoding(UTF-8)');
+
+	# -- Created: 01Sep2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+	my $cgi   = $C->{CGI};
+
+	my $id   = $cgi->param('id') + 0;
+	my $lang = $cgi->param('lang') || 'de';
+
+	my $ai_lang = $lang . 'a';
+
+	my %map_lang = (
+		de => 'deutsch',
+		en => 'englisch',
+		fr => 'französisch'
+	);
+
+	my $prod_d = $A->get_product_v2(id=>$id);
+
+	(my $title_enc = $prod_d->{title}) =~ s/"/\\\"/g;
+
+	my $word_count = ($C->txt('prompt_product_desc_word_count', 'sys', '_ai') + 0) || 75;
+
+	(my $prompt = $C->txt('prompt_product_desc', 'de', '_ai')) =~ s/\{\{TITLE\}\}/$title_enc/;
+	    $prompt =~ s/\{\{WORD_COUNT\}\}/$word_count/;
+	    $prompt =~ s/\{\{LANG\}\}/$map_lang{$lang}/;
+
+	my $ai_ans = $C->AI_supply_text(prompt => $prompt, debug => $perm->{is_devel});
+	my $ans    = decode('UTF-8', $ai_ans->{answer});
+
+	my $res_upd = $A->update_product_desc(id=>$id, description=>$ans, lang=>$ai_lang);
+
+	$C->{dbh}->do("update products_desc set desc_long=`description` where product_id=$id and lang='$ai_lang'");
+
+	$C->create_toast_note(
+		body  => qq~<center>
+				<h4>$prod_d->{title}</h4>
+
+				<small>$prompt<br>$res_upd->{msg}</small><br><br>
+
+				<big><b>Bitte den KI-Text &uuml;berpr&uuml;fen und speichern</b></big>
+			</center>~,
+		title => "ID $id - $prod_d->{title} - RC $res_upd->{rc}",
+		style => '.toast, .max-w-300 { max-width: 580px !important; opacity: 0.85; }',
+		delay => 9500
+	);
+
+	$m->redirect("/adx/edit-product.html?id=$id&jsFunc=loadModal403281_179");
+</%init>

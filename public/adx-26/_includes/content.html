@@ -1,0 +1,65 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0);
+
+	my $std_labels = $A->get_std_labels();
+
+	my @labels = ();
+	push(@labels, qq~${ $A->modal(
+		label  => '<span style="color:#377dff">Hinzuf&uuml;gen</span>',
+		url    => '/adx/_ajax/modal_add_std_label.html?css_id=402171_19',
+		css_id => '402171_19') } &ndash; <a href="categ-setting.html">Individuelle Produkte-Eigenschaften</a>~);
+	push(@labels, '<table class="table mt-2 table-sm">');
+	foreach my $key (sort keys %{ $std_labels->{link} }) {
+		push(@labels, qq~<tr><td><code class="font-weight-bold">$key</code></td>
+				<td><small>$std_labels->{caption}->{$key}</small></td>
+				<td><a href="$std_labels->{link}->{$key}"><i class="fi fi-pencil"></i></a></td>
+				</tr>~);
+	}
+	push(@labels, '</table>');
+
+	my $sth = $C->{dbh}->prepare(q~select p.id, title from products p, products_desc d
+					where p.id=product_id AND `condition`='IP' AND lang='de' order by 1 desc limit 9999~);
+	   $sth->execute;
+	my @info_pgs = ();
+	while(my $r = $sth->fetch()) {
+		push(@info_pgs, qq~<i class="fi fi-arrow-right-full mr-2"></i> <a href="/article-$r->[0]-info.html">$r->[1]</a>~);
+	}
+</%init>
+<div class="portlet-body">
+
+	<ul class="list-group list-group-flush rounded overflow-hidden mt-3">
+		<& inc_aero_list_item.html, label=>'Stammdaten', url=>'/adx/show.html?macro=master_data',
+			info=>'Firmenname, MwSt.-Nr. ...', badge=>'&#128462', badge_type=>'info', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Teaser', url=>'/adm_teaser.html',
+			info=>'Banner-Inhalt auf Startseite', badge=>'&#128462', badge_type=>'info', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Info-Seiten', url=>'XXX',
+			info=>(join '<br>', @info_pgs), badge=>'&#128462', badge_type=>'info', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Properties', url=>'manage-property.html',
+			info=>'Alle Textbausteine / Beschriftungen', badge=>'&#128462', badge_type=>'info', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Content Properties', url=>'/adm_properties.html?filter=content',
+			info=>'Texte / Seiten-Inhalte', badge=>'&#128462', badge_type=>'info', legacy=>1, C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Standard-Label f&uuml;r <u>alle</u> Produktegruppen', url=>'manage-property.html?area=label',
+			info=>"$std_labels->{count} Multilinguale Produkte-Eigenschaften:<br>" .
+				(join "\n", @labels), badge=>'&#128462', badge_type=>'info', legacy=>0, C=>$C &>
+	</ul>
+
+%	if ($perm->{is_devel}) {
+		<hr />
+		<a href="https://x.prismado.com/lab/layout2023/components-icons.html">Icons</a> &ndash;
+		<a href="/adm_safe_properties.html?lang=sys&filter=unicode">Unicode Symbols</a> <small>(Speziell f&uuml;r E-Mail-Betreffzeilen)</small><br /><br />
+
+		<div class="alert alert-info"><% $macro->{out} %></div>
+%	}
+</div>

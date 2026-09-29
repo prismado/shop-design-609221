@@ -1,0 +1,21 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $lang = $args{lang} || 'de';
+</%init>
+<table border="0" cellpadding="2" style="font-size:0.95rem">
+% foreach my $key (sort keys %{$args{data}}) {
+%	next unless length( $args{data}->{$key} );
+%	(my $key_disp = $key) =~ s/^h\d\d\_(.+)/$1/;
+%	if ($key_disp eq 'mail_customer_ust_id' && $args{data}->{$key}+0 < 1) {
+%		next;
+%	}
+%	my $label = $C->txt($key_disp, $lang);
+%	   $label = 'E-Mail' if $key_disp eq 'email';
+	<tr>
+	<td style="padding-right:20px"><b><% $label %>:</b></td>
+	<td nowrap><% $args{data}->{$key} %></td>
+	</tr>
+% }
+</table>

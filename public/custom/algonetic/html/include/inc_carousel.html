@@ -1,0 +1,58 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $slide_ids_ref = $args{slide_ids_ref};
+	my $debug         = $args{debug};
+
+	# -- Get all ID's from the directory "{DOCUMENT_ROOT}/img_slides" into an array reference:
+</%init>
+% if ($debug) {
+	<code>inc_carousel.html</code> &middot; <small>(include)</small>
+% }
+
+% if ($#{ $slide_ids_ref }) {
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="4000">
+
+<%doc>
+	<ol class="carousel-indicators">
+		<li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+		<li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+	</ol>
+</%doc>
+
+	<div class="carousel-inner">
+%		my $i = 0;
+%		foreach my $slide_id (@{ $slide_ids_ref }) {
+%			my ($txt, $prod_id, $url) = @{$C->query("select xtext, prod_id, url FROM teaser WHERE id=$slide_id")};
+			<div class="carousel-item <% !$i ? 'active' : '' %>">
+				<a href="<% $url %>"><img src="/img_slides/s<% $slide_id %>.jpg" class="d-block w-100"></a>
+				<div class="carousel-caption" style="z-index:1">
+%				    unless ($args{is_mobile}) {
+					<% $txt %>
+%				    }
+				</div>
+			</div>
+%	 		$i++;
+%		}
+	</div>
+
+	<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+		<span class="sr-only">Previous</span>
+	</a>
+
+	<a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span>
+		<span class="sr-only">Next</span>
+	</a>
+
+</div>
+% }
+% else {
+%	my $slide_id = $slide_ids_ref->[0];
+%	my ($txt, $prod_id, $url) = @{$C->query("select xtext, prod_id, url FROM teaser WHERE id=$slide_id")};
+%	    $txt =~ s/"/&quot;/g;
+	<a href="<% $url %>"><img src="/img_slides/s<% $slide_id %>.jpg" title="<% $txt %>" alt="<% $txt %>" class="d-block w-100"></a>
+% }

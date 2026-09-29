@@ -1,0 +1,35 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $is_smartphone = 0;
+	my $this = '';
+</%init>
+
+<!-- Basket Lightbox =======-->
+<div id="basketLightbox" class="modal hide fade in" style="<% $is_smartphone ? '' : 'min-width:660px; max-width:880px' %>" tabindex="-1"
+	role="dialog" aria-labelledby="login" aria-hidden="false">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">¦~W</button>
+		<h4><i class="fa fa-shopping-cart"></i> <% $C->prop('basket') %></h4>
+	</div>
+
+	<div class="modal-body">
+		<div id="ajx_noti"></div>
+	</div>
+</div>
+ <!-- End Basket Lightbox =======-->
+
+
+% # ============================== NEU: ============================== #
+<script language=JavaScript>
+var x_interval = 0;
+function updateDiv() {
+% unless ($this eq 'basket') {
+	x_interval++;
+	$('#autoUpdate').load('ajx_basket_link.html?rand=<%rand()%>&sid=<%$args{SID}%>&i=' + x_interval);
+% }
+}
+</script>
+

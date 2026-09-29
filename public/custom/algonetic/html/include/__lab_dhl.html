@@ -1,0 +1,72 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $res   = $args{res};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>DHL Lab</span>
+</div>
+
+<div class="portlet-body">
+
+	<div class="float-end">
+		&rarr; <a href="admix.html?func=orders&id=<% $args{order_id} %>">Order-ID <% $args{order_id} %></a>
+	</div>
+
+	<div class="alert alert-info col-8">
+		<pre class="mb-0">$res = $A->dhl_send_shipment( order_id=><% $args{order_id} %> );</pre>
+	</div>
+
+	<form method="post">
+		<input type=hidden name="order_id" value="<% $args{order_id} %>" />
+		<div style="max-width:25vw">
+		<& inc_text_edit.html, label=>'Debug Level', value_enc=>$debug, XXinfo=>'Info', delete=>0, id=>99 &>
+		</div>
+		<input type=submit class="btn btn-success" value="Senden" name="bSend">
+	</form>
+
+%	if ($args{bSend}) {
+		<p>rc = <% $res->{rc} %> # -- V # <% $res->{VERSION} %></p>
+
+		<h5>R&uuml;ckgabedaten:</h5>
+		<p>
+			<% $C->web_enc( $res->{rec_fullName} ) %><br>
+			<% $res->{rec_addressLine1} %><br>
+			<% $res->{rec_countryCode} %> <% $res->{rec_postalCode} %> <% $C->web_enc( $res->{rec_cityName} ) %><br>
+		</p>
+
+		<p>
+			<a href="<% $res->{api}->{resp_dir} %>/<% $res->{api}->{resp_fname} %>">Download PDF</a>
+		</p>
+%	}
+
+	<table class="table table-sm table-striped border">
+%	foreach (sort keys %{ $res }) {
+%		next if $_ eq 'rc' or $_ eq 'VERSION' or $_ eq 'api';
+		<tr>
+			<td><b><% $_ %></b></td>
+			<td><code><% $res->{$_} %></code></td>
+		</tr>
+%	}
+	</table>
+
+	<p>
+%	foreach (sort keys %{ $res->{api}  }) {
+%		next if $_ eq 'post_raw' or /^documents__content__\d+/ or /^pass/;
+		&larr; [ api ] &middot; <b><% $_ %></b> = <code><% $res->{api}->{$_} %></code><br>
+%	}
+	</p>
+
+	<p><% ${ $res->{api}->{post_raw} } %></p>
+
+	<p>
+		<a href="/adm_log.html?importance=4&filter=dhl">Log</a> &mdash;
+		<a href="/adm_log.html?importance=4&filter=dhl_send_shipment">Logfilter: dhl_send_shipment</a> &mdash;
+		<a href="/adx/special_keys.html?area=DHL">Einstellungen</a>
+	</p>
+
+</div>

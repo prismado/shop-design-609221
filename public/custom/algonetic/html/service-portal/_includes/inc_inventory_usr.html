@@ -1,0 +1,49 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $perm     = $args{perm}; # -- $perm->{uid};
+	my $debug    = $args{debug};
+
+	my $comp_id = $C->query("select id from companies where name like '%Aargau%' limit 1")->[0];
+	my $camp_id = $C->query("select id from campaign_data where company_id=$comp_id")->[0];
+
+	my $sth = $C->{dbh}->prepare(qq~select id, title, brand from vproducts where campaign_id=$camp_id and lang='de' order by 1 DESC limit 5~);
+	   $sth->execute() or $m->out("ERR $DBI::errstr<br>");
+</%init>
+<h3 class="fs--17 mt-3">Ihre Ger&auml;te</h3>
+
+<table class="table mt-3 table-hover">
+	<tr>
+		<th></th>
+		<th>Modell</th>
+		<th>Marke</th>
+		<th>Konfiguration</th>
+		<th>Art-Nr</th>
+		<th>ID</th>
+		<th></th>
+	</tr>
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $title, $brand) = @{$r};
+%		my $prd = $A->get_product_v2(id=>$id);
+		<tr>
+			<td class="p-2">
+				<div class="shadow-md shadow-3d-hover transition-hover-zoom-img overflow-hidden rounded">
+					<img class="img-fluid transition-hover-zoom-img w--80 bg-suprime"
+						style="min-width:40px;" src="<% $prd->{image}->{url_thmb} %>">
+				</div>
+			</td>
+			<td nowrap class="pt-4"><b><% $title %></b></td>
+			<td class="pt-4"><% $brand %></td>
+			<td class="pt-4" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width:280px;"><% $prd->{desc_keyw} %></td>
+			<td class="pt-4"><span class="badge badge-warning fs--14"><% $A->get_product_art_no( id=>$id )->{art_no} %></span></td>
+			<td class="pt-4"><% $id %></td>
+% # XXX			<td class="pt-4"><a href="/adx/edit-product.html?id=<% $id %>"><% $id %></a></td>
+			<td class="pt-3" nowrap>
+				<& inc_modal_link.html, label=>'<i class="fi fi-pencil"></i>',
+					url=>'/_ajax/modal_foo_service-portal_inv.html', size=>'xl', class=>'btn btn-sm btn-primary', C=>$C &>
+			</td>
+		</tr>
+%	}
+</table>

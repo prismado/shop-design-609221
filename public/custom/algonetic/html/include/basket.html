@@ -1,0 +1,68 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $bsk   = $args{bsk};
+	my $msg   = $args{msg};
+
+	my $daily_cat = 0;
+
+	unless ($bsk->{item_count}) {
+		$daily_cat = $A->get_daily_offer_categ()->{id};
+	}
+</%init>
+<div class="portlet-header border-bottom">
+	<span><% $msg %></span>
+</div>
+
+<form name="basket" id="basket" action="checkout.html" method="post">
+<input type=hidden name=src value='basket'>
+
+%	if ($bsk->{item_count}) {
+	<div class="p--10">
+		<table class="table table-hover table-responsive border mt-2">
+			<% $bsk->{out} %>
+		</table>
+	</div>
+%	}
+%	else {
+		<p class="text-center fs--20 mt-5">Ihr Warenkorb ist leer</p>
+%	}
+
+	<div class="float-end mr-2">
+		<input type="button" class="btn btn-secondary btn-soft btn-lg" value="<% $C->prp('shop_more') %>" onclick="document.location='.'">
+
+%		if ($bsk->{item_count}) {
+		<button type="submit" class="btn btn-success btn-lg w--200" xnclick="document.location='checkout.html'">
+			<% $C->prp('to_payment') %> <i class="fi fi-arrow-right ml-2 mr-0"></i>
+		</button>
+%		}
+	</div>
+
+</form>
+
+% if ($daily_cat) {
+	<& inc_daily_offer.html, C=>$C, A=>$A &>
+<%doc>
+XXX:
+	<center>
+		<h4 class="mt-5 mb-3"><a class="text-dark" href="/products/daily-offer/<% $daily_cat %>">Tagesangebote</a></h4>
+	</center>
+	<div class="d-flex justify-content-center">
+
+	<div class="row text-center" stylx="border: 3px solid blue;">
+%		my $sth = $C->{dbh}->prepare("select id, title, extra from vproducts where cat_id=$daily_cat and lang='de'");
+%		   $sth->execute();
+%		while(my $r = $sth->fetch()) {
+%			my ($id, $title, $extra) = @{$r};
+			<div class="text-center">
+			<& inc_render_prod.html, id=>$id, SIx=>0, XXXlaytst=>0, A=>$A, C=>$C &>
+			</div>
+%		}
+	</div>
+
+	</div>
+/XXX
+</%doc>
+% }

@@ -1,0 +1,34 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	# XXX my $webenv = $C->get_webenv();
+</%init>
+<div class="portlet-header border-bottom">
+	<span>In Bearbeitung</span>
+</div>
+
+<div class="portlet-body">
+
+	<p>Bitte schauen Sie sp&auml;ter nochmals vorbei.</p>
+
+%    if ($perm->{is_devel}) {
+% # XXX	<div class="float-right ml-5"> </div>
+%    }
+
+<%doc>
+XXX:
+/XXX
+</%doc>
+
+	<p>
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+% # XXX		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+</div>

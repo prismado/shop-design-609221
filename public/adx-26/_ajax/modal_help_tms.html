@@ -1,0 +1,43 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $tag  = $C->query('select tag from pt_tags order by id desc limit 1')->[0];
+	my $tag2 = 'pta-' . (split /\-/, $tag)[0];
+</%init>
+<div class="modal-header">
+
+	<h2 class="modal-title fs--18 m-0">
+		Hinweise f&uuml;r Tag <% $tag %>
+	</h2>
+
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body p--30">
+  <div class="row">
+
+	<div class="col-12 col-md-12 col-lg-12">
+
+		<h5 class="mb-4 mt-n2">Beispiel: &laquo;<% $tag %>&raquo;</h5>
+
+		<b>Allgemeine Startseite:</b><br>
+		https://<% $ENV{HTTP_HOST} %>/?pt=<% $tag %><br><br>
+
+		<b>Ziel: Notebooks (Kategorie 1051):</b><br>
+		https://<% $ENV{HTTP_HOST} %>/products/notebook/1051~<% $tag2 %><br><br>
+
+		<b>Ziel: Einzelprodukt (Prod-ID 12415):</b><br>
+		https://<% $ENV{HTTP_HOST} %>/product/schwarzes-kleid-50/12415~<% $tag2 %>
+
+	</div>
+
+  </div>
+</div>
+
+<div class="border-top text-muted p--15 fs--13 bg-light rounded-bottom pl--30 pr--30 pt--20 pb--20">
+	<b>Privacy:</b> All data is secure, never transfered to a third party provider/service.
+</div>

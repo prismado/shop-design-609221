@@ -1,0 +1,31 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+</%init>
+<div class="portlet-body">
+
+	<h3 class="fs--25">Demo Service-Portal</h3>
+
+%	if ($perm->{is_devel}) {
+		<p>
+			<a href="/adx/">ADX</a><br>
+			<a href="/adx/show.html?macro=prism_sys_jobs">System Jobs</a><br>
+			<a href="/adx/edi.html">EDI</a><br>
+			<a href="/adx/manage-property.html?area=40227111_func_2">func_2</a> &ndash;
+				 <a href="/adx/manage-property.html?area=40227111_func">func</a>
+		</p>
+%	}
+
+% #	<table class="table table-sm table-hover mt-0 border"> </table>
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+	</p>
+
+</div>

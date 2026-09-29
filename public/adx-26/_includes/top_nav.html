@@ -1,0 +1,196 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="collapse navbar-collapse" id="navbarMainNav">
+
+	<!-- MOBILE MENU NAVBAR -->
+	<div class="navbar-xs d-none">
+
+	<!-- mobile menu button : close -->
+	<button class="navbar-toggler pt-0" type="button" data-toggle="collapse" data-target="#navbarMainNav" aria-controls="navbarMainNav" aria-expanded="false" aria-label="Toggle navigation">
+	<svg width="20" viewBox="0 0 20 20">
+	<path d="M 20.7895 0.977 L 19.3752 -0.4364 L 10.081 8.8522 L 0.7869 -0.4364 L -0.6274 0.977 L 8.6668 10.2656 L -0.6274 19.5542 L 0.7869 20.9676 L 10.081 11.679 L 19.3752 20.9676 L 20.7895 19.5542 L 11.4953 10.2656 L 20.7895 0.977 Z"></path>
+	</svg>
+	</button>
+
+	<!--
+		Optional Mobile Menu Logo
+		Logo : height: 70px max
+	-->
+	<a class="navbar-brand px-4" href=".">
+		<img src="assets/images/logo/logo_light.svg" width="110" height="70" alt="...">
+	</a>
+
+	</div>
+	<!-- /MOBILE MENU NAVBAR -->
+
+	<!-- Dropdowns -->
+	<ul class="navbar-nav align-items-center">
+
+	<li class="nav-item dropdown">
+		<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="mainNavHome">Bereiche</a>
+		<ul class="dropdown-menu dropdown-menu-clean" aria-labelledby="mainNavHome">
+			<li class="dropdown-item dropdown">
+			<a class="dropdown-link" href="#!" data-toggle="dropdown"><i class="fi fi-cart-1"></i> Orders</a>
+			<ul class="dropdown-menu dropdown-menu-hover shadow-lg b-0 m-0">
+			<li class="dropdown-item"><a class="dropdown-link" href="#!"><i class="fi fi-plus"></i> Create Order</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="/adx/orders.html"><i class="fi fi-list-checked"></i> List Orders</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="#!"><i class="fi fi-box"></i> Archived Orders</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="/adx/orders.html?show_all=1"><i class="fi fi-close"></i> Canceled Orders</a></li>
+		</ul>
+	</li>
+%	if ($debug) {
+	<li class="dropdown-item"><a class="dropdown-link" href="#!"><i class="fi fi-user-plus"></i> <% $C->this() %> Debug Level <% $debug %></a></li>
+%	}
+	<li class="dropdown-item"><a class="dropdown-link" href="/account-reg.html"><i class="fi fi-user-plus"></i> Create Account</a></li>
+	<li class="dropdown-item"><a class="dropdown-link" href="/adx/customers.html"><i class="fi fi-users"></i> Manage Users</a></li>
+	<li class="dropdown-item"><a class="dropdown-link" href="/adm_reports.html"><i class="fi fi-graph"></i> Reports</a></li>
+	<li class="dropdown-item"><a class="dropdown-link" href="/adx/show.html?macro=prism_sys_jobs"><i class="fi fi-task-list"></i> Tasks</a></li>
+
+	</ul>
+
+	</li>
+
+%    if ($perm->{is_devel}) {
+	<li class="nav-item dropdown dropdown-mega">
+
+	<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="mainMegaNav">
+		Mega
+	</a>
+
+	<ul class="dropdown-menu" aria-labelledby="mainMegaNav">
+	<li class="dropdown-item bg-transparent">
+		<!--
+			for 5 columns:
+			.col-md-5th   -instead of-   .col-md-3
+		-->
+		<div class="row col-border-md">
+
+		<div class="col-12 col-md-3">
+			<h3 class="h6 text-muted text-uppercase fs--14 mb-3">ACCOUNT OPTIONS</h3>
+			<ul>
+			<li class="dropdown-item"><a class="dropdown-link" href="#!">Option 1</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="#!">Option 2</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="#!">Option 3</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="#!">Optiox 4</a></li>
+			<li class="dropdown-item"><a class="dropdown-link" href="#!">Option 5</a></li>
+		</ul>
+		</div>
+
+	<div class="col-12 col-md-3">
+
+		<h3 class="h6 text-muted text-uppercase fs--14 mb-3">ECOMMERCE SETTINGS</h3>
+		<ul>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 1</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 2</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 3</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 4</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 5</a>
+		</li>
+
+		</ul>
+
+	</div>
+
+	<div class="col-12 col-md-3">
+
+		<h3 class="h6 text-muted text-uppercase fs--14 mb-3">QUICK TOOLS</h3>
+		<ul>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 1</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 2</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 3</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 4</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 5</a>
+		</li>
+
+		</ul>
+
+	</div>
+
+	<div class="col-12 col-md-3">
+
+		<h3 class="h6 text-muted text-uppercase fs--14 mb-3">ACCOUNT OPTIONS</h3>
+		<ul>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 1</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 2</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 3</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 4</a>
+		</li>
+
+		<li class="dropdown-item">
+		<a class="dropdown-link" href="#!">Option 5</a>
+		</li>
+
+		</ul>
+
+	</div>
+
+		</div>
+
+	</li>
+	</ul>
+
+	</li>
+%    }
+
+
+<%doc>
+	<!--  -->
+	<li class="nav-item">
+
+	<a class="nav-link px-1" href="#!">
+	<span class="py-2 px-3 rounded">
+		<i class="fi fi-squared-dots"></i>
+		<span>Apps</span>
+	</span>
+	</a>
+
+	</li>
+</%doc>
+
+	</ul>
+	<!-- /Dropdowns -->
+
+</div>

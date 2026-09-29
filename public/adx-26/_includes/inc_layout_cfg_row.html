@@ -1,0 +1,51 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $debug    = $args{debug};
+	my $area     = $args{area},
+	my $data     = $args{data}; # -- Hash Ref
+	my $image    = $args{image};
+	my $code_ref = $args{code_ref};
+</%init>
+<tr style="background-color:white !important">
+	<td nowrap class="pr-5 font-weight-bold"><% $args{title} %></td>
+	<td>
+		<prism-dialog prompt="Auf Standard?" class="float-end" instruction="Bitte mit &lsaquo;JA&rsaquo; beantworten"
+			callback="adm_restore_defaults" timeout="1000" css_id="pd_404191_19"
+			x_info="cmd_404301_39">
+		</prism-dialog>
+
+		<table class="table table-sm col-9 border">
+%		foreach my $key (sort keys %{ $data }) {
+%			my $val     = $C->txt("sys_$area\_$key"         , 'sys', '_layout');
+%			my $default = $C->txt("sys_$area\_$key\_default", 'sys', '_layout');
+			<tr style="background-color:white !important">
+			<td nowrap><code class="fs--19 font-weight-bold"><% $key %></code></td>
+			<td nowrap><b><% $C->shorten_title($val, 25) %></b></td>
+			<td nowrap class="<% $val ne $default ? 'text-pink animate-pulse' : '' %>"><small>Std: <% $C->shorten_title($default, 90) %></small></td>
+			<td nowrap>&rarr; <% $data->{$key} %></td>
+			</tr>
+%		}
+		</table>
+
+		<a href="assets/images/<% $image %>"><img class="img-fluid mt-2"
+			style="max-width:60%" src="assets/images/<% $image %>"></a><br><br>
+
+		<code><% $code_ref %></code>
+	</td>
+	<td class="float-end fs--18">
+%		my %memo = ();
+%		foreach my $key (sort keys %{ $data }) {
+%			my $fine_key = (split /\_/, $key)[0];
+%			next if $memo{$fine_key};
+			<a href="manage-property.html?area=sys_<% $area %>_<% $fine_key %>"><% $fine_key %></a><br>
+%			$memo{$fine_key} = 1;
+%		}
+	</td>
+</tr>
+
+<%doc>
+	Created: 03May2024
+</%doc>

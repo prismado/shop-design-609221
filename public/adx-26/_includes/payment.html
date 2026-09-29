@@ -1,0 +1,129 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $webenv= $args{webenv};
+
+	my $pms = $A->get_payment_methods();
+
+	my $is_dev = $webenv->{hostname} =~ /algonetic/ ? 1 : 0;
+
+	my $payrex_pms     = 'twint,mastercard,visa,post-finance-pay,klarna,google-pay';
+	my $payrex_pms_dev = 'mastercard,visa,google-pay,klarna';
+	my $payrex_pms_std = $is_dev ? $payrex_pms_dev : $payrex_pms;
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>Payment</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<p class="float-end fs--11">
+		<a href="/adm_pay_methods.html">Alte Konfiguration</a> &ndash;
+		<a href="/_systex/install/help/de/3/1/">Online Hilfe</a>
+	</p>
+
+	<a href="special_keys.html?area=payrexx"><span class="fs--20 font-weight-bold"><i class="fi fi-cog-full"></i> Payrexx Einstellungen</span></a><br><br>
+
+		Aktuell: <b><% $C->{CONFIG}->{payrexx_paymentMethods} %></b> <a href="special_keys.html?area=payrexx"><i class="fi fi-pencil"></i></a>
+
+%		if ($C->{CONFIG}->{payrexx_paymentMethods} eq $payrex_pms_std) {
+			&rarr; <i class="fi fi-box-checked" data-toggle="tooltip" data-placement="top"
+				data-original-title="Empfohlener Standard ist aktiv"></i> STD
+%		}
+%		else {
+			&rarr; Standard:
+%				if ($is_dev) {
+					<span class="text-pink"><% $payrex_pms_dev %></span> / Prod: <span class="text-gray-500"><% $payrex_pms %></span>
+%				}
+%				else {
+					<% $payrex_pms %>
+%				}
+%		}
+		<br><br>
+
+%		if ($webenv->{hostname} =~ /algonetic/) {
+			<a target="_blank" href="https://algonetic.payrexx.com/cadmin/">Payrexx CAdmin</a>
+%		}
+%		else {
+			<a target="_blank" href="https://auctionline.payrexx.com/cadmin/">Payrexx CAdmin</a>
+%		}
+		<br><br>
+
+		<div class="alert alert-info mb-4">
+			<b>Identifier:</b>
+				<code><% $payrex_pms %>,klarna,swisscom-pay,invoice,<s>post-finance-card</s>,<s>post-finance-e-finance</s>,samsung-pay,apple-pay</code><br>
+			<a href="https://docs.payrexx.com/developer/general-info/payment-method">payrexx.com/developer/general-info/payment-method</a>
+		</div>
+
+		<a target="_blank"
+		href="https://<% $is_dev ? 'algonetic' : 'auctionline' %>.payrexx.com/cadmin/?cmd=checkout&act=psps">Zahlungsanbieter einstellen</a> (Payrexx)<br>
+
+		<p class="mt-2">
+			Folgende Zahlungsmethoden k&ouml;nnen angesteuert werden.
+			Es k&ouml;nnen im Payrexx CAdmin vorab mehr Methoden aktiviert werden als beim Zahlungsvorgang &uuml;bermittelt werden.
+		</p>
+
+%		if ($is_dev) {
+			<h6 class="mt-2">Payrexx Swiss Collecting</h6>
+			<span data-toggle="tooltip" data-placement="right" data-original-title="In Payrexx CAdmin einstellen">
+				<img class="img-fluid" src="assets/images/payrexx_psps_dev_swiss_collecting.png" style="width:40%"><br>
+			</span>
+
+			<h6 class="mt-4">Payrexx Direct &ndash; [ Aktiviert ]</h6>
+			<img class="img-fluid" src="assets/images/payrexx_psps_dev_direct.png" style="width:40%">
+%		}
+%		else {
+			<h6 class="mt-2">Swiss Collecting</h6>
+			<span data-toggle="tooltip" data-placement="right" data-original-title="In Payrexx CAdmin einstellen">
+				<img class="img-fluid" src="assets/images/payrexx_psps_prod_swiss_collecting.png" style="width:40%">
+			</span>
+
+			<h6 class="mt-4">Payrexx Direct &ndash; [ Aktiviert seit 27.06.2024 13:10 ]</h6>
+			<img class="img-fluid" src="assets/images/payrexx_psps_prod_direct.png" style="width:40%">
+%		}
+		<br><br>
+
+	<hr />
+
+	<a href="special_keys.html?area=paypal"><span class="fs--20 font-weight-bold"><i class="fi fi-cog-full"></i> PayPal Einstellungen</span></a>
+
+	<br /><br />
+
+	<hr />
+	<div class="fs--18 font-weight-bold XXXmt-5 mb-3">Alle Zahlungsmethoden</div>
+
+	<table class="table table-sm table-hover col-9">
+%	foreach my $p (@{ $pms->{all} }) {
+		<tr>
+		<td>
+%			if ($p->{active}) {
+				<b><% uc $p->{pmeth} %></b>
+%			}
+%			else {
+				<s class="text-gray-400"><% uc $p->{pmeth} %></s>
+%			}
+		</td>
+		<td class="<% !$p->{active} ? 'text-gray-400' : '' %>"><% $p->{psp} %></td>
+		<td><% $p->{active} ? '<span class="badge badge-success">Aktiv</span>' : '' %></td>
+		<td>num: <% $p->{num} %></td>
+		<td>
+%		foreach (sort keys %{ $p }) {
+%			next if /^pmeth$/ or /^icon$/ or /^active$/ or /^psp$/ or /^num$/;
+			XX <% $_ %> = <% $p->{$_} %><br>
+%		}
+		</td>
+		</tr>
+%	}
+	</table>
+
+	<p><a href="manage-property.html"><small>Alle Properties</small></a></p>
+
+	<hr />
+	&bull; <a href="https://docs.ch2.be/w/prismado-shop/feat-payment-payrexx">Wiki: Payment Payrexx</a>
+
+</div>

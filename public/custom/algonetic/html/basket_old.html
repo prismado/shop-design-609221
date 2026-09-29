@@ -1,0 +1,128 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi      = $C->{CGI};
+	my $SID      = $C->getSID(); # -- important
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $is_admin = $C->is_admin();
+	my $is_devel = $C->is_devel();
+	my $UA       = $ENV{HTTP_USER_AGENT};
+
+	my $id    = $cgi->param('id') + 0;
+	my $count = $cgi->param('count') || 1;
+	my $debug = $cgi->param('debug');
+
+	my $rc = 0; my $msg = '';
+	my @msgs = ();
+
+	if ($cgi->param('action') eq 'del') {
+		($rc, $msg) = $A->delfrombasketbyid( id => $id );
+		push(@msgs, $msg);
+	}
+	elsif ($id) {
+		($rc, $msg) = $A->add2basket_details( id => $id, count => $count );
+		if ($rc) {
+			$C->saveSessData('msg', $msg);
+			$m->redirect("product.html?id=$id");
+		}
+		else {
+			$msg = "$count x Produkt ID $id hinzugef&uuml;gt";
+			push(@msgs, $msg);
+		}
+	}
+
+	$A->adjust_basket_count($C->getSID()); # -- Fix over-ordered products in basket
+
+	my $bsk = $A->get_basket(
+		vat_col   => 0,
+		add_vat   => 1,
+		img_max_w => ($UA =~ /Windows.+rv.+11\.0/ or $UA =~ /Windows.+Edge/) ? '150px' : '80%',
+		img_min_w => '55%',
+		debug     => $debug
+	);
+
+	my $item_count = $bsk->{item_count};
+
+	my $app_msg = $C->getSessData('app_msg') || '';
+	push(@msgs, $app_msg) if $app_msg;
+	$C->del_sess_key('app_msg'); # -- Reset
+
+	my $products = $C->prop('products');
+	push(@msgs, "$item_count $products") unless @msgs;
+
+	$msg = join '<br>', @msgs;
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><% $C->prp('basket') %> | <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+<body>
+<& include/content_header.html, C=>$C, is_admin=>$is_admin &>
+<div id="mainContainer">
+<div class="container">
+<div class="row-fluid ps-content">
+<&include/content_sideblock.html, C => $C, A => $A&>
+<div id="productBlock" class="span9">
+<div class="well"><h1><i class="fa fa-shopping-cart"></i> <% $C->prop('basket') %></h1>
+</div>
+
+<div id="checkoutBlock">
+<div class="alert alert-warning fade in"><%$msg%></div>
+<form name="basket" id="basket" action="checkout.html" method="post">
+<input type=hidden name=src value='basket'>
+
+<div class="no-more-tables">
+
+
+	<table class="table table-hover">
+	<% $bsk->{out} %>
+	</table>
+
+</div>
+% if ($item_count > 0) {
+        <button type="submit" class="btn btn-checkout"><% $C->prop('to_checkout') %></button>
+% }
+<a href="/" class="btn btn-grey"><% $C->prop('shop_more') %></a>
+
+</form>
+
+% if ($is_devel) {
+	<a href="basket.html?debug=1">Debug</a> | <% $UA %>
+% }
+
+</div>
+
+ </div>
+
+<script language=JavaScript>
+	function icount_add(basket_id) {
+		c = document.getElementById('count_' + basket_id).value;
+		document.getElementById('count_' + basket_id).value = parseInt(c) + 1;
+		$('#ajx_autocalc').load('ajx_basket_autocalc.html?callback=basket.html&action=add&id=' + basket_id);
+	}
+	function icount_sub(basket_id) {
+		c = document.getElementById('count_' + basket_id).value;
+		if (c < 1) { return; }
+		document.getElementById('count_' + basket_id).value = parseInt(c) - 1;
+		$('#ajx_autocalc').load('ajx_basket_autocalc.html?callback=basket.html&action=sub&id=' + basket_id);
+	}
+</script>
+
+<div id="ajx_autocalc"></div>
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+
+</body>
+</html>

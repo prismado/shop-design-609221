@@ -1,0 +1,45 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $id = $args{id}; # -- Product ID
+	my $lang = $args{lang} || 'de';
+
+	my $res = $A->get_options($id, $lang);
+
+	my $C = $A->{C};
+</%init>
+% foreach (@{$res}) {
+%	my ($opt_id, $style, $label, $desc, $val, $amount) = split /\t/;
+%	next unless $style == $args{type};
+%	$amount *= (1 + $C->{CONFIG}->{vat} / 100);
+		<div class="pull-left">
+		<b><%$desc%></b><br>
+		<textarea maxlength="16" onblur="saveText('<%$val%>')" id="<%$val%>" name="<%$val%>"><%$C->getSessData("prod_id_$id\_customtext")%></textarea><br>
+	<p>Verbleibende Zeichen: <span class="charleft">16</span></p>
+	</div>
+% }
+<script language="JavaScript">
+	function saveText(ref) {
+		var mytxt = document.getElementById(ref).value;
+		// alert('X ' + mytxt);
+		$('#ajx_2').load('_ajx_set_text.html?id=<%$id%>&txt=' + encodeURI(mytxt));
+	}
+</script>
+
+<script type="text/javascript">
+
+// Textbegrenzung Text
+$(document).ready(function() {
+   $('textarea[maxlength]').keyup(function(){
+      var max = parseInt($(this).attr('maxlength'));
+
+      if($(this).val().length > max){
+         $(this).val($(this).val().substr(0, max));
+      }
+
+      $(this).parent().find('.charleft').html(max - $(this).val().length);
+   });
+});
+</script>
+
+<div id='ajx_2'></div>

@@ -1,0 +1,91 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $what   = $cgi->param('what')   || '';
+	my $val    = $cgi->param('val')    || '';
+	# XXX my $mul_ln = $cgi->param('multilingual');
+	my $size   = $cgi->param('size')   || 'lg';
+
+	my $lang = $C->getSessData('xlang') || 'de';
+
+	my $cfunc = $what;
+	   $cfunc = 'vat' if $what eq 'prod_type';
+	my $addinf = $C->get_core_feat_info(what=>$cfunc);
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-<% $size %> modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Preis anpassen &middot; <small>Prod-ID <% $id %></small></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form onsubmit="return validateForm403151()">
+
+			<div class="modal-body">
+				<& ../_includes/inc_text_input.html, label=>$what, value_enc=>$val, write=>1, tx_class=>'fs--18 font-weight-bold', id=>$what &>
+%				if ($addinf->{info}->{id}) {
+					<h3 class="fs--20 mt-4"><% $addinf->{info}->{title_de} %></h3>
+					<% ${ $addinf->{summary} } %>
+					<p class="mb-0 fs--17" style="line-height:165%">
+% 					foreach (sort keys %{$addinf->{info}->{add_setting_url}}) {
+						&bull; <a class="link-muted" href="<% $addinf->{info}->{add_setting_url}->{$_} %>"><% $_ %></a><br>
+% 					}
+					&bull; <a class="link-muted" href="<% $addinf->{info}->{wiki_url} %>">Wiki Infos</a>
+					</p>
+%				}
+				<label class="form-switch form-switch-primary d-block mt-4">
+					<input type="checkbox" name="cb_final_buyer_price" value="1"
+						onclick="final_price_406211(this.checked)">
+						<i data-on="&#10004;" data-off="&#10005;"></i> <div class="fs--16 pt-0">Preis ist K&auml;ufer-Endpreis</div>
+				</label>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150"
+					onclick="validateForm403151()">
+					<i class="fi fi-check"></i> Update
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm403151() {
+		update('<% $what %>', document.getElementById('txe_<% $what %>').value);
+<%doc>
+XXX:
+/XXX
+</%doc>
+		update_subm();
+		return false;
+	}
+
+	function final_price_406211(val) {
+% # XXX		alert("XX " + val);
+		active = 'NO';
+		if (val === true) {
+			active = 'YES';
+		}
+		update('f_final_buyer_price', active);
+% # XXX		alert("XXX " + active);
+	}
+</script>

@@ -1,0 +1,300 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $perm  = $args{perm};
+</%init>
+<!-- OPTIONS -->
+	<ul class="list-inline list-unstyled mb-0 d-flex align-items-end">
+
+%    if ($perm->{is_devel}) { # -- 10Sep2025
+	<!-- notifications -->
+	<li class="list-inline-item ml--6 mr--6 dropdown">
+	<a href="#" id="dropdownNotificationOptions" class="btn btn-sm rounded-circle btn-light dropdown-toggle" data-toggle="dropdown"
+		aria-expanded="false" aria-haspopup="true">
+%	if ($perm->{is_devel}) {
+	<span class="badge badge-danger fs--10 p--3 mt--n3 position-absolute end-0">2</span>
+%	}
+
+	<span class="group-icon">
+		<i class="fi fi-bell-full"></i>
+		<!-- <i class="fi fi-bell-full-active"></i> -->
+		<i class="fi fi-close"></i>
+	</span>
+	</a>
+
+	<div aria-labelledby="dropdownNotificationOptions"
+		class="dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+		<div class="dropdown-header fs--14 py-3">2 UNREAD NOTIFICATIONS</div>
+		<div class="dropdown-divider"></div>
+		<div class="max-h-50vh scrollable-vertical">
+
+	<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover bg-theme-color-light">
+		<span class="badge badge-success float-end font-weight-normal mt-1">new</span>
+		<i class="fi fi-cart-1 d-middle float-start fs--20 bg-light w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">2 nex orders</p>
+		<small class="d-block fs--11 text-muted">Oct 22, 2019 / 02:21:46pm</small>
+
+	</a>
+	<!-- /NOTIFICATION -->
+
+	<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover bg-theme-color-light">
+		<span class="badge badge-success float-end font-weight-normal mt-1">new</span>
+		<span class="badge badge-danger float-end font-weight-normal mt-1">urgent</span>
+		<i class="fi fi-round-close d-middle text-danger float-start fs--20 bg-light w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">CRM API update required!</p>
+		<small class="d-block fs--11 text-muted">Oct 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /NOTIFICATION -->
+
+	<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<span class="badge badge-warning float-end font-weight-normal mt-1">system</span>
+		<i class="fi fi-shield-ok d-middle text-success float-start fs--20 bg-light w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">AI self repair success!</p>
+		<small class="d-block fs--11 text-muted">Oct 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /NOTIFICATION -->
+
+	<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<i class="fi fi-check d-middle text-white float-start fs--18 bg-success w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">This is good! Very good!</p>
+		<small class="d-block fs--11 text-muted">Oct 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /NOTIFICATION -->
+
+	<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<i class="fi fi-database text-muted d-middle float-start fs--18 bg-light w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">Database related</p>
+		<small class="d-block fs--11 text-muted">Oct 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /NOTIFICATION -->
+
+
+	<!-- NOTIFICATION -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium p-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<i class="fi fi-hourglass text-muted d-middle float-start fs--18 bg-light w--40 h--40 rounded-circle text-center"></i>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">Pending approval</p>
+		<small class="d-block fs--11 text-muted">Oct 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /NOTIFICATION -->
+
+	</div>
+
+	<div class="dropdown-divider mb-0"></div>
+
+	<a href="#!" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+		<i class="fi fi-arrow-end fs--11"></i>
+		<span class="d-inline-block pl-2 pr-2">View all</span>
+	</a>
+
+	</div>
+
+	</li>
+%    # ========================================================================================================================
+
+	<!-- messages  d-none d-md-inline-block -->
+	<li class="list-inline-item ml--6 mr--6 dropdown">
+
+	<a href="#" id="dropdownMessageOptions" class="btn btn-sm rounded-circle btn-light dropdown-toggle" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+
+%	if ($perm->{is_devel}) {
+	<!-- badge -->
+	<span class="badge badge-danger shadow-danger-md animate-pulse fs--10 p--3 mt--n3 position-absolute end-0">1</span>
+%	}
+
+	<span class="group-icon">
+	<i class="fi fi-envelope-2"></i>
+	<i class="fi fi-close"></i>
+	</span>
+	</a>
+
+	<div aria-labelledby="dropdownMessageOptions" class="dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+
+	<div class="dropdown-header fs--14 py-3">
+
+	<a href="#!" class="js-ajax-modal btn btn-sm btn-primary btn-soft b-0 px-2 py-1 m-0 fs--12 mt--n3 float-end"
+		data-href="_ajax/admin_modal_message_write.html"
+		data-ajax-modal-size="modal-md"
+		data-ajax-modal-centered="false"
+		data-ajax-modal-backdrop="static">
+		+ WRITE
+	</a>
+	1 NEW MESSAGE
+	</div>
+
+	<div class="dropdown-divider"></div>
+
+	<div class="max-h-50vh scrollable-vertical">
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover bg-theme-color-light">
+
+		<span class="badge badge-success float-end font-weight-normal mt-1">new</span>
+		<span class="badge badge-danger float-end font-weight-normal mt-1">urgent</span>
+
+		<!-- image -->
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start" style="background-image:url('demo.files/images/icons/user80.png')"></div>
+
+		<!-- author -->
+		<strong class="d-block text-truncate">John Doe</strong>
+
+		<!-- subject -->
+		<p class="fs--14 m-0 text-truncate font-weight-normal">
+	Spartanx has no weekends, so neither you!
+		</p>
+
+		<!-- date -->
+		<small class="d-block fs--11 text-muted">
+	Jan 22, 2019 / 02:21:46pm
+		</small>
+
+	</a>
+	<!-- /MESSAGE -->
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover">
+
+		<!-- image -->
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start" style="background-image:url('demo.files/images/unsplash/team/michael-dam-mEZ3PoFGs_k-unsplash.jpg')"></div>
+
+		<!-- author -->
+		<strong class="d-block text-truncate">Michael Dam</strong>
+
+		<!-- subject -->
+		<p class="fs--14 m-0 text-truncate font-weight-normal">
+	Go with Smarty, you can't go wrong, trust me
+		</p>
+
+		<!-- date -->
+		<small class="d-block fs--11 text-muted">
+	Jan 22, 2019 / 02:21:46pm
+		</small>
+
+	</a>
+	<!-- /MESSAGE -->
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start"
+			style="background-image:url('demo.files/images/unsplash/team/joseph-gonzalez-iFgRcqHznqg-unsplash.jpg')"></div>
+		<!-- author -->
+		<strong class="d-block text-truncate">Joseph Gonzalez</strong>
+		<!-- subject -->
+		<p class="fs--14 m-0 text-truncate font-weight-normal">RE: No Subject</p>
+		<small class="d-block fs--11 text-muted">Jan 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /MESSAGE -->
+
+	<!-- MESSAGE -->
+	<a href="#!" class="clearfix dropdown-item font-weight-medium px-3 border-bottom border-light overflow-hidden shadow-md-hover">
+		<div class="w--50 h--50 mb-2 mt-1 rounded-circle bg-cover bg-light float-start" style="background-image:url('demo.files/images/unsplash/team/valerie-elash-9IL_stSpvOU-unsplash.jpg')"></div>
+		<strong class="d-block text-truncate">Valerie Elash</strong>
+		<p class="fs--14 m-0 text-truncate font-weight-normal">RE: No Subject</p>
+		<small class="d-block fs--11 text-muted">Jan 22, 2019 / 02:21:46pm</small>
+	</a>
+	<!-- /MESSAGE -->
+	</div>
+
+	<div class="dropdown-divider mb-0"></div>
+	<a href="#!" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+		<i class="fi fi-arrow-end fs--11"></i>
+		<span class="d-inline-block pl-2 pr-2">View all</span>
+	</a>
+	</div>
+
+	</li>
+%    }
+%    # =================================================================================================== /is_devel
+
+	<!-- account -->
+	<li class="list-inline-item ml--6 mr--6 dropdown">
+
+	<a href="#" id="dropdownAccountOptions" class="btn btn-sm btn-light dropdown-toggle btn-pill pl--12 pr--12" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+
+	<span class="group-icon m-0">
+		<!-- <i class="fi fi-user-female"></i> -->
+		<i class="fi w--15 fi-user-male"></i>
+		<i class="fi w--15 fi-close"></i>
+	</span>
+
+	<span class="fs--14 d-none d-sm-inline-block font-weight-medium">Adm: <% $perm->{uname} %></span>
+	</a>
+
+	<!--
+	Dropdown Classes
+	.dropdown-menu-dark             - dark dropdown (desktop only, will be white on mobile)
+	.dropdown-menu-hover            - open on hover
+	.dropdown-menu-clean            - no background color on hover
+	.dropdown-menu-invert           - open dropdown in oposite direction (left|right, according to RTL|LTR)
+	.dropdown-click-ignore          - keep dropdown open on inside click (useful on forms inside dropdown)
+
+	Dropdown prefix icon (optional, if enabled in variables.scss)
+		.prefix-link-icon .prefix-icon-dot              - link prefix
+		.prefix-link-icon .prefix-icon-line     - link prefix
+		.prefix-link-icon .prefix-icon-ico              - link prefix
+		.prefix-link-icon .prefix-icon-arrow    - link prefix
+
+		.prefix-icon-ignore                                     - ignore, do not use on a specific link
+
+	-->
+	<div aria-labelledby="dropdownAccountOptions"
+	class="prefix-link-icon prefix-icon-dot dropdown-menu dropdown-menu-clean dropdown-menu-navbar-autopos dropdown-menu-invert dropdown-click-ignore p-0 mt--18 fs--15 w--300">
+
+	<div class="dropdown-header fs--14 py-4">
+		<!-- profile image -->
+		<div class="w--60 h--60 rounded-circle bg-light bg-cover float-start" style="background-image:url('demo.files/images/icons/user80.png')"></div>
+
+		<!-- user detail -->
+		<span class="d-block font-weight-medium text-truncate fs--16"><% $perm->{uname} %></span>
+		<span class="d-block text-muted font-weight-medium text-truncate"><% $perm->{email} %></span>
+% # XX		<small class="d-block text-muted"><b>Last Login:</b> 2019-09-03 01:48</small>
+	</div>
+
+	<div class="dropdown-divider"></div>
+
+	<a href="account-signin.html" class="dropdown-item text-truncate font-weight-medium">Sign-in
+		<small class="d-block text-muted">personal encypted notes</small>
+	</a>
+
+	<a href="#!" target="_blank" class="dropdown-item text-truncate font-weight-medium">
+		<span class="badge badge-success float-end font-weight-normal mt-1">0 new</span>Messages
+		<small class="d-block text-muted">internal messaging system</small>
+	</a>
+
+%	if ($perm->{is_devel}) {
+	<a href="#!" target="_blank" class="dropdown-item text-truncate font-weight-medium">
+		<span class="badge badge-danger float-end font-weight-normal mt-1">1 unpaix</span> Invoices
+		<small class="d-block text-muted">montly billing</small>
+	</a>
+%	}
+
+	<a href="/account.html" class="dropdown-item text-truncate font-weight-medium">
+	Account Settings
+	<small class="d-block text-muted">profile, password and more...</small>
+	</a>
+
+<%doc>
+XXX:
+	<a href="#!" class="dropdown-item text-truncate font-weight-medium">
+		Upgrade
+		<small class="d-block text-muted">upgrade your account</small>
+	</a>
+/XXX
+</%doc>
+
+	<div class="dropdown-divider mb-0"></div>
+
+	<a href="_logout.html" class="prefix-icon-ignore dropdown-footer dropdown-custom-ignore font-weight-medium pt-3 pb-3">
+	<i class="fi fi-power float-start"></i> Log Out</a>
+
+	</div>
+
+	</li>
+
+	</ul>
+<!-- /OPTIONS -->

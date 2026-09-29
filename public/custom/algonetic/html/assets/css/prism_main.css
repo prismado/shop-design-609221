@@ -1,0 +1,63 @@
+/* Created: 30Jun2024 */
+
+.prism-box-product-title {
+	font-size:0.95rem !important;
+	ZZcolor: red !important;
+	max-width: 14vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+	.prism-box-product-title {
+		font-size: 0.85rem !important;
+		ZZcolor: green !important;
+		max-width: 15vw;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+@media (max-width: 576px) {
+	.prism-box-product-title {
+		font-size: 1.2rem !important;
+		max-width: 66vw;
+	}
+}
+
+.prism-limit-len-200 {
+	max-width: 200px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prism-limit-len-250 {
+	max-width: 250px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prism-limit-len-300 {
+	max-width: 300px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prism-limit-len-350 {
+	max-width: 350px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.prism-limit-len-400 {
+	max-width: 400px !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

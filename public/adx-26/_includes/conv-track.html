@@ -1,0 +1,118 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prod_id  = $args{prod_id};
+	my $prd      = $args{prd};
+	my $perm     = $args{perm};
+	my $debug    = $args{debug};
+
+	my $order_id = $C->query("select id from orders where uid=$perm->{uid} and status=4 order by 1 desc limit 1")->[0];
+	   $order_id ||= $C->query("select id from orders where uid=$perm->{uid} order by 1 desc limit 1")->[0];
+
+	my $conv_track_on = $C->get_property('google_conv_tracking_on', '_global', 'sys');
+
+	my $code_1 = qq~<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-T69KPX8524"></script>
+<script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-T69KPX8524'); </script>~;
+	$code_1 =~ s/\</&lt;/g;
+	$code_1 =~ s/\>/&gt;/g;
+
+	(my $code_event_snippet = $C->txt('google_conv_tracking_final_trigger_page_head', 'sys')) =~ s/\</&lt;/g;
+
+	(my $gtm_code = $C->txt('google_conv_tracking_head', 'sys')) =~ s/\</&lt;/g;
+</%init>
+<div class="portlet-body">
+
+	<h3 class="fs--25 mb-4">
+		Allgemein &ndash;
+		<small>
+			Conversion Tracking eingeschaltet: <b><% $conv_track_on ? 'Ja' : 'Nein' %></b>
+			<a href="manage-property.html?area=google_conv_tracking_on"><i class="fi fi-pencil"></i></a>
+		</small>
+	</h3>
+
+	<ul>
+		<li>
+			google_conv_tracking_tag_id: <code class="fs--18 ml-3"><% $C->txt('google_conv_tracking_tag_id',    'sys') %></code>
+				<a href="manage-property.html?area=google_conv_tracking_tag"><i class="fi fi-pencil"></i></a>
+		</li>
+
+		<li>
+			google_conv_tracking_tag_label: <code class="fs--18 ml-3"><% $C->txt('google_conv_tracking_tag_label', 'sys') %></code>
+				<a href="manage-property.html?area=google_conv_tracking_tag"><i class="fi fi-pencil"></i></a>
+		</li>
+	</ul>
+
+	<ol>
+		<li><a href="manage-property.html?area=google_conv_tracking">Alle Einstellungen</a></li>
+		<li><a href="https://docs.ch2.be/w/know-how/google-ads">Wiki</a></li>
+		<li><a href="https://drive.google.com/drive/folders/1cAkROQvLFnyNLPkBB9MM7CO_SiLn4l3x?usp=sharing">Google Drive</a></li>
+		<li>Soll das Tag mit Google Tag Manager eingefügt werden, folgen Sie dieser Anleitung:<br>
+			<a href="https://support.google.com/tagmanager/answer/6105160">support.google.com/tagmanager/answer/6105160</a></li>
+	</ol>
+
+% #	<table class="table table-sm table-hover mt-0 border"> </table>
+
+	<h3 class="fs--25 mt-4 mb-4">Installationsanleitung <u>ohne</u> <a target="_new"
+		href="https://support.google.com/tagmanager/answer/6105160">Tag Manager</a> mit DataLayer</h3>
+
+	<h6 class="mb-4"><u>Alle</u> HTML-Seiten zwischen &lt;head&gt; ... &lt;/head&gt;</h6>
+
+	<pre class="line-numbers" data-start="10"><code class="language-html fs--15"><% $code_1 %></code></pre>
+
+	<h6 class="mt-4 mb-2">Oder: Google-Tag bereits eingef&uuml;gt?</h6>
+
+	<p>
+		Falls Sie das Google-Tag über ein anderes Google-Produkt (etwa Google Analytics) oder ein anderes Google Ads-Konto auf Ihrer Website
+		eingefügt haben, kopieren Sie den Befehl „config“ unten und fügen Sie ihn in jeder Instanz des Google-Tags
+		<u>oberhalb</u> des schliessenden Tags <code>&lt;/script&gt;</code> ein.
+	</p>
+
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl fs--15">gtag('config', 'AW-11301921986');</code></pre>
+
+	<h6 class="mt-4 mb-2">Ereignis-Snippet</h6>
+
+	<p>Nur auf der <a href="/order_detail.html?id=<% $order_id %>">Conversion-Seite</a>! "value" und "currency" sind dynamische Werte.
+		&ndash; <a href="/account-orders.html">Ihre Bestellungen</a>
+%		if ($order_id < 1) {
+			&ndash; Keine Bestellungen bei UID <% $perm->{uid} %>?
+%		}
+	</p>
+
+	<pre clasx="line-numbers" data-start="10"><code class="language-html fs--15">&lt;!-- Event snippet for Kauf Auctionline conversion page --&gt; &lt;script&gt; gtag('event', 'conversion', { 'send_to': 'AW-11301921986/V5WZCJWax-UYEMLJlo0q', 'value': 100.0, 'currency': 'CHF', 'transaction_id': '' }); &lt;/script&gt; </code></pre>
+
+	<h6 class="mb-3">google_conv_tracking_final_trigger_page_head
+		<a href="/adm_db_edit.html?table=properties&wcl=`key`=%27google_conv_tracking_final_trigger_page_head_sys%27"><i class="fi fi-pencil"></i></a>
+	</h6>
+
+	<p>Fügen Sie es auf den zu erfassenden Seiten direkt nach dem Google-Tag zwischen den &lt;head&gt;&lt;/head&gt;-Tags ein.</p>
+	<pre class="line-numbers" data-start="10"><code class="language-html fs--15"><% $code_event_snippet %></code></pre>
+
+	<p>
+		Fügen Sie einen bestimmten Code hinzu, damit ein Wert dynamisch an den Parameter transaction_id übergeben wird.
+		Bei der Erfassung von Käufen, Verkäufen oder Leads auf Ihrer Website wird durch diesen Parameter gewährleistet,
+		dass jede Conversion nur genau einmal gezählt wird. 
+	</p>
+
+%	# =====================================================
+	<h3 class="fs--25 mt-5 mb-3">Installationsanleitung <b><u>mit</u></b> Google Tag Manager</h3>
+
+	<p>Innerhalb <code>&lt;head&gt; ... &lt;/head&gt;</code></p>
+
+	<span class="float-end">
+		<a href="manage-property.html?area=google_conv_tracking_on">On/Off</a> &rarr; <% $C->txt('google_conv_tracking_on', 'sys')+0 ? 'On' : 'Off' %>
+	</span>
+	<h6 class="mb-3">google_conv_tracking_head
+		<a href="/adm_db_edit.html?table=properties&wcl=`key`=%27google_conv_tracking_head_sys%27"><i class="fi fi-pencil"></i></a>
+	</h6>
+
+	<pre class="line-numbers" data-start="10"><code class="language-html fs--15"><% $gtm_code %></code></pre>
+
+	<hr class="mt-4" />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a>
+	</p>
+
+</div>

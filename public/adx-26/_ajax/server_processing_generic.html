@@ -1,0 +1,145 @@
+<%init>
+	use JSON;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $json = JSON->new();
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	unless ($perm->{is_admin}) {
+		$m->out('Access denied');
+		$m->abort();
+	}
+
+	my $cgi  = $C->{CGI};
+	my $sortcol   = $cgi->param('order[0][column]') || 0;
+	my $search    = $cgi->param('search[value]');
+	my $direction = $cgi->param('order[0][dir]') || 'desc';
+	my $length    = $cgi->param('length') + 0; $length ||= 10;
+	my $start     = $cgi->param('start') + 0;
+	my $draw      = $cgi->param('draw')  + 0; # -- https://datatables.net/manual/server-side
+	my $table     = $cgi->param('table');
+	my $macro     = $cgi->param('macro');
+	my $fil       = $cgi->param('fil');
+	my $debug     = $cgi->param('debug') + 0;
+
+	my $mdata = $C->prism_get_macro_param(macro=>$macro);
+	foreach (split /,/, $cgi->param('omit')) {
+		$mdata->{para}->{"db_col_$_\_omit"} = 1;
+	}
+
+	($search ||= $cgi->param('q')) =~ s/'/''/g;
+	my $search_num = $search =~ /^\d+$/ ? 1 : 0;
+
+	my $area = '';
+	if ($start && length != -1) {
+		$area = "LIMIT $start, $length";
+	}
+	elsif ($length > 0) {
+		$area = "LIMIT $length";
+	}
+
+	my @db_cols = split / /, $mdata->{para}->{db_cols};
+	my @dbcols_vis = ();
+	foreach my $col (@db_cols) {
+		next if $mdata->{para}->{"db_col_$col\_omit"};
+		push(@dbcols_vis, $col);
+	}
+	my $order_by = $dbcols_vis[$sortcol]; # -- 17Feb2024
+
+	my @wcl = ();
+	push(@wcl, $mdata->{para}->{wcl}) if $mdata->{para}->{wcl};
+	push(@wcl, $fil) if length($fil);
+
+	if ($search_num) {
+		push(@wcl, "id=$search");
+	}
+	elsif (length($search) > 1) {
+		$search = $C->utf2iso($search);
+		(my $search_wcl = $mdata->{para}->{wcl_filter}) =~ s/\{\{search\}\}/$search/g;
+		push(@wcl, $search_wcl);
+	}
+
+	my $wcl_str = join ' AND ', @wcl;
+	   $wcl_str = "WHERE $wcl_str" if @wcl;
+
+	if ($debug) { print STDERR "[Debug] $wcl_str\n"; }
+
+	my $stmt = 'select ' . (join ', ', @db_cols) . " from $table $wcl_str ORDER BY $order_by $direction $area";
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $C->create_toast_note(body=>$DBI::errstr, type=>'danger', title=>'Error E402161-67',
+					delay=>15000, style=>q~.toast, .max-w-300 { max-width: 400px !important; opacity: 0.95; }~);
+
+	print STDERR "$stmt\n" if $debug > 1;
+	my $row_count = $C->query("select count(*) from $table $wcl_str")->[0];
+
+	my @json = ();
+
+	if ($debug > 1) {
+		my @d_row = split / /, $mdata->{para}->{db_cols};
+		$d_row[1] = "$macro / $#d_row / $d_row[1]";
+		push(@json, \@d_row);
+	}
+
+	while(my $r = $sth->fetch()) {
+		my @row = ();
+		my $id = $r->[0];
+		my $col_start = 0;
+		if ($mdata->{para}->{db_edit} eq '(STD)' or length($mdata->{para}->{db_edit}) < 1) {
+			push(@row, qq~<a href='/adm_db_edit.html?table=$table&wcl=id\%3D$id'><b>$id</b></a>~);
+			$col_start = 1;
+		}
+		for (my $i=$col_start; $i < $#{ $r } + 1; $i++) {
+			my $val = $r->[$i];
+			$db_cols[$i] =~ tr/[\t\n]//d;
+			if ($mdata->{para}->{"db_col_$db_cols[$i]\_omit"}) {
+				next;
+			}
+			if ($db_cols[$i] =~ /time$/ or $db_cols[$i] eq 'tstamp') {
+				$val = $C->trans_date_short($val);
+			}
+			elsif ($db_cols[$i] =~ /price/ or $db_cols[$i] =~ /amount/) {
+				$val = sprintf('%.2f', $val);
+			}
+
+			if ($mdata->{para}->{"db_col_$db_cols[$i]\_conv"}) {
+				my $conv = qq~\$val = $mdata->{para}->{"db_col_$db_cols[$i]\_conv"}~;
+				if ($conv =~ /\bquery\b/ or $conv =~ /\bupdate\b/i or $conv =~ /\bpass\b/) {
+					$val = 'Err E402141-99';
+				}
+				else {
+					eval ($conv);
+					if ($@) { $val = "ERR $@"; }
+				}
+			}
+
+			if ($mdata->{para}->{"db_col_$db_cols[$i]\_href"}) {
+				(my $repl = $mdata->{para}->{"db_col_$db_cols[$i]\_href"}) =~ s/\{\{$db_cols[$i]\}\}/$val/;
+				$val =qq~<a class="link-muted" href="/$repl">$val</a>~;
+			}
+
+			if ($mdata->{para}->{"db_col_$db_cols[$i]\_css"}) {
+				$val = qq~<div style="$mdata->{para}->{"db_col_$db_cols[$i]\_css"}">$val</div>~;
+			}
+
+			if ($mdata->{para}->{"db_col_$db_cols[$i]\_class"}) {
+				$val = qq~<span class="$mdata->{para}->{"db_col_$db_cols[$i]\_class"}">$val</span>~;
+			}
+
+			push(@row, $val);
+		}
+		push(@json, \@row);
+	}
+
+	my $JSON =  $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+  "draw": <% $draw %>,
+  "recordsTotal": <% $row_count %>,
+  "recordsFiltered": <% $row_count %>,
+  "data": <% $JSON %>
+}

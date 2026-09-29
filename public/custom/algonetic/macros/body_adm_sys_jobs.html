@@ -1,0 +1,50 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my @env = ();
+	if ($s{debug}) {
+		foreach (sort keys %s) {
+		next if $_ eq 'C' or $_ eq 'comp_file' or $_ eq 'dir' or $_ eq 'theme' or $_ eq 'check_env';
+			push(@env, qq~[ s ] &middot; <b>$_</b> = <code>$s{$_}</code>~);
+		}
+	}
+
+	my $host_env_prim = $C->get_safe_property('host_env_primary', 'sys');
+	my $hourly_debug  = $host_env_prim eq 'yes' ? 1 : 0;
+
+	# my @reqs = qw(/root/bin/gits_site.sh /root/bin/gits_site.sh);
+	my @reqs = (); # -- 05Jun2026
+	# XXX push(@reqs, "/var/www/html/_systex/hourly_tasks.pl --db shop --debug $hourly_debug");
+	push(@reqs, "/var/www/html/_systex/hourly_tasks.pl --db $ENV{db_name} --debug $hourly_debug");
+	# push(@reqs, '/usr/sbin/postsuper -d ALL deferred');
+	my $sysjobs = $C->get_system_autojobs(required=>\@reqs, debug=>2);
+</%init>
+% if ($sysjobs->{rc}) {
+	<% $C->bootstrap_alert($sysjobs->{msg}, 'danger') %>
+% }
+% else {
+%	# $C->create_toast_note(body=>'<center>Okay</center>', width=>'110px', delay=>1300);
+% }
+
+<div class="float-end mr-1">
+	<a class="link-muted" href="https://docs.ch2.be/w/prismado-shop/feat-system-jobs">Wiki Help (Jobs)</a>
+</div>
+
+<h5>cronjobs</h5>
+<table class="table table-sm table-hover">
+% foreach my $d (@{ $sysjobs->{cache_lines_c} }) {
+	<tr>
+		<td class="ZZtext-monospace text-dark"><% $d->{CMD} %></td>
+		<td>H: <% $d->{H} %></td>
+		<td class="text-center"><% $d->{MIN} %></td>
+		<td><% $d->{WD} %></td>
+	</tr>
+% }
+</table>
+<p class="mb-2"><% $sysjobs->{cron_mysql} %></p>
+<%doc>
+	Created: 20May2024
+</%doc>

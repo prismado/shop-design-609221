@@ -1,0 +1,30 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $a_id = $args{a_id} || 'topDDLanguage';
+</%init>
+	<ul class="list-inline m-0">
+
+		<li class="dropdown list-inline-item m-0">
+			<a id="<% $a_id %>" href="#!" class="d-inline-block" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+				<i class="flag flag-ch"></i><span class="pl-2 pr-0">DEUTSCH</span>
+			</a>
+
+			<div aria-labelledby="<% $a_id %>" class="dropdown-menu fs--13 px-1 pt-1 pb-0 m-0 max-h-50vh scrollable-vertical dropdown-menu-right">
+
+			<a href="/_change_lang.html?lang=de"
+				class="active dropdown-item text-muted text-truncate line-height-1 rounded p--12 mb-1"><i class="flag flag-ch"></i>DEUTSCH</a>
+
+			<a href="/_change_lang.html?lang=en"
+				class="dropdown-item text-muted text-truncate line-height-1 rounded p--12 mb-1"><i class="flag flag-gb"></i>ENGLISH</a>
+
+			<a href="/_change_lang.html?lang=fr"
+				class="dropdown-item text-muted text-truncate line-height-1 rounded p--12 mb-1"><i class="flag flag-fr"></i>FRANCAISE</a>
+
+			</div>
+
+		</li>
+
+	</ul>
+

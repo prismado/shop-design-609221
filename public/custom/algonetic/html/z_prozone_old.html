@@ -1,0 +1,109 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID      = $C->getSID();
+	my $is_admin = $C->is_admin();
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $token    = $C->getSessData('token');
+
+	my $bGo   = $C->{CGI}->param('bGo');
+	my $email = $C->{CGI}->param('email');
+
+	my $company_id = 0;
+	if ($bGo) {
+		my $maildom = (split /\@/, $email)[1];
+		my $second_level_dom = $C->grep_2nd_level_dom($maildom);
+		$company_id =   $C->query("select company_id from campaign_maildom where mail_domain='$maildom' order by id desc limit 1")->[0];
+		$company_id ||= $C->query("select company_id from campaign_maildom where mail_domain='*\.$second_level_dom' order by id desc limit 1")->[0];
+		if ($company_id) {
+			my ($token, $token_id) = @{$C->query(
+			"select token, id from campaign_data where company_id=$company_id order by id desc limit 1")};
+			my $count   = $C->query("select count(*) from products where campaign_id=$token_id")->[0];
+			my $site_email = $C->prp('site_email');
+			(my $mailtext = $C->prp('prozone_mailtext')) =~
+				s/\{\{prozone_url\}\}/https:\/\/$C->{CONFIG}->{HTTP_HOST}\/token.html?token=$token/;
+			    $mailtext =~ s/\{\{count\}\}/$count/;
+			    $mailtext =~ s/\{\{site_email\}\}/$site_email/;
+			my $sender = (split /\@/, $C->{CONFIG}->{order_email})[0] . '@eshop.pub';
+
+			$C->mail_generic(
+				sender  => $sender,
+				to      => $email,
+				subject => "Pro-Zone",
+				data    => $mailtext
+			);
+		}
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><% $C->prp('prozone') %> | <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<& include/content_header.html, SID=>$SID, is_admin=>$is_admin, lang=>$lang, C=>$C &>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid ps-content">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+	<div class="well">
+		<h1><i class="fa fa-users"></i> <% $C->prop('prozone') %></h1>
+	</div>
+
+
+<div id="contentBlock">
+<% $C->prop('prozone_intro') %><br /><br />
+
+% if ($token) {
+	<% $C->prop('prozone_token_accepted') %><br><br>
+
+	<a class="btn btn-checkout" style="color:#fff !important;" href="token.html"><% $C->prop('prozone_access') %></a><br>
+% }
+% else {
+	<form method="post" class="ps-checkout-forms" action="prozone.html">
+	<div class="no-more-tables-responsive">
+	<table class="table table-hover">
+	<tr>
+	<td><br>
+	<input type=hidden name="bGo" value=1>
+	<input type="email" class="input-large"  name="email" value="<%$email%>" placeholder="<% $C->prop('emailadress') %>">
+	</td>
+	</tr>
+	</table>
+  	<input class="btn btn-checkout" style="margin-top: -15px; min-height: 50px !important;"  type="submit" value="<% $C->prop('btn_send') %>">
+	</div>
+	</form><br><br>
+% }
+
+% if ($bGo) {
+%	if ($company_id) {
+		<% $C->bootstrap_alert($C->prp('prozone_okay'), 'success') %>
+%	}
+%	else {
+		<% $C->bootstrap_alert("<b>ERROR</b> Nichts gefunden.", 'danger') %>
+%	}
+% }
+
+</div><!-- End contentBlock -->
+</div><!-- End productBlock -->
+</div><!-- End container -->
+<br /><br /><br />
+
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>

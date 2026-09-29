@@ -1,0 +1,35 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $label = $args{label} || '* No label *';
+	my $code  = $args{code}; # -- e.g. "pc3"
+	my $num   = $args{num} || 0;
+	$args{cost} ||= '0.00';
+</%init>
+<tr>
+	<td style="width:7%">
+%		if ($args{debug}) {
+			[ <code><% $num %></code> ] &ndash;
+%		}
+		<label class="form-radio form-radio-primary">
+			<input type="radio" <%$args{checked}%> name="checkout_zahlungsart_select"
+				id="checkout_zahlungsart_select_<%$code%>" value="<%$code%>" onClick="updateTot(<%$num%>)" />
+			<i></i>
+		</label>
+	</td>
+
+	<td>
+		<% $label || '* No label *' %>
+	</td>
+
+	<td clasx="float-right">
+%		if ($args{cost} > 0) {
+			<span class="float-right">CHF <% $args{cost} %></span>
+%		}
+%		else {
+% # XXX			&nbsp;
+%		}
+	</td>
+</tr>

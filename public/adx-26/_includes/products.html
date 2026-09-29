@@ -1,0 +1,115 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	# -- Created: 28Apr2024
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $mdata = $args{mdata};
+	my $chv   = $args{chv} || 0; # -- check valid? 1 | 0
+	my $fil   = $chv ? $args{fil} : '';
+	my $omit  = $args{omit}; # -- Comma-separated
+	my $theme = $args{theme};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	(my $table = $mdata->{para}->{source}) =~ tr/\t//d;
+
+	my $macro = '';
+	   $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0) if $debug;
+</%init>
+<div class="portlet-body">
+%	if ($debug) {
+		DN404281-23: Debug: <% $debug %><br>
+%	}
+%	if ($args{body_macro_name}) {
+%		if ($debug) {
+			Makro: <code><% $args{body_macro_name} %></code> (Debug <% $debug %>)<br>
+%		}
+		<% $args{body_macro}->{out} %>
+%	}
+
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+<link rel="stylesheet" type="text/css" href="/adx/assets/css/prism_datatables_1_10_color_lime_2.css">
+	
+
+<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+
+	<table id="example" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+				<th style="text-align:center;" nowrap>Prod-ID</th>
+				<th>Bild</th>
+				<th>Marke</th>
+				<th>Modell</th>
+				<th>Art-Nr.</th>
+				<th style="text-align:right !important; font-weight:bold; padding-right:30px !important; color:#515151">Preis&nbsp;&nbsp;</th>
+				<th style="text-align:right !important; padding-right:25px !important; font-size:0.75rem">Stk.&nbsp;&nbsp;</th>
+				<th>Zustand</th>
+				<th style="text-align:right !important; padding-right:25px !important">Erstellt</th>
+	    </tr>
+	</thead>
+	</table>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 15,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Suchbegriff oder Produkte-ID"
+	},
+	"ajax": "_ajax/server_processing_products.html?table=vproducts&debug=<% $debug %>&q=&fil=<% $fil %>&macro=products&omit=",
+	"order": []
+    } );
+
+	$('.dataTables_filter input').css({'width': '255px', 'border-radius': '8px'});
+	$('.dataTables_filter input').removeClass('form-control-sm');
+	$('.dataTables_filter input').attr('id', 'customSearchInput40130');
+
+	document.getElementById('customSearchInput40130').focus();
+
+} );
+</script>
+
+
+
+%	if ($debug) {
+		<p class="mt-2 mb-0">DN402141-29:</p>
+		fil="<code><% $fil %></code>"<br>
+%		foreach (sort keys %{$mdata}) {
+%			next if $_ eq 'para';
+			[ mdata ] &middot; <b><% $_ %></b> = "<code><% $mdata->{$_} %></code>"<br>
+%		}
+%		foreach my $key (sort keys %{$mdata->{mdata}}) {
+			[ mdata (2) ] &middot; <b><% $key %></b> = "<code><% $mdata->{mdata}->{$key} %></code>"<br>
+%		}
+%	}
+
+%	if ($perm->{is_devel}) {
+		<p>
+			<a href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_products_sys%27+AND+page%3D%27_macro%27"><i
+				class="fi fi-pencil"></i> Edit XML</a> &mdash;
+			<a class="fs--13 link-muted"
+				href="/adm_db_edit.html?table=properties&wcl=`key`=%27macro_products_sys%27+AND+page%3D%27_macro%27">Example</a> &mdash;
+			<a href="https://docs.ch2.be/w/prismado-shop/feat-generic-adm-func">Wiki Help</a>
+		</p>
+%		if ($debug) {
+			<p class="mt-3">Output von Makro <code>custom/<% $C->{CONFIG}->{theme} %>/macros/_foo.html</code>:</p>
+			<div class="alert alert-info">
+				<% $macro->{out} %>
+			</div>
+%		}
+%	}
+
+</div>

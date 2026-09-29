@@ -1,0 +1,81 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+
+	my ($instime, $prod_id, $weight, $is_active) = @{$C->query("select instime, product_id, weight, is_active from promo_prods where id=$id")};
+</%init>
+<%doc>
+XXX:
+/XXX
+</%doc>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-md" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title text-dark" id="<% $css_id %>">Promo-Eigenschaft anpassen</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+			    <form method="post" action="/_sub.html" name="f402172_24_<% $id %>">
+				<input type="hidden" name="action"  value="adjust_promo">
+				<input type="hidden" name="id"      value="<% $id %>">
+				<input type="hidden" name="prod_id" value="<% $prod_id %>">
+
+				<p class="float-end">Angewandt am: <% $C->trans_date_short($instime) %></p>
+
+				<img class="img-fluid w--150 mb-3" style="box-shadow: 7px 7px 4px #888888;" src="/produkte/p<% $prod_id %>_thmb.jpg">
+
+				<p>Prod-ID <b><% $prod_id %></b></p>
+
+				<label class="form-radio form-radio-success">
+					<input type="radio" name="is_active" value="1" <% $is_active < 0 ? '' : 'checked' %>>
+					<i></i> <span class="text-gray-800" style="padding-left:25px; color:black">Promo</span>
+				</label><br>
+
+				<label class="form-radio form-radio-success">
+					<input type="radio" name="is_active" value="-1" <% $is_active < 0 ? 'checked' : '' %>>
+					<i></i> <span class="text-gray-800" style="padding-left:25px; color:black"><nobr>Super-Promo / Tagesangebot</nobr></span>
+				</label>
+
+				<div class="form-label-group mb-3 mt-3">
+					<input required="" placeholder="" id="txe_weight" name="weight" type="text" class="form-control " value="<% $weight %>">
+					<label for="txe_weight">Reihenfolge / Gewicht (je kleiner der Wert desto weiter oben)</label>
+				</div>
+			    </form>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-danger w--150" onclick="myconfirm()">
+					<img class="mr-2" width="15" height="15"" src="/adx/assets/images/trash-icon-maroon.svg">
+					Entfernen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="document.f402172_24_<% $id %>.submit();">
+					<i class="fi fi-check"></i> Zuweisen
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function myconfirm() {
+		if (confirm('Wollen Sie wirklich l...')) {
+			document.location="/_sub.html?action=remove_promo&id=<% $id %>";
+		}
+	}
+</script>

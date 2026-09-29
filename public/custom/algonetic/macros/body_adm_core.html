@@ -1,0 +1,122 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my @env = ();
+	if ($s{debug}) {
+		foreach (sort keys %s) {
+		next if $_ eq 'C' or $_ eq 'comp_file' or $_ eq 'dir' or $_ eq 'theme' or $_ eq 'check_env';
+			push(@env, qq~[ s ] &middot; <b>$_</b> = <code>$s{$_}</code>~);
+		}
+	}
+
+	my $c_feat = $C->get_core_features();
+
+	my %area_hr = (
+		1=>'E-Mail', 2=>'VAT / Tax', 3=>'Admin', 4=>'Customization', 7=>'Product'
+	);
+
+	my $feat_exmpl = $C->get_core_feat_info(what=>'edit_product');
+</%init>
+<div class="float-end">
+	<a class="link-muted" href="/adx/manage-property.html?core=1">System Properties (&Uuml;bersicht)</a> &mdash;
+	<a class="link-muted" href="/adm_config.html">Alte Konfig (2019)</a> &mdash;
+	<% ${ $A->modal( label=>'<i class="fi fi-plus-squared fs--25"></i>', tooltip=>'Promo hinzu',
+			url=>'/adx/_ajax/modal_add_promo.html?css_id=402181_18', css_id=>'402181_18') } %>
+</div>
+<h3 class="fs--25 mb-1">Prismado Core Features</h3>
+<p>Haupt-Bereiche des Kern-Systems</p>
+
+<table class="table border table-hover">
+	<tr>
+		<th>Mnemotec</th>
+		<th style="width:20vw; padding-left:15px">Funktionstitel (de)</th>
+		<th>ID</th>
+		<th>Bereich</th>
+		<th>Auth Req</th>
+		<th>Erstellt</th>
+		<th class="pr-3">Version</th>
+		<th>Parameter</th>
+	</tr>
+% foreach my $f (@{ $c_feat->{features}  }) {
+%	next if $f->{id} == 40221184;
+%	(my $id_hr = $C->format_hr4($f->{id})) =~ s/ /\-/;
+	<tr>
+	<td><b class="fs--18 text-cyan-800"><% $f->{mnemonic} %></b></td>
+	<td style="padding-left:15px"><span class="font-weight-medium"><% $f->{title_de} %></span>
+%		if ($f->{wiki_url}) {
+%			(my $url = $f->{wiki_url}) =~ s/^https:\/\///; $url =~ s/^docs\.ch2\.be\/w\///;
+%			    $url =~ s/^prismado\-shop\///;
+			<p class="mt-2"><i class="fi fi-squared-info"></i> <a class="link-muted" href="<% $f->{wiki_url} %>"><% $url %></a></p>
+%		}
+	</td>
+	<td nowrap><a class="link-muted fs--14" href="/adx/manage-property.html?area=<% $f->{id} %>"><tt><% $id_hr %></tt></a></td>
+	<td class="fs--14">
+%		foreach (@{ $f->{area_ids}}) {
+			<% $area_hr{$_} || "* $_ *" %><br>
+%		}
+	</td>
+	<td class="text-pink-400 fs--14"><% $f->{auth_req} || '&mdash;' %></td>
+	<td class="fs--14"><% $f->{created} %> <% $f->{updated} %></td>
+	<td class="fs--14"><% $f->{ver} %></td>
+	<td>
+		<table class="table table-sm mb-0">
+%		foreach my $p (sort keys %{ $f->{param} }) {
+%			my $val = my $key = '';
+%			if ($f->{param}->{$p} =~ /^\{\{(.+)\}\}$/) {
+%			$key = $1;
+%			$val = $C->txt( "$f->{id}_$key", 'sys', '_core' );
+%			$val = '0' if $val =~ /^\* .+/;
+%			}
+%			$val ||= $f->{param}->{$p} unless length($val);
+			<tr style="background-color:white !important">
+			<td style="width:190px" nowrap>&bull; <% $p %> <% $key ? "&middot; (<code>$key</code>)" : '' %></td>
+			<td>
+%			    if ($key) {
+				<span class="float-end"><a
+					href="/adm_db_edit.html?table=properties&wcl=`key`=%27<% $f->{id} %>_<% $key %>_sys%27+AND+page=%27_core%27"><i
+						class="fi fi-pencil"></i></a>
+				</span>
+%			    }
+				<code class="fs--15 font-weight-bold text-dark"><% $val %></code>
+			</td>
+			</tr>
+%		}
+		<tr style="background-color:white !important">
+			<td style="width:190px">&bull; Weitere Einstellungen</td>
+			<td nowrap>
+%				foreach my $add (sort keys %{ $f->{add_setting_url} }) {
+					&bull; <a class="link-muted text-dark" href="<% $f->{add_setting_url}->{$add} %>"><% $add %></a><br>
+%				}
+			</td>
+		</tr>
+		</table>
+%		foreach (sort keys %{ $f }) {
+%			next unless length( $f->{$_} );
+%			next if $_ eq 'param' or $_ eq 'title_de' or $_ eq 'created' or $_ eq 'updated' or $_ eq 'id' or $_ eq 'ver'
+%				or $_ eq 'url' or $_ eq 'mnemonic' or $_ eq 'wiki_url' or $_ eq 'auth_req' or $_ eq 'add_setting_url' or $_ eq 'area_ids';
+			<b><% $_ %></b> = <% $f->{$_} %><br>
+%		}
+	</td>
+	</tr>
+% }
+</table>
+<hr />
+<% join "<br>\n", @env %>
+
+<h5>edit_product &ndash; use_current: <code><% $C->txt('40628101_use_current', 'sys', '_core') %></code></h5>
+
+<pre class="mt-3 ZZline-numbers" data-starx="101"><code class="language-perl">my $feat_exmpl = $C-&gt;get_core_feat_info(what=>'edit_product');
+# -- $feat_exmpl->{info}->{param}-&gt;{detail} = <% $feat_exmpl->{info}->{param}->{detail} %>
+# -- $C-&gt;txt('40628101_use_current', 'sys', '_core') = <% $C->txt('40628101_use_current', 'sys', '_core') %></code></pre>
+
+% foreach (sort keys %{ $feat_exmpl->{info} }) {
+%	next if /^area_ids$/ or /^wiki_url$/ or /^ver$/ or /^created$/ or /^mnemonic$/ or /^add_setting_url$/ or /^param$/;
+	&bull; <b><% $_ %></b> = <code><% $feat_exmpl->{info}->{$_} %></code><br>
+% }
+% foreach (sort keys %{ $feat_exmpl->{info}->{param} }) {
+	[ param ] &middot; <b><% $_ %></b> = <% $feat_exmpl->{info}->{param}->{$_} %><br>
+% }
+<br />

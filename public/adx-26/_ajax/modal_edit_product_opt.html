@@ -1,0 +1,196 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $debug = $C->getSessData('debug');
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+
+	my $lang = 'de';
+
+	my $sth = $C->{dbh}->prepare("select label, lang from options_desc where option_id=$id order by 2");
+	   $sth->execute();
+
+	my %labels = ();
+	while(my $r = $sth->fetch()) {
+		my ($label, $lang) = @{$r};
+		$labels{$lang} = $label;
+	}
+
+	my %flag = (
+		de => 'ch',
+		en => 'gb',
+		fr => 'fr'
+	);
+
+	my $array_ref = $A->get_opt_details( $id );
+</%init>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/assets/css/prism_swal.css">
+
+<div class="modal fade" id="<% $css_id %>" DDtabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Produkt-Option ID <% $id %> &middot; <% $labels{de} %></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form method="post" XXXname="f308281" action="/_update_prodopt.html">
+			<input type="hidden" name="id"     value="<% $id %>">
+			<input type="hidden" name="action" value="update">
+
+			<div class="modal-body">
+%				if ($debug) {
+					<p>This: <code><% $C->this() %></code></p>
+%				}
+
+%				my $i =	0;
+%				foreach my $lang (sort keys %labels) {
+	<a href="#" onclick="JavaScript:$('#edit_area_404231_40').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_<% $lang %>&inp_val=<% $C->uri_esc($labels{$lang}) %>');"><% $lang %></a>
+					[<a href="#" onclick="load_labels('<% $lang %>')"><% $lang %> neu</a>]
+%				}
+
+				<div id="edit_area_404231_40">
+					<& ../_includes/inc_text_input.html, label=>"tbd - de", value_enc=>$labels{de}, name=>"label_de",
+						tx_class=>'font-weight-bold fs--17 text-dark XXXoption-title-404171', write=>1, id=>50+999 &>
+				</div>
+
+				<table class="table table-responsive">
+%				foreach (@{ $array_ref }) {
+%					my ($x_id, $style, $label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
+					<tr>
+						<td class="w--400" style="min-width:20vw !important">
+							<& ../_includes/inc_text_input.html, label=>"Auswahl ID $det_id - $lang", value_enc=>$desc, write=>1,
+						name=>"sel_$det_id\_$lang", class=>'mb--n10', tx_class=>'font-weight-bold fs--15', id=>"sel_$det_id\_$lang" &>
+						</td>
+						<td>
+							<span class="float-left" data-toggle="tooltip" data-placement="left"
+								data-original-title="Sprachunabh&auml;gige Referenz" style="min-width:230px !important">
+								<& ../_includes/inc_text_input.html, label=>"Referenz von Auswahl ID $det_id",
+									value_enc=>$ref, name=>"ident_$det_id\_$lang", write=>1, id=>"ident_$det_id\_$lang",
+										class=>'mb--n10', tx_class=>'fs--15 font-weight-bold text-monospace' &>
+							</span>
+						</td>
+						<td>
+							<span class="float-end mt-1">
+							    <prism-dialog-sr prompt="<% sprintf('%.2f', $amount) %>" instruction="<% $amount %>"
+								callback="foo" timeout="1000" css_id="pd_404221_43_<% $det_id %>"
+								x_info="Von Eingabe Nr. <% $det_id %>"
+								x_gaga="gugu 12345">
+							    </prism-dialog-sr>
+							</span>
+						</td>
+						<td>
+							<span class="float-end">
+								<span class="ml-0" data-toggle="tooltip" data-placement="bottom"
+										data-original-title="Diese Auswahl l&ouml;schen">
+									<a href="#" onclick="delClick(<% $det_id %>)"><i class="fi fi-thrash fs--13 mt-2"></i></a>
+								</span>
+							</span>
+						</td>
+					</tr>
+%				}
+				</table>
+
+%				if ($debug > 1) {
+%				    foreach ($cgi->all_parameters) {
+					[ CGI ] - <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%				    }
+%				}
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="submit" class="btn btn-sm btn-soft btn-primary w--150">
+					<i class="fi fi-check"></i> Speichern
+				</button>
+			</div>
+
+			</form>
+		</div>
+
+	</div>
+</div>
+
+<span id="del_404080_49"></span>
+
+<script language="JavaScript">
+var det_id_to_del;
+document.getElementById('del_404080_49').addEventListener('click', function() {
+  Swal.fire({
+    title: '<% $C->txt('delete') %>?',
+    text: "Dies kann nicht rückgängig gemacht werden!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor:  '#f1f3f3',
+    confirmButtonText: 'Ja, löschen!',
+    cancelButtonText:  'Abbrechen',
+  customClass: {
+    confirmButton: 'btn w--150 btn-primary',
+    cancelButton:  'btn w--150 text-dark',
+    container: 'custom-swal-alert',
+    popup: 'custom-popup'
+  }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire(
+	'Gelöscht!',
+	'Der Eintrag wurde geloescht.',
+	'success'
+      )
+      // Fuehre hier die Loeschoperation aus
+	$.ajax({
+		url: '/adx/_ajax/proc_del_opt_sel.html?del_det_id=' + det_id_to_del,
+		type: 'GET',
+		dataType: 'html',
+		success: function(response) {
+			setTimeout(function() {
+				document.location = '/adx/options.html?open=<% $id %>';
+			}, 1250);
+		},
+		error: function(xhr, status, error) {
+			console.error(error);
+		}
+	});
+    }
+  })
+});
+
+function delClick(det_id) {
+	det_id_to_del = det_id;
+	document.getElementById('del_404080_49').click();
+}
+
+function load_labels(lang) {
+	console.log("Sprache " + lang + " sollte geladen werden...");
+	if (lang == 'de') {
+		$('#edit_area_404231_40').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_de&inp_val=<% $C->uri_esc($labels{de}) %>&r=<% rand() %>');
+	}
+	else if (lang == 'en') {
+		$('#edit_area_404231_40').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_en&inp_val=<% $C->uri_esc($labels{en}) %>');
+	}
+	else if (lang == 'fr') {
+		$('#edit_area_404231_40').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_fr&inp_val=<% $C->uri_esc($labels{fr}) %>');
+	}
+}
+
+$(document).ready(function(){
+	$('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+
+<%doc>
+	Created: 22Apr2024
+</%doc>

@@ -1,0 +1,81 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C            = $args{C};
+	my $A            = $args{A};
+	my $order_id     = $args{order_id};
+	my $edi          = $args{edi};
+	my $tpl          = $args{tpl};
+	my $debug        = $args{debug};
+
+	(my $out = $edi->{out}) =~ s/\</&lt;/g;
+	    $out =~ s/\>/&gt;/g;
+
+	my ($dn_status, $dn_created) = @{$C->query("select id, created_at from orders_status where order_id=$order_id and status_id=104 order by 1 desc limit 1")};
+
+	my $exmpls = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/upload/examples/EDI", '^index', 0, '!~');
+</%init>
+<div class="portlet-body">
+
+	<div class="float-end w--200">
+		<& inc_select_redir_405141.html, this=>$C->this(), order_id=>$order_id &>
+	</div>
+
+	<h4 class="fs--20 mb-3">
+		<tt>$A-&gt;get_order_edi( id=&gt;<a href="/admix.html?func=orders&id=<% $order_id %>"><% $order_id %></a>, tpl=&gt;'<% $tpl %>' )</tt>
+		&mdash; [ <% $edi->{odat}->{odat}->{deliv_company} %> <% $edi->{odat}->{odat}->{deliv_firstname} %> <% $edi->{odat}->{odat}->{deliv_lastname} %>,
+		<% $edi->{odat}->{odat}->{deliv_city} %> ]
+	</h4>
+
+	<p>
+		DN <% $dn_status || 'not yet created' %>
+%		if ($dn_status) {
+			&middot; <span class="animate-pulse"><% $C->trans_date_short($dn_created) %></span>
+%		}
+	</p>
+
+	<p>
+		<a href="dev-get-order-edi.html?order-id=<% $order_id %>&tpl=foo.xml">Order Response</a> &ndash;
+		<a href="dev-get-order-edi.html?order-id=<% $order_id %>&tpl=edi_dispatch.xml">edi_dispatch.xml</a> &ndash;
+		<a href="dev-get-order.html?order-id=<% $order_id %>">Dump Order-ID <% $order_id %></a>
+	</p>
+
+	<table class="table table-sm col-6 table-hover mt-3 border">
+%	foreach (sort keys %{ $edi }) {
+%		next if $_ eq 'out' or $_ eq 'exec' or /^VERSION$/ or /^rc$/ or /^odat$/;
+		<tr>
+			<td width="35%">[ EDI ] &middot; <b><% $_ %></b></td>
+			<td><code><% $edi->{$_} %></code></td>
+		</tr>
+%	}
+%	foreach (sort keys %{ $edi->{exec} }) {
+%		next if $_ eq 'VERSION' or $_ eq 'arg_debug' or $_ eq 'out' or /dir$/ or $_ eq 'check_mason' or /^arg_theme$/ or /^arg\_odat$/
+%			or /call_src$/ or /^arg_order_id$/ or /^arg_ver$/ or /^user$/ or /^arg_check_env$/;
+%		next unless length( $edi->{exec}->{$_} );
+		<tr>
+			<td>[ exec ] &middot; <code><% $_ %></code></td>
+			<td><% $edi->{exec}->{$_} %></td>
+		</tr>
+%	}
+	</table>
+
+	<h4 class="fs--20 mb-3">Output <code>$edi-&gt;{out}</code> &mdash; rc=<% $edi->{rc} %> &mdash;
+		<a href="dev-get-order-edi.html?order-id=<% $order_id %>&tpl=edi_dispatch.xml&bSaveDispatch=1">Save?</a>
+		&mdash; <a
+		href="/_systex/data/GDELR_10391065_<% $edi->{exec}->{arg_edi_order_id} %>.xml">Download GDELR_10391065_<% $edi->{exec}->{arg_edi_order_id} %>.xml</a>
+	</h4>
+
+	<p>Bei Save:</p>
+	<pre clasx="line-numbers" data-start="1"><code
+		class="language-perl">$A-&gt;create_edi_dispatch(id=&gt;<% $order_id %>); # _systex/data/GDELR_10391065_...</code></pre>
+
+	<div class="col-9 pl-0">
+	<pre class="line-numbers" data-start="1"><code class="language-xml"><% $out %></code></pre>
+	</div>
+
+	<h4 class="fs--20">Order Placement</h4>
+%	foreach (@{ $exmpls }) {
+		&bull; <a href="/upload/examples/EDI/<% $_ %>"><% $_ %></a><br>
+%	}
+
+</div>

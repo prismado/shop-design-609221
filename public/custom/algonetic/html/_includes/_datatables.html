@@ -1,0 +1,31 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $mode  = $args{mode};
+	my $debug = $args{debug};
+	my $dt_ver= $args{dt_ver} + 0;
+	# my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<div class="float-right">
+		[ <a href="/__datatables.html?mode=static">Static</a> / <a href="/__datatables.html?mode=ajax">Ajax (SOW)</a> ]
+		&mdash; <a href="__datatables_v2.html">V-2</a>
+		&mdash; <a href="__datatables_v3.html">V-3</a>
+	</div>
+	<span>DataTables</span>
+</div>
+
+<div class="portlet-body">
+%	if ($mode eq 'static') {
+		<& inc_datatable_sample.html, C=>$C &>
+%	}
+%	else {
+		<& inc_datatable_sample_ajax.html, dt_ver=>$dt_ver, C=>$C &>
+%	}
+
+	<p class="mt-3">
+		<a href="https://dmsd.prismado.com/html_frontend/documentation/plugins-vendor-datatable.html">Documentation</a>
+	</p>
+
+</div>

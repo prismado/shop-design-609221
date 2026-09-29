@@ -1,0 +1,97 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $q = $C->{CGI}->param('q');
+
+	$q =~ tr/["<>]//d; # -- Against XSS
+
+	my $lang = $args{lang} || 'de';
+
+	my ($categ_ids, $label) = $A->get_categ_nav($lang);
+
+	my $parent_cat_id   = $C->query("select parent_id FROM categories WHERE id=$args{cat_id}")->[0];
+</%init>
+ <div id="sideblock" class="span3 side-menu">
+                    <nav class="navbar-default">
+                        <!-- Main Menu -->
+
+                        <div class="side-menu-container">
+                            <div class="nav navbar-nav">
+<div class="well"><h1><% $C->prop('title_category') %></h1></div>
+
+	<ul id="sideMenu" class="nav nav-tabs nav-stacked">
+% foreach my $cat_id (@{$categ_ids}) {
+%	my @ids = split /\t/, $cat_id;
+%	if ($#ids == 0) {
+%		my $sub_categs = $A->get_visible_sub_categs($cat_id);
+%		my $sub_cat_count = $#{$sub_categs} + 1;
+		<li class="<%$sub_cat_count ? 'subMenu' : 'supcatMenu'%>">
+%		if ($sub_cat_count) { # -- We have sub categories. A click opens the appropriate list
+%			# -- category2.html?id=<%$cat_id%>
+			<i class="fa fa-plus"></i><a href="category-<% $cat_id %>-<% $C->url_friendly($label->{$cat_id}) %>.html">
+			<%$label->{$cat_id}%></a>
+% # -----		<span class="number"> [<% $A->get_category_count(cat_id=>$cat_id, debug=>$args{debug})->{count} %>]</span>
+%		}
+%		else { # -- A super category without sub categories
+%			# -- category2.html?id=<%$cat_id%>
+			<a class="<%$cat_id == $args{cat_id} ? 'mactive' : ''%>"
+				href="category-<%$cat_id%>-<% $C->url_friendly($label->{$cat_id}) %>.html"><i
+				class="fa fa-chevron-right"></i><%$label->{$cat_id}%></a>
+% # -----			<span class="number">[<% $A->get_category_count(cat_id=>$cat_id, debug=>$args{debug})->{count} %>]</span>
+%		}
+		<ul style="display:<%$cat_id == $parent_cat_id ? '' : 'none'%>">
+%		foreach (@{$sub_categs}) {
+%			my $sub_cats = $A->get_visible_sub_categs($_);
+%			if ($#{$sub_cats} + 1) { # -- We have sub categories!
+				<li class="submenulevel1"><a><i
+				class="fa fa-plus"></i><%$label->{$_}%> <span
+					class="number">[<% $A->get_category_count(cat_id=>$_)->{count} %>]</span></a>
+		<ul>
+%		foreach (@{$sub_cats}) {
+%			my $label = $C->query("select label FROM categories WHERE id=$_ AND lang='$lang'")->[0];
+			<li><a href="category-<%$_%>-<%$C->url_friendly($label)%>.html"><i
+			class="fa fa-<%$_ == $args{cat_id} ? 'circle-o' : 'chevron-right'%>"></i><%$label%> <span
+				class="number">[<% $A->get_category_count(cat_id=>$_)->{count} %>]</span></a>
+			</li>
+%		}
+		</ul>
+		</li>
+%			}
+%			else {
+				<li>
+%				if ($args{cat_id} == $_) { # -- Active sub category
+					<a class="mactive" href="category-<%$_%>-<%$C->url_friendly($label->{$_})%>.html"><i
+					class="fa fa-chevron-right"></i><b><%$label->{$_}%></b> <span
+						class="number">[<% $A->get_category_count(cat_id=>$_)->{count} %>]</span></a>
+%				}
+%				else {
+					<a href="category-<%$_%>-<%$C->url_friendly($label->{$_})%>.html"><i
+					class="fa fa-chevron-right"></i><%$label->{$_}%> <span
+						class="number">[<% $A->get_category_count(cat_id=>$_, debug=>$args{debug})->{count} %>]</span></a>
+%				}
+				</li>
+%			}
+%		}
+		</ul>
+		</li>
+%	}
+% }
+
+                                </ul>
+                               <div class="well">
+ <div class="ps-left-search">
+<form name="searchFormDNL" action="category2.html" method="get">
+<input type="search" name="q" id="left_search_m"  maxlength="128" placeholder="<% $C->prop('product_search') %>..." value="<%$q%>">
+<button type="submit" id="submitButtonDT" class="btn-search">GO</button>
+</form>
+</div>
+
+
+
+                            </div><!-- /.navbar-collapse -->
+                        </div><!-- end side-menu-container -->
+                    </nav>
+                </div><!-- sideblock end=============================================== -->
+

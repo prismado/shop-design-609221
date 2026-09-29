@@ -1,0 +1,91 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $debug = $C->{CGI}->param('debug') || $C->getSessData('debug') || 0;
+
+	my $perm = $C->get_user_perm();
+	my $appenv = $C->get_safe_property('SHOP_CONFIG_ENV', 'sys'); # -- 28Sep2026
+
+	my @breadcrumb = ();
+	my @bc1 = ('Konfiguration', 'config.html');
+	my @bc2 = ('Dev: Layout', 'config-layout.html');
+	my @bc3 = ('System-Konfiguration', '');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+	push(@breadcrumb, \@bc3);
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Developer Summary | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<link rel="manifest" href="assets/images/manifest/manifest.json">
+	<meta name="theme-color" content="#377dff">
+	<style>
+	       .prism-limit-len-300 {
+			max-width: 300px !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	</style>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm => $perm, C => $C, A => $A, appenv => $appenv, debug => $debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm => $perm, appenv => $appenv, C => $C &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<div class="float-end">
+					<a class="mr-2" href="/adx/show.html?macro=prism_core_funcs">Prismado Core</a> &middot;
+					<a class="ml-2 mr-2" href="https://docs.ch2.be/w/prismado-shop/">Wiki</a> &middot;
+					<a class="ml-2" href="/adm_config.html">Alte Konfiguration</a>
+				</div>
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal">Developer Summary</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& _includes/config-dev.html, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,44 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $cat_ids  = $args{cat_ids};
+	my $perm     = $args{perm}; # -- $perm->{uid};
+	my $debug    = $args{debug};
+
+	my $prods = $A->get_products_by_cat_ids($cat_ids);
+</%init>
+<h3 class="fs--17 mt-3">Bestellbare Ger&auml;te</h3>
+
+<table class="table mt-3 table-hover">
+	<tr>
+		<th></th>
+		<th>Modell</th>
+		<th>Marke</th>
+		<th>Konfiguration</th>
+		<th>Art-Nr</th>
+		<th>ID</th>
+		<th></th>
+	</tr>
+%	foreach my $prod_id (sort {$b <=> $a} @{ $prods }) {
+%		my $prd = $A->get_product_v2(id=>$prod_id);
+		<tr>
+			<td class="p-2">
+				<div class="shadow-md shadow-3d-hover transition-hover-zoom-img overflow-hidden rounded">
+					<img class="img-fluid transition-hover-zoom-img w--80 bg-suprime"
+						style="min-width:40px;" src="<% $prd->{image}->{url_thmb} %>">
+				</div>
+			</td>
+			<td><a href="/service-product.html?id=<% $prod_id %>"><b><% $prd->{title} %></b></a></td>
+			<td><% $prd->{brand} %></td>
+			<td><% $prd->{desc_keyw} %></td>
+			<td><span class="badge badge-warning fs--14"><% $A->get_product_art_no( id=>$prod_id )->{art_no} %></span></td>
+			<td><a href="/adx/edit-product.html?id=<% $prod_id %>"><% $prod_id %></a></td>
+			<td nowrap>
+				<& inc_modal_link.html, label=>'<i class="fi fi-round-info-full"></i>',
+					url=>'/_ajax/modal_foo.html', size=>'md', class=>'text-dark', C=>$C &>
+			</td>
+		</tr>
+%	}
+</table>

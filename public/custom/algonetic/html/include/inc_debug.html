@@ -1,0 +1,16 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug} || $C->getSessData('debug') || 0;
+</%init>
+<small>
+	Debug:
+%	if ($debug) {
+		<a style="color:#515151" href="/_debug.html?debug=1"><b>On</b> (<% $debug %>)</a> / <a href="/_debug.html?debug=0">Off</a>
+%	}
+%	else {
+		<a href="/_debug.html?debug=1">On</a> / <a style="color:#515151" href="/_debug.html?debug=0"><b>Off</b></a>
+%	}
+% # XXX	<br />
+</small>

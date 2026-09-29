@@ -1,0 +1,129 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	# XXX my $debug   = $cgi->param('debug') || $C->getSessData('debug') || 0;
+	my $debug   = 0; # -- 07Sep2026
+	my $area    = $cgi->param('area');
+	my $page    = $cgi->param('page'); # -- 13Sep2024
+	my $core    = $cgi->param('core');
+	my $bUpdate = $cgi->param('bUpdate');
+	my $bAddKey = $cgi->param('bAddKey'); # -- New
+	my $bDelete = $cgi->param('bDelete'); # -- 13Jan2024
+	my $narrow  = $cgi->param('narrow');
+	my $bUpdNextOrderID = $cgi->param('bUpdNextOrderID');
+
+	my $perm = $C->get_user_perm();
+	my $appenv = $C->get_safe_property('SHOP_CONFIG_ENV', 'sys'); # -- 07Sep2026
+
+	my @appmsg = ();
+
+	if ($bUpdate) {
+		foreach ($cgi->all_parameters) {
+			next unless /^key\_(\d+)$/;
+			my $id = $1;
+			(my $val = $cgi->param($_)) =~ s/'/''/g;
+			my $errstr = '';
+			$C->{dbh}->do(qq~update properties set val='$val' where id=$id~) or ($errstr = $DBI::errstr);
+			push(@appmsg, "ERR ($id) $errstr") if $errstr;
+		}
+		push(@appmsg, 'Property aktualisiert');
+	}
+	elsif ($bAddKey) {
+		my $errstr = '';
+		$C->{dbh}->do(qq~insert into properties (`key`, val, page) values ('$area\_de', 'tbd', '_global')~) or ($errstr = $DBI::errstr);
+		push(@appmsg, "New key added to area $area $errstr")
+	}
+	elsif ($bDelete) {
+		$C->{dbh}->do("delete from properties where `key` LIKE '$area\\_%'");
+	}
+	elsif ($bUpdNextOrderID) {
+		my $next_order_id = $cgi->param('key_0') + 0;
+		$C->{dbh}->do("ALTER TABLE orders AUTO_INCREMENT = $next_order_id");
+		$C->create_toast_note(body => "<center>N&auml;chste Order-ID: $next_order_id</center>");
+	}
+
+	my @breadcrumb = ();
+	my @bc1 = ('Shop Configuration (old)', '/adm_config.html');
+	my @bc2 = ('Shop Configuration', 'config.html');
+	my @bc3 = ('Properties', 'manage-property.html');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+	push(@breadcrumb, \@bc3);
+	my $usage;
+	if ($area) {
+		my @bc3 = (ucfirst $area, '');
+		push(@breadcrumb, \@bc3);
+		# my $use = $C->search_property_v3(key=>$area); # -- 29Sep2024 too expensive
+		my @arr = ();
+		my $use = {}; # -- Initialisierung als Hash-Referenz
+		   $use->{arr} = \@arr;
+		$usage = $use->{arr};
+	}
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Adm Property <% $area %> <% $C->{CONFIG}->{site_title} %></title>
+% #	<meta name="description" content="...">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preconnect" href="https://fonts.googleapis.com/">
+	<link rel="preconnect" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/<% $narrow ? 'core.min.css' : 'core_x_wide.min.css' %>">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+	<link rel="manifest" href="assets/images/manifest/manifest.json">
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm => $perm, C => $C, A => $A, show_logo => $narrow ? 0 : 1, appenv => $appenv &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+% if ($narrow) {
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm => $perm, C => $C, appenv => $appenv &>
+			</aside>
+% }
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal">
+						<a class="text-dark text-decoration-none" href="manage-property.html?narrow=<% $narrow ? 0 : 1 %>">&laquo;</a>
+						Properties <small>&middot; Shop-Variablen</small>
+					</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 p-0 mb-0">
+						<div class="portlet">
+							<& _includes/manage-property.html, area=>$area, core=>$core, page=>$page, bUpdate=>$bUpdate, appmsg=>\@appmsg,
+								usage=>$usage, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+
+	</body>
+</html>

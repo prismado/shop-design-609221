@@ -1,0 +1,44 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-md" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Standard-Label hinzuf&uuml;gen</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+		    <form method="post">
+		    <input type="hidden" name="bAddStdLabel" value="1">
+
+			<div class="modal-body">
+				<& ../_includes/inc_text_input.html, label=>'Code (Bsp. "CPU" / "HDD")'  , write=>1, id=>1, name=>'code' &>
+				<& ../_includes/inc_text_input.html, label=>'Bezeichnung &middot; [ de ]', write=>1, id=>2, name=>'label_de' &>
+				<& ../_includes/inc_text_input.html, label=>'Bezeichnung &middot; [ en ]', write=>1, id=>3, name=>'label_en' &>
+				<& ../_includes/inc_text_input.html, label=>'Bezeichnung &middot; [ fr ]', write=>1, id=>4, name=>'label_fr' &>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="submit" class="btn btn-sm btn-soft btn-success w--150">
+					<i class="fi fi-check"></i> Hinzu
+				</button>
+			</div>
+		    </form>
+
+		</div>
+
+	</div>
+</div>

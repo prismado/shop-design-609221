@@ -1,0 +1,103 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C        = $s{C};
+	my $A        = $s{A};
+	my $lang     = $s{lang}  || 'de';
+	my $x_ref    = $s{x_ref} || 'N/A';
+	my $debug    = $s{debug} || 0;
+
+	use ScreenPoint::PDF;
+
+	my $P = ScreenPoint::PDF->new( $C );
+
+	my $pdfconf = $C->load_config(table=>'pdf_config');
+
+	my $company   = 'Kunde';
+	my $addr_name = $C->utf2iso('Auftragsbestätigung');
+	my $street    = '';
+	my $zip       = "Ref: $x_ref";
+	my $city      = '';
+	my $save_as   = 'images/zz_trash_foo.pdf';
+
+	my $pdf_res = $P->create(
+		addr_name   => $addr_name || '',
+		addr_company=> $C->utf2iso($company),
+		addr_street => $C->utf2iso($street),
+		addr_zip    => $zip,
+		addr_city   => $C->utf2iso($city),
+		company     => $C->utf2iso($company),
+		logo_path   => '',
+		logo_width  => $pdfconf->{logo_width},
+		logo_height => $pdfconf->{logo_height},
+		marker_text => "Prismado E-Commerce - Foo V0.8001 / PDF V{{VERSION}} / Erstellt am " . $C->now(3)
+	);
+
+	my @hdr_arr = qw(Pos Foo Bar Rechts);
+	my @array = ();
+	for (my $i=1; $i<15; $i++) {
+		push(@array, "$i\tAAA tbd\tBBB tbd asdf\tFoo Bar");
+		push(@array, " \t\t\t") unless $i % 3;
+	}
+	push(@array, "Ende der Tabelle\t\t\t");
+
+	$P->{x_pos} = $pdfconf->{default_margin_left_a4p};
+	$P->{y_pos} -= 55;
+
+	$P->txt('Ein Titel', 12, {b=>1});
+	$P->{y_pos} -= 15;
+
+	my $res_pdf_t = $P->table_generic(
+		header      => \@hdr_arr,
+		tab_stops   => [qw(62    115   185    557)],
+		recs        => \@array,
+		font_size   => 10,
+		line_height => 15,
+		alt_col     => 1,
+		underline   => 1,
+		lcol        => 'black'
+	);
+
+	# ====================================== Page Break
+	$P->{page} = $P->{pdf}->page(0);
+	$P->{page}->mediabox('A4');
+	$P->{text_h} = $P->{page}->text;
+	$P->{gfx}    = $P->{page}->gfx();
+
+	for(my $yp = 770; $yp > 710; $yp -= 15) {
+		$P->{y_pos} = $yp;
+		$P->txt("XX Pos $yp", 11);
+	}
+
+	my @array2 = ();
+	for (my $i=1; $i<5; $i++) {
+		push(@array2, "A\tB\tC\tD");
+	}
+
+	$P->{y_pos} = 620;
+
+	$P->txt('Ein 2. Titel', 12, {b=>1});
+	$P->{y_pos} -= 15;
+
+	$P->table_generic(
+		header      => \@hdr_arr,
+		tab_stops   => [qw(62    115   185    557)],
+		recs        => \@array2,
+		font_size   => 10,
+		line_height => 15,
+		alt_col     => 1,
+		underline   => 1,
+		lcol        => 'black'
+	);
+
+	$pdf_res->{pdf}->saveas("$C->{CONFIG}->{DOCUMENT_ROOT}/$save_as");
+</%init>
+% foreach (sort keys %{$pdfconf}) {
+	[ pdfconf ] - <% $_ %> = <% $pdfconf->{$_} %><br>
+% }
+<br>
+% foreach (sort keys %{$pdf_res}) {
+	[ pdf_res ] - <% $_ %> = <% $pdf_res->{$_} %><br>
+% }
+<br>
+<% $save_as %>

@@ -1,0 +1,24 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	# my $perm  = $args{perm};
+
+	my $last_elem = $#{ $args{breadcrumb} };
+</%init>
+<nav aria-label="breadcrumb">
+<ol class="breadcrumb breadcrumb-sublime fs--13 pb-2">
+	<li class="breadcrumb-item"><a href=".." clasx="js-ajax">Online Shop</a></li>
+	<li class="breadcrumb-item"><a href="."  clasx="js-ajax">Dashboard</a></li>
+%	my $i = 0;
+%	foreach my $b (@{ $args{breadcrumb} } ) {
+%		if ($i++ == $last_elem) {
+			<li class="breadcrumb-item active"><% $b->[0] %></li>
+%		}
+%		else {
+			<li class="breadcrumb-item"><a href="<% $b->[1] %>"><% $b->[0] %></a></li>
+%		}
+%	}
+</ol>
+</nav>

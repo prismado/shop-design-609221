@@ -1,0 +1,56 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $stay_logged = $C->getPermaSessData('_stay_logged_in');
+	my $uname = $C->get_previous_loginname() if $stay_logged;
+</%init>
+%
+% # -- Loginform (mitte)
+%
+
+
+<!-- MLogin end Popup =======-->
+ <div id="login" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false">
+<form action="account3.html" method="post" name="form1sub" id="form1">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+                            <h4><% $C->prop('login_formtitle') %></h4>
+                        </div>
+
+                        <div class="modal-body">
+                           <form action="account.html" method="post" class="form-horizontal loginForm" name="form1sub" id="form1">
+                                <div class="control-group">
+                                 <input id="LoginEmail" type="text" name="user" value="<% $uname %>" autocomplete="off" placeholder="<% $C->prop('username') %>">
+                                 </div>
+
+                                <div class="control-group">
+	                                <input id="LoginPwd" type="password" name="pass" value="" autocomplete="off" placeholder="**********">
+                                                              </div>
+
+                                <div class="control-group">
+<div class="checkbox checkbox-custom checkbox-circle">
+<input id="LoginKeepLoggedIn" type="checkbox" name="stay_logged_in" value="1" <% $stay_logged ? 'checked' : '' %>>
+<label for="LoginKeepLoggedIn"><% $C->prop('keeplogin') %></label>
+</div>
+                                </div>
+                            </form>
+<div class="regLinks">
+<button type="submit" name="bSend" class="btn btn-checkout"><% $C->prop('login') %></button>
+<a class="btn btn-checkout" href="registration.html" rel="nofollow"><% $C->prop('registration') %></a>
+% #<button class="btn btn-grey" data-dismiss="modal" aria-hidden="true"><% $C->prop('close') %></button>
+</div>
+<div class="regLinks">
+<a href="send_pwd.html" rel="nofollow"><% $C->prop('forgot_pwd') %></a>
+</div>
+
+                        </div>
+
+
+                    </div>
+
+<!-- MLogin end Popup =======-->
+
+<%doc>
+	__METACLONING__
+</%doc>

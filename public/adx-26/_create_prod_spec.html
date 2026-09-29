@@ -1,0 +1,149 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use utf8; # -- 28Jan2026
+
+	# -- Created: 19Mar2025
+
+	binmode STDERR, ':encoding(UTF-8)'; # -- 28Jan2026
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id    = $cgi->param('id') + 0;
+	my $title = $cgi->param('title');
+	my $type  = $cgi->param('type'); # -- 04Apr2025
+	my $overw = $cgi->param('cb_overwrite'); # -- 14Apr2025
+	my $l_cnt = $cgi->param('l_cnt') || 0;   # -- 14Apr2025
+	my $corr  = $cgi->param('corr'); # -- 16Jun2025
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+	my $UID   = $C->getUID();
+	my $do_upd= 1; # -- 14Apr2025
+	   $do_upd= 0 if $l_cnt && !$overw;
+	my @vars = my @msgs = ();
+
+	if ($corr) {
+		my %data = ();
+		foreach my $k ($cgi->all_parameters) {
+			next unless $k =~ /^nv\_\_(.+)/;
+			my $val = $cgi->param($k);
+			$data{$1} = $val;
+		}
+		$A->edi_article_correction(id=>$id, data=>\%data);
+		$C->create_toast_note(title=>'Aktualisierung', body=>'Aktualisierung durchgef&uuml;hrt<br>' . (join '<br>', @msgs), width=>'600px');
+		$m->redirect("edit-product.html?id=$id");
+	}
+
+	foreach ($cgi->all_parameters) {
+		push(@vars, "$_ = " . $cgi->param($_));
+	}
+
+	push(@msgs, "$l_cnt vorhandene Eigenschaftswerte");
+
+	my $errstr = '';
+
+	my @keys = @{ $A->get_spec_keys_article(type=>$type)->{keys} };
+
+	# my $labels = join "\n\- ", @keys;
+	my $labels = join "\n", @keys;
+
+	(my $title_save = $title) =~s /\"/\'/g;
+
+	my $model  = 'o3-mini'; # -- 19Apr2025
+	my $prompt = qq~Erstelle eine CSV-Liste mit den entsprechenden Produkt-Eigenschaften von folgendem Produkt:
+
+$title_save
+
+Jede Key-Value-Zeile muss wie folgt strukturiert und mit Semikolon getrennt werden:
+
+$id;{PRODUKTEIGENSCHAFT};{WERT}
+
+# Instruktionen
+
+## Verwende folgende Produkteeigenschaften für die Spalte {PRODUKTEIGENSCHAFT}:
+
+$labels~;
+
+	$prompt =~ s/\n/\\n/g;
+	my $ai_ans = $C->AI_supply_text(prompt=>$C->toUTF( $prompt ), model=>$model, debug=>0);
+	# XX my $ai_ans = $C->AI_supply_text(prompt=>$prompt, model=>$model, debug=>0);
+	my $ans    = $C->utf2iso($ai_ans->{answer});
+
+	my @lines = split /[\n\r]/, $ans;
+
+	my $i = 0;
+	for ($i=0; $i<$#lines + 1; $i++) {
+		last if $lines[$i] =~  /```/;
+	}
+	$i = 0 if $model eq 'o3-mini';
+
+	open(OUT, ">$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs/p$id\-specificationdata-ssg_de.csv");
+	print OUT "ProviderKey;SpecificationKey;SpecificationValue\n";
+	for ($i=$i+1; $i<$#lines + 1; $i++) {
+		last if $lines[$i] =~ /```/;
+		if ($lines[$i] =~ /^$id;Tastaturlayout;/) {
+			my $keyb = $C->query(
+				"select `description` from products_feat where product_id=$id and featkey='KEYB' limit 1")->[0] || 'Schweiz - deutsch';
+			print OUT "$id;Tastaturlayout;$keyb\n";
+		}
+		elsif ($lines[$i] =~ /^$id;Prozessortyp/) {
+			my $cpu = $C->query(
+				"select `description` from products_feat where product_id=$id and featkey='CPU' limit 1")->[0];
+			if ($cpu) { print OUT "$id;Prozessortyp;$cpu\n"; }
+			else      { print OUT "$lines[$i]\n"; }
+		}
+		elsif ($lines[$i] =~ /^$id;Prozessor-Familie/) {
+			my $cpu = $C->query(
+				"select `description` from products_feat where product_id=$id and featkey='CPU' limit 1")->[0];
+			if ($cpu) { print OUT "$id;Prozessor-Familie;$cpu\n"; }
+			else      { print OUT "$lines[$i]\n"; }
+		}
+		elsif ($lines[$i] =~ /^$id;Arbeitsspeicher/) {
+			my $ram = $C->query(
+				"select `description` from products_feat where product_id=$id and featkey='RAM' limit 1")->[0];
+			if ($ram) { print OUT "$id;Arbeitsspeicher;$ram\n"; }
+			else      { print OUT "$lines[$i]\n"; }
+		}
+		else {
+			print OUT "$lines[$i]\n";
+		}
+	}
+	my $grade_article = $C->query("select `description` from products_feat where product_id=$id and featkey='GRADE' and lang='de' limit 1")->[0] || 'A';
+	print OUT $C->toUTF("$id;Qualitätszustand;$grade_article") . "\n"; # -- 17Apr2026
+	close(OUT);
+
+	my $detail_exists = $C->query(
+		"select id from products_details where product_id=$id and detkey like 'file\_%' and val='p$id\-specificationdata-ssg_de.csv'")->[0];
+	my $timestamp = $C->time_now(5);
+	$C->{dbh}->do(qq~
+		insert into products_details (product_id, dtype, detkey, val, uid)
+		values ($id, 1, 'file_$timestamp\_de', 'p$id\-specificationdata-ssg_de.csv', $UID)
+	~) unless $detail_exists;
+
+	if ($do_upd) {
+		my $path = "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/docs";
+		system("tail -n +2 $path/p$id\-specificationdata-ssg_de.csv >> $path/specificationdata-ssg.csv");
+		push(@msgs, "Eigenschaftswerte wurden geschrieben");
+		$C->call_batch(call=>qq~\\\$C->mail_x2(to=>'$C->{CONFIG}->{tech_email}', subject=>'To do: $C->{CONFIG}->{HTTP_HOST}',
+			data=>'SpecificationData_ssg.csv<br><br>ID $id - via UID $perm->{uid}')~);
+	}
+
+	if ($errstr) {
+		$m->out("Error: $errstr");
+	}
+	else {
+		$C->create_toast_note(
+			title => 'Info',
+			body  => qq~<a href="/produkte/docs/p$id\-specificationdata-ssg_de.csv">Download</a><br><br>~ .
+						(join "<br>\n", @msgs) . '<br><small>' . (join "<br>\n", @vars) . '</small>',
+			width => '600px',
+			delay => 15000
+		);
+
+		$m->redirect("edit-product.html?id=$id");
+	}
+</%init>

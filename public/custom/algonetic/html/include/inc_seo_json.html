@@ -1,0 +1,49 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	# -- Created: 21Jun2026
+
+	my $pdata     = $args{pdata};
+	my $xtra_imgs = $args{xtra_imgs};
+	my $C         = $args{C};
+
+	(my $description = $pdata->{description}) =~ s/"/\\"/g;
+	(my $title       = $pdata->{title})       =~ s/"/\\"/g;
+
+	$description =~ s/[\n\r]/\\n/g;
+
+	my @images = ();
+	push(@images, "\"https://$C->{CONFIG}->{HTTP_HOST}/produkte/p$args{id}_large.jpg\"");
+	foreach (@{$xtra_imgs->{pics}}) {
+		push(@images, "\"https://$C->{CONFIG}->{HTTP_HOST}/$_\"");
+	}
+</%init>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "<% $title %>",
+  "image": [
+	<% join ",\n", @images %>
+  ],
+  "description": "<% $description %>, <% $pdata->{cat_names} %>",
+  "sku": "<% $args{id} %>C<% $pdata->{cat_id} %>",
+  "brand": {
+    "@type": "Brand",
+    "name": "<% $pdata->{brand} %>"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "https://<% $C->{CONFIG}->{HTTP_HOST} %>/product/<% $pdata->{title_enc} %>/<% $args{id} %>",
+    "priceCurrency": "<% $pdata->{currency} %>",
+    "price": "<% $pdata->{price_enduser_net} %>",
+% if ( $pdata->{extra} == 1 ) {
+    "availability": "https://schema.org/InStock"
+% }
+% else {
+    "availability": "https://schema.org/InStock",
+    "itemCondition": "https://schema.org/UsedCondition"
+% }
+  }
+}
+</script>

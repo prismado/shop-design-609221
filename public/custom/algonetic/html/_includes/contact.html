@@ -1,0 +1,99 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $pdfconf = $args{pdfconf};
+	my $perm    = $args{perm};
+	my $s_token = $args{s_token};
+
+	my $twitter = $C->prop('site_twitter');
+</%init>
+<div class="portlet-header border-bottom">
+%	if ($args{ed_mode}) {
+		<div class="float-end">
+			Editier-Modus: <a href="/adm_masterdata.html">Masterdata</a> &ndash;
+			<a href="/adx/manage-property.html?area=site">Alle Site-Werte</a> &ndash;
+			<a href="/adm_properties.html?filter=content">Content Prop.</a>
+		</div>
+%	}
+	<span>Impressum</span>
+</div>
+
+<div class="portlet-body p-3 bg-white mt--n10">
+
+% #	<h4 class="fs--18">Betrieb durch</h4>
+	<p>
+		<b><% $C->prop('site_company') %></b>
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=site_company"><i class="fi fi-pencil"></i></a>
+%		}
+		<br />
+		<% $C->prop('site_addr') %>
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=site_addr"><i class="fi fi-pencil"></i></a>
+%		}
+		<br />
+		<% $C->prop('site_country_code') %>-<% $C->prop('site_zip') %>
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=site_zip"><i class="fi fi-pencil"></i></a>
+%		}
+		<% $C->prop('site_city') %>
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=site_city"><i class="fi fi-pencil"></i></a>
+%		}
+	</p>
+
+	<p>
+		&#128231; <% $C->prop('site_email') %><br />
+		&#128222; <% $C->prop('site_phone') %><br />
+		<i class="fi fi-social-twitter"></i> <a class="link-muted" href="https://x.com/<% $twitter %>">@<% $twitter %></a>
+%			if ($args{ed_mode}) {
+				&rarr; <a href="/adx/manage-property.html?area=site_twitter">Edit</a>
+%			}
+	</p>
+
+	<p>
+		Mehrwertsteuer-Nr. / Firmennummer:<br />
+		<% $pdfconf->{company_vat_no} %>
+%		if ($args{ed_mode}) {
+			<a href="/adm_db_edit.html?table=pdf_config&wcl=xkey%3D%27company_vat_no%27&s_token=<% $s_token %>"><i class="fi fi-pencil"></i></a>
+%		}
+		<br /><br />
+		Verantwortliche Person: <% $C->prop('site_associate') %>
+%			if ($args{ed_mode}) {
+				&rarr; <a href="/adx/manage-property.html?area=site_associate">Edit</a>
+%			}
+	</p>
+
+	<h6 class="mt-5">Haftungsausschluss
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=disclaimer"><i class="fi fi-pencil"></i></a> &ndash;
+			<a href="/adm_properties.html?filter=disclaimer"><i class="fi fi-pencil">#2</i></a>
+%		}
+	</h6>
+	<p><% $C->prop('disclaimer', 'de') %></p>
+
+	<h6>Haftung f&uuml;r Links
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=link_disclaimer"><i class="fi fi-pencil"></i></a>
+%		}
+	</h6>
+	<p><% $C->prop('link_disclaimer', 'de') %></p>
+
+	<h6>Urheberrechte
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=site_copyright"><i class="fi fi-pencil"></i></a>
+%		}
+	</h6>
+	<p><% $C->prop('site_copyright', 'de') %></p>
+
+	<h4 class="fs--16 mt-6">Programmierung und Design</h4>
+	<% $C->prop('designed_by', 'de') %>
+%		if ($args{ed_mode}) {
+			<a href="/adx/manage-property.html?area=designed"><i class="fi fi-pencil"></i></a>
+%		}
+
+</div>
+
+<& ../include/inc_add2basket_js.html &>

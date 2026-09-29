@@ -1,0 +1,95 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $prompt      = $cgi->param('prompt')      || '* Ihre Eingabe *';
+	my $callback    = $cgi->param('callback')    || 'foo';
+	my $instruction = $cgi->param('instruction') || '* Ihr Wert *';
+	my $lang        = $cgi->param('lang')        || 'de';
+	my $msg         = $cgi->param('msg');
+	my $timeout     = ($cgi->param('timeout') + 0) || 1250;
+	my $css_id      = $cgi->param('css_id')        || 'div404181_24';
+	my $debug       = $cgi->param('debug') + 0;
+
+	my $redir_url = $ENV{HTTP_REFERER} || '/';
+
+	my @xpara = ();
+	foreach ($cgi->all_parameters) {
+		next unless /^x\_/;
+		push(@xpara, "$_=" . $C->uri_esc( $cgi->param($_) ));
+	}
+	my $extra = join '&', @xpara;
+
+	if ($debug) {
+		$prompt = qq~$prompt<br>
+			<small class="fs--13">Debug Level $debug / callback: /_ajax/proc_$callback\.html<br>
+			Timeout: $timeout ms</small>~;
+
+		$prompt =~ s/[\n\r]//g;
+	}
+</%init>
+<style>
+	.custom-popup {
+		width: 380px !important;
+		padding: 0px !important;
+		padding-bottom: 10px !important;
+	}
+	.custom-swal {
+		border: 12px orange solid !important;
+	}
+</style>
+
+<script language="JavaScript">
+	function zeigenZahlEingabe<% $css_id %>() {
+	    Swal.fire({
+		title: '<% $prompt %>',
+		input: 'text', // -- number
+		inputLabel: '<% $instruction %>',
+		inputPlaceholder: 'Zahl hier eingeben',
+		inputAttributes: {
+		    'aria-label': '<% $prompt %>'
+		},
+		// -- 20Apr2024 (optional)
+		customClass: {
+			confirmButton: 'btn btn-sm w--150 btn-primary',
+			cancelButton:  'btn btn-sm w--150 text-dark',
+			container: 'custom-swal',
+			popup: 'custom-popup'
+		},
+		showCancelButton: true,
+		confirmButtonColor: '#3085d6',
+		cancelButtonColor:  '#f1f3f3',
+		confirmButtonText: 'Best&auml;tigen',
+		cancelButtonText: 'Abbrechen',
+	    }).then((result) => {
+		if (result.value) {
+		    Swal.fire({
+			title: 'Eingegebene Zahl:',
+			text: result.value,
+			icon: 'success'
+		    });
+
+			$.ajax({
+				url: '/_ajax/proc_<% $callback %>.html?input=' + encodeURIComponent(result.value) + '&<% $extra %>',
+				type: 'GET',
+				dataType: 'html',
+				success: function(response) {
+					setTimeout(function() {
+						document.location = '<% $redir_url %>';
+					}, <% $timeout %>);
+				},
+				error: function(xhr, status, error) {
+					console.error(error);
+				}
+			});
+		}
+	    });
+	}
+</script>
+	
+<%doc>
+	Created: 18Apr2024
+</%doc>

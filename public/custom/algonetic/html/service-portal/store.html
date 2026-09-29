@@ -1,0 +1,81 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 25Oct2024 -- #
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $prod_id = $cgi->param('prod_id') + 0;
+	my $narrow  = $cgi->param('narrow');
+	   $narrow = 1 unless length($narrow);
+
+	my $debug = $C->getSessData('debug') || 0;
+	my $perm  = $C->get_user_perm();
+
+	my $role = 'Benutzer';
+	   $role = 'Manager' if $perm->{is_service_manager};
+	   $role = 'Admin  ' if $perm->{is_service_admin};
+
+	$C->create_toast_note(body=>"<center>$role</center>", type=>'success', delay=>8000);
+
+	my @breadcrumb = ();
+	my @bc1 = ('Service-Portal', '.');
+	my @bc2 = ('&Uuml;bersicht', '');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Service-Portal <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<base href="/service-portal/">
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="preload" href="assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="assets/css/<% $narrow ? 'core.min.css' : 'core_x_wide.min.css' %>">
+	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, perm=>$perm, show_logo=>$narrow ? 0 : 1, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+% if ($narrow) {
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& _includes/sidebar.html, perm=>$perm, C=>$C &>
+			</aside>
+% }
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal"><a class="text-dark text-decoration-none"
+						href="./?narrow=<% $narrow ? 0 : 1 %>">&laquo;</a> SSG Service-Portal</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+							<& _includes/store.html, A=>$A, C=>$C, perm=>$perm, debug=>$debug &>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	<script src="assets/js/core.min.js"></script>
+
+	</body>
+</html>

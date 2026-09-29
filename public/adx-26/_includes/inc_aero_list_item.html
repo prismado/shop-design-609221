@@ -1,0 +1,63 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $badge      = $args{badge}      || 'fi fi-check';
+	my $badge_type = $args{badge_type} || 'success';
+	my $icon_width = $args{icon_width} || '38px';
+	my $no_border  = $args{no_border}  // 0; # -- 19Apr2026
+
+	my $h_corr = 0;
+	my $extra_css = ''; 
+
+	if ($icon_width =~ /^([\+\-])(\d+)px/) {
+		my $icon_w_new = 0;
+		if ($1 eq '+') {
+			$icon_w_new = 38 + $2;
+		}
+		else {
+			$icon_w_new = 38 - $2;
+		}
+		$icon_width = $icon_w_new . 'px';
+		$h_corr     = 38 - $icon_w_new;	
+		$extra_css  = 'margin-right:' . (13 + $h_corr) . 'px';
+	}
+</%init>
+<li class="list-group-item"
+%	if ( $no_border ) {
+		style="border: 0px !important;"
+%	}
+>
+	<div class="d-flex">
+	    <a href="<% $args{url} %>">
+%	    if ($badge =~ /^fi fi\-.+/) {
+		<div class="badge badge-<% $badge_type %> badge-soft badge-ico-sm rounded-circle float-start">
+			<i class="<% $badge %> fs--30"></i>
+		</div>
+%	    }
+%	    elsif ($badge =~ /\.svg$/) {
+		<img src="assets/images/logo/<% $badge %>" class="img-fluid float-start"
+			style="min-width:<% $icon_width %>; max-width:45px; width:<% $icon_width %>; height:<% $icon_width %>; <% $extra_css %>">
+%	    }
+%	    elsif ($badge =~ /^\&#\d+$/) {
+		<div class="badge badge-soft badge-ico-sm rounded-circle float-start fs--25">
+			<% $badge %>;
+		</div>
+%	    }
+%	    else {
+		<% $badge %>
+%	    }
+	    </a>
+
+		<div class="pl--<% $badge =~ /^fi/ ? 25 : 20 %> pr--12">
+			<p class="font-weight-medium m-0 fs--18"><a class="text-dark" href="<% $args{url} %>"><% $args{label} %></a>
+%				if ($args{legacy}) {
+					&ndash; <i class="fi fi-hourglass fs--11"></i>
+%				}
+			</p>
+			<p class="m-0 fs--15"><% $args{info} %></p>
+		</div>
+	</div>
+</li>
+

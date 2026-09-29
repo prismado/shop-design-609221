@@ -1,0 +1,74 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $prod_id  = $args{prod_id};
+	my $prd      = $args{prd};
+	my $debug    = $args{debug};
+
+	my $max_width_default = $C->txt('sys_product_tiles_promo_max_width_default', 'sys', '_layout');
+	my $min_width_default = $C->txt('sys_product_tiles_promo_min_width_default', 'sys', '_layout');
+
+	my $frame_max_width_default  = $C->txt('sys_product_tiles_frame_promo_max_width_default',  'sys', '_layout');
+	my $frame_min_height_default = $C->txt('sys_product_tiles_frame_promo_min_height_default', 'sys', '_layout');
+</%init>
+<div class="portlet-body">
+
+	<span class="float-end">
+		Aktuelles Theme: <a href="/adm_db_edit.html?table=config&wcl=%60key%60%3D%27theme%27"><% $C->{CONFIG}->{theme} %></a>
+% # XXX		<br clear="all" />
+% # XXX		<& inc_select_redir.html, this=>$C->this() &>
+	</span>
+
+	<h3 class="fs--25">Layout-Einstellungen</h3>
+
+	<table class="table table-sm mt-3 border">
+
+	<tr>
+		<td>Allgemein</td>
+		<td>Eingestellte Werte</td>
+		<td class="float-end"><a href="manage-property.html?area=sys">Properties</a></td>
+	</tr>
+
+	<& inc_layout_cfg_row.html, title=>'Produkte-Kacheln', C=>$C, A=>$A,
+		area => 'product_tiles_promo',
+		data => {
+			max_width => 'max. 10vw',
+			min_width => 'max. 200px'
+		},
+		image    => 'p_shop_404301.jpg',
+		code_ref => 'custom/algonetic/html/include/inc_image_square.html'
+	&>
+
+	<& inc_layout_cfg_row.html, title=>'Produkte-Kacheln (2)', C=>$C, A=>$A,
+		area => 'product_tiles_frame_promo',
+		data => {
+			max_width  => 'max. 405px',
+			min_height => 'max. 550px'
+		},
+		image    => 'p_shop_405021.jpg',
+		code_ref => "custom/$C->{CONFIG}->{theme}/html/include/inc_render_prod.html"
+	&>
+
+	<& inc_layout_cfg_row.html, title=>'SALE Tag(s)', C=>$C, A=>$A,
+		area => 'product_tag',
+		data => {
+			sale_class => 'tbd 1',
+			sale_style => 'tbd 2',
+			cond_class => 'tbd 1',
+			cond_style => 'tbd 2'
+		},
+		image    => 'p_shop_405031.jpg',
+		code_ref => "custom/$C->{CONFIG}->{theme}/html/include/inc_image_square.html"
+	&>
+
+	</table>
+
+	<hr />
+	<p class="mb-0">
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Prismado Web Components</a> |
+		<a class="fs--13" href="https://docs.ch2.be/w/prismado-shop/feat-theme">Themes</a>
+	</p>
+
+</div>

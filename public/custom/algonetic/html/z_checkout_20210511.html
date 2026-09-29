@@ -1,0 +1,67 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my @msgs = (); my $rc = 0;
+
+	my $SID      = $C->getSID();
+	my $debug    = $C->{CGI}->param('debug');
+	my $id       = $C->{CGI}->param('id') + 0;
+	my $is_admin = $C->is_admin();
+	my $UA       = $ENV{HTTP_USER_AGENT};
+	my $gr_tot   = $A->get_order_grand_total(debug=>$debug); # -- Total inkl. Mwst.
+
+	if ($id) {
+		$A->{check} = $C->{CGI}->param('check');
+		($rc, my $msg) = $A->refill_basket($id); # -- Order ID
+		push(@msgs, $msg) if $rc;
+	}
+
+	my $bsk = $A->get_basket(
+		add_vat     => 1, 
+		mode        => 'checkout', 
+		hide_subtot => 1, 
+		img_max_w   => ($UA =~ /Windows.+rv.+11\.0/ or $UA =~ /Windows.+Edge/) ? '150px' : '80%'
+	);
+
+	unless ($id) {
+	$m->redirect('.') unless $bsk->{item_count};
+	}
+
+	my $null_positions = $C->query("select id from basket where sid=$SID and count=0 LIMIT 1")->[0];
+	my $basket_count   = $C->query("SELECT COUNT(*) FROM basket WHERE sid=$SID")->[0];
+
+	if ($null_positions) {
+		$C->{dbh}->do("delete FROM basket WHERE sid=$SID and count=0");
+		push(@msgs, 'Leere Position(en) wurde(n) entfernt');
+	}
+
+	my $msg = join "<br>\n", @msgs;
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Checkout - <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, basket_count=>$basket_count, SID=>$SID, is_admin=>$is_admin, C=>$C&>
+
+<div id="mainContainer">
+	<div class="container">
+		<div class="row-fluid ps-content">
+			<& include/content_sideblock.html, C => $C, A => $A &>
+			<& include/checkout.html, msg=>$msg, rc=>$rc, SID=>$SID, bsk=>$bsk, gr_tot=>$gr_tot, A=>$A, C=>$C, debug=>$debug &>
+			<br /><br />
+		</div>
+	</div>
+</div>
+
+<&include/footer.html, C => $C&>
+</body>
+</html>

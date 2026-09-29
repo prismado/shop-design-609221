@@ -1,0 +1,111 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C        = $args{C};
+	my $debug    = $args{debug};
+	my $perm     = $args{perm};
+	my $msgs     = $args{msgs};
+	my $msg_text = $args{msg_text};
+	my $bSend    = $args{bSend};
+	my $charset  = $args{charset};
+
+	# my $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0);
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	id, source, uid, module, SUBSTR(action, 1, 99), tstamp
+		from	log where service='mail_generics' AND module LIKE '%forward-message%'
+		order	by id desc
+		limit	99
+	~);
+	   $sth->execute;
+
+	my $sender_dom    = (split /\@/, $args{sender})[1];
+	my $ip_mail_relay = $C->getIP( $C->{CONFIG}->{mail_relay} );
+	my $dnsinf        = $C->get_dns_info( hostname=>$sender_dom, compact=>1, debug=>$debug );
+</%init>
+<div class="portlet-header border-bottom">
+	<span class="float-end">
+		<code>$C-&gt;{CONFIG}->{order_email_sender}</code> <a href="special_keys.html?area=order"><i class="fi fi-pencil"></i></a> &mdash;
+		<% $charset %> &mdash;
+		<a href="/adx/show.html?macro=mail"><i class="fi fi-cog"></i></a>
+	</span>
+	<span>Standard Absender Domain: <b class="text-pink fs--18"><% (split /\@/, $C->{CONFIG}->{order_email_sender})[1] %></b>
+		&rarr; via <code class="fs--18 font-weight-bold"><% $C->{CONFIG}->{mail_relay} %></code>
+		<a href="/adx/special_keys.html?area=mail"><i class="fi fi-pencil"></i></a>
+		<small class="ml-1 mr-1 text-gray-500"><% $C->shorten_title($C->{CONFIG}->{smtp_user}, 11) %></small>
+		<a href="/adx/special_keys.html?area=smtp"><i class="fi fi-pencil"></i></a>
+	</span>
+</div>
+
+<div class="portlet-body">
+
+	<form method="post" name="f408101_41">
+		<div class="col-6 p-0">
+			<& ../_includes/inc_text_input.html, label=>'Sender',         value_enc=>$args{sender},      write=>1, id=>42, name=>'sender' &>
+			<& ../_includes/inc_text_input.html, label=>'Bounce Mail',    value_enc=>$args{bounce_mail}, write=>1, id=>43, name=>'bounce_mail' &>
+			<p class="ml-1 mt--n10 fs--12">
+				dig mx <b><% $sender_dom %></b> &rarr; ping <i>{MX}</i> = <% $ip_mail_relay %> ?
+			</p>
+			<& ../_includes/inc_text_input.html, label=>'Empf&auml;nger', value_enc=>$args{to},      write=>1, id=>47, name=>'to' &>
+		</div>
+
+		<& ../_includes/inc_text_input.html, label=>'Betreff',        value_enc=>$args{subject}, write=>1, id=>1, name=>'subject' &>
+
+		<textarea name="msg_text" rows="9" class="form-control" placeholder="Nachricht (HTML)"><% $msg_text %></textarea>
+
+		<div class="form-label-group mt-3">
+			<select id="sel_501131" name="via" class="form-control bs-select">
+				<option value="localhost">localhost</option>
+				<option value="" selected><% $C->{CONFIG}->{mail_relay} %> (Std)</option>
+			</select>
+			<label for="sel_501131">via Mail Relay</label>
+		</div>
+
+		<input type="submit" class="btn btn-primary mt-3" value="Nachricht Senden" name="bSend">
+	</form><br />
+
+%	foreach (@{ $msgs }) {
+		<% $_ %><br>
+%	}
+
+	<table class="table table-sm mt-2 border">
+	<tr style="height:52px"><td colspan="2" class="pt-3 text-center fs--18">Analyse von Sender-Domain <b><% $sender_dom %></b></td></tr>
+%	foreach (sort keys %{$dnsinf}) {
+		<tr>
+		<td class="font-weight-bold"><% uc $_ %></td><td><% $dnsinf->{$_} %></td>
+		</tr>
+%	}
+	</table>
+
+%	if ($perm->{is_devel}) {
+		<p>Empfohlene Testsendungen an:</p>
+		<ol>
+			<li>mrspriv@icloud.com (Apple) &rarr; <a href="https://www.icloud.com/mail/">icloud.com</a></li>
+			<li>mrxs@gmx.ch &rarr; <a href="https://www.gmx.ch/">gmx.ch</a></li>
+			<li><a href="#" onclick="document.f408101_41.to.value='reto.sch@yahoo.com'">reto.sch@yahoo.com</a>
+				&rarr; <a href="https://mail.yahoo.com/">mail.yahoo.com</a></li>
+			<li>reto.schaer@hotmail.com</li>
+			<li>tech.ssg.ads@gmail.com</li>
+		</ol>
+		<a href="/admix.html?func=orders&id=<% $args{order_id} %>">Order-ID <% $args{order_id} %></a> an Kunde (Sie)
+			<a href="forward-message.html?bOrdConfCust=1&order_id=<% $args{order_id} %>">nochmals senden</a><br>
+%	}
+
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $source, $uid, $module, $action, $tstamp) = @{$r};
+%		$module =~ s/^Core; //;
+		<% $C->trans_date_short($tstamp) %>: <% $module %> <small><% $source %></small> - <% $action %><br>
+%	}
+
+	<pre class="mt-3">&lt;img style="margin-top:0px; margin-bottom:15px" width="209"
+		src="https://www.auctionline.ch/images/logo_mailtemplate_auctionline_ch.png"&gt;</pre>
+
+<%doc>
+	<hr />
+	<p class="mt-3">Output von Makro <code>custom/<% $C->{CONFIG}->{theme} %>/macros/_foo.html</code>:</p>
+	<div class="alert alert-info">
+		<% $macro->{out} %>
+	</div>
+</%doc>
+
+</div>

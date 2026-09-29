@@ -1,0 +1,49 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+	my $is_admin = $C->is_admin();
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<title><%$C->{CONFIG}->{site_title}%> - <% $C->prop('about') %></title>
+	<&include/head_metablock.html, C=>$C&>
+	<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, is_admin=>$is_admin, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid ps-content">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('about') %></h1>
+</div>
+
+
+<div id="contentBlock">
+<% $C->prop('content') %>
+
+</div><!-- End contentBlock -->
+</div><!-- End productBlock -->
+</div><!-- End container -->
+<br /><br /><br />
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>

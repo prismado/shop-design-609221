@@ -1,0 +1,171 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 16Sep2025
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $debug     = $C->getSessData('debug') || 0;
+	my $lang      = $C->getSessData('_current_lang') || 'de';
+	my $perm      = $C->get_user_perm();
+	my $usr_ident = $C->get_user_via_uuid(uid=>$perm->{uid});
+	my $SID       = $C->{sid} + 0;
+	my $UID       = $C->getUID();
+	my $cgi       = $C->{CGI};
+	my $uinf      = $A->get_user_info($UID);
+	my $uaddr     = $C->get_address_by_id($UID);
+
+	$perm->{uid}     = 999;
+	$UID             = 999;
+	$uinf->{email}   = 'dev@algonetic.ch';
+	$uinf->{company} = 'Kanton Aargau';
+
+	my @checkboxes = qw(access_w_trailer_allowed vehicle_allowed_to_leave loading_ramp_avail mat_in_basements pallet_elevator mat_acc_w_pallet_trolley mat_only_at_one_site);
+
+	my $bSend = $cgi->param('bSend');
+	if ($bSend) {
+		my @d = ();
+		my %var = ();
+		my $i = 0;
+		foreach ($cgi->all_parameters) {
+			next unless /^frm\_(.+)/;
+			$C->saveSessData($_, $cgi->param($_));
+			push(@d, "$_=" . $cgi->param($_));
+			$var{"x_$1"} = $cgi->param($_);
+			$i++;
+		}
+		foreach my $cb (@checkboxes) {
+			$C->saveSessData("frm_check_$cb", $cgi->param("frm_check_$cb"));
+		}
+		$var{x_m_ref} = substr($C->now(9), 0, 6) . "\-$$";
+		my $subj = $C->get_safe_property('unicode_truck_128666', 'sys') . " Abholauftrag CL\-$var{x_m_ref}";
+		my $to   = $debug ? q~'dev@eshop.pub'~ : '\$C->{CONFIG}->{order_email}';
+
+		my $pdf = $C->create_pdf(tpl=>'collect_order', x_debug=>$debug, %var);
+
+		my $res = $C->call_batch(
+			call => qq~
+				\\\$A->send_fb_form(
+					subject => '$subj',
+					to      => $to,
+					x_ref   => '$var{x_m_ref}',
+					tpl     => 'fb_form_collect.html',
+					attach  => 'produkte/p-$var{x_m_ref}.pdf',
+					debug   => $debug,
+					sid     => $SID
+				);~,
+			debug => $debug
+		);
+		$res = $C->call_batch(
+			call => qq~
+				\\\$A->send_fb_form(
+					subject => '$subj',
+					to      => '$uinf->{email}',
+					x_ref   => '$var{x_m_ref}',
+					tpl     => 'fb_form_collect_cust.html',
+					attach  => 'produkte/p-$var{x_m_ref}.pdf',
+					debug   => $debug,
+					sid     => $SID
+				);~,
+			debug => $debug
+		);
+		foreach (sort keys %{$res}) {
+			$C->create_toast_note(
+				body  => "$_ = $res->{$_}",
+				delay => 22000
+			) if $res->{$_} && 1==2;
+		}
+		$C->create_toast_note(
+			body  => q~<span style="font-size:1.4rem;"><b>Besten Dank!</b><br>Ihre Anfrage wurde versendet!<br><br>
+					Wir werden raschm&ouml;glichst mit Ihnen Kontakt aufnehmen.</span>~,
+			style => q~.toast, .max-w-300 { max-width: 750px !important; opacity: 0.85; text-align:center; }~,
+			delay => 7000
+		);
+	}
+
+	my @breadcrumb = ();
+	my @bc1 = ('Dienstleistungen', 'info-services.html');
+	my @bc2 = ('Abholauftrag', '');
+	push(@breadcrumb, \@bc1);
+	push(@breadcrumb, \@bc2);
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title>Abholauftrag <% $C->{CONFIG}->{site_title} %></title>
+	<meta name="description" content="<% $C->{CONFIG}->{default_description} %>">
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+	<!-- non block rendering : page speed : js = polyfill for old browsers missing `preload` -->
+	<link rel="stylesheet" href="assets/css/core.min.css">
+% #	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
+	<link rel="shortcut icon" href="favicon.ico">
+% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
+% #	<link rel="manifest" href="assets/images/manifest/manifest.json">
+ 	<script src="assets/js/core.min.js"></script>
+% # 	<script src="assets/js/core.min.js" defer></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+	</head>
+
+	<body class="layout-admin ZZaside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header_minimal.html, lang=>$lang, perm=>$perm, login_type=>2, show_lang=>0, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<h1 class="h5 mt--10 mb--10 font-weight-normal">Abholauftrag</h1>
+					<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+				</div>
+
+%				# ========================================================================================================
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3 mt--n10">
+						<div class="portlet">
+%							if ($UID > 0) {
+								<& include/info-collection-order.html, C=>$C, A=>$A, perm=>$perm, lang=>$lang,
+									SID=>$SID, UID=>$UID, uinf=>$uinf, uaddr=>$uaddr,
+									checkboxes=>\@checkboxes, bSend=>$bSend, usr_ident=>$usr_ident, debug=>$debug &>
+%							}
+%							else {
+								<div>
+									<div class="alert alert-warning mt-3">
+
+									  <div class="row">
+									    <div class="col-3"></div>
+									    <div class="col-6 text-left">
+										<h4 class="fs--20">Sie sind nicht eingeloggt</h4>
+										Sie m&uuml;ssen eingeloggt sein, um diese Funktion nutzen zu k&ouml;nnen.
+									    </div>
+									    <div class="col-3"></div>
+									  </div>
+
+									</div>
+									<& include/inc_prism_login_ajax.html, title=>'Login Abholauftrag', C=>$C &>
+								</div>
+								<script language="JavaScript">
+								    setTimeout(function() {
+									loadModal401172();
+								    }, 1500);
+								</script>
+%							}
+						</div>
+					</div>
+				</div>
+%				# ========================================================================================================
+			</div>
+		</div>
+
+% #		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	</body>
+</html>

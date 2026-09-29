@@ -1,0 +1,52 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $is_admin = $C->is_admin();
+	my $SID      = $C->getSID();
+
+	if ($C->{CGI}->param('x') eq 'success') {
+		$A->empty_basket();
+		$C->del_sess_key('order_id');
+	}
+</%init>
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><% $C->prop('order') %> | <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+<link href="css/mail.css" rel="stylesheet"/>
+</head>
+
+<body>
+<& include/content_header.html, SID=>$SID, C=>$C, lang=>$lang, is_admin=>$is_admin &>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+<& include/content_sideblock.html, lang=>$lang, C=>$C, A=>$A &>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('order') %></h1>
+</div>
+
+<div id="checkoutBlock">
+	<& include/z_order_detail_20190812.html, CORE => $C, A => $A &><br /><br />
+% #	<& include/order_detail.html, CORE => $C, A => $A &><br /><br />
+</div>
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>

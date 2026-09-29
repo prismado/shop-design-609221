@@ -1,0 +1,75 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $stmt = '';
+
+	my $token_id = $args{token_id};
+
+	my $wcl2 = $args{show_sold_out} ? '' : 'AND `count`>0';
+
+	if ($args{q}) {
+		my $search = $args{q};
+		$stmt = qq~
+			SELECT	DISTINCT id, `condition`
+			FROM 	vproducts_long
+			WHERE 	(desc_long LIKE '%$search%' OR title LIKE '%$search%' OR description LIKE '%$search%')
+				AND cat_id not IN (select id from categories where lang='de' and visible=0)
+				$wcl2
+		~;
+	}
+	else {
+		my $sort = $args{sort} || 3;
+		my $order = $args{order} eq 'a' ? 'ASC' : 'DESC';
+
+		my $lt = $C->_lt_();
+		my $wcl = $token_id ? "OR (cat_id=$args{id} AND campaign_id=$token_id)" : "AND campaign_id $lt 1";
+
+		$stmt = qq~
+			SELECT 	DISTINCT product_id, `condition`, price
+			FROM 	products2categ c, products p
+			WHERE 	p.id=product_id AND (cat_id=$args{id} AND campaign_id=0 AND `condition` !='IN' $wcl) $wcl2
+			ORDER 	BY $sort $order
+		~;
+	}
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $m->out("ERR $DBI::errstr $stmt<br>");
+
+	my $search = $args{q};
+</%init>
+<script language=JavaScript>
+function addtobasket (id, b) {
+	$('#ajx_noti').load('ajx_overlap_basket.html?id=' + id + '&rand=<%rand()%>')
+	b.disabled='disabled';
+	document.getElementById('product_area_' + id).style.display='';
+	document.getElementById('pic' + id).className='blur'
+}
+</script>
+
+<div class="span8 pull-right filterSortlist">
+<select id="sort" name="sort" onchange="location = this.options[this.selectedIndex].value;">
+<option value="#"><% $C->prop('option_choose') %></option>
+<option <%$args{order} eq 'a' ? 'selected' : ''%>  value='/category2.html?id=<%$args{id}%>&order=3,a&q=&pkg='><% $C->prop('price_low') %></option>
+<option <%$args{order} eq 'd' ? 'selected' : ''%> value='/category2.html?id=<%$args{id}%>&order=3,d&q=&pkg='><% $C->prop('price_high') %></option>
+</select>
+</div>
+
+% if ($sth->rows() < 1) {
+	<div id="contentBlock">
+% #		Zur Zeit sind leider alle Artikel ausverkauft.  Bitte schauen Sie später nochmals vorbei.
+		<% $C->prop('sold_out_hint') %>
+	</div>
+% }
+
+% if ($args{debug}) {
+	<% $C->html_debug($stmt) %>
+% }
+
+<ul class="thumbnails">
+% while(my $r = $sth->fetch()) {
+%	next if $r->[1] eq 'IN'; # -- Skip invisible products
+	<&render_cat_prod.html, id=>$r->[0], SID=>$args{SID}, token_id=>$args{token_id}, A=>$A, C=>$C&>
+% }
+<ul>

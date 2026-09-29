@@ -1,0 +1,152 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $area  = $args{area};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $appmsg = $args{appmsg};
+
+	my $db_conf = $C->get_table_schema(table=>'config', schema=>$ENV{db_name}); # -- 26Dec2025
+	my $collation_test = my $errstr_coll = '';
+	eval { $collation_test = $C->uri_esc($C->{CONFIG}->{site_title}); } or do { $errstr_coll = $@ };
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, `key`, val, tstamp
+		from	config
+		where	`key` LIKE '$area\\_%' AND `key` NOT LIKE '%\_\_explain'
+		order	by 2
+	~);
+	$sth->execute();
+	my $key_count = $sth->rows();
+
+	my $st2 = $C->{dbh}->prepare(q~
+		select	DISTINCT SPLIT_STR(`key`, '_', 1)
+		from	config
+		where	`key` LIKE '%\_%'
+		order	by 1
+	~);
+	   $st2->execute();
+
+	my $res;
+</%init>
+<div class="portlet-header border-bottom">
+%	unless ($area) {
+		<span class="float-end">
+			<a class="link-muted" href="manage-property.html">Config Sys</a>
+		</span>
+%	}
+	<span>Shop-Einstellung:
+%		if ($area) {
+			<code><span class="ml-2" style="font-size:1.4rem"><% $area %></span></code> &ndash; <% $key_count %> Schl&uuml;ssel
+%		}
+	</span>
+
+%	if ($perm->{is_devel}) {
+		$C-&gt;uri_esc(<i><% $C->{CONFIG}->{site_title} %></i>) &rarr; <b><% $collation_test %></b> <% $errstr_coll %>
+		&ndash; <a clasx="text-primary" href="/adm_db_edit?table=config&wcl=`key`%3D%27site_title%27">E</a><br>
+%		foreach	my $s (@{ $db_conf->{data} }) {
+%			next unless $s->{column} eq 'val';
+%			foreach	(sort keys %{ $s }) {
+%				next unless $_ eq 'collation' or $_ eq 'column'	or $_ eq 'type';
+				&bull; <% $_ %>	= <b><%	$s->{$_} %></b><br>
+%			}
+%		}
+%	}
+</div>
+
+<div class="portlet-body">
+
+% if ($area) {
+	<form method="post" name="keyForm_308181">
+	<input type="hidden" name="area" value="<% $area %>">
+	<input type="hidden" name="bAddKey" value="0">
+
+	<table class="table tablx-sm table-hover table-striped border">
+	<tr>
+		<th>Schl&uuml;ssel</th>
+		<th>Wert</th>
+		<th class="text-center pl-4">ID</th>
+		<th><span class="float-right">L-&Auml;nd.</span></th>
+	</tr>
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $key, $val, $ts) = @{$r};
+%		(my $key_disp = $key) =~ s/^$area\_//;
+%		(my $val_enc = $val) =~ s/"/&quot;/g;
+%		my $info = $C->{CONFIG}->{"$key\__explain"};
+%		my $help = $A->get_core_help(feat=>"config_$key", value=>$val);
+%		my $type = $key =~ /pass/ ? 'password' : 'text';
+		<tr>
+		<td style="width:11vw"><b><% uc $key_disp %></b></td>
+		<td><& inc_text_edit.html, label=>$key, value=>$val, value_enc=>$val_enc, info=>$info, delete=>$perm->{is_devel}, type=>$type, id=>$id &>
+%			if ($help->{help_text}) {
+				<div class="mb-2">
+%					if ($help->{expert_level} > 5) {
+						<i class="fi fi-graduate fs--18"></i>
+%					}
+					<% $help->{help_text} %>
+				</div>
+%				foreach my $label (sort keys %{$help->{help_urls}}) {
+%					(my $label_disp = $label) =~ s/^\d\d\_//;
+					&bull; <a href="<% $help->{help_urls}->{$label} %>"><% $label_disp %></a><br>
+%				}
+%			}
+		</td>
+		<td class="text-center pl-4" style="width:2vw; color:#919191"><small><% $id %></small></td>
+		<td style="width:11vw" nowrap><span class="float-right"><% $C->trans_date_short($ts) %></span></td>
+		</tr>
+%	}
+
+	<tr>
+		<td colspan="4">
+			<div class="float-right">
+				<input type="submit" class="btn btn-secondary mb-2 btn-soft" value="Abbrechen">
+				<button type="button" class="btn btn-info mb-2 btn-soft"
+					onclick="document.keyForm_308181.bAddKey.value=1; document.keyForm_308181.submit()">
+					<i class="fi fi-plus"></i> Schl&uuml;ssel hinzu
+				</button>
+				<input type="submit" class="btn btn-success btn-soft mb-2" value="Speichern" name="bUpdate">
+			</div>
+		</td>
+	</tr>
+
+	</table>
+
+	</form>
+% }
+
+%	if (@{ $appmsg }) {
+		<div class="alert alert-info mt-2 col-7">
+			<% join "<br>\n", @{$appmsg} %>
+		</div>
+%	}
+
+	<div class="row col-border mt-3">
+		<div class="col-4">
+%			my $i = 0;
+%			my $key_before = '';
+%			while(my $r = $st2->fetch()) {
+%				if ($i++ > ($st2->rows() / 2)) {
+%					$key_before = $r->[0]; last;
+%				}
+				&bull; <a style="<% $area eq $r->[0] ? 'font-weight:bold; color:black' : '' %>"
+					href="special_keys.html?area=<% $r->[0] %>"><% ucfirst $r->[0] %></a><br />
+%			}
+		</div>
+		<div class="col-4">
+			&bull; <a style="<% $area eq $key_before ? 'font-weight:bold; color:black' : '' %>"
+				href="special_keys.html?area=<% $key_before %>"><% ucfirst $key_before %></a><br />
+%			while(my $r = $st2->fetch()) {
+				&bull; <a style="<% $area eq $r->[0] ? 'font-weight:bold; color:black' : '' %>"
+					href="special_keys.html?area=<% $r->[0] %>"><% ucfirst $r->[0] %></a><br />
+%			}
+		</div>
+	</div>
+
+%	unless ($area) {
+		<p class="mt-5">
+			<i class="fi fi-database"></i> Datenbank: <b><% $ENV{db_name} %></b> auf DB Host <b><% $ENV{db_host} %></b>
+		</p>
+%	}
+</div>

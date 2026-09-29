@@ -1,0 +1,195 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $A         = $args{A};
+	my $debug     = $args{debug};
+	my $perm      = $args{perm};
+	my $adm_users = $args{adm_users};
+	my $events    = $args{imp_events};
+	my $adm_xtra  = $args{adm_xtra};
+
+	my $old_symb = '<i class="fi fs--15 fi-hourglass"></i>';
+
+	my $google_measurement_id = $C->get_safe_property( 'google_measurement_id', 'sys' ) || '* Empty *';
+
+	my $webenv = $C->get_webenv();
+</%init>
+<%doc>
+<div class="portlet-header border-bottom">
+	<span>&Uuml;bersicht</span>
+</div>
+</%doc>
+
+<div class="portlet-body">
+	<div class="float-right ml-5 hidden-sm-down">
+%		my $new_orders = 0;
+		<table class="table table-sm">
+%		foreach my $d (@{ $events->{events} }) {
+%			if ($d->{info} eq 'order') {
+%				$new_orders = $d->{count}; next;
+%			}
+%			my $col = 'secondary';
+%			   $col = 'pink'    if $d->{count};
+%			   $col = 'danger'  if $d->{count} && $d->{info} eq 'error';
+%			   $col = 'primary' if $d->{count} && $d->{info} eq 'imp';
+%			   $col = 'warning' if $d->{count} && $d->{info} eq 'warn';
+			<tr>
+			<td class="pl-2 pr-2 fs--15"><a href="<% $d->{url} %>" class="text-gray-600"><% $d->{info_hr} %></a></td>
+			<td class="float-end pr-2"><span class="badge badge-pill badge-<% $col %>"><% $d->{count} %></span></td>
+			</tr>
+%		}
+		</table>
+%		my $new_orders_info = $new_orders ? "($new_orders neu)" : '';
+	</div>
+
+%	# ================================================================================================================================
+	<div class="row">
+
+	<div class="col-sm-12 col-md-6 p-0">
+
+%	if ($args{adm_edit_mode}) {
+		<% $C->this() %> / <code>adx/_includes/index.html</code> &mdash; <code>custom/algonetic/html/_includes/top_nav.html</code>
+%	}
+
+	<ul class="list-group list-group-flush rounded overflow-hidden mt-3">
+
+	<& inc_aero_list_item.html, label=>"Bestellungen / Orders $new_orders_info", url=>'orders.html',
+		info=>'Kundenbestellungen', badge=>'prism_icon_orders.svg', C=>$C &>
+
+	<& inc_aero_list_item.html, label=>'Kunden / Benutzer', url=>'/adx/customers.html', badge_type=>'secondary',
+		info=>'Registrierte Kunden und Systembenutzer &mdash; <a href="export.html">Export</a>',
+			badge=>'prism_icon_customers_2.svg', icon_width=>'+1px', C=>$C &>
+
+	<& inc_aero_list_item.html, label=>'Produkte', url=>'products.html',
+		info=>'Verwalten von Produkten und Dienstleistungen', badge=>'prism_icon_products_2.svg', icon_width=>'+3px', C=>$C &>
+
+	<& inc_aero_list_item.html, label=>'Promotionen', url=>'show.html?macro=promos',
+		info=>q~Verkaufsf&ouml;rdernde Einstellungen
+				&middot; <a href="show.html?macro=promos&fil=is_active<0&chk=7b35f5&omit=cat_id">Tagesangebot(e)</a>
+				&middot; <a href="/adm_vouchers.html">Gutscheine</a>~,
+			badge=>'prism_icon_megafon.svg', icon_width=>'-10px', C=>$C &>
+
+	<& inc_aero_list_item.html, label=>'Optionen', url=>'options.html', info=>'Zusatz-Optionen zu Produkten (Upgrades / Upselling)',
+		badge=>'prism_icon_product_options.svg', icon_width=>'-2px', C=>$C &>
+
+%	if ($perm->{is_devel}) {
+		<& inc_aero_list_item.html, label=>'Nachricht weiterleiten <small>(Dev)</small>', url=>'forward-message.html',
+			info=>'Weiterleitung von Nachrichten via E-Mail', badge=>'prism_icon_cogs.svg', C=>$C &>
+%	}
+
+%	foreach my $h (@{$adm_xtra->{arr}}) {
+%		my $title = $h->{title};
+%		my $info  = $h->{info} || ('Custom ' . ucfirst $h->{auth});
+%		my $pos   = (split /\-/, $h->{ref})[1];
+%		my $url   = $h->{url};
+%		my $edit  = $perm->{is_devel} ? qq~ <a href="manage-property.html?area=40227111_func_$pos">Edit</a>~ : '';
+%		unless ($h->{active}) { $title = "<s>$title</s>"; $url=''; }
+		<& inc_aero_list_item.html, label=>"$title <sup class='fs--11 text-gray-600'>$h->{ref}</sup>", url=>$url,
+			info=>"$info$edit", badge=>$h->{icon}, C=>$C &>
+%		# XXX foreach (sort keys %{$h}) {
+%		# XXX }
+%	}
+
+	</ul>
+
+	</div>
+
+%	# -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.- #
+	<div class="col-sm-12 col-md-6">
+
+		<ul class="list-group list-group-flush rounded overflow-hidden mt-3">
+
+		<& inc_aero_list_item.html, label=>"Kategorien", url=>'categs.html',
+			info=>"Verwalten von Produkte-Kategorien", badge=>'prism_icon_categories.svg', icon_width=>'+3px', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"Reports $old_symb", url=>'/adm_reports.html', info=>'Verkaufsstatistiken',
+			badge=>'prism_icon_chart.svg', icon_width=>'-3px', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'Tag Management System (TMS)', url=>'tms.html', info=>'Prismado Tags &middot; Conversion Tracking',
+			badge=>'prism_icon_conversion.svg', C=>$C &>
+
+%		my $mo_link_404132 = ${ $A->modal( label=>'<i class="fi fi-cog"></i>', class=>'text-blue-600',
+%			url=>'/adx/_ajax/modal_google_analytics.html?css_id=404132_111', css_id=>'404132_111') };
+		<& inc_aero_list_item.html, label=>"Google Analytics $old_symb", url=>'/adm_safe_properties.html?lang=sys&filter=google\_',
+			info=>qq~<a href="conv-track.html">Conversion Tracking</a> &mdash;
+				<a href="g-feed.html">Google Feed (Shopping)</a> &mdash;
+				<a href="keywords.html">Keywords</a> &mdash; MESS-ID $google_measurement_id &mdash; $mo_link_404132~,
+				badge=>'prism_icon_google.svg', icon_width=>'-5px', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>"Versand $old_symb", url=>'/adm_shipping.html', info=>'Einstellung der Versand-Optionen',
+			badge=>'prism_icon_shipping_truck.svg', icon_width=>'+2px', C=>$C &>
+
+		<& inc_aero_list_item.html, label=>'DHL Paket-&Uuml;bermittlungen', url=>'dhl.html', info=>'DHL Express MyDHL-Schnittstelle',
+			badge=>'DHL_Logo_3.svg', icon_width=>'+5px', C=>$C &>
+
+		</ul>
+
+	</div>
+
+	</div>
+%	# ================================================================================================================================
+
+	<h6 class="mt-4 hidden-md-down">Administratoren</h6>
+	<table class="table table-sm table-hover table-striped border mt-2 hidden-md-down">
+	<thead>
+	<tr style="background-color:white !important" class="text-gray-600">
+		<th>Login</th>
+		<th>Vorname</th>
+		<th>Name</th>
+		<th>E-Mail</th>
+		<th><span class="float-end">Letzte &Auml;nd.</span></th>
+	</tr>
+	</thead>
+%	foreach my $d (@{$adm_users}) {
+		<tr>
+		<td>
+			<i class="fi fi-user-male"></i> <a class="link-muted" href="/user.html?id=<% $d->{id} %>"><% $C->shorten_title($d->{uname}, 5) %></a>
+%			if ($d->{id} == $perm->{uid}) {
+				<i>(Sie)</i>
+%			}
+		</td>
+		<td><% $d->{firstname} %></td>
+		<td><% $d->{lastname} %></td>
+		<td>
+			<% $d->{email} %>
+%			if ($d->{is_devel}) {
+				&ndash; Dev
+%			}
+%			foreach (sort keys %{$d}) {
+%				next if $_ eq 'uname' or $_ eq 'id' or $_ eq 'tstamp' or $_ eq 'email' or $_ eq 'is_devel' or $_ eq 'firstname' or $_ eq 'lastname';
+				&bull; <% $_ %>: <% $d->{$_} %><br>
+%			}
+		</td>
+		<td><span class="float-end"><% $C->trans_date_short_nt( $d->{tstamp} ) %></span></td>
+		</tr>
+%	}
+	</table>
+
+%    if ($perm->{is_devel} && $debug) {
+	<h6>Remote Debug</h6>
+	<form method="post">
+		<input type="text"   class="form-control col-3"      name="r_sid"   placeholder="Remote SID"  value="<% $args{r_sid} %>">
+		<input type="text"   class="form-control col-3 mt-2" name="r_debug" placeholder="Debug Level" value="<% $args{r_debug} %>">
+		<input type="submit" class="btn btn-primary btn-sm btn-soft mt-2"   name="bRemoteDebug"    value="On">
+		<input type="submit" class="btn btn-secondary btn-sm btn-soft mt-2" name="bRemoteDebugOff" value="Off">
+		<span class="ml-3">
+			<a class="link-muted" href="/adm_log.html?importance=5&sid=<% $args{r_sid} %>"><small>Log</small></a>
+		</span>
+	</form>
+	<p class="mt-3">
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+%	foreach (sort keys %$webenv) {
+%		next if /^\_\_.+/;
+%		next if $_ eq 'db_orig' or $_ eq 'uname_all' or $_ eq 'VERSION';
+		&bull; <b><% $_ %></b> = <code><% $webenv->{$_} %></code><br>
+%	}
+	<br />
+	&bull; <a href="_debug.html">Debug Level <% $debug %></a>
+%    }
+
+</div>

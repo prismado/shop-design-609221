@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<div class="float-right">
+		<a href="/__datatables.html">SOW Version</a> &ndash;
+		V-2 &ndash;
+		<a href="__datatables_v3.html">V-3</a>
+	</div>
+	<span>DTv2</span>
+</div>
+
+<div class="portlet-body">
+
+	<table id="dt004" class="table table-responsive-lg table-bordered table-hover table-striped" data-custom="true" style="padding-top:25px">
+
+	<thead>
+	<tr>
+		<th>Title</th>
+		<th>Source</th>
+		<th>Subject</th>
+		<th>D-ID</th>
+		<th>Cr-Time</th>
+		<th>Size KB</th>
+		</tr>
+	</thead>
+
+	</table>
+
+</div>
+
+<style type="text/css" media="screen">
+% #	table.dataTable { width:100% !important }
+	table.dataTable	tr.even	              { background-color: #f0f0f0; line-height:2.5; color:#7b7b7b }
+	table.dataTable	td.sorting_1          { background-color: #e1e1e1 !important; }
+	table.dataTable tr:hover              { background-color: #d1d1d7 !important; }
+	table.dataTable tr:hover td.sorting_1 { background-color: #d1d1d7 !important; }
+</style>
+
+<script	language="JavaScript">
+$(document).ready(function() {
+<%doc>
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+    } );
+</%doc>
+	var oTable = $('#dt004').dataTable( {
+		"displayLength": 15,
+		"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+		"oLanguage": { "sSearch": "Suchen (tbd): " },
+		"ajax": "_ajax/server_processing_sample.html"
+	} );
+	    oTable.fnSort( [ [0,'asc']	] );
+} );
+</script>

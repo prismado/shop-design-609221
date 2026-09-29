@@ -1,0 +1,38 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+
+	unless (defined $C) {
+		my %s = %HTML::Mason::Commands::session;
+		$C = $s{C};
+	}
+
+	my $css_id = $C->{CGI}->param('css_id') || "exampleModalFull$$";
+</%init>
+<div id="ajx_401171"></div>
+
+<p>
+	<a href="#" onclick="JavaScript:loadModal401171()">Lade ein Modal!</a> (via Ajax)
+		&middot; [ CSS ID <code><% $css_id %></code> ]
+</p>
+
+
+% # <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function loadModal401171() {
+  $.ajax({
+    url: '_ajax/modal_foo_rs.html?css_id=<% $css_id %>',
+    type: 'GET',
+    dataType: 'html',
+    success: function(response) {
+     $('#ajx_401171').html(response);
+	$('#<% $css_id %>').modal('show');
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+}
+</script>
+

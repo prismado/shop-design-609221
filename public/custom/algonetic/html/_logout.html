@@ -1,0 +1,19 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $user   = $cgi->param('user');
+	my $pass   = $cgi->param('pass');
+
+	my ($rc, $msg) = $C->authen(user=>$user, pass=>$pass, action=>'logout');
+
+	unless ($rc) {
+		$m->redirect('.');
+		# $m->redirect('/dashboard/');
+	}
+
+	# $r->content_type('text/html; charset=utf-8');
+</%init>

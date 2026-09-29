@@ -1,0 +1,66 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C       = $args{C};
+	my $A       = $args{A};
+	my $i_class = $args{'i_class'} || 'typeahead';
+	my $suggest = $args{suggest_data}; # -- Array ref
+
+	my @labels = ();
+
+	unless (defined $suggest) {
+		my @empty = ();
+		push(@empty, q~{ id: '-foo', name: 'bar' }~);
+		$suggest = \@empty;
+	}
+</%init>
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+    var vorschlaege = new Bloodhound({
+      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('id'),
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      local: [ <% join ",\n", @{ $suggest } %> ]
+    });
+
+    // Wichtig: Bloodhound-Instanz initialisieren
+    vorschlaege.initialize();
+
+    $('.<% $i_class %>').typeahead({
+      hint: true,
+      highlight: true,
+      minLength: 0
+    },
+    {
+      name: 'vorschlaege',
+      displayKey: 'id',
+	limit: 15,
+
+        source: function(query, syncResults) {
+            var modifiedQuery = query.startsWith("-") ? query : "-" + query; // Fügt "-" hinzu, wenn nicht vorhanden
+            vorschlaege.search(modifiedQuery, function(suggestions) {
+                syncResults(suggestions.filter(function(suggestion) {
+                    return suggestion.id.toLowerCase().indexOf(modifiedQuery.toLowerCase()) !== -1 ||
+                           suggestion.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+                }));
+            });
+        },
+
+      templates: {
+        suggestion: function(data) {
+		var displayId = data.id.replace('-', '');
+          return '<div><strong>' + displayId + '</strong> <span class="float-end">' + data.name + '</span></div>';
+        }
+      }
+    });
+
+
+	$('.<% $i_class %>').bind('typeahead:select', function(ev, suggestion) {
+		// Entfernt den Bindestrich aus der Auswahl und setzt den Wert ohne diesen ins Eingabefeld
+		$(this).typeahead('val', suggestion.id.replace('-', ''));
+	});
+
+  });
+
+</script>

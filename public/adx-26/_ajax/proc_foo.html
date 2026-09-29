@@ -1,0 +1,27 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	my $order_id = ($C->{CGI}->param('order_id') + 0) || $C->query('select max(id) from orders where status=4')->[0];
+	# my $sig      = $C->md5_secret($SID);
+
+	my @paras = ();
+	foreach ($C->{CGI}->all_parameters) {
+		push(@paras, "$_ = " . $C->{CGI}->param($_));
+	}
+
+	my $info = join '<br>', @paras;
+
+	$C->create_toast_note(body=>$info, title=>'ADX / Proc Foo', width=>'600px', delay=>9999);
+</%init>
+
+<%doc>
+	Created: 17Apr2024
+
+	This macro is called by an Ajax call
+</%doc>

@@ -1,0 +1,44 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+
+	$m->out(q~
+		<div class="float-right">
+			&rarr; <a href="_layout_modal.html">Beispiel m/Ajax</a>
+		</div>
+	~);
+</%init>
+<button type="button" class="btn btn-primary btn-soft mb-3" data-toggle="modal" data-target="#exampleModalFull">
+	<i class="fi fi-mollecules"></i> 
+	Modal Full
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalFull" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<div class="modal-dialog modal-full" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabelFull">Modal title</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				...
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary">
+					<i class="fi fi-check"></i> Save changes
+				</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">
+					<i class="fi fi-close"></i> Close
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>

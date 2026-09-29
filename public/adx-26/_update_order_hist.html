@@ -1,0 +1,37 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 10Oct2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+
+	$m->redirect('/not_auth.html') unless $perm->{is_admin};
+
+	my $cgi = $C->{CGI};
+
+	my $order_id = $cgi->param('order_id') + 0;
+	my $before   = $cgi->param('before') + 0;
+
+	my $upd = $A->set_order_status($order_id, 801, 'Sendung zugestellt', 'DHL');
+
+	$C->{dbh}->do(qq~
+		update	orders_status
+		set	uid=0, created_at=DATE_SUB(NOW(), INTERVAL $before HOUR)
+		where	id=$upd->{status_dbid}
+	~);
+
+	my $r_set_o_stat = $A->set_order_status($order_id, 251, 'Zugestellt / abgeschlossen', 'DHL'); # -- 31May2025
+	$C->{dbh}->do("update orders_status SET created_at=DATE_SUB(NOW(), INTERVAL $before HOUR), uid=0 where id=$r_set_o_stat->{status_dbid}");
+
+	# $C->create_toast_note(body=>"A Test " . join "<br>\n", @vars);
+
+	$m->redirect("/adm_order.html?id=$order_id");
+</%init>
+<%doc>
+	$A->set_order_status( ID, STATUS, TEXT, SRC )
+</%doc>

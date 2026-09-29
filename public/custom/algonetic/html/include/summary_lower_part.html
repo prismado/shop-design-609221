@@ -1,0 +1,124 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C             = $args{C};
+	my $A             = $args{A};
+	my $is_logged_in  = $args{is_logged_in};
+	my $remarks       = $args{remarks};
+	my $order_okay    = $args{order_okay};
+	my $referenz_text = $args{referenz_text};
+	my $ship_meth     = $args{ship_meth};
+	my $ship_meth_hr  = $args{ship_meth_hr};
+	my $pay_meth_hr   = $args{pay_meth_hr};
+	my $debug         = $args{debug};
+
+	my $anon_uid = $C->getSessData('_anon_uid');
+</%init>
+<table class="table table-hover table-responsive" stylx="border: 3px solid red;">
+%	# -- Versand / Zahlungsart
+	<tr>
+              <td><% $C->prop('delivery_method') %></td>
+              <td nowrap clasx="float-right" stylx="width:160px !important">
+%		if ($ship_meth eq 'pic') {
+			<a target="_blank" href="info_selbstabholer.html"><%$ship_meth_hr%></a>
+%		}
+%		else {
+			<%$ship_meth_hr%>
+%		}
+		</td>
+	</tr>
+
+	<tr>
+              <td><% $C->prop('payment_method') %></td>
+              <td class="float-right"><% $pay_meth_hr %></td>
+	</tr>
+</table>
+
+% if ($referenz_text) {
+	<p class="ml-2"><b style="color:#121212"><%$C->prop('cust_ref')%></b><br>
+	<%$referenz_text%></p>
+% }
+
+% if ($remarks) {
+	<p class="ml-2 mt-4"><b style="color:#121212"><% $C->prop('comment') %></b><br>
+	<% $remarks %></p>
+% }
+
+% if ($is_logged_in) {
+	<& addresses_blocks.html, A=>$A, CORE=>$C, debug=>$debug &>
+% }
+% else {
+    <div id="not_logged_in">
+	<div style='width:100%;color:red;margin-bottom:10px; margin-top:10px; float:left;'><% $C->prop('not_loggedin') %></div>
+
+	<div id="no_registration">
+		<& inc_modal_link.html, label=>'Login', href=>'_ajax/modal_signin_md.html', size=>'md',
+			class=>'btn btn-sm btn-primary btn-pill w--150 mr-3', C=>$C, group_icon=>'fi fi-locked' &>
+
+		<& inc_modal_link.html, label=>'Registrieren', href=>'_ajax/modal_signin_md.html?show_reg=1', size=>'md',
+			class=>'btn btn-sm btn-secondary btn-pill', C=>$C, group_icon=>'fi fi-user-male' &>
+
+		<input id="no_reg" class="btn btn-grey" onclick="document.getElementById('not_logged_in').style.display='none';
+		document.getElementById('includeLogincenter').style.borderColor='#ddd';$('#ajx_address_one_time').load('_ajax/inc_addresses_blocks_anon.html')"
+			type="button" name="no_reg" value="<% $C->prp('continue_nologin') %>">
+	</div>
+    </div>
+
+	<div id="ajx_address_one_time"></div>
+% }
+
+% if ($is_logged_in) {
+	<div class="checkbox mt-4">
+		<label class="form-switch form-switch-success d-block">
+			<input type="checkbox" id="agb_check" name="agb_check" value="accept">
+			<i data-on="&#10004;" data-off="&#10005;"></i>
+
+			<label for="agb_check"><% $C->prop('agb_info') %> 
+				<a href="#" class="js-ajax-modal mb-1 link-muted"
+					data-href="_ajax/modal_terms_and_cond.html"
+					data-ajax-modal-size="modal-xl"
+					data-ajax-modal-centered="true"
+					data-ajax-modal-backdrop="static">
+					<span><% $C->prop('agbs_long') %></span>
+				</a> / <% $C->prop('policy') %>
+			</label>
+		</label>
+	</div>
+
+        <div class="buttons mt-4">
+	    <div class="float-right">
+		<a class="btn btn-grey" href="javascript:document.location='checkout.html'"><% $C->prop('btn_return') %></a>
+%		if ($order_okay) {
+			<button type="submit" class="btn btn-success btn-lg" onclick="document.location='checkout.html'">
+				<% $C->prop('btn_continue_payment') %> <i class="fi fi-arrow-right ml-2 mr-0"></i>
+			</button>
+%		}
+	    </div>
+	</div>
+% }
+
+%	if ($args{xmsg}) {
+		<br clear="all" />
+		<div class="timer-autohide alert alert-danger mt-3" data-timer-autohide="10000">
+			<i class="fi fi-close mr-2"></i> 
+			<% $args{xmsg} %>
+		</div>
+%	}
+
+<script language="JavaScript">
+	function showAddressForm() {
+		document.getElementById('not_logged_in').style.display='none';
+		document.getElementById('includeLogincenter').style.borderColor='#ddd';
+		$('#ajx_address_one_time').load('_ajax/inc_addresses_blocks_anon.html');
+	}
+
+	$(document).ready(function(){
+%		if ($anon_uid) {
+			showAddressForm();
+%		}
+	});
+</script>
+
+% if ($debug) {
+	Debug: UID <b><% $anon_uid %></b> (Session <code>_anon_uid</code>)
+% }

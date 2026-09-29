@@ -1,0 +1,141 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+	my $cgi = $C->{CGI};
+	my $anon_uid = my $flag_error = 0;
+
+	my $UID = $C->getSessData('_uid') || $C->getSessData('_anon_uid');
+	my $UINF = $A->get_user_info($UID);
+
+	if ($C->{CGI}->param('bConfirmOrder')) {
+		if ($UINF->{cb_pay_inv} or !$C->{CONFIG}->{sms_username}) {
+			$C->log(msg=>'Direct invoice order');
+			$C->redir('/order_confirm.html');
+		}
+		else {
+			my $mobile_code = $cgi->param('mobile_code');
+			if (length($mobile_code) && $mobile_code eq $C->getSessData('sms_code')) {
+				$C->log(msg=>'SMS code okay');
+				$C->redir('/order_confirm.html');
+			}
+		}
+	}
+
+	my $pay_meth = $C->getSessData('pay_meth');
+
+	my $order_id = $C->getSessData('order_id');
+	if ($C->{CGI}->param('agb_check') eq 'accept') {
+		$anon_uid ||= $C->getSessData('_anon_uid');
+		$order_id = sprintf('%08d', $A->save_order($C->getSessData('order_id'), $anon_uid));
+		if ($order_id < 0) {
+			$m->redirect('/');
+		}
+		$C->log(msg=>"Order ID $order_id created", service=>'payment_inv', importance=>1);
+		$C->saveSessData('order_id', $order_id); # -- Save for the next step
+	}
+
+	my $pay_info = 'n.a.';
+
+	$pay_info = $C->prop('invoice_infos'); # -- Rechnungs-Informationen
+	$pay_info = $C->prop('instruction');
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $cur_voucher_value = $A->get_cur_voucher_value();
+	my $shipping = $C->getSessData('checkout_zahlungsart_select') eq 'cod' ? $A->{'ship_tot_cod'} : $A->{'ship_tot_cc'};
+	my $ship_meth = $C->getSessData('ship_meth');
+        my $ship_meth_amount = sprintf('%.2f', $C->{CONFIG}->{"ship_$ship_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+	my $pay_cost = sprintf('%.2f', $C->{CONFIG}->{"pay_cost_$pay_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+	my $total = $C->decimal_mark($A->get_basket_total() + $shipping + $pay_cost + $ship_meth_amount - $cur_voucher_value);
+	(my $mode = $C->{CONFIG}->{'2co_mode'}) =~ tr/A-Z/a-z/;
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>2CO <%$C->{CONFIG}->{site_title}%> - Payment</title>
+% # -- 2Checkout:
+<script type="text/javascript" src="https://www.2checkout.com/checkout/api/2co.min.js"></script>
+% # -- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+% # -- /2Checkout
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+% # <&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="productBlock" class="span9">
+<div class="well"><h1><% $C->prop('payment') %></h1>
+</div>
+
+<div id="checkoutBlock">
+
+<div id="stepWrapper">
+<div class="span3"><div class="stepBox"><span class="badge label-normal">1</span> <% $C->prop('order_finalize') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">2</span> <% $C->prop('order_overview') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-success">3</span> <% $C->prop('payment') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">4</span> <% $C->prop('confirmation') %></div></div>
+</div>
+
+<div id="checkoutContent">
+
+<form id="myCCForm" action="2co_post.html" method="post">
+  <input name="token" type="hidden" value="<%$C->{CONFIG}->{"2co_$mode\_pub_key"}%>" />
+  <input name="x_order_id" type="hidden" value="<%$order_id%>" />
+
+<div class="no-more-tables">
+<table class="table">
+          <thead data-title="<%$C->prop('order')%> <%$order_id%>" class="well">
+              <tr>
+              <th colspan="3"><%$C->prop('order')%> <%$order_id%></th>
+            </tr>
+          </thead>
+<tr><td colspan="3"><h4><%$pay_info%></h4></td></tr>
+<&include/2checkout_form.html, C=>$C&>
+<tr><td><h4><% $C->prop('sum_total') %> <% $C->{CONFIG}->{vat}%> % <% $C->prop('mwst') %>&nbsp;</h4></td>
+<td><h4>CHF <% $total %></h4></td></tr>
+</table>
+
+</div><!-- end no-more-tables   -->
+
+% if ($flag_error) {
+	ERROR<br>
+% }
+% else {
+ <input id="payment_submit_kk" class="btn btn-basket" type="submit"
+			name="bConfirmOrder" value="<% $C->prop('but_send_order') %>">
+% }
+ </form>
+
+<&include/2co_js.html, mode=>$mode, token=>$C->{CONFIG}->{"2co_$mode\_pub_key"}, C=>$C&>
+
+% if ($C->is_devel() or $C->getPermaSessData('debug')) {
+	<br>
+%	my $tot = $A->get_basket_total(1); # -- debug
+	<br><tt>get_basket_total():</tt> <% $tot %>
+% }
+<br /><br />
+
+</div><!-- End checkoutBlock -->
+</div><!-- End productBlock -->
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>
+<%doc>
+	__METACLONING__
+</%doc>

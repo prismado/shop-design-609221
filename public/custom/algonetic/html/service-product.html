@@ -1,0 +1,148 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 26Oct2026 / Service-Portal
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id    = $cgi->param('id') || 0; $id += 0;
+	my $pta   = $cgi->param('pta');
+	my $ptb   = $cgi->param('ptb');
+	my $ptc   = $cgi->param('ptc');
+
+	my $debug = $C->getSessData('debug') || 0;
+	my $lang  = $C->getSessData('_current_lang') || 'de';
+	my $perm  = $C->get_user_perm();
+	my $SID   = $C->getSID();
+	my $xsale = $A->get_sale_suggestion(id=>$id);
+	my $xmsg  = $C->getSessData('xmsg'); $C->del_sess_key('xmsg') if $xmsg;
+
+	my $d = $A->get_product_v2(id=>$id, lang=>$lang, public=>0, opts=>0, parse=>1, debug=>0); # -- Get all product information
+	   $d->{cat_url_friendly} = $C->url_friendly($d->{cat_name});
+
+	(my $description = $d->{description}) =~ s/"/&quot;/g;
+	    $description =~ tr[\r\n]/, /;
+	(my $title = $d->{title}) =~ s/"/&quot;/g;
+
+	my $google_analytics = $C->get_safe_property('google_analytics_code', 'sys');
+	my $trunc_desc       = $C->txt('design_product_trunc_desc', 'sys') + 0;
+
+	my $spec_sale   = $d->{price_incl_vat} != $d->{price_orig_incl_vat} ? 1 : 0;
+	my $xtra_imgs   = $A->get_product_extra_imgs(id=>$id, all=>1);
+	my $cur_ext     = $C->get_file_extension( $C->get_full_file_name("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_large") );
+	my $daily_offer = $A->get_daily_offer_categ(); # -- /products/daily-offer/<% $daily_offer->{id} %>
+
+	if ($pta or $ptb or $ptc) {
+		# XXX if    ($pta) { $C->start_tag_tracking( tag=>"$pta\-1" ); }
+		# XXX elsif ($ptb) { $C->start_tag_tracking( tag=>"$ptb\-2" ); }
+		# XXX elsif ($ptc) { $C->start_tag_tracking( tag=>"$ptc\-3" ); }
+	}
+
+	my @breadcrumb = ();
+
+	foreach my $categ (@{ $d->{categs} }) {
+		my @bc = ($categ->{label}, "/products/$d->{cat_url_friendly}/$categ->{id}"); # -- 30Oct2023
+		push(@breadcrumb, \@bc);
+	}
+
+	my @bc1 = ($d->{brand}, "/__search-result.html?s=$d->{brand}") unless $d->{brand} eq $d->{cat_name};
+	my @bc2 = ('Service-Portal', '/service-portal/');
+	my @bc3 = ($d->{title}, "/product/$d->{title_enc}/$id");
+	push(@breadcrumb, \@bc1) unless $d->{brand} eq $d->{cat_name};
+	push(@breadcrumb, \@bc2);
+	push(@breadcrumb, \@bc3);
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+
+	# XXX my $conv_track_on = $C->get_property('google_conv_tracking_on', '_global', 'sys');
+</%init>
+<!doctype html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta charset="UTF-8">
+	<title><% $C->shorten_title($d->{title}, 90) %> | ID-<% $id %> <% $d->{cat_name} %> <% $C->prop("_categ_desc_$d->{cat_id}") %></title>
+	<meta name="keywords" content="<% $d->{brand} %>, <% $d->{cat_names} %>, <% $C->{CONFIG}->{default_keywords} %>" />
+	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
+	<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+	<link rel="dns-prefetch" href="https://fonts.gstatic.com/">
+	<link rel="preload" href="/assets/fonts/flaticon/Flaticon.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="/assets/css/core.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=<% $C->uri_esc($font_1) %>:wght@400&family=<% $C->uri_esc($font_2) %>:wght@400&display=swap">
+	<link rel="shortcut icon" href="/favicon.ico">
+	<& include/inc_settings_prod_slider.html &>
+	<style>
+		.table-striped tbody tr:nth-child(odd) {
+			background-color: #f0f0f0;
+		}
+		@media (max-width: 599px) {
+			.mobile_403060 {
+				margin-bottom: 135px !important;
+			}
+			.hide_mobile_404281 {
+				display: none;
+			}
+		}
+		.prism-limit-len-500-405041 {
+			max-width: 500px !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		p, td           { font-family: '<% $font_1 %>', sans-serif; color: #333; }
+		h5, h6          { font-family: '<% $font_1 %>', sans-serif; font-weight: bold; }
+		li, .breadcrumb { font-family: '<% $font_2 %>', sans-serif; }
+	</style>
+	</head>
+
+	<body class="layout-admin aside-sticky header-sticky" data-s2t-class="btn-primary btn-sm bg-gradient-default rounded-circle b-0">
+
+	<div id="wrapper" class="d-flex align-items-stretch flex-column">
+		<& _includes/header.html, lang=>$lang, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
+
+		<div id="wrapper_content" class="d-flex flex-fill">
+			<aside id="aside-main"
+				class="aside-start aside-secondary bg-gradient-light shadow-xs font-weight-light aside-hide-xs d-flex flex-column h-auto">
+				<& service-portal/_includes/sidebar.html, C=>$C, A=>$A, perm=>$perm &>
+			</aside>
+
+			<div id="middle" class="flex-fill">
+				<div class="page-title shadow-xs">
+					<div class="mt-2">
+						<& _includes/breadcrumb.html, breadcrumb=>\@breadcrumb, C=>$C, debug=>$debug &>
+					</div>
+				</div>
+
+%				# -- 26Sep2023:
+%				# -- JQuery (js/core.min.js) needs to be placed *before* include/product.html
+				<script src="/assets/js/core.min.js"></script>
+				<div class="row gutters-sm">
+					<div class="col-12 mb-3">
+						<div class="portlet">
+%						    if ($d->{condition} eq 'IP') {
+							<& include/product-info.html, id=>$id, d=>$d, spec_sale=>$spec_sale, C=>$C, A=>$A, lang=>$lang, xmsg=>$xmsg,
+								xtra_imgs=>$xtra_imgs, SID=>$SID, perm=>$perm, XXis_mobile=>0, debug=>$debug &>
+%						    }
+%						    else {
+							<& include/service-product.html, id=>$id, d=>$d, spec_sale=>$spec_sale, C=>$C, A=>$A, lang=>$lang, xmsg=>$xmsg,
+								xtra_imgs=>$xtra_imgs, cur_ext=>$cur_ext, xsale=>$xsale, trunc_desc=>$trunc_desc,
+								SID=>$SID, perm=>$perm, daily_offer_cid=>$daily_offer->{id}, debug=>$debug &>
+%							if ($trunc_desc) {
+								<& include/inc_truncate_text.html &>
+%							}
+%						    }
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<& _includes/footer.html, C=>$C &>
+	</div>
+
+	</body>
+</html>

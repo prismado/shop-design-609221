@@ -1,0 +1,28 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $cgi = $C->{CGI};
+
+	my @env = ();
+	if ($s{debug}) {
+		foreach (sort keys %s) {
+		next if $_ eq 'C' or $_ eq 'comp_file' or $_ eq 'dir' or $_ eq 'theme' or $_ eq 'check_env';
+			push(@env, qq~[ s ] &middot; <b>$_</b> = <code>$s{$_}</code>~);
+		}
+	}
+
+	# my $c_feat = $C->get_core_features();
+</%init>
+<h3 class="fs--25 mb-4">Prismado</h3>
+
+% foreach (sort keys %s) {
+%	next if $s{$_} =~ /^ScreenPoint\:\:.+/ or /^perm$/ or /^dir$/;
+	[ S ] &middot; <b><% $_ %></b> = <code><% $s{$_} %></code><br>
+% }
+
+% foreach ($cgi->all_parameters) {
+	[ CGI ] &middot; <% $_ %> = <% $cgi->param($_) %><br>
+% }

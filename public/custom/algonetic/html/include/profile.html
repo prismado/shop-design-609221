@@ -1,0 +1,138 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $debug = $C->{CGI}->param('debug');
+
+	my ($email, $newsletter) = @{$C->query("SELECT email, newsletter FROM users WHERE id=" . $C->getUID())};
+
+	$C->load_properties('account');
+	my $prop = $C->{property}->{'account'};
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my %addr_label = ( 1 => $prop->{"bill_addr$l"}, 2 => $prop->{"deliv_addr$l"} );
+</%init>
+% if ($debug) {
+	<&page_info.html, 'START'&>
+% }
+
+<!-- ######################################################################################################## -->
+<form method=post class="ps-checkout-forms">
+<br>
+<div class="no-more-tables-responsive">
+%		for (my $i = 2; $i > 0; $i--) {
+%		my $addr = $A->get_address($i);
+<table class="table">
+             <thead data-title="<% $addr_label{$i} %>" class="well">
+            <tr>
+              <th colspan="2"><% $addr_label{$i} %></th>
+            </tr>
+          </thead>
+
+ <tr>
+	<td> <label for="gender_<%$i%>"><%$C->prop('gender')%><em>*</em></label>
+			<select name="gender_<%$i%>">
+			<option value="1"><% $C->prop('male') %></option>
+			<option value="2" <% $addr->{gender} == 2 ? 'selected' : ''%>><% $C->prop('female')  %></option>
+			<option value="3" <% $addr->{gender} == 3 ? 'selected' : ''%>><% $C->prop('company') %></option>
+			</select>
+
+	</td>
+<td >  <label  for="firstname_<%$i%>"><% $C->prop('surname') %> </label>
+		<input id="firstname_<%$i%>" type="text" class="input-large"
+			name="firstname_<%$i%>" value="<%$addr->{firstname}%>">
+</td>
+ </tr>
+
+  <tr>
+	  <td>	    <label for="lastname_<%$i%>"><% $C->prop('lastname') %></label>
+	 				<input id="lastname_<%$i%>" type="text" class="input-large"
+			name="lastname_<%$i%>" value="<%$addr->{lastname}%>">
+			 </td>
+			 <td>	 	    <label for="company_<%$i%>"><% $C->prop('company') %></label>
+	  	      <input  type="text" class="input-large" id="company_<% $i %>" value="<% $addr->{company} %>" name="company_<% $i %>">
+	  	      </td>
+
+
+  </tr>
+ <tr>
+
+<td>
+    	    <label  for="street_<%$i%>"><% $C->prop('adress') %></label>
+		<input id="street_<%$i%>"  type="text" class="input-large"
+			name="street_<%$i%>" value="<%$addr->{street}%>">
+ </td>
+
+  <td>
+    	     <label  for="phone_<% $i %>"><% $C->prop('telephone') %></label>
+	   		<input id="city_<%$i%>"  type="text" class="input-large"
+			name="phone_<% $i %>" value="<% $addr->{phone} %>">
+  </td>
+
+  </tr>
+ <tr>
+<td>
+	 	    <label for="zip_<%$i%>"><% $C->prop('postcode') %></label>
+	  		<input id="ip_<%$i%>" id="zip_<%$i%>" type="text" class="input-large"
+			name="zip_<%$i%>" value="<%$addr->{zip}%>">
+</td>
+<td>
+    	     <label  for="city_<%$i%>"><% $C->prop('city') %></label>
+	   		<input id="city_<%$i%>" type="text" class="input-large"
+			name="city_<%$i%>" value="<%$addr->{city}%>">
+  </td>
+  </tr>
+
+%	# ---------- Country *muss* immer mitgesendet werden (Pflichtfeld im Shop)! ------------
+	<input type="hidden" name="country_<%$i%>" value="CH">
+</table>
+% }
+ </div> <!-- end  no-more-tables-->
+
+
+<div class="no-more-tables-responsive">
+<table class="table table-hover">
+             <thead data-title="<% $C->prop('account_modify') %>" class="well">
+            <tr>
+              <th colspan="2"><% $C->prop('account_modify') %></th>
+            </tr>
+          </thead>
+
+
+ <tr>
+	 <td> <label class="input_tag" for="phone_1"><% $prop->{"your_login_name$l"}%></label>
+		 <input type="text" value='<% $C->getSessData('uname') || $C->whoami() %>' name="uname" class="input-large">
+%	if ($C->whoami() =~ /\@/) {
+		&mdash; Vorschlag: <b><% $C->propose_uname($C->whoami()) %></b>
+%	}
+</td>
+<td> <label class="input_tag" for="email"><% $C->prop('emailadress') %></label><input type="text" value='<% $email %>' name="email" class="input-large">
+</td>
+ </tr>
+ <tr>
+
+<td><label class="input_tag" for="pass_old"><% $C->prop('old_password') %></label>  <input type="text" value='' name="pass_old" autocomplete="off" class="input-large">
+</td>
+<td>  <label class="input_tag" for="pass_new"><% $C->prop('new_password') %></label> <input type="text" value='' name="pass_new" autocomplete="off" class="input-large"></td>
+ </tr>
+   </tr>
+</table>
+</div> <!-- end  no-more-tables-->
+
+<div class="bottomWrap">
+<div class="checkbox checkbox-custom checkbox-circle">
+ <input type="checkbox" value="newsletter" id="checkbox" name="newsletter" <% $newsletter ? ' checked' : '' %>>
+ <label for="checkbox"><% $C->prop('newsletter_on') %></label>
+</div>
+<br><br>
+
+<input type="hidden" name="bSaveProfile" value="1">
+<button type="submit"  class="btn btn-checkout"><% $C->prop('save') %></button>
+</form>
+</div>
+

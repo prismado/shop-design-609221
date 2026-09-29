@@ -1,0 +1,222 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID        = $C->getSID();
+	my $is_admin   = $C->is_admin();
+	my $lang       = $C->getSessData('_current_lang') || 'de';
+	my $bask_count = $C->query("select count(*) from basket where sid=$SID")->[0];
+
+	my $id    = $C->{CGI}->param('id') + 0;
+	my $debug = $C->{CGI}->param('debug');
+	my $msg   = $C->{CGI}->param('msg');
+	my $d     = $A->get_product_v2(id=>$id, lang=>$lang); # -- Get all product information
+
+	my $redir_search = $d->{pfeat}->{"0000\t_redir_search\tREDIR"};
+	my $redir_cat    = $d->{pfeat}->{"0000\t_redir_cat\tREDIR"};
+	my $ra_nr        = $d->{pfeat}->{"-001\t_exclude\tRA"} ||'*MISSING-RA*';
+
+	if ($redir_search) {
+		$m->redirect("categ.html?q=$redir_search");
+	}
+	elsif ($redir_cat) {
+		$m->redirect("category-$redir_cat-group.html");
+	}
+
+	my $discount = $A->get_discount($id);
+	my $is_offer = $d->{price_incl_vat} != $d->{price_orig_incl_vat} ? 1 : 0;
+
+	my $breadcrumb = $A->get_breadcrumb($d->{cat_id});
+	my $catlabel = $C->query("select label FROM categories WHERE id=$d->{cat_id} AND lang='de'")->[0] || "* Category ID $d->{cat_id} *";
+	my ($child_id, $child_label) = @{$C->query("select id, label FROM categories WHERE parent_id=$d->{cat_id}")};
+
+	if ($d->{campaign_id} > 0) {
+		my $token_id = $C->getSessData('token_id') + 0;
+		unless ($token_id == $d->{campaign_id}) {
+			$C->redir('/prozone.html');
+		}
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$d->{title}%> <%$C->{CONFIG}->{site_title}%></title>
+<& include/head_metablock.html, d=>$d, C=>$C &>
+<meta property="og:type" content="product" />
+<meta property="og:title" content="<% $d->{'title'} %>" />
+<meta property="og:description" content="<% $d->{'title'} %>" />
+<meta property="og:image" content="http://<%$ENV{HTTP_HOST}%>/produkte/p<%$id%>_orig.jpg" />
+<meta property="og:url" content="http://<%$ENV{HTTP_HOST}%>/product.html?id=<%$id%>" />
+<meta property="og:site_name" content="<%$ENV{HTTP_HOST}%>" />
+<&include/head_cssload.html&>
+</head>
+
+<body class="ps-productDetails">
+<!-- Facebook share Integration -->
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/de_DE/sdk.js#xfbml=1&version=v2.4";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<& include/content_header.html, SID=>$SID, C=>$C, is_admin=>$is_admin &>
+<div id="mainContainer">
+<div class="container">
+<div class="row-fluid ps-content">
+<& include/content_sideblock.html, lang=>$lang, C=>$C, A=>$A &>
+
+<div id="productBlock" class="span9">
+
+<div class="well">
+% if ($is_admin) {
+<a style="margin-top: 0px;float: left; margin-right: 10px;" href="admix.html?func=edit_item&id=<%$id%>"><span class="btn btn-checkout small">Edit Product</span></a>
+% }
+<span class="product-breadcrumb"><% $C->prop('categories') %>:
+% foreach (@{$breadcrumb}) {
+%	my ($id, $label) = split /\t/;
+
+<a href="category2.html?id=<%$id%>"> <span class="divider">› </span><%$label%></a>
+% }
+<a href="category2.html?id=<%$d->{cat_id}%>"> <span class="divider">› </span><%$catlabel%></a>
+</span>
+</div>
+<div id="contentBlock">
+
+<div id="ajx_noti"></div>
+<div class="row-fluid">
+<div id="gallery" class="span4" >
+% if ($d->{_rc}) {
+	<% $C->bootstrap_alert($d->{_msg}, 'danger') %>
+% # XXX	<%$d->{_msg}%><hr>
+% }
+% else {
+<&include/product_carousel.html, id=>$id, d=>$d, debug=>$debug, C=>$C&>
+% }
+<%doc>
+<div class="fb-share-button" data-href="http://<%$ENV{HTTP_HOST}%>/product.html?id=<%$id%>" data-layout="button_count"></div>
+<div class="btn-toolbar"></div>
+</%doc>
+			</div>
+
+			<div class="span8 productDetail">
+% unless ($d->{condition} eq 'IP') {
+<div class="well-product">
+<div class="priceDetails">
+<h1><%$d->{title}%> </h1>
+<p><%substr($d->{description}, 0, 148)%><p>
+% if ($debug) {
+	** Debug: Count: <b><%$d->{count}%></b> | Condition: <b><%$d->{condition}%></b> **<br>
+% }
+
+% unless ($d->{_rc}) {
+%	if ($discount) {
+		<h3 class="<%$is_offer ? 'offer-color' : ''%>">CHF <%$C->round_amount($d->{price_incl_vat} + $d->{upsell_tot})%></h3>
+		<span><% $C->prop('offer_price_text') %> CHF <% $C->decimal_mark($d->{price_orig_incl_vat}) %></span><br><br>
+%	}
+%	else {
+		<h3>CHF <%$d->{price_incl_vat}%></h3>
+%	}
+
+	<span id="dynTotal"></span>
+	<span><%$C->prop('price_text')%></span><br />
+
+	<span><%$C->prop('mwst')%> <%$C->{CONFIG}->{vat}%>%</span><br>
+%	if ($d->{count} < 1 && $d->{condition} eq 'SO') {
+% #		<span class="requestNow"><a title=">hier klicken" href="/"><%$C->{CONFIG}->{product_over_stock} || $C->prop('product_inquiry')%></a></span><br>
+%	}
+%	else {
+		<br><span class="deliveryNow"><% $C->prop('on_stock') %> (<% $d->{count} %>)</span><br>
+%	}
+
+% #	<span id="artikel"><% $C->prop('article_nr') %>: <%$d->{art_no}%>-<%$id%>-<%$ra_nr%></span><br>
+% }
+
+
+% ################################### Product Options Styles ################################
+<div class="parameterBox">
+	<&include/product_options_dd_with_count.html, type=>1, id=>$id, lang=>'de', A=>$A, msg=>$msg, debug=>$debug&>
+	<&include/product_options_numbers.html, type=>3, id=>$id, lang=>$lang, A=>$A, msg=>$msg, debug=>$debug&>
+% #	<&include/product_options_playnum.html, type=>5, id=>$id, lang=>'de', A=>$A, debug=>$debug&>
+% #	<&include/product_options_textinput.html, type=>6, id=>$id, lang=>'de', A=>$A, msg=>$msg, debug=>$debug&>
+% #	<&include/product_options_textinput.html, type=>7, id=>$id, lang=>'de', A=>$A, msg=>$msg, debug=>$debug&>
+% #	<&include/product_options_text.html, type=>4, id=>$id, lang=>'de', A=>$A&>
+	</div>
+% ################################### ################################
+
+	<form action="basket2.html" >
+	<input type=hidden name=id value="<%$id%>">
+	<b><% $C->prop('count') %></b>
+	<select name="count" id="sel_count" onchangx="updateTotal(this.value)">
+	<option>1</option>
+	<option>2</option>
+	<option>3</option>
+	<option>4</option>
+	<option>5</option>
+	<option>6</option>
+	<option>7</option>
+	<option>8</option>
+	<option>9</option>
+	<option>10</option>
+	<option>11</option>
+	<option>12</option>
+	<option>13</option>
+	<option>14</option>
+	<option>15</option>
+	<option>16</option>
+	<option>17</option>
+	<option>18</option>
+	<option>19</option>
+	<option>20</option>
+	</select>
+	</form>
+% if (($d->{count} < 1 && $d->{condition} eq 'SO') or $d->{condition} eq 'IN' or $d->{_rc}) {
+	<a href="contact.html"><span class="btn btn-basket"><% $C->prop('contact_us') %></span></a>
+% }
+% else {
+ <button type="button"  data-toggle="modal" data-target="#basketLightbox"
+	onclick="c=document.getElementById('sel_count').value; $('#ajx_noti').load('ajx_overlap_basket.html?id=<%$id%>&count=' + c + '&rand=<%rand()%>')"
+	class="btn btn-basket"><i class="fa fa-shopping-cart"></i><% $C->prop('btn_into_basket') %></button>
+
+% }
+<br><br>
+
+ </div> </div>
+% }
+% # ==================================================================================================
+% if ($debug) {
+	<br>
+	<%$C->html_debug(qq~./_generic.pl $ENV{db_name} "\\~ . qq~\$A->get_basket_options_by_prod($id, $SID, 1)"~)%>
+	<%$C->html_debug(qq~./_generic.pl $ENV{db_name} "\\~ . qq~\$A->get_mandatory_feat($id, 1)" 2>&1|grep debug~)%>
+% }
+<br>
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+        <li class="active"><a href="#red" data-toggle="tab"><% $C->prop('description') %></a></li>
+    </ul>
+
+    <div id="my-tab-content" class="tab-content">
+        <div class="tab-pane active" id="red">
+		<%$d->{desc_long}%>
+        </div>
+% #  tab2       <div class="tab-pane" id="orange">
+% # TEST
+% #         </div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div> <!-- End contentBlock -->
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+</body>
+</html>

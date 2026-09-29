@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $msg   = $args{msg};
+	my $email = $args{email};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Allgemeine Gesch&auml;ftsbedingungen</span>
+</div>
+
+<div class="portlet-body">
+
+% # XXX	<% $C->prop('content', 'de') %>
+	<% $C->txt('content', 'de', "custom/$C->{CONFIG}->{theme}/html/info_agb") %>
+
+<%doc>
+	<form method="post">
+		<& inc_text_edit.html, label=>'Ihre E-Mail-Adresse', value_enc=>$email, info=>'', delete=>0, id=>1 &>
+		<input type=submit class="btn btn-success" name="bSend" value="Senden">
+	</form>
+</%doc>
+
+%	if ($msg) {
+		<div class="alert alert-info mt-3">
+			<% $msg %>
+		</div>
+%	}
+
+</div>

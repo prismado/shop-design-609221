@@ -1,0 +1,122 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $cgi = $C->{CGI};
+
+	   $args{dt_ver} = $cgi->param('dt_ver');
+	   $args{debug} = $cgi->param('debug') + 0;
+
+	my $str_enc = '';
+	my $css_id = "example$$";
+</%init>
+<style type="text/css" media="screen">
+% #	@import "/DataTables-1.9.1/media/css/demo_table_jui.css";
+	@import "/DataTables-1.9.1/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+	/*
+	 * Override styles needed due to the mix of three different CSS sources! For proper Examples
+	 * please see the themes Example in the 'Examples' section of this site
+	 */
+	.dataTables_info { padding-top: 0; }
+	.dataTables_paginate { padding-top: 0; }
+	.css_right { float: right; }
+	#<% $css_id %>_wrapper .fg-toolbar { font-size: 0.8em }
+	#theme_links span { float: left; padding: 2px 10px; }
+
+	table.dataTable tr.odd       { background-color: #f0f0f0; line-height: 1.6; color: black }
+	table.dataTable tr.even      { background-color: #fefefe; line-height: 1.6; color: #222222 }
+	table.dataTable td.sorting_1 { background-color: #eff0fa; font-weight: 500 }
+	table.dataTable tr:hover              { background-color: #e8e9f7 !important; }
+	table.dataTable tr:hover td.sorting_1 { background-color: #e8e9f7 !important; }
+
+/* Benutzerdefiniertes CSS für die Navigationsschaltflächen */
+.dataTables_wrapper .dataTables_paginate {
+    float: right;
+    margin-top: 10px;
+}
+
+.dataTables_wrapper .dataTables_paginate a {
+    padding: 6px 10px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    color: #333;
+    cursor: pointer;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate a:hover {
+    background-color: #ddd;
+}
+
+.DataTables_sort_wrapper { color: #495057 !important; cursor: pointer }
+
+.dataTables_processing {
+	color: black !important;
+	background-color: #ffffff;
+	border: 1px solid #0a0a0a;
+	padding: 10px;
+	font-size:24px !important;
+	text-align: center;
+	font-weight: bold;
+}
+
+.custom-select {
+	color:green;
+	padding-left:20px !important;
+	width:95px;
+}
+
+#<% $css_id %> .badge { font-size:0.9rem !important; float:right !important }
+
+</style>
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+		
+<script type="text/javascript" src="/DataTables/media/js/jquery.dataTables.min.js"></script>
+
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#<% $css_id %>').dataTable( {
+				"bJQueryUI": true,
+				"sPaginationType": "full_numbers",
+				"aaSorting": [[0, 'desc']],
+				"iDisplayLength": 25,
+				"aLengthMenu": [[10, 15, 25, 50, 100, 999999], [10, 15, 25, 50, 100, "All"]],
+				"oLanguage": {  "sSearch": "<!-- Suche -->",
+						"sLengthMenu": "_MENU_",
+						"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen"
+				},
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "_ajax/server_processing_users_1_9_1.html"
+			} );
+
+			var searchInput = $('.dataTables_filter input');
+			searchInput.attr('placeholder', 'Suchbegriff / Kunden-Nr.');
+			searchInput.addClass('form-control');
+
+			var lengthMenuDropdown = $('.dataTables_length select');
+			    lengthMenuDropdown.addClass('custom-select');
+
+% #			var oTable = $('#<% $css_id %>').dataTable();
+% #			oTable.fnSort( [ [0,'desc'] ] );
+		} );
+	</script>
+
+% my $header_css = 'border:0px; border-bottom:1px #cccccc solid !important';
+<table class='mytable table-hover' id='<% $css_id %>' style="width:100%">
+<thead>
+<tr>
+	<th style="<% $header_css %>; min-width:65px">ID</th>
+	<th style="<% $header_css %>; XXXmin-width:175px">Vorname</th>
+	<th style="<% $header_css %>; min-width:165px">Nachname</th>
+	<th style="<% $header_css %>; min-width:110px">Ort</th>
+	<th style="<% $header_css %>; min-width:45px">Land</th>
+	<th style="<% $header_css %>; min-width:80px">Telefon</th>
+	<th style="<% $header_css %>; min-width:120px">E-Mail</th>
+	<th style="<% $header_css %>; min-width:80px">L-&Auml;nd.</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>

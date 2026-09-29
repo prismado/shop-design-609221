@@ -1,0 +1,32 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	# -- my $sth = $C->{dbh}->prepare("SELECT id, label FROM categories WHERE parent_id=0 AND lang='de' AND visible=1 ORDER BY weight");
+
+	my $sth = $C->{dbh}->prepare("SELECT id, label FROM categories WHERE parent_id>0 AND lang='de' AND visible=1 ORDER BY weight");
+	   $sth->execute();
+
+	my @nav_up = ();
+	my @nav_lo = ();
+	my $cat_count = 0;
+
+	while(my $r = $sth->fetch()) {
+		my $count = $A->get_categ_count_2($r->[0]);
+		next unless $count;
+		last if ++$cat_count > 5;
+		push(@nav_up, qq~<a href='category2.html?id=$r->[0]'>$r->[1] ($count)</a>~);
+	}
+
+	while(my $r = $sth->fetch()) {
+		my $count = $A->get_categ_count_2($r->[0]);
+		next unless $count;
+		push(@nav_lo, qq~<a href='category2.html?id=$r->[0]'>$r->[1] ($count)</a>~);
+	}
+</%init>
+<%join ' &middot; ', @nav_up%><br>
+<%join '&nbsp;&nbsp;&middot;&nbsp;&nbsp;', @nav_lo%>
+<%doc>
+	__METACLONING__
+</%doc>

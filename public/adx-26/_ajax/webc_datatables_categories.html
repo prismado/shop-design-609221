@@ -1,0 +1,21 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $lang    = $cgi->param('lang')    || 'de';
+	my $visible = $cgi->param('visible');
+
+	my %args = ();
+	   $args{dt_ver} = $cgi->param('dt_ver');
+	   $args{debug}  = $cgi->param('debug') + 0;
+</%init>
+% if ($args{dt_ver} eq '1.9.1') {
+	<& inc_datatables_1_9_1_categories.html, lang=>$lang, visible=>$visible, C=>$C &>
+% }
+% else {
+	<p>X CONSTR X</p>
+	<p>DT Ver <% $args{dt_ver} %></p>
+% }

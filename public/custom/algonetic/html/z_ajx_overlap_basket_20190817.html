@@ -1,0 +1,96 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi   = $C->{CGI};
+	my $id    = $cgi->param('id') + 0;
+	my $count = $cgi->param('count') || 1;
+	my $delid = $cgi->param('delid');
+	my $SID   = $C->getSID(); # -- important
+
+	my ($rc, $msg) = $A->add2basket_details( id=>$id, count=>$count ) if $id;
+
+	# $A->adjust_basket_count($SID); # -- Fix over-ordered products in basket
+
+	my $basket_h = $A->get_basket_items();
+	my $rows     = $basket_h->rows();
+	my $referer  = $ENV{HTTP_REFERER} || '/';
+	my $vat_factor = 1 + ($C->{CONFIG}->{vat} / 100);
+
+	my $total = $A->get_basket_total();
+</%init>
+% if ($rc) {
+	<script language="JavaScript">
+		document.location="product.html?id=<%$id%>&msg=<%$msg%>";
+	</script>
+% }
+<div id="AABB<%$id%>" class="well overlayBasket">
+<table style="background-color:#f0f0f0" class="table table-hover">
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count, $basket_id) = @{$r};
+%	my $d = $A->get_product_v2(id=>$prod_id, public=>1);
+%	# XXX my $basket_options = $A->get_basket_options_by_prod_id($prod_id, $SID);
+%	my $details = $A->get_basket_details($basket_id);
+%	my $price_incl_vat_rounded = $C->decimal_mark( $C->round_amount($d->{price_incl_vat} + $A->{basket_options_sum_vat}) );
+	<tr>
+	<td nowrap><b><%$count%> x</b></td>
+	<td><%$count == 0 ? '<s>' : ''%><%$d->{title}%><%$count == 0 ? '</s>' : ''%>
+
+	<% @{$details} ? '<br>' : '' %>
+
+%	foreach (@{$details}) {
+%		my ($feat_id, $ref, $price) = split /\t/;
+%		$price *= (1 + $d->{vat} / 100);
+%		my ($label, $desc) = @{$C->query(
+%			"select label, description FROM voptions WHERE id=$feat_id and ref='$ref' and lang='de'")};
+%		# XX NEW (17. August 2019)
+%		next if !$label && !$desc;
+		<div style="padding-top:10px; paddin-bottox:0px; margin-bottom:0px"><% $label %>:<br>
+		<% $desc %>
+%		if ($price > 0.0) {
+			, CHF&nbsp;<% sprintf('%.2f', $price) %>
+%		}
+		</div>
+% # XXX		<br>
+%	}
+	</td>
+	<td nowrap style='text-align:right'><b>CHF <% $price_incl_vat_rounded %></b></td>
+	<td style='text-align:right'>
+			<input type=button class="btn btn-warning" value="X"
+				data-toggle="tooltip" data-placement="bottom" data-original-title="<% $C->prop('del_frombasket') %>"
+				onclick="document.location='_del_from_basket.html?id=<%$basket_id%>'" />
+	</td>
+	</tr>
+% }
+<tr style="border-style:solid; border-width:2px; border-top-width:2px; border-color:#dddddd; background-color:#fcfcfc">
+	<td colspan="2" style="padding-left:15px; padding-top:12px"><b><% $C->prop('sum_total') %>  <% $C->prop('mwst') %></b></td>
+	<td colspan="2" nowrap style="text-align:right; padding-right:15px; padding-top:12px"><b>CHF <%$C->decimal_mark($C->round_amount($total))%></b></td>
+</tr>
+<tr><td colspan="4">
+% if ($rows) {
+<input onclick="document.location='basket.html'"    type=button class="btn btn-basket"   value="<% $C->prop('to_basket') %>">
+<%doc>
+<input onclick="document.location='checkout3.html'" type=button class="btn btn-checkout" value="<% $C->prop('to_payment') %>">
+</%doc>
+% }
+</td>
+</tr>
+</table>
+<%doc>
+% if ($referer =~ /\/$/ or 1==1) {
+<input  data-dismiss="modal" aria-hidden="true" type=button class="btn btn-grey" value="<% $C->prop('close') %>">
+% }
+% else {
+<input onclick="document.location='product.html?id=<%$id%>'" type=button class="btn btn-grey" value="<%$C->prop('close')%>">
+% }
+</%doc>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+	$('[data-toggle="tooltip"]').tooltip();
+});
+</script>

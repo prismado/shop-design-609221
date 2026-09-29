@@ -1,0 +1,67 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A  = $args{A};
+        my $C  = $args{C};
+
+	my $basket_tot = $C->decimal_mark($A->get_basket_total());
+	my $bask_count = $C->query("select count(*) from basket where sid=$args{SID}")->[0];
+
+	my $UID = $C->getUID();
+	my ($firstname, $lastname) = @{$C->query("select firstname, lastname from users_addr where user_id=$UID")};
+
+	my $my_account_label = $args{is_logged_in} ? "$firstname $lastname" : $C->prop('account');
+</%init>
+<div class="container">
+
+	<div class="logo">
+		<a href="/" title="<%$C->{CONFIG}->{site_title}%>">
+			<img class="hide-mobile" src="/produkte/docs/logo.png"
+				onerror="this.src=images/logo-full-width-mobile.png; this.onerror=null;"
+					alt="<%$C->{CONFIG}->{site_title}%>">
+		</a>
+		<div class="ps-slogan"><% $C->prop('slogan') %> &mdash; <a href="_foo.html">Foo Example</a></div>
+	</div>
+
+<!-- *********************************************** Header Cart / My Account ***************************************************************-->
+    <div class="header-cart">
+	<div class="text-right">
+		<!-- account -->
+		<div class="account dropdown">
+			<a class="dropdown-toggle" data-toggle="dropdown">
+				<span class="icon fa fa-user"></span><div class="dropdown-label"><% $my_account_label %></div>
+			</a>
+
+			<ul class="dropdown-menu">
+			<li><a  href="account.html"><span class="icon fa fa-user"></span><% $C->prop('account') %></a></li>
+%			unless ($args{is_logged_in}) {
+			<li><a href="#login" data-toggle="modal"><span class="icon fa fa-lock"></span><% $C->prop('login') %></a></li>
+			<li><a href="registration.html"><span class="icon fa fa-user-plus"></span><% $C->prop('registration') %></a></li>
+			<li><a href="send_pwd.html"><span class="icon fa fa-envelope-square"></span><% $C->prop('forgot_pwd') %></a></li>
+%			}
+% else {
+			<li><a href="#" onclick='JavaScript:document.logoutForm.submit()'><span
+				class="icon fa fa-arrow-circle-right"></span><% $C->prop('logout') %></a></li>
+% }
+			</ul>
+		</div>
+		<!-- /account -->
+
+		<!-- cart -->
+		<div class="main-parent-cart">
+			<div class="cart">
+				<div class="dropdown">
+				    <div id="autoUpdate">
+%					if ($bask_count) {
+						<&mini_basket.html, SID=>$args{SID}, A=>$A, C=>$C, basket_count=>$bask_count&>
+%					}
+				    </div>
+				</div>
+			</div>
+		</div>
+		<!-- /cart -->
+
+	</div>
+    </div>
+
+</div>

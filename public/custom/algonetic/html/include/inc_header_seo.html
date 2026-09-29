@@ -1,0 +1,28 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session; # -- 30Apr2024
+
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C} || $s{C};
+	my $canonical = $args{canonical};
+
+	my $mess_id = $C->get_safe_property( 'google_measurement_id', 'sys' );
+	   $mess_id = '' if $mess_id =~ /^\* /;
+</%init>
+<meta name="robots" content="index,follow,noodp,noodp" />
+	<meta name="author" content="ALGONETIC Zurich / Swiss Solution Group" />
+% #	<link rel="alternate" hreflang="de-CH" href="https://<% $C->{CONFIG}->{HTTP_HOST} %>" />
+% if ($canonical) {
+	<link rel="canonical" href="https://<% $C->{CONFIG}->{HTTP_HOST} %>/<% $canonical %>" />
+% }
+% if ($mess_id) {
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=<% $mess_id %>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '<% $mess_id %>');
+</script>
+% }

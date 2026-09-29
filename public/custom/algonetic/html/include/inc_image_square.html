@@ -1,0 +1,63 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $img_url      = $args{img_url};
+	my $text         = $args{text};
+	my $text2        = $args{text2};
+	my $overlap_text = $args{overlap_text};
+	my $link         = $args{link};
+	my $class        = $args{class}; # -- e.g. "opacity-3"
+	my $min_w        = $args{min_w} || '180px';
+	my $max_w        = $args{max_w} || '9vw';
+	my $sale_tag_cls = $args{sale_tag_cls} || 'fs--14 pl-2 btn p-1 mr-0 mt-n1 text-white badge-pink font-weight-bold';
+	my $cond_tag_cls = $args{cond_tag_cls} || 'fs--14 pl-2 btn p-1 mr-0 mt-n1 ml-0 badge-warning font-weight-bold';
+</%init>
+% if ($text or $text2) {
+	<div class="fixed-top mt-2 mr-1 float-right z-xndex-3 text-white d-right right-0 position-fixed">
+%		if ($text2) {
+			<span style="letter-spacing:1px" class="<% $cond_tag_cls %>"><% $text2 %></span>
+%		}
+%		if ($text) {
+			<span style="letter-spacing:1px" class="<% $sale_tag_cls %>"><% $text %></span>
+%		}
+	</div>
+% }
+
+%	if ($overlap_text) {
+		<div class="float-right mr-1 z-index-3 text-white d-right right-0 position-fixed">
+			<a class="collapsed" data-toggle="collapse" href="#collapseExample<% $args{basket_id} %>"
+				role="button" aria-expanded="false" aria-controls="collapseExample<% $args{basket_id} %>">
+				<span class="badge badge-success"><% $overlap_text %></span>
+			</a>
+			<div class="collapse opacity-none" id="collapseExample<% $args{basket_id} %>">
+				<div class="card card-body fs--14" style="color:#121212">
+					&bull; Zur Kasse<br>
+					<nobr>&bull; <a href="_del_from_basket.html?id=<% $args{basket_id} %>">Entfernen</a></nobr>
+				</div>
+			</div>
+		</div>
+%	}
+
+% # -- Single product image
+<div class="m-0 ml--n20 mr--n20 text-center" style="max-width:11 vw; bordex: solid 1px red">
+	<a href="<% $link %>"><img src="<% $img_url %>" class="img-fluid <% $class %>" alt="Produkt"
+		style="min-width:<% $min_w %>; max-width: <% $max_w %>;"></a>
+</div>
+
+<%doc>
+<div class="p-5 px-2 m-0 text-center rounded position-relative ZZoverlay-dark-hover <% $class %> ZZoverlay-opacity-1 rounded overflow-hidden bg-cover lazy"
+	data-loaded="true" onclick="document.location='<% $link %>'"
+	stylx="background-image: url('<% $img_url %>'); max-width: 50vw; cursor: pointer;">
+
+</div>
+</%doc>
+
+<%doc>
+% # -- Before 01Apr2024
+<div class="p-5 px-2 m-0 text-center rounded position-relative z-xndex-3 overlay-dark-hover <% $class %> overlay-opacity-1 rounded overflow-hidden bg-cover lazy"
+	data-loaded="true" onclick="document.location='<% $link %>'"
+	style="background-image: url('<% $img_url %>'); max-width: 50vw; cursor: pointer;">
+
+	<img class="w-100" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+</div>
+</%doc>

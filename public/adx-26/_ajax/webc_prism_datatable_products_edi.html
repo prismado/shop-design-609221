@@ -1,0 +1,78 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	# -- Created: 07Feb2024 -- #
+
+	my $cgi = $C->{CGI};
+	my $table    = $cgi->param('table');
+	my $macro    = $cgi->param('macro');
+	my $q        = $cgi->param('q');
+	my $fil      = $cgi->param('fil'); # -- Filter 16Feb2024
+	my $omit     = $cgi->param('omit'); # -- 16Feb2024
+	my $theme    = $cgi->param('theme');
+	my $debug    = $cgi->param('debug');
+</%init>
+<link rel="stylesheet" type="text/css" href="assets/css/datatables.min.css">
+<link rel="stylesheet" type="text/css" href="/adx/assets/css/prism_datatables_1_10_color_lime_2.css">
+
+% # -- DataTables 1.10.18
+<script type="text/javascript" src="assets/js/datatables.min.js" language="javascript"></script>
+
+	<table id="example" style="width:100%" data-searching="true">
+	<thead>
+	    <tr>
+		<th>Prod-ID</th>
+		<th>Titel / Modell</th>
+		<th>GTIN</th>
+		<th>Neu/Refurb</th>
+		<th>Grade</th>
+		<th>Stk</th>
+		<th>Cond.</th>
+		<th>Restock</th>
+		<th>Preis</th>
+	    </tr>
+	</thead>
+	</table>
+
+<script language="JavaScript">
+$(document).ready(function() {
+    $('#example').DataTable( {
+	"processing": true,
+	"serverSide": true,
+	"paging": true,
+	"displayLength": 25,
+	"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
+	"oLanguage": {  "sSearch": "<!-- Suche (Vor-, Nachname, Telefonnummer): -->",
+			"sLengthMenu": "_MENU_",
+			"sInfo": "Ansicht _START_ bis _END_ von insgesamt _TOTAL_ Eintr&auml;gen",
+			"oPaginate": {
+				"sPrevious": "R&uuml;ckw&auml;rts",
+				"sNext":     "Vorw&auml;rts"
+			},
+			"sSearchPlaceholder": "Suchbegriff"
+	},
+	"ajax": "_ajax/server_processing_products_edi.html?table=<% $table %>&q=<% $q %>&fil=<% $fil %>&macro=<% $macro %>&omit=<% $omit %><% $debug ? "&debug=$debug" : '' %>",
+	"order": []
+    } );
+<%doc>
+	var oTable = $('#example').dataTable();
+	    oTable.fnSort( [ [0,'desc'] ] );
+</%doc>
+
+	$('.dataTables_filter input').css({'width': '255px', 'border-radius': '8px'});
+	$('.dataTables_filter input').removeClass('form-control-sm');
+	$('.dataTables_filter input').attr('id', 'customSearchInput40130');
+
+% #	$('.custom-select').addClass('font-weight-bold');
+} );
+</script>
+
+% if ($debug) {
+%	foreach ($cgi->all_parameters) {
+%		next if $_ eq 'debug';
+%		next unless length($cgi->param($_));
+		[ cgi ] &middot; <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%	}
+% }

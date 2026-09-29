@@ -1,0 +1,114 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $sysjobs = $args{sysjobs};
+
+	my $webenv = $C->get_webenv();
+
+	my $server_addr = $ENV{HTTP_X_SERVER_ADDR} || $ENV{SERVER_ADDR};
+	my $server_ip   = $C->getIP( $webenv->{hostname} ); 
+	my $is_prime_host = $C->get_safe_property('host_env_primary', 'sys');
+</%init>
+<div class="portlet-header border-bottom">
+	<div class="float-right">
+		<a href="special_keys.html"><i class="fi fi-cog"></i> Konfiguration</a> &mdash;
+		HOST_ENV_PRIMARY: <a href="/adm_safe_properties.html?lang=sys&filter=host_env"><% $is_prime_host %></a> &mdash;
+		<a href="/adm_jobs.html">System Jobs</a>
+	</div>
+	<span>About &middot; <% $C->{CONFIG}->{site_title} %></span>
+</div>
+
+<div class="portlet-body">
+
+%    if ($perm->{is_devel}) {
+	<div class="float-right ml-2 fs--14">
+		<h4>System-Umgebung</h4>
+		<table class="mt-3">
+%		foreach (sort keys %$webenv) {
+%			next if /^\_\_.+/;
+%			next if $_ eq 'db_orig' or $_ eq 'uname_all' or $_ eq 'VERSION' or /^db_software$/;
+			<tr>
+			<td class="pr-2"><b><% ucfirst $_ %></b></td><td><code><% $webenv->{$_} %></code>
+%				if (/^ip_info_hostname$/) {
+					<a href="/adm_db_edit.html?table=work&wcl=k+LIKE+%27env_V%_os%27">E</a>
+%				}
+			</td>
+			</tr>
+%		}
+		</table>
+		<br />
+		&bull; <a href="/_debug.html">Debug Level <% $debug %></a><br />
+		&bull; Server Addr: <% $server_addr %><br>
+		&bull; IP: <% $server_ip %><br><br>
+
+		<code>$C-&gt;get_super_user_uids()</code><br>
+%		foreach (keys %{$args{super_users}}) {
+%			my $uinf = $C->get_user_info($_);
+			UID <% $_ %> &middot; <% $uinf->{company} %> &middot;
+			<% $uinf->{firstname} %> <% $uinf->{lastname} %><br>
+%		}
+%		if ($debug) {
+			<br />
+			<a href="/adm_db_edit.html?table=work&wcl=k%3D%27env_V0.8015_os%27">Edit Workval</a>
+%		}
+		<br />
+%		foreach (sort keys %ENV) {
+%			next if /pass/i;
+%			next unless length($ENV{$_});
+			&bull; <% $_ %> = <% substr($ENV{$_}, 0, 31) %><br>
+%		}
+	</div>
+%    }
+
+	<table class="table table-sm table-striped table-hover col-7 border">
+	<tr>
+	<th style="width:40vw">Command</th>
+	<th>Min</th>
+	<th>Hour</th>
+	<th class="float-end">Params</th>
+	</tr>
+
+%	foreach my $d (@{ $args{sysjobs}->{cache_lines_c} }) {
+%	    next if $d->{CMD} =~ /jobs\/detect\_system_config\.pl/;
+	    <tr stylx="">
+		<td><code><% $C->shorten_title($d->{CMD}, 105) %></code></td>
+		<td style="width:5%" nowrap><% $d->{MIN} %></td>
+		<td style="width:4%" nowrap><% $d->{H} %></td>
+		<td>
+			<span class="float-end"><% $d->{WD} %></span>
+%			foreach	(sort keys %{$d}) {
+%				next if	$_ eq 'CMD' or $_ eq 'H' or $_ eq 'MIN'	or $_ eq 'WD';
+				&bull; "<% $_ %>"=<% $d->{$_} %>&nbsp;&nbsp;
+%			}
+		</td>	
+	    </tr>
+%	}
+
+	</table>
+
+	<h4 class="fs--20 mt-4">Entwickler</h4>
+%	foreach (keys %{$args{super_users}}) {
+%		my $uinf = $C->get_user_info($_);
+		<% $uinf->{company} %> &middot;
+		<% $uinf->{firstname} %> <% $uinf->{lastname} %><br>
+		<% $uinf->{email} %><br>
+%	}
+	<br />
+
+% foreach (@{ $args{sysjobs}->{cache_lines_2} }) {
+%	next unless length($_) > 2;
+%	next if	/^\#/;
+	[ DN308071 ] &middot; <tt><% $_ %></tt><br>
+% }
+
+	<p class="mt-5">
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+</div>

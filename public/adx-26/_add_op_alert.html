@@ -1,0 +1,28 @@
+<%init>
+	use ScreenPoint::Core;
+	# use ScreenPoint::Auctionline;
+
+	# -- Created: 13Oct2024
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	# my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id    = $cgi->param('id') + 0;
+
+	my $perm  = $C->get_user_perm();
+	my $debug = $C->getSessData('debug') || 0;
+
+	my @vars = ();
+	foreach ($cgi->all_parameters) {
+		push(@vars, "$_ = " . $cgi->param($_));
+	}
+
+	$C->{dbh}->do(qq~insert into products_feat (product_id, featname, featkey, weight, `description`) values ($id, '_exclude', 'OP_ALERT', -1, '0')~);
+	$C->{dbh}->do(qq~insert into products_feat (product_id, featname, featkey, weight) values ($id, '_exclude', 'OP_RECOMM', -1)~);
+
+	$C->create_toast_note(body=>"A Test " . join "<br>\n", @vars);
+
+	$m->redirect("edit-product.html?id=$id");
+</%init>

@@ -1,0 +1,62 @@
+<style>
+
+/* V309171-3 */
+
+table, tr {
+	font-family:Roboto,Arial, Helvetica, sans-serif;
+	font-size: 15px;
+	color: #5E5E5E;
+	line-height: 18px;
+	max-width:920px;
+	border:1px solid #fff;
+}
+
+p {
+	font-family: Roboto, Arial, Helvetica, sans-serif;
+	font-size: 15px; 
+	color: #5E5E5E;
+}
+
+.greyback {background-color:#fff; color:#333!important;}
+.headback {background-color:#cccccc !important; color:black;}
+
+h2 {background-color:#eee !important; margin-bottom: 0px !important;padding-left: 8px;}
+h3 {margin-bottom: 0px !important; margin-top: 4px !important;padding-left: 4px; font-size: 15px !important; font-weight: normal !important;}
+
+.price_block_header {
+	background-color:#353D47;
+	color:#fff;
+	font-weight:bold;
+	border: 0px solid #199de8;
+}
+
+.price_block_header td {
+	color: #fff;
+	border-bottom: 1px solid #777;
+}
+
+.price_block_row td {
+	border-bottom: 1px solid #777;
+}
+
+.row_small td {
+	/* border:        1px solid #e8e8e8 !important; */
+	border-top:    1px solid #e8e8e8 !important;
+	line-height:   24px;
+}
+
+.row_small_d {
+	padding:8px 0px 8px 0px;
+}
+.row_small_d td {
+	border-bottom: 1px solid #777;
+}
+
+a { color:#353D47; }
+
+@media (max-width: 680px) {
+	.hidden-xs {display: none !important;}
+	table {font-size: 14px !important; line-height: 16px !important;}
+}
+
+</style>

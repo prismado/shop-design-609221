@@ -1,0 +1,36 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $title = $args{title};
+
+	# XXX my $css_id = $C->{CGI}->param('css_id') || "exampleModalFull$$";
+
+	my $css_id = 'm401172';
+</%init>
+<div id="ajx_401172"></div>
+
+<p>
+	<a href="#" onclick="JavaScript:loadModal401172()">Login</a>
+</p>
+
+
+<script>
+function loadModal401172() {
+  $.ajax({
+    url: '_ajax/modal_prism_login.html?css_id=<% $css_id %>&title=<% $C->uri_esc($title) %>',
+    type: 'GET',
+    dataType: 'html',
+    success: function(response) {
+     $('#ajx_401172').html(response);
+	$('#<% $css_id %>').modal('show');
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+}
+</script>
+<%doc>
+	Created: 17Jan2024
+</%doc>

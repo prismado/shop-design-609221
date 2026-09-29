@@ -1,0 +1,33 @@
+
+% # XXX <p><a href="assets/css/vendor_bundle.css">vendor_bundle.css</a> / core.css</p>
+
+<p>
+<span style="color: #6c757d;">Ein Text-Beispiel mit 6c757d</span><br>
+<span style="color: #adb5bd;">Ein Text-Beispiel mit adb5bd</span><br>
+<span style="color: #377dff;">Ein Text-Beispiel mit 377dff</span><br>
+<span style="color: #121212;">Ein Text-Beispiel mit 121212</span><br>
+</p>
+
+<div class="float-right">
+	<p>Mit CSS-Klasse <code>font-weight-light</code>:</p>
+%	for (my $i=1; $i<7 ;$i++) {
+		<h<% $i %> class="font-weight-light">Ein Text-Beispiel mit H<% $i %></h<% $i %>>
+%	}
+</div>
+
+% for (my $i=1; $i<7 ;$i++) {
+	<h<% $i %> class="">Ein Text-Beispiel mit H<% $i %></h<% $i %>>
+% }
+
+<p>
+%	for (my $i=10; $i<20; $i++) {
+		<span class="fs--<% $i %>">Ein Text-Beispiel mit CSS-Klasse fs--<% $i %></span><br>
+%	}
+%	for (my $i=20; $i<36; $i += 5) {
+		<span class="fs--<% $i %>">Ein Text-Beispiel mit CSS-Klasse fs--<% $i %></span><br>
+%	}
+</p>
+
+<br />
+<hr />
+<p><a href="assets/css/vendor_bundle.css">vendor_bundle.css</a> / core.css</p>

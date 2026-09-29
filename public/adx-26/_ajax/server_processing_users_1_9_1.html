@@ -1,0 +1,97 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols = qw(id firstname lastname company city country phone email tstamp is_admin);
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my $is_num = $sSearch =~ /^\d+$/ ? 1 : 0;
+
+	my @where_clause = ();
+	if ($is_num) {
+		push(@where_clause, "id=$sSearch") if length($sSearch) > 1;
+	}
+	else {
+		push(@where_clause, "lastname LIKE '$sSearch%' OR firstname LIKE '$sSearch%' OR company LIKE '$sSearch%'")
+			if $sSearch && length($sSearch) > 1;
+	}
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	vusers
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	if ($C->{CONFIG}->{debug_level} > 1) {
+		print STDERR "$stmt\n";
+	}
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM vusers $wcl")->[0];
+
+	my %pay_meth_hr = ( 1=>'CC', 2=>'COD', 3=>'Invoice', 4=>'PayPal', 5=>'Postcard', 6=>'Prepay', 7=>'pcd', 8=>'paymill', 9=>'2co',
+				10=>'PCI3', 11=>'TWI', 12=>'2ci', 14=>'SIX', 15=>'SIXTwi', 16=>'Payrexx' );
+	my %status_hr = ( 1=>'new', 2=>'pending_cc', 3=>'cancelled', 4=>'okay' );
+	my %ship_meth_hr = ( box=>'Box', exp=>'Express', pic=>'Pickup', pi2=>'Pickup2', std=>'Std', postpac_prio=>'PacPrio', dhl=>'DHL' );
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $first, $lastname, $company, $city, $country, $phone, $email, $ts, $is_adm) = @{$r};
+		$ts = $C->trans_date_short($ts);
+		my $name = $lastname;
+		   $name = "$name &middot; $company" if $company;
+		   $name = "$name &#128737;&#65039;" if $is_adm;
+		my @row = ();
+		push(@row, qq~<a style='color:#699425' href='/adm_user.html?id=$id'>$id</a>~);
+		push(@row, $C->web_enc($first));
+		push(@row, $C->web_enc($name));
+		push(@row, $C->web_enc($city));
+		push(@row, $country);
+		push(@row, "<nobr>$phone</nobr>");
+		push(@row, "<nobr>$email</nobr>");
+		push(@row, $ts);
+		push(@json, \@row);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	 __METACLONING__
+</%doc>

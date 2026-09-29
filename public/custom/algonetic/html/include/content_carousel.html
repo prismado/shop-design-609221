@@ -1,0 +1,57 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A = $args{A};
+	my $C = $args{C};
+	my $d = $args{d};
+
+	# -- Get all ID's from the directory "{DOCUMENT_ROOT}/img_slides" into an array reference:
+	my $slide_ids_ref = $A->slide_ids();
+
+	# -- Get and remove the first ID:
+	my $first_id = shift @{$slide_ids_ref};
+	my ($first_txt, $first_prod_id, $first_url) = @{$C->query("select xtext, prod_id, url FROM teaser WHERE id=$first_id")};
+	my $first_link = $first_url || ("article-$first_prod_id-" . $C->url_friendly('product') . '.html');
+</%init>
+<!-- Carousel========== -->
+
+    <div id="carouselBlock">
+        <div id="pCarousel" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+
+	<div class="item active">
+<a href="<%$first_link%>">
+%		my $title = $C->query("select title from products_desc where product_id=$first_prod_id and lang='de'")->[0];
+		<img style="width:100%"
+			src="img_slides/s<%$first_id%>.jpg" alt="<%$first_txt%>">
+
+%	if ($first_txt or $args{debug}) {
+%		$first_txt = "$first_txt (Debug: first)" if $args{debug};
+		<div class="carousel-caption"><span><%$first_txt%></span></div>
+%	}
+</a>
+	</div>
+
+% foreach (@{$slide_ids_ref}) {
+%	my ($txt, $prod_id, $url) = @{$C->query("select xtext, prod_id, url FROM teaser WHERE id=$_")};
+%	my $link = $url || ("article-$prod_id-" . $C->url_friendly($title) . '.html');
+
+                <div class="item">
+<a href="<%$first_link%>">
+%			my $title = $C->query("select title from products_desc where product_id=$_ and lang='de'")->[0];
+			<img style="width:100%" src="img_slides/s<%$_%>.jpg" alt="<%$first_txt%>">
+
+%	if ($txt or $args{debug}) {
+%		$txt = "$txt (Debug, Slide ID $_)" if $args{debug};
+                 <div class="carousel-caption"><span><%$txt%></span></div>
+%	}
+                </div>
+                </a>
+% }
+
+
+            </div><a class="left carousel-control" href="#pCarousel" data-slide="prev">&lsaquo;</a> <a class="right carousel-control" href="#pCarousel" data-slide="next">&rsaquo;</a>
+        </div>
+    </div>
+<!-- End Carousel========== -->
+

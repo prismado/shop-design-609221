@@ -1,0 +1,73 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $A         = $args{A};
+	my $offset    = $args{offset} + 0;
+	my $debug     = $args{debug};
+
+	my $year_now = $C->now(8);
+
+	my $startDate = qq~moment().add($offset, 'days')~;
+</%init>
+% if ($args{style}) {
+<style>
+	.calendar-table th:nth-child(97), /* f. So */
+	.calendar-table th:nth-child(8), /* f. Sa */
+	.calendar-table td:nth-child(97),
+	.calendar-table td:nth-child(8) {
+		display:none;
+	}
+	.daterangepicker select.hourselect   { text-align: center; }
+	.daterangepicker select.minuteselect { text-align: center; }
+
+	.daterangepicker select.monthselect {
+		appearance: menulist;
+		padding-left:5px;
+		margin-right:3%;
+		height:26px;
+		width: 42%;
+	}
+
+	.daterangepicker select.yearselect {
+		appearance: menulist;
+		padding-left:5px;
+		height:26px;
+		width: 41%;
+	}
+</style>
+% }
+
+<div class="input-group-over position-realtive z-index-1 bg-white" style="min-width:225px; max-width:230px">
+	<input type="text" name="<% $args{name} %>" autocomplete="off" class="form-control font-weight-bold bg-transparent" />
+	<span class="fi fi-calendar fs--20 ml-4 mr-4 z-index-n1 text-muted"></span>
+</div>
+
+<script>
+	$(document).ready(function(){
+		$('input[name="<% $args{name} %>"]').daterangepicker({
+			singleDatePicker: true,
+			showWeekNumbers: true,
+			timePicker: true,
+			timePicker24Hour: true,
+			timePickerIncrement: 15,
+			startDate: <% $startDate %>,
+			endDate:   moment().add(3, 'day'),
+			showDropdowns: true,
+			minYear: <% $year_now %>,
+			maxYear: <% $year_now + 1 %>,
+			locale: {
+				format: 'DD.MM.YYYY HH:mm',
+				daysOfWeek: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+				applyLabel: 'W&auml;hlen',
+				cancelLabel: 'Abbrechen',
+				firstDay: 1
+			},
+			isInvalidDate: function(date) {
+% #				// Not valid: "Sa"=6 / "Su"=0
+				return (date.day() === 0);
+% #				return (date.day() === 0 || date.day() === 6);
+			}
+		});
+	})
+</script>

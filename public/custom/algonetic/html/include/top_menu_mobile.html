@@ -1,0 +1,22 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A  = $args{A};
+        my $C  = $args{C};
+
+	my $q = $C->{CGI}->param('q');
+	   $q =~ tr/["<>]//d; # -- Against XSS
+</%init>
+<p>XX DN10: STOP XX</p>
+<%doc>
+<div class="float-right">
+
+	<form action="search.html" method="get">
+		<input type="text" class="form-control" name="q" id="top_search_m" maxlength="128"
+			placeholder="<% $C->prop('product_search') %>..." value="<%$q%>">
+
+		<input type="submit" class="btn btn-info" value="<% $C->prop('search') %>" />
+	</form>
+
+</div>
+</%doc>

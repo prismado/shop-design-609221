@@ -1,0 +1,173 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+</%init>
+<ul class="nav flex-column">
+
+<li class="nav-item active">
+	<a class="nav-link js-ajax" href="."><i class="fi fi-menu-dots"></i><b>Service-Portal</b></a>
+</li>
+
+% ## =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+<li class="nav-item">
+	<a class="nav-link" href="#">
+		<span class="group-icon	float-end">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<span class="badge opacity-2 font-weight-light float-end fs--11	mt-1">Adm</span>
+		<i class="fi fi-cart-5"></i>Produkte
+	</a>
+	<ul class="nav flex-column">
+	<li class="nav-item"><a class="nav-link js-ajax" href="store">Liste</a></li>
+	<li class="nav-item"><a class="nav-link js-ajax" href="options">tbd</a></li>
+	</ul>
+</li>
+
+% # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+<li class="nav-item">
+	<a class="nav-link" href="#">
+		<span class="group-icon	float-end">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<span class="badge opacity-2 font-weight-light float-end fs--11	mt-1">Sys</span>
+		<i class="fi fi-shape-star"></i>Konfiguration
+	</a>
+
+	<ul class="nav flex-column">
+	<li class="nav-item"><a class="nav-link js-ajax" href="config.html">Allgemein</a></li>
+	<li class="nav-item"><a class="nav-link js-ajax" href="payment.html">Payment-Einstellungen</a></li>
+	<li class="nav-item"><a class="nav-link js-ajax" href="custom-layout.html">Layout</a></li>
+	<li class="nav-item"><a class="nav-link XXjs-ajax" href="/adx/forward-message.html">E-Mail-Versand</a></li>
+	</ul>
+</li>
+
+% # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+<li class="nav-item">
+	<a class="nav-link" href="#">
+		<span class="group-icon	float-end">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<i class="fi fi-mollecules"></i>Content / Inhalt
+	</a>
+
+	<ul class="nav flex-column">
+		<li class="nav-item"><a class="nav-link js-ajax" href="content.html">Inhalte-1</a></li>
+		<li class="nav-item"><a class="nav-link js-ajax" href="manage-property.html">Properties</a></li>
+<%doc>
+		<li class="nav-item">
+			<a class="nav-link js-ajax" href="plugins-sow-lazyload.html">
+				<span class="badge float-end font-weight-light mt--3 text-gray-400">1Kb</span>
+				SOW : Lazyload
+			</a>
+		</li>
+</%doc>
+	</ul>
+</li>
+% # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+% if ($perm->{is_devel}) {
+<li class="nav-item">
+	<a class="nav-link" href="#">
+		<span class="group-icon	float-end">
+			<i class="fi fi-arrow-end-slim"></i>
+			<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		<i class="fi fi-layers"></i> Vendor Plugins
+	</a>
+
+	<ul class="nav flex-column">
+		<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-bootstrap-select.html">Vendor : Bootstrap Select</a></li>
+		<li class="nav-item">
+			<a class="nav-link js-ajax" href="#">
+				<span class="group-icon	float-end">
+					<i class="fi fi-arrow-end-slim"></i>
+					<i class="fi fi-arrow-down-slim"></i>
+				</span>Vendor : Pickers
+			</a>
+			<ul class="nav flex-column">
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-datepicker.html">Datepicker</a></li>
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-rangepicker.html">Rangepicker</a></li>
+			</ul>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link js-ajax" href="#">
+				<span class="group-icon	float-end">
+					<i class="fi fi-arrow-end-slim"></i>
+					<i class="fi fi-arrow-down-slim"></i>
+				</span>Vendor : Charts
+			</a>
+			<ul class="nav flex-column">
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-chartjs.html">Chart.js</a></li>
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-flot.html">Flot Chart</a></li>
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-easypie.html">Easy Pie Chart</a></li>
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-sparkline.html">Sparkline Charts</a></li>
+			</ul>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link js-ajax" href="#">
+				<span class="group-icon float-end">
+					<i class="fi fi-arrow-end-slim"></i>
+					<i class="fi fi-arrow-down-slim"></i>
+				</span>Vendor : Editors
+			</a>
+			<ul class="nav flex-column">
+			<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-summernote.html">Summernote</a></li>
+			</ul>
+		</li>
+		<li class="nav-item"><a class="nav-link js-ajax" href="plugins-vendor-fullcalendar.html">Vendor : Fullcalendar</a></li>
+	</ul>
+</li>
+% }
+
+% if ($perm->{is_devel}) {
+<li class="nav-title mt-5">
+	<h6 class="fs--15 mb-1 text-dark font-weight-normal">Pages</h6>
+</li>
+
+<li class="nav-item">
+	<a class="nav-link js-ajax" href="#">
+		<i class="nav-icon fi fi-database"><!--	main icon --></i>
+		<span class="group-icon	float-end">
+		<i class="fi fi-arrow-end-slim"></i>
+		<i class="fi fi-arrow-down-slim"></i>
+		</span>
+		System
+	</a>
+	<ul class="nav flex-column">
+	<li class="nav-item"><a class="nav-link" href="account-signin.html">Sign In/Up</a></li>
+	<li class="nav-item"><a class="nav-link" href="/__datatables.html">DataTables</a></li>
+	<li class="nav-item"><a class="nav-link" href="../custom/algonetic/html/_datatables_v2.html">DataTables V2</a></li>
+	<li class="nav-item"><a class="nav-link" href="_datatables_v3.html">DataTables V3</a></li>
+	<li class="nav-item"><a class="nav-link" href="https://dmsd.prismado.com/layout-defaults-4.html">X Original Layout</a></li>
+	<li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+	</ul>
+</li>
+% }
+
+% if ($perm->{is_devel}) {
+<li class="nav-title mt-5">
+	<h6 class="fs--15 mb-1 text-dark font-weight-normal">Admin Layouts</h6>
+</li>
+
+<li class="nav-item">
+	<a class="nav-link" href="../layout_2/index.html">
+		<i class="nav-icon fi fi-shape-star"><!-- main icon --></i>
+		<span class="badge opacity-2 font-weight-light float-end fs--11	mt-1">layout_2</span>
+		Smarty Fancy
+	</a>
+</li>
+% }
+
+</ul>
+
+% if ($perm->{is_devel}) {
+	<p class="ml-2 mt-3">
+		<& ../../include/inc_debug.html, C=>$C &>
+	</p>
+% }

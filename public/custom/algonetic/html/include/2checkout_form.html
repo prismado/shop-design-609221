@@ -1,0 +1,46 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	(my $mode = $C->{CONFIG}->{'2co_mode'}) =~ tr/A-Z/a-z/;
+
+	# -- Gueltige Eingabedaten werden automatisch ausgefuellt, falls Modus T(est)
+</%init>
+
+<tr>
+ <td><%$C->prop('card_type')%></td>
+<td><select name="paymentmethod" class="input-large">
+	<option value=""><% $C->prop('opt_choose') %>...</option>
+	<option value="VIS">Visa</option>
+	<option value="ECA">Eurocard/Mastercard</option>
+	<option value="AMX">American Express</option>
+	</select></td>
+              <td><%$C->prop('card_type_text')%></td>
+</tr>
+
+<tr>
+<td><% $C->prop('card_number') %></td>
+<td> <input id="ccNo" type="text" value="<%$mode eq 't' ? '4000000000000002' : ''%>" autocomplete="off" required class="input-large" /></td> 
+<td><% $C->prop('card_number_text') %></td>
+</tr>
+
+<tr>
+<td><% $C->prop('cardholder') %></td>
+<td><input  type=TEXT  name="payment_kk_name" id="kk_name" class="input-large" required/></td>
+<td><% $C->prop('cardholder_text') %></td>
+</tr>
+
+<tr>
+<td><% $C->prop('card_valid') %></td>
+<td><input id="expMonth" type="text" style='width:22px' placeholder="MM" size="2" value="<%$mode eq 't' ? '12' : ''%>" required />
+	/
+    <input id="expYear" type="text" size="4" style='width:50px' placeholder="YYYY" value="<%$mode eq 't' ? '2018' : ''%>" required /></td>
+<td><% $C->prop('card_valid_text') %></td>
+</tr>
+
+<tr>
+<td><%$C->prop('card_cvv')%></td>
+<td >
+<input id="cvv" type="text" style='width:50px' maxlength="4" placeholder="123" value="<%$mode eq 't' ? '123' : ''%>" autocomplete="off" required class="input-large"/></td>
+<td class="left">  <% $C->prop('card_cvv_text') %></td>
+</tr>
+

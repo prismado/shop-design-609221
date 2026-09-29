@@ -1,0 +1,72 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C          = $args{C};
+	my $debug      = $args{debug};
+	my $modal_size = $args{modal_size} || 'modal-xl'; # -- modal-lg / modal-full / modal-xl / modal-sm
+	my $title      = $args{title} || 'Produktefoto';
+
+	my $THIS = '';
+	if ($debug) {
+		$THIS = $C->this();
+	}
+
+	# XXX my $min_height = '750px';
+	my $min_height = '600px';
+	my $margin_top = '-80px';
+	my $img_w      = '66%';
+
+	if ($args{is_mobile}) {
+		$min_height = '490px';
+		$margin_top = '-10px';
+		$img_w      = '90%';
+	}
+</%init>
+% # ================================================================================================================================
+<div id="imageModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered <% $modal_size %>" style="margin-top:<% $margin_top %>">
+      <div class="modal-content">
+
+
+	<div class="modal-header">
+		<h5 class="modal-title" id="ref65_307022"><% $title %></h5>
+		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span class="fi fi-close fs--18" aria-hidden="true"></span>
+		</button>
+	</div>
+
+%	# -------------------------------------------------------------------------------------------------------------------------------------------
+        <div class="modal-body" style="min-height:<% $min_height %>">
+		<p class="float-end">
+			<a href="#" class="tp-rightarrow tparrows pl-1" onclick="myNext()"><i class="fi fi-arrow-right-full text-white pt-2"></i></a>
+		</p>
+		<p>
+			<a href="#" class="tp-leftarrow tparrows pl-0" onclick="myPrev()"><i class="fi fi-arrow-left-full text-white pt-2"></i></a>
+		</p>
+
+	  	<center>
+%			if ($debug) {
+				<code><% $THIS %><br>
+					&rarr; include/inc_image_modal.html
+				</code><br>
+				Modal Size: <b><% $modal_size %></b><br />
+				Mobile: <% $args{is_mobile} %> / Min-Height: <% $min_height %> / <% $img_w %><br />
+%			}
+			<img src="" id="modalImage" style="width:66%" class="hidden-lg-down">
+			<img src="" id="modalImag2" style="width:80%" class="hidden-xl-up hidden-md-down">
+			<img src="" id="modalImag3" style="width:95%" class="hidden-lg-up">
+	  	</center>
+        </div>
+%	# -------------------------------------------------------------------------------------------------------------------------------------------
+
+	<div class="modal-footer">
+		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<% $C->prop('close') %>
+		</button>
+	</div>
+
+
+      </div>
+    </div>
+</div>
+% # ================================================================================================================================

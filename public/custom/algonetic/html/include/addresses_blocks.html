@@ -1,0 +1,87 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $suppress_upd = $args{suppress_upd_butt} || 0;
+
+	my $remarks       = $C->getSessData('checkout_bemerkungen') || $C->{CGI}->param('checkout_bemerkungen');
+	my $delivery_date = $C->getSessData('checkout_liefer_date') || $C->{CGI}->param('checkout_liefer_date');
+
+	my $addr_bill     = $A->get_address(1);
+	my $addr_deliv    = $A->get_address(2);
+
+	my %salut_map = (
+		1 => $C->prop('male'),
+		2 => $C->prop('female'),
+		3 => '', # company
+		4 => ''
+	);
+</%init>
+% if ($args{debug}) {
+	<&page_info.html, 'START'&>
+% }
+<div class="row">
+
+
+    <div class="col-12 col-lg-6">
+	<div class="card shadow-md shadow-lg-hover transition-all-ease-250 transition-hover-top h-100 border-primary bl-0 br-0 bb-0 bw--2">
+	<div class="card-body">
+
+	<h5 class="card-title"><span class="fs--30">&#128441;</span> <% $C->prop('bill_addr') %></h5>
+
+	<p class="card-text">
+%	if (length($salut_map{ $addr_bill->{gender} })) {
+		<% $salut_map{ $addr_bill->{gender} } %><br>
+%	}
+        <% $addr_bill->{firstname} %> <% $addr_bill->{lastname} %><br>
+	<% $addr_bill->{company} %><br>
+	<% $addr_bill->{street} %><br>
+	<% $addr_bill->{zip} %> <% $addr_bill->{city} %><br>
+	<hr />
+% #	Schweiz<hr />
+
+%	unless ($suppress_upd) {
+		<& inc_modal_link.html, label=>$C->prop('cng_adress'), href=>'_ajax/modal_edit_address.html?addr_type=1',
+			size=>'md', C=>$C, group_icon=>'fi fi-pencil' &>
+%	}
+	</p>
+	</div>
+	</div>
+
+    </div>
+
+
+    <div class="col-12 col-lg-6">
+	<div class="card shadow-md shadow-lg-hover transition-all-ease-250 transition-hover-top h-100 border-primary bl-0 br-0 bb-0 bw--2">
+	<div class="card-body">
+
+	<h5 class="card-title"><span class="fs--30 mr-1">&#9951;</span> <% $C->prop('deliv_addr') %></h5>
+
+	<p class="card-text">
+%		if (length($salut_map{ $addr_deliv->{gender} })) {
+			<% $salut_map{ $addr_deliv->{gender} } %>
+%		}
+		<br />
+		<% $addr_deliv->{firstname} %> <% $addr_deliv->{lastname} %><br>
+		<% $addr_deliv->{company} %><br>
+		<% $addr_deliv->{street} %><br>
+		<% $addr_deliv->{zip} %> <% $addr_deliv->{city} %><br>
+		<% $addr_deliv->{phone} %>
+		<hr />
+% #		Schweiz<hr />
+
+%		unless ($suppress_upd) {
+%			# -- Ex _includes/summary_adress_edit.html
+			<& inc_modal_link.html, label=>$C->prop('cng_adress'), href=>'_ajax/modal_edit_address.html?addr_type=2',
+				size=>'md', C=>$C, group_icon=>'fi fi-pencil' &>
+%		} 
+	</p>
+
+	</div>
+	</div>
+    </div>
+
+
+</div>

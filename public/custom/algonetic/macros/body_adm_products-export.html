@@ -1,0 +1,96 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $perm    = $s{perm};
+	my $cgi     = $C->{CGI};
+	my $x_extra = $cgi->param('x_extra') || 0;
+	my $debug   = $cgi->param('debug') || 0;
+	my $bExport = $cgi->param('bExport');
+
+	my $tpl;
+	my $outfile = '';
+	if ($bExport) {
+		$outfile = "upload/zz_trash_product_export$$\.xls";
+		$tpl = $C->exec(
+			comp_file=>'export_products.html', outfile=>$outfile, x_extra=>$x_extra,
+			theme=>'algonetic', dir=>'macros', A=>$A, debug=>$debug
+		);
+	}
+
+	my $sth = $C->{dbh}->prepare(q~SELECT id, SUBSTR(k, 5, 63), tstamp FROM work WHERE k like 'edi\_%' order by 1 desc LIMIT 999~);
+	   $sth->execute();
+</%init>
+%	if ($bExport) {
+		<a href="/<% $outfile %>" class="btn btn-sm btn-secondary mb-3 w--150 animate-pulse">
+			<i class="fi fi-arrow-download m-0-md"></i>
+				<span class="d-none d-lg-inline-block">Download</span>
+		</a>
+%	}
+
+% if ($bExport) {
+	<br />
+	<% $tpl->{out} %>
+% }
+
+<%doc>
+XXX:
+<h4 class="fs--20 mb-3">Letzte EDI-Bestellungen &mdash; <a href="/adm_log.html?importance=4&filter=galaxus_orders_dg2partner">Log</a></h4>
+
+<table class="table table-sm table-hover">
+<tr>
+	<th>EDI Order Nr.</th>
+	<th>Eingang</th>
+	<th>EDI-Datei</th>
+	<th>Lokale Order-ID</th>
+	<th>Lieferschein erstellt</th>
+	<th>Aktion</th>
+</tr>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $k, $ts) = @{$r};
+%	my $x_order_id = 0;
+%	if ($k =~ /^order\_GORDP\_(\d+)\_(\d+)\.xml$/) {
+%		$x_order_id = $2;
+%	}
+%	my $order_id = $C->query("SELECT order_id FROM orders_details WHERE xkey='x_order_id' and xval='$x_order_id' order by id DESC limit 1")->[0];
+%	(my $k_disp = $k) =~ s/^order\_//;
+%	my $dn_created = $C->query("select created_at from orders_status where order_id=$order_id and status_id=104")->[0];
+	<tr>
+		<td><b><% $x_order_id %></b></td>
+		<td><% $C->trans_date_short($ts) %></td>
+		<td>
+			<code class="fs--17"><% $k_disp %></code>
+%			if ($perm->{is_devel}) {
+				<a href="/adm_db_edit.html?table=work&wcl=id%3D<% $id %>"><i class="fi fi-pencil"></i></a>
+%			}
+		</td>
+%		if ($order_id) {
+			<td><a href="/admix.html?func=orders&id=<% $order_id %>"><% $order_id %></a></td>
+			<td><% $C->trans_date_short($dn_created) %></td>
+			<td><a href="dev-get-order-edi.html?order-id=<% $order_id %>&tpl=edi_dispatch.xml">Dispatch?</a></td>
+%		}
+%		else {
+			<td></td>
+			<td></td>
+			<td></td>
+%		}
+	</tr>
+% }
+</table>
+<br>
+/XXX
+</%doc>
+
+% if ($debug) {
+	<br />
+%	foreach (sort keys %s) {
+%		next if $s{$_} =~ /^ScreenPoint\:\:.+/ or /^perm$/ or /^dir$/;
+		[ S ] &middot; <b><% $_ %></b> = <code><% $s{$_} %></code><br>
+%	}
+
+%	foreach ($cgi->all_parameters) {
+		[ CGI ] &middot; <% $_ %> = "<% $cgi->param($_) %>"<br>
+%	}
+% }

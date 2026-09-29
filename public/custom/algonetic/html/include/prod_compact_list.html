@@ -1,0 +1,71 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $lang = $args{lang};
+	my $id   = $args{id};
+	my $prod_info = $args{prod_info};
+	my $in_basket = $args{in_basket};
+
+	my $title                 = $args{title};
+	my $desc                  = $args{desc};
+	my $price_orig            = $args{price_orig} || -9999.99;
+	my $price                 = $args{price};
+	my $condition             = $args{condition};
+	my $has_mandatory_options = $args{has_mandatory_options};
+	my $is_offer              = $args{is_offer};
+</%init>
+<div class="row-fluid">
+			<div class="span2">
+	<div class="overlayBasket" id="ajx_bask_<%$id%>"></div>
+
+<div class="imgCut">
+<a href="product.html?id=<% $id %>">
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<span class="aktionsOffer"><%$C->prop('offer')%> <%sprintf('%.0f', $prod_info->{discount_perc})%>%</span>
+% }
+% if ($in_basket) {
+	<span class="inBasket"><% $C->prop('in_basket') %>
+	<div data-toggle="tooltip" data-placement="bottom" data-original-title="<% $C->prop('del_frombasket') %>"
+		onclick="document.location='_del_from_basket.html?id=<%$in_basket%>'" class="pull-right">&nbsp;<i class="fa fa-times"></i></div></span>
+% }
+<span style='display:none' class="inBasket" id="product_area_<%$id%>"><i class="fa fa-shopping-cart"></i> <% $C->prop('in_basket') %>
+	<div data-toggle="tooltip" data-placement="bottom" data-original-title="<% $C->prop('del_frombasket') %>"
+		onclick="document.location='_del_from_basket.html?id=<%$in_basket%>'" class="pull-right">&nbsp;<i class="fa fa-times"></i></div></span>
+
+	<img src="/produkte/p<% $id %>_thmb.jpg" alt="<% $title %>" title="<% $title %>"/></a>
+	</div>
+			</div>
+
+			<div class="span4">
+				<div class="thumbnailCaption alignL">
+				    <h4><% $title %></h4>
+				<span><% $desc %></span></div>
+			</div>
+
+			<div class="span6">
+			<div class="thumbnailPrice alignR">
+    <a class="btn btn-price" href="product.html?id=<%$id%>"><span class="offerPriceFront"><%$is_offer ? $price_orig : ''%></span>&nbsp;&nbsp;
+
+%		unless ($condition eq 'IP') {
+	<%$C->{CONFIG}->{default_curr}%> <%$C->round_amount($price)%>
+%		}
+
+	</a>
+</div>
+%	unless ($condition eq 'IP') {
+
+% if ($has_mandatory_options) {
+	<div class="thumbnailButtons alignR">
+		<a class="btn btn-basket" href="article-<%$id%>-product.html">Kaufen m.Opt.</a>
+%	}
+%	else {
+<div class="thumbnailButtons alignR">
+<a class="btn btn-checkout" data-toggle="modal"  onclick="addtobasket(<%$id%>, this)" href="#basketLightbox"><i class="fa fa-shopping-cart"></i><% $C->prop('basket') %></a>
+%	}
+</div>
+%	}
+ </div>
+</div><!-- End row -->
+

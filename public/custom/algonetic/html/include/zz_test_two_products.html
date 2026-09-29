@@ -1,0 +1,47 @@
+<%init>
+	my %foo = ( title => 'Test', description=>'foo<br>bar' );
+	my $d = \%foo;
+	my $id = 304;
+</%init>
+<div class="row">
+
+	<div class="col-12 col-lg-6">
+		<div class="card shadow-md shadow-lg-hover transition-all-ease-250 transition-hover-top h-100 border-primary bl-0 br-0 bb-0 bw--2">
+		    <div class="card-body">
+			<h5 class="card-title"><% $d->{title} %></h5>
+			<p class="card-text">
+				<img class="img-fluid" style="max-width:20%" src="produkte/p<% $id %>_large.jpg" />
+			</p><br />
+
+			<p clasx="mb-3">
+				Text text text Text text text Text text text Text text text
+				Text text text Text text text Text text text Text text text
+			</p><br />
+
+			<p class="fixed-bottom ml-3">
+				XX
+			</p>
+		    </div>
+		</div>
+	</div>
+
+	<div class="col-12 col-lg-6">
+		<div class="card shadow-md shadow-lg-hover transition-all-ease-250 transition-hover-top h-100 border-primary bl-0 br-0 bb-0 bw--2">
+			<div class="card-body">
+				<div class="float-right">
+					<a style="margin-top: 0px; floax:left; margix-right:10px;"
+						href="admix.html?func=edit_item&id=<% $id %>"><span
+							class="btn btn-outline-danger btn-pill btn-sm mb-0">Edit Product</span></a>
+				</div>
+				<h5 class="card-title">CHF <% $d->{price_enduser_net} %></h5>
+				<p class="card-text">
+					<% $d->{description} %>
+				</p>
+				<p class="fixed-bottom ml-3">
+					XX
+				</p>
+			</div>
+		</div>
+	</div>
+
+</div>

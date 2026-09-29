@@ -1,0 +1,91 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $what   = $cgi->param('what')   || '';
+	my $val    = $cgi->param('val')    || '';
+	my $size   = $cgi->param('size')   || 'lg';
+
+	my $cfunc = $what;
+	   $cfunc = 'vat' if $what eq 'prod_type';
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	a.id, a.instime, token, company_id, c.name
+		from	campaign_data a, companies c
+		where	company_id=c.id
+		order	by c.name
+		limit	999
+	~);
+	   $sth->execute();
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-<% $size %> modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">PRO-Zone ausw&auml;hlen &middot; <small>Prod-ID <% $id %></small></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<form onsubmit="return validateForm403151()" name="f404101_38">
+
+			<div class="modal-body">
+				<& ../_includes/inc_text_input.html, label=>$what, value_enc=>$val, write=>1, id=>4041016, name=>"upd_$what" &>
+
+				<table class="table table-sm table-hover">
+%				while(my $r = $sth->fetch()) {
+%					my ($id, $instime, $token, $company_id, $company) = @{$r};
+					<tr onclick="f404101_38.upd_campaign_id.value='<% $id %>'">
+					<td><span class="cursor-pointer" onclick="f404101_38.upd_campaign_id.value='<% $id %>'"><% $id %></span></td>
+					<td><% $company %></td><td><% $token %></td>
+					</tr>
+%				}
+				<tr>
+					<td colspan="3" class="text-center fs--11" onclick="f404101_38.upd_campaign_id.value='0'">Aus PRO-Zone entfernen</td></tr>
+				</tr>
+				</table>
+
+%				foreach ($cgi->all_parameters) {
+%					next if $_ eq 'id' or $_ eq 'size' or $_ eq 'css_id' or $_ eq 'what' or $_ eq 'val';
+					X -- <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%				}
+
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150"
+					onclick="validateForm403151()">
+% # XXX					onclick="update('<% $what %>', document.getElementById('txe_4041016').value)">
+					<i class="fi fi-check"></i> Update
+				</button>
+			</div>
+
+			</form>
+
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function validateForm403151() {
+		update('<% $what %>', document.getElementById('txe_4041016').value);
+		update_subm();
+		return false;
+	}
+</script>
+
+<%doc>
+	Created: 10Apr2024
+</%doc>

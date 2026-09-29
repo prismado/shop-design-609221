@@ -1,0 +1,92 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+
+	my $bReshape = $C->{CGI}->param('bReshape');
+	my $in_path  = $C->{CGI}->param('in_path');
+	my $out_path = $C->{CGI}->param('out_path');
+	my $width    = $C->{CGI}->param('width') + 0;
+	my $height   = $C->{CGI}->param('height') + 0;
+
+	my $res;
+	if ($C->{CGI}->param('bReshape')) {
+		$res = $C->reshape_image(
+			in_path  => $in_path,
+			out_path => $out_path,
+			width    => $width,
+			height   => $height 
+		);
+	}
+
+	my $macro = $C->exec(comp_file=>'_foo.html', xfoo=>"bar$$", dir=>'macros', call_src=>$0);
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Export</span>
+</div>
+
+<div class="portlet-body">
+	<p>
+		Kunden: <a href="export_customers.html?code=utf">Export</a>
+	</p>
+
+	<div>
+		<& xx_list.html &>
+	</div><hr />
+
+	<p>Output von Makro <code>custom/<% $C->{CONFIG}->{theme} %>/macros/_foo.html</code>:</p>
+	<div class="alert alert-info">
+		<% $macro->{out} %>
+	</div>
+
+	<form method="post">
+		<input type=text class="form-control" style="max-width:45vw !important" placeholder="Image Path In"  name="in_path"  value="<% $in_path %>">
+		<small><a href="../produkte/p3624_orig.jpg">produkte/p3624_orig.jpg</a></small><br>
+		<input type=text class="form-control mt-2" style="max-width:45vw !important" placeholder="Image Path Out" name="out_path" value="<% $out_path %>"><br>
+		<input type=text class="form-control" style="max-width:25vw !important" placeholder="Width"  name="width"  value="<% $width %>"><br>
+		<input type=text class="form-control" style="max-width:25vw !important" placeholder="Height" name="height" value="<% $height %>"><br>
+		<input type="submit" class="btn btn-primary mb-2" value="Reshape" name="bReshape">
+	</form>
+
+%	if ($bReshape) {
+		<p>Input: <% $res->{x_orig} %> x <% $res->{y_orig} %></p>
+%		my @msgs = split /, /, $res->{msg};
+%		my $msg = join "<br>\n", @msgs;
+
+		<% $msg %><br />
+	
+%		foreach (sort keys %{$res}) {
+%			next unless length( $res->{$_} );
+%			next if $_ eq 'msg' or /^(x|y)\_orig$/;
+			&bull; <b><% $_ %></b> = <code><% $res->{$_} %></code><br>
+%		}
+%	}
+
+	<hr />
+
+
+<%doc>
+XXX:
+	<p class="mt-3">
+		<a href="#" class="js-ajax-modal"
+			data-href="_ajax/modal_signin_md.html"
+			data-ajax-modal-size="modal-md"
+			data-ajax-modal-centered="false"
+			data-ajax-modal-backdrop="static">
+			Sign In
+		</a>
+		(Modal)
+	</p>
+/XXX
+</%doc>
+
+	<p>
+%	foreach (sort keys %$perm) {
+%		next if /^\_\_.+/;
+		[ perm ] &bull; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+</div>

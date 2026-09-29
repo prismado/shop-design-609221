@@ -1,0 +1,67 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $lang  = $args{lang};
+	my $debug = $args{debug};
+
+	my $prod_highlight = $args{prod_highlight}; # -- 31Jan2024
+
+	my $title_size = $prod_highlight->{longest_title} > 50 ? '1.05rem' : '1.25rem';
+
+	my $min_w = $C->get_property('sys_product_tiles_promo_min_width', '_layout', 'sys'); # -- 180px
+	my $max_w = $C->get_property('sys_product_tiles_promo_max_width', '_layout', 'sys'); # -- 9vw
+
+	my $min_h_frame = $C->get_property('sys_product_tiles_frame_promo_min_height', '_layout', 'sys'); # -- 550px
+	my $max_w_frame = $C->get_property('sys_product_tiles_frame_promo_max_width' , '_layout', 'sys'); # -- 405px
+
+	my $css_id = 'ajx_30605172';
+</%init>
+% if ($debug) {
+	<code>include/promo_products.html</code> &middot; lang="<% $lang %>" / <% $prod_highlight->{longest_title} %>
+% }
+
+<div id="ajx_noti"></div>
+
+<script language=JavaScript>
+    function addtobasket (id, b) {
+	$('#ajx_noti').load('ajx_overlap_bask2.html?id=' + id + '&rand=<%rand()%>')
+	b.disabled='disabled';
+	document.getElementById('product_area_' + id).style.display='';
+	document.getElementById('pic' + id).className='blur'
+	$('#autoUpdate').load('ajx_basket_link.html?rand=<%rand()%>&sid=<%$args{SID}%>&sleep=1&i=' + x_interval);
+	updateDiv();
+    }
+
+% #	$('#autoUpdate').load('ajx_basket_link.html?rand=<%rand()%>&sid=<%$args{SID}%>&sleep=1&i=' + x_interval);
+
+	function add2bsk (id, b) {
+% #		alert("XX DN23: ID " + id);
+		$('#ajx_noti').load('ajx_overlap_basket.html?id=' + id + '&rand=<%rand()%>')
+		$('#autoUpdate').load('ajx_basket_link.html?rand=<%rand()%>&sid=<%$args{SID}%>&sleep=1&i=' + x_interval);
+		updateDiv();
+	}
+</script>
+
+<div class="row">
+%	my $i = 0;
+%	my $col = $#{ $prod_highlight->{ids} } > 1 ? 4 : 6;
+%	foreach my $hl (@{ $prod_highlight->{ids} }) {
+%		last if ++$i > 3;
+		<& inc_two_products.html, hl=>$hl, col=>$col, title_size=>$title_size, debug=>$debug, C=>$C &>
+%	}
+</div>
+
+<div class="row clearfix d-flex justify-content-between">
+%	foreach (@{$A->promo_ids()}) {
+		<& inc_render_prod.html, id=>$_, min_w=>$min_w, max_w=>$max_w,
+			cond_tag_cls => $C->get_property('sys_product_tag_cond_class', '_layout', 'sys'),
+			sale_tag_cls => $C->get_property('sys_product_tag_sale_class', '_layout', 'sys'),
+			min_h_frame=>$min_h_frame, max_w_frame=>$max_w_frame,
+			SID=>$args{SID}, laytst=>$args{laytst}, A=>$A, C=>$C, is_mobile=>$args{is_mobile} &>
+%	}
+</div>
+
+<& inc_add2basket_js.html &>

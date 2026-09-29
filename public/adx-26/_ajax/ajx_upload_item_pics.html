@@ -1,0 +1,53 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id');
+
+	# XXX my $xtra_imgs = $A->get_product_extra_images($id);
+	my $xtra_imgs = $A->get_product_extra_imgs(id=>$id);
+</%init>
+<h3 style='margin-top:-22px'>More Pictures</h3>
+
+<input style='font-size:10px' type="file" name="file2" /><br>
+
+<table class="mytable table-hover" border="0">
+% opendir(D, "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte") or $m->out("ERR $!<br>");
+
+% foreach my $f (@{$xtra_imgs->{pics}}) {
+%	next unless $f =~ /^produkte\/p$id\_20(\d+\-\d+)/;
+%	my $ref = $1;
+%	my $img_inf = $C->get_image_info(img_path=>"$C->{CONFIG}->{DOCUMENT_ROOT}/$f");
+%	(my $thmb_ref = $f) =~ s/\_large/\_thmb/;
+<tr>
+	<td style="width:56px; height:56px; text-align:center; padding-right:20px">
+		<img src="<% $thmb_ref %>?r=<% rand() %>"
+			style="height:55px; box-shadow: 7px 7px 4px #888888; margin-bottom:10px">
+	</td>
+	<td style="width:150px"><a href="<% $f %>"><% $ref %></a></td>
+	<td><% $img_inf->{type} %></td>
+	<td><% $img_inf->{x} %> &times; <% $img_inf->{y} %></td>
+	<td>
+%		if ($img_inf->{x} != $img_inf->{y}) {
+			&rarr; <a href="_reshape_image.html?id=<% $id %>&in=produkte%2Fp<% $id %>_20<% $ref %>_orig.jpg&x_size=<% $C->{CONFIG}->{default_imgsize_large} %>">Make Square!</a>
+%		}
+	</td>
+	<td style="text-align:right">
+		<a href="adm_edit_product.html?id=<%$id%>&delpic=<%$ref%>"><i style='color:red' class="icon-remove"></i></a>
+	</td>
+</tr>
+% }
+% closedir(D);
+</table><br>
+
+<%doc>
+[root@mail mrgadget.jgd.ch]# ll produkte/p1_*.*
+-rw-r--r-- 1 apache apache   1326 Oct 31 16:04 produkte/p1_mini.jpg
+-rw-r--r-- 1 apache apache 136346 Oct 31 16:04 produkte/p1_orig.jpg
+-rw-r--r-- 1 apache apache   5131 Oct 31 16:04 produkte/p1_thmb.jpg
+</%doc>

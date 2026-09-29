@@ -1,0 +1,35 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	my $this = $C->this();
+	   $this =~ s/^custom\/default\/html\///;
+
+	my %nav = (
+		index    => 'Home',
+		account3 => 'Mein Konto',
+		foo      => 'Foo Page',
+		basket2  => 'Warenkorb'
+	);
+	my %active = (); $active{$this} = 1;
+</%init>
+<div class="masthead">
+% # <%$this%>
+<ul class="nav nav-pills pull-right">
+% foreach (keys %nav) {
+	<li<%$active{$_} ? ' class="active"' : ''%>><a href="<%$_%>.html"><%$nav{$_}%></a></li>
+% }
+% if ($args{is_admin}) {
+	<li><a href="__dashboard.html">Admin</a></li>
+% }
+</ul>
+<br clear='all' />
+<div class="pull-right"><h4>Der genormte Online Shop</h4></div>
+<div class="logo" itemprop="headline">
+	<a href="." title="Publigate - E-Commerce Shop Modul" clasx="custom"><img style='margin-top:-40px'
+	src="images/logo_pub.png" title="Publigate - E-Commerce Shop Modul" alt="Publigate - E-Commerce Shop Modul" /></a>
+</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

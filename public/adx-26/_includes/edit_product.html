@@ -1,0 +1,725 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	use utf8; # -- 07Jan2026
+
+	my $C          = $args{C};
+	my $A          = $args{A};
+	my $debug      = $args{debug};
+	my $perm       = $args{perm};
+	my $prdinf     = $args{prdinf};
+	my $prdinf_en  = $args{prdinf_en};
+	my $prdinf_fr  = $args{prdinf_fr};
+	my $fls        = $args{fls}; # -- File(s)
+	my $res_opt    = $args{res_opt};
+	my $imgf_i     = $args{imgf_i};
+	my $cur_ext    = $args{cur_ext} || 'jpg';
+	my $cache_data = $args{cache_data};
+	my $cur_img    = $args{cur_img};
+	my $lang       = $args{lang} || 'de';
+
+	(my $desc_short = $C->shorten_title($prdinf->{description}, 110)) =~ s/\</&lt;/g;
+
+	my $imgs = $A->get_product_extra_imgs(id=>$args{id}, all=>1);
+
+	my @cats = ();
+	foreach my $cat (@{ $prdinf->{categs} }) {
+		my %ca = ();
+		$ca{id}        = $cat->{id};
+		$ca{label}     = $cat->{label};
+		$ca{visible}   = 1;
+		if ($cat->{parent_id}) {
+			($ca{par_label}, $ca{visible}) = @{$C->query("select label, visible from categories where id=$cat->{parent_id}")};
+			$ca{parent_id} = $cat->{parent_id};
+		}
+		push(@cats, \%ca);
+	}
+
+	my @cat_nav = ();
+	foreach my $catinf (@cats) {
+		my $c_nav = qq~<a class="link-muted" href="/adm_categ.html?id=$catinf->{id}">$catinf->{label}</a>~;
+		if ($catinf->{parent_id}) {
+			if ($catinf->{visible}) {
+				$c_nav = qq~$c_nav &rarr; <a class="link-muted" href="/adm_categ.html?id=$catinf->{parent_id}">$catinf->{par_label}</a>~;
+			}
+			else {
+				$c_nav = qq~$c_nav &rarr; <a href="/adm_categ.html?id=$catinf->{parent_id}"><s>$catinf->{par_label}</s></a>~;
+			}
+		}
+		push(@cat_nav, $c_nav);
+	}
+
+	my $daily_offer     = $A->get_daily_offer_categ();
+	my $daily_offer_cat = $C->query("SELECT id FROM products2categ WHERE product_id=$args{id} and cat_id=$daily_offer->{id}")->[0];
+	if ($daily_offer_cat) {
+		push(@cat_nav, qq~<a class="link-muted" href="/products/daily-offer/$daily_offer->{id}">Daily Offer</a>~);
+	}
+
+	my @opt_ids = ();
+	foreach (keys %{$res_opt}) { push(@opt_ids, $_); }
+	my $opt_ids_cs = join ', ', @opt_ids;
+
+	my @img_infos = ();
+	my $img_mod = $C->trans_date_short( $imgf_i->{mod} );
+	push(@img_infos, "($args{imginf}->{type})&NewLine;$args{imginf}->{x} x $args{imginf}->{y}, $imgf_i->{size_kb} KB&NewLine;$img_mod");
+	foreach (sort keys %{$args{imginf}}) {
+		next if /^img_path$/ or /^VERSION$/ or /^type$/ or /^x$/ or /^y$/ or /^ext$/;
+		push(@img_infos, "$_ $args{imginf}->{$_}");
+	}
+
+	my %prodkey_hr = (
+		art_no        => 'Artikelnummer',
+		brand         => 'Marke',
+		campaign_id   => 'PRO-Zone',
+		condition     => 'St&uuml;ckzahl-Verhalten',
+		count_product => 'St&uuml;ckzahl',
+		desc_keyw     => 'Konfiguration',
+		extra         => 'Zustand',
+		is_promo      => 'Promotion',
+		vat           => 'MwSt-Satz'
+	);
+
+	my $future_discount_count = $C->query("select COUNT(*) from products_feat where product_id=$args{id} and featname='_discount_perc' and lang='de'")->[0];
+</%init>
+<style>
+	.tooltip-inner {
+		white-space: pre-line; /* Line-breaks with \n */
+	}
+</style>
+<script language="JavaScript">
+	function del_disc(d) {
+		if (confirm("Rabatt wirklich loeschen?\nID " + d)) {
+			document.f311171_149.del_disc.value=d;
+			document.f311171_149.submit();
+		}
+	}
+</script>
+
+<div class="portlet-header border-bottom">
+	<div class="float-end fs--20">
+%		if ($perm->{is_devel}) {
+			<a class="mr-1" href="/adx/dev-get-product.html?prod_id=<% $args{id} %>&public=1"><small>Dump Product</small></a>
+%		}
+		<span class="float-end">
+%		if ($prdinf->{discount_perc}) {
+			<small>Statt</small> <s class="text-gray-500"><% $C->decimal_mark($prdinf->{price_orig_incl_vat}) %></s>
+			<span style="font-size:0.9em" class="badge-pink rounded ml-1 <% $cache_data->{"upd_$args{id}_discount_perc"} ? 'animate-pulse' : '' %> p-1">
+				<% sprintf('%.0f', $prdinf->{discount_perc}) %> %</span>
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'403131_64',
+			url=>"/adx/_ajax/modal_edit_product_discount.html?id=$args{id}&what=discount_perc&val=$prdinf->{discount_perc}&css_id=403131_64&size=md") } %>
+
+			<span class="ml-2" style="font-size:1.1em; color:#ce3b48">VP <b>CHF <% $C->decimal_mark($prdinf->{price_incl_vat}) %></b></span>
+
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'403131_68', tooltip=>'Artikelpreis festlegen',
+				url=>"/adx/_ajax/modal_edit_product_price.html?id=$args{id}&css_id=403131_68&size=md&what=price_orig&val=$prdinf->{price_orig}") } %>
+%		}
+%		else {
+			<span style="font-size:1.1em">VP <b>CHF <% $C->decimal_mark($prdinf->{price_incl_vat}) %></b></span>
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'403131_68', tooltip=>'Artikelpreis festlegen',
+				url=>"/adx/_ajax/modal_edit_product_price.html?id=$args{id}&css_id=403131_68&size=md&what=price_orig&val=$prdinf->{price_orig}") } %>
+%		}
+		</span>
+		<br>
+		<span class="float-end mt-2">
+			<span style="font-size:0.8em">Basispreis ohne MwSt: CHF
+%			if ($cache_data->{"upd_$args{id}_price_orig"}) {
+				<span class="animate-pulse"><% $C->decimal_mark($prdinf->{price_orig}) %></span>
+%			}
+%			else {
+				<% $C->decimal_mark($prdinf->{price_orig}) %>
+%			}
+			</span>
+%			unless ($prdinf->{discount_perc}) {
+				<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'403131_64', tooltip=>'Rabatt eingeben',
+					url=>"/adx/_ajax/modal_add_discount.html?css_id=403131_64&id=$args{id}&size=md") } %>
+%			}
+		</span><br clear="all" />
+		<span class="float-end mt-2 fs--13">
+			MwSt: <% $prdinf->{vat} %> %
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'403161_90',
+				url=>"/adx/_ajax/modal_edit_product_section.html?id=$args{id}&css_id=403161_90&size=md&what=prod_type&val=$prdinf->{prod_type}") } %>
+		</span>
+	</div>
+
+	<div class="row mb-2">
+		<div class="col-6"><!-- col (126) -->
+
+		<div class="row"><!-- row 1 -->
+		    <div class="col-6 pt-2 pb-2 transition-hover-zoom-img overflow-hidden rounded">
+%			if ($prdinf->{image}->{ext}) {
+			<a href="/produkte/p<% $args{id} %>_large.<% $cur_ext %>">
+				<img class="img-fluid shadow-lg" style="min-width:100px; max-height:215px"
+					data-toggle="tooltip" data-placement="top" data-original-title="Hauptbild <% join ', ', @img_infos %>"
+					src="<% $prdinf->{image}->{url} %>?r=<% rand() %>" alt="...">
+			</a>
+%			}
+%			else {
+				<img class="img-fluid shadow-lg" style="min-width:100px; max-height:215px"
+					src="https://placehold.co/500x500/lightgrey/white?text=1000+x+1000+%5Cn+Noch+kein+Bild&font=roboto">
+%			}
+		    </div>
+
+		    <div class="col-6 pt-2"><& inc_upload_dropzone.html, id=>$args{id}, zone=>2, supported=>'jpg, jpeg, webp, avif',
+			dropz_css=>'min-width:165px; max-width:180px', C=>$C &></div>
+		</div><!-- /row 1 -->
+
+		<div class="row hidden-md-down">
+			<div class="col-12 mt-2 pb-2 ZZpl-0 text-nowrap fs--18 prism-limit-len-400-404282">
+				<i class="fi fi-play-empty"></i> <a class="link-muted ml-1"
+					href="/product/<% $prdinf->{title_enc} %>/<% $args{id} %>"><% $prdinf->{title_enc} %>/<% $args{id} %></a>
+			</div>
+		</div>
+
+		</div><!-- /col (126) -->
+
+		<div class="col-6">
+			<& ../_includes/inc_text_input.html, label=>'Bezeichnung &middot; [ de ]', value_enc=>$prdinf->{title},
+				id=>'title_de', name=>'title_de', tx_class=>'font-weight-bold fs--16 min-w-25vh' &>
+			<& ../_includes/inc_text_input.html, label=>'Bezeichnung &middot; [ en ]', value_enc=>$prdinf_en->{title},
+				id=>'title_en', name=>'title_en', tx_class=>'font-weight-bold fs--16 min-w-25vh' &>
+			<& ../_includes/inc_text_input.html, label=>'Bezeichnung &middot; [ fr ]', value_enc=>$prdinf_fr->{title},
+				id=>'title_fr', name=>'title_fr', tx_class=>'font-weight-bold fs--16 min-w-25vh' &>
+			<& ../_includes/inc_text_input.html, label=>'Marke', value_enc=>$prdinf->{brand},
+				id=>'brand', name=>'brand', class=>'max-w-250' &>
+		</div>
+	</div>
+
+	<span class="pl-3 pt-1">
+		<div class="shadow-md rounded float-left w--100 mr-5">
+			<& inc_upload_dropzone.html, id=>$args{id}, zone=>3, callb=>'callb_403181_2', ph_size=>'fs--30', supported=>'jpg, jpeg, webp, avif',
+				remove=>0, tip=>q~<span class="d-block text-muted fs--13"><b>UPLOAD</b><span class="d-block">Zusatzbild</span></span>~, C=>$C &>
+		</div>
+%	foreach my $imgx_lg (@{$imgs->{pics}}) {
+%		my $imgx_s = my $ext = '';
+%		if ($imgx_lg =~ /p$args{id}\_(20\d{6}\-\d{6}.*)\_large\.(.+)/) {
+%			$imgx_s = $1;
+%			$ext    = $2;
+%		}
+%		my $thmbinf     = $C->get_image_info(img_path=>$imgx_lg, debug=>$debug);
+%		my $thmbf_i     = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/$imgx_lg");
+%		my $img_mod     = $C->trans_date_short( $thmbf_i->{mod} );
+%		my $imgwarn     = ($thmbinf->{x} < 1000 or $thmbinf->{y} < 1000 or $thmbinf->{x} != $thmbinf->{y}) ? 1 : 0;
+%		my $xtra_style  = $imgwarn ? 'border: 3px solid red' : '';
+%		   $xtra_style  = 'filter:grayscale(90%) brightness(105%) opacity(0.33);' if $imgs->{excl}->{$imgx_s};
+%		   $xtra_style  = 'filter: opacity(0.5);' if $imgs->{excl}->{$imgx_s} == 2;
+%		my $outer_style = $imgs->{excl}->{$imgx_s} ? 'border:2px dashed orange; display:flex;' : '';
+%		   $outer_style = 'border:3px dashed green; display:flex;' if $imgs->{excl}->{$imgx_s} == 2;
+%		my $imwarnmsg   = $imgwarn ? '&NewLine;*** Bild &uuml;berpr&uuml;fen ***' : '';
+%		   $imwarnmsg   = "$imwarnmsg&NewLine;&NewLine;&rarr; Ausgelassen bei Rotation $imgs->{excl}->{$imgx_s} &larr;" if $imgs->{excl}->{$imgx_s};
+%		my $imgres      = "$thmbinf->{x} &times; $thmbinf->{y}";
+		<div class="shadow-md <% $imgwarn ? '' : 'ZZoverflow-hidden' %> transition-hover-zoom-img rounded float-left">
+			<& inc_mini_menu.html, id=>$args{id}, ext=>$ext, imgx_s=>$imgx_s, excl=>$imgs->{excl}->{$imgx_s}, perm=>$perm &>
+			<a href="/<% $imgx_lg %>" style="<% $outer_style %>"><img style="border: 1px dotted darkgreen; height:100px; ZZobject-fit:cover; <% $xtra_style %>"
+			data-toggle="tooltip" data-placement="top"
+			data-original-title="<% $imgres %>, <% $thmbinf->{type} %>&NewLine;<% $thmbf_i->{size_kb} %> KB&NewLine;<% $img_mod %><% $imwarnmsg %>"
+				src="/produkte/p<% $args{id} %>_<% $imgx_s %>_thmb.<% $ext %>?rand=<% rand() %>"></a>
+		</div>
+%	}
+	</span>
+</div>
+
+<div class="portlet-body">
+% # -----------------------------------------------------------------------------------------------------------------------------
+    <div class="row mb--n10">
+
+      <div class="col-7">
+	<div class="float-end mr-2">
+		<div class="text-center">
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil fs--20"></i>',
+				url=>"/adx/_ajax/modal_edit_wysiwyg.html?id=$args{id}&css_id=403281_179&lang=$lang", css_id=>'403281_179') } %>
+		</div>
+
+		<a class="btn btn-sm row-pill btn-<% $lang eq 'de' ? '' : 'outline-' %>dark mt-1 fs--12" id="lang_switch_de" href="#" onclick="setLang('de')">DE</a><br>
+		<a class="btn btn-sm row-pill btn-<% $lang eq 'en' ? '' : 'outline-' %>dark mt-1 fs--12" id="lang_switch_en" href="#" onclick="setLang('en')">EN</a><br>
+		<a class="btn btn-sm row-pill btn-<% $lang eq 'fr' ? '' : 'outline-' %>dark mt-1 fs--12" id="lang_switch_fr" href="#" onclick="setLang('fr')">FR</a><br>
+	</div>
+	<h3 class="fs--20 mt-2 mb-2">Lange Beschreibung</h3>
+	<div class="card-text h--<% length($prdinf->{desc_long}) > 180 ? 220 : 140 %> scrollable-vertical pl-1 rounded border p-1" id="desc403272"
+			style="scrollbar-color:#b1b1b1 #e1e1e1; scrollbar-width:thin; background-color:#f8fcfe">
+		<% $prdinf->{desc_long} %>
+	</div>
+      </div>
+
+      <div class="col-5">
+	<h3 class="fs--20 mt-2 mb-3">Kurze Beschreibung</h3>
+	<p class="mt-1 mb-3">
+		<% $C->web_enc($desc_short) %>
+%		my $desc_enc = $C->uri_esc( $prdinf->{description} );
+%		my $desc_enc_en = $C->uri_esc( $prdinf_en->{description} );
+%		my $desc_enc_fr = $C->uri_esc( $prdinf_fr->{description} );
+		<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'402171_19',
+		url=>"/adx/_ajax/modal_edit_product_section.html?id=$args{id}&css_id=402171_19&what=description&size=full&val=$desc_enc&val_en=$desc_enc_en&val_fr=$desc_enc_fr&multilingual=1") } %>
+%		if ($debug) {
+%			foreach (sort keys %{$cur_img}) {
+				X -- <b><% $_ %></b> = "<% $cur_img->{$_} %>"<br>
+%			}
+%		}
+		<br>
+		<h3 class="fs--20 mt-2 mb-3">Automatisch aus Artikeleigenschaften</h3>
+		<% $prdinf->{desc_keyw} %>
+	</p>
+      </div>
+
+    </div>
+% # -----------------------------------------------------------------------------------------------------------------------------
+
+	<p class="mb-1 mt-3">
+		<span class="mr-3">
+			<% ${ $A->modal( label=>'<span class="fs--20 float-start">Kategorien <i class="fi fi-pencil"></i></span>',
+				url=>"/adx/_ajax/modal_assign_categ.html?id=$args{id}&css_id=403131_96", css_id=>'403131_96') } %>
+		</span>
+		<div class="mt--n22 mb--n30">
+			&nbsp;&nbsp;&nbsp;&nbsp;<% join ' <span class="ml-3 mr-3">/</span> ', @cat_nav %>
+		</div><br clear="all" />
+	</p>
+
+%	# =============================================================================================================
+	<div class="row mt--n10">
+		<div class="col-6">
+			<h3 class="fs--20 mt-2 mb-3">Artikeldaten und Bestand</h3>
+			<table class="table table-striped table-sm mt-2 table-responsive">
+%			foreach (sort keys %{ $prdinf }) {
+%				next unless length( $prdinf->{$_} );
+%				next if $_ eq 'desc_long' or /^title/ or /^\_.+/ or $_ eq 'description' or $_ eq 'art_no_ref' or $_ eq 'discount_perc' or $_ eq 'cat_id'
+%				or $_ eq 'currency' or $_ eq 'xchange' or /^cat.+/ or /^price/ or $_ eq 'instime' or $_ eq 'vat_amount' or /feat$/ or $_ eq 'teaser'
+%				or $_ eq 'count' or $_ eq 'count2' or $_ eq 'sale_type' or $_ eq 'prod_type' or $_ eq 'desc_keyw' or $_ eq 'vat' or /^brand$/ or /^image$/;
+%				my $val_enc = $C->uri_esc( $prdinf->{$_} );
+			<tr>
+				<td style="width:30%"><b><% $prodkey_hr{$_} || "* $_ *" %></b></td>
+				<td>
+%					if ($cache_data->{"upd_$args{id}_$_"}) {
+						<span class="animate-pulse"><% $prdinf->{$_} %></span>
+%					}
+%					elsif ($_ eq 'is_promo' && $prdinf->{$_} < 0) {
+						Tagesangebot <i class="fi fi-loud fs--19 ml-1"></i>
+%					}
+%					elsif ($_ eq 'is_promo') {
+						<% $prdinf->{$_} ? 'Ja' : 'Nein' %>
+%					}
+%					elsif ($_ eq 'extra') {
+						<div class="prism-limit-len-400">
+						[ <% $prdinf->{$_} %> ] <small class="ml-3">1 = neu | 2 = refurb. | 3 = gebraucht &mdash;
+						<a href="manage-property.html?area=warranty_info_<% $prdinf->{$_}+0 %>">Garantie:</a>
+							<% $C->txt("warranty_info_$prdinf->{$_}") %>
+						</small>
+						</div>
+%					}
+%					elsif ($_ eq 'condition') {
+						<% $prdinf->{$_} %> <small class="ml-3">SO=Stock only / OR=Allow overrun / IP=Info Page / IN=Invisible</small>
+%					}
+%					elsif ($_ eq 'campaign_id') {
+%						my ($company_id, $token) = @{ $C->query("select company_id, token from campaign_data where id=$prdinf->{$_}")};
+%						my $company = $C->query("select name from companies where id=$company_id")->[0];
+%						if ($prdinf->{$_}) {
+						    <div class="prism-limit-len-400">
+							<span class="badge badge-pink fs--13 mr-3">
+								ID <% $prdinf->{$_} %> &middot; <% $company %>
+							</span>
+							<a href="/token.html?token=<% $token %>">Kunden-Shop</a>
+							&middot; <a href="/admix.html?func=hiddenshop&edit=<% $prdinf->{$_} %>">Token verwalten</a>
+						    </div>
+%						}
+%						else {
+							Nein <small>(&ouml;ffentlich)</small>
+%						}
+%					}
+%					elsif ($_ eq 'art_no') {
+						<span data-toggle="tooltip" data-placement="top" data-original-title="<% $prdinf->{$_} %>">
+							<% $A->get_product_art_no(id=>$args{id})->{art_no} %></span>
+%					}
+%					elsif ($_ eq 'count_product') {
+%						if ($args{has_qty_o}->{has_qty_option}) {
+							<a href="/admix.html?func=options&id=<% $args{has_qty_o}->{has_qty_option} %>">
+								<span class="badge badge-secondary mr-3">
+									Via Option-ID <% $args{has_qty_o}->{has_qty_option} %>:
+										<% $prdinf->{count} %> Stk.
+								</span>
+							</a>
+%						}
+%						if ($prdinf->{$_} < 2) {
+							<span class="animate-pulse" style="color:red"><% $prdinf->{$_} %> Stk.</span>
+%						}
+%						else {
+							<% $prdinf->{$_} %> Stk.
+%						}
+%					}
+%					else {
+						<% $prdinf->{$_} %>
+%					}
+				</td>
+				<td>
+				    <span class="float-end">
+%				    if ($_ eq 'is_promo') {
+%					my $id = $C->query("select id from promo_prods where product_id=$args{id} limit 1")->[0];
+%					if ($id) {
+				    		<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>"403162_182_$_",
+							url=>"/adx/_ajax/modal_adjust_promo.html?id=$id&css_id=403162_182_$_&size=md") } %>
+%					}
+%					else {
+				    		<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>"403162_182_$_",
+							url=>"/adx/_ajax/modal_add_promo_with_id.html?id=$args{id}&css_id=403162_182_$_") } %>
+%					}
+%				    }
+%				    elsif ($_ eq 'campaign_id') {
+					<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>"403141_$_",
+					url=>"/adx/_ajax/modal_edit_product_prozone.html?id=$args{id}&css_id=403141_$_&what=$_&val=$val_enc&size=md") } %>
+%				    }
+%				    elsif (/^condition$/) {
+				    	<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>"403141_$_",
+					url=>"/adx/_ajax/modal_edit_product_condition_count.html?id=$args{id}&css_id=403141_$_&what=$_&val=$val_enc&size=md") } %>
+%				    }
+%				    else {
+				    	<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>"403141_$_",
+					url=>"/adx/_ajax/modal_edit_product_section.html?id=$args{id}&css_id=403141_$_&what=$_&val=$val_enc&size=md") } %>
+%				    }
+				    </span>
+				</td>
+			</tr>
+%		}
+			</table>
+		</div>
+
+		<div class="col-6">
+			<div class="float-end">
+				<% ${ $A->modal( label=>'<i class="fi fi-pencil mr-3 fs--20 mt-1"></i>', css_id=>"404011_257",
+					url=>"/adx/_ajax/modal_product_options.html?id=$args{id}&css_id=404011_257&size=md") } %>
+			</div>
+%			my $sth = $C->{dbh}->prepare("select id, label, `description`, amount from voptions where lang='de' AND id IN ($opt_ids_cs) order by 1");
+%			   $sth->execute();
+			<h3 class="fs--20 mt-2 mb-3">Zusatz-Optionen &middot; Aufpreism&ouml;glichkeiten</h3>
+%		    if ($sth->rows() > 0) {
+			<table class="table table-sm mt-3 table-hover table-responsive">
+			<tr>
+				<th style="width:35%">Option</th>
+				<th style="width:11%; padding-right:25px" nowrap>Opt-ID</th>
+				<th>Auswahl</th>
+				<th class="float-end">Aufpreis</th>
+			</tr>
+%			my $opt_id_before = 0;
+%			while(my $r = $sth->fetch()) {
+%				my ($id, $label, $desc, $amount) = @{$r};
+%				next if $id == $opt_id_before; # -- 12Apr2024
+				<tr>
+%				if ($id == $opt_id_before) {
+					<td colspan="2"></td>
+%				}
+%				else {
+					<td nowrap>
+%						if (length($label) > 42) {
+							<abbr title="<% $label %>"><% substr($label, 0, 42) %>...</abbr>
+%						}
+%						else {
+							<% $label %>
+%						}
+					</td>
+					<td class="text-center"><a href="/adx/options.html?open=<% $id %>"><% $id %></a></td>
+%				}
+					<td nowrap><% $desc %></td>
+					<td><span class="float-end"><% $amount ? sprintf('%.2f', $amount * (1 + $C->{CONFIG}->{vat_ch} / 100)) : '' %></span></td>
+				</tr>
+%				$opt_id_before = $id;
+%			}
+			</table>
+%		    }
+%		    else {
+			<p>Derzeit keine konfiguriert</p>
+%		    }
+			<div class="float-end">
+				<& inc_modal_link.html, label=>'<i class="fi fi-plus"></i>', url=>"/_ajax/modal_planned_discount.html?id=$args{id}",
+					size=>'lg', class=>'btn btn-sm btn-soft btn-primary btn-pill mb-1', C=>$C &>
+			</div>
+			<h3 class="fs--20 mt-4"><% $future_discount_count || 'Keine' %> Geplante Rabatte</h3>
+%			if ($future_discount_count) {
+			<table class="table table-striped table-sm table-hover mt-1">
+			<tr>
+				<th>Datum von</th>
+				<th>Datum bis</th>
+				<th>R-ID</th>
+				<th class="float-end">Rabatt</th>
+				<th></th>
+			</tr>
+%			foreach (sort keys %{ $prdinf->{feat} }) {
+%				my ($weight, $label, $date_to, $f_id) = split /\t/;
+%				next unless $label eq '_discount_perc';
+%				my ($instime, $date_from) = @{$C->query("select instime, `description` from products_feat where id=$f_id")};
+%				my $is_now = $C->within_time(from=>$date_from, to=>$date_to);
+				<tr style="<% $is_now->{current} ? 'background-color:#E8FFE8 !important; font-weight:500;' : '' %>">
+					<td><% $C->trans_date_short($date_from) %></td>
+					<td><% $C->trans_date_short($date_to) %></td>
+					<td>
+%						if ($perm->{is_devel}) {
+							<a title="<% $is_now->{msg} %>"
+								href="/adm_db_edit.html?table=products_feat&wcl=id%3D<% $f_id %>"><% $f_id %></a>
+%						}
+%						else {
+							<% $f_id %>
+%						}
+					</td>
+					<td><span class="float-end text-red-800"><% sprintf('%.2f', $weight / 100) %> %</span></td>
+					<td>
+						<span class="float-end cursor-pointer" onclick="del_disc(<% $f_id %>)"><i style="color:red"
+							class="fi fi-close"></i></span>
+					</td>
+				</tr>
+%			}
+			</table>
+%			}
+
+%			if (@{ $fls->{files} }) {
+				<h5 class="mt-4 fs--17">File(s)</h5>
+%				foreach my $f (@{ $fls->{files} }) {
+%					(my $f_disp = $f) =~ s/^p$args{id}\-//;
+					&bull; <a target="_blank" href="/produkte/docs/<% $f %>"><% $f_disp %></a><br>
+%				}
+%			}
+		</div>
+	</div>
+%	# =============================================================================================================
+
+	<div class="float-end">
+%		if ($perm->{is_devel}) {
+%			if ($C->get_workval("alert_408211_$args{id}")) {
+%				my $ts = $C->query("select tstamp from work where k='alert_408211_$args{id}'")->[0];
+				<b>Alerted:</b>
+				<a href="/adm_db_edit.html?table=work&wcl=k%3D%27alert_408211_<% $args{id} %>%27"><% $C->trans_date_short($ts) %></a>
+%			}
+%			if ($prdinf->{pfeat}->{"-001\t_exclude\tOP_ALERT"}) {
+				<a class="mr-3 ml-4 text-red-800" href="_remove_op_alert.html?id=<% $args{id} %>"><i class="fi fi-minus"></i> OP_ALERT</a>
+%			}
+%			else {
+				<a class="ml-2 mr-2" href="_add_op_alert.html?id=<% $args{id} %>"><i class="fi fi-plus"></i> OP_ALERT</a>
+%			}
+%		}
+		<% ${ $A->modal( label=>'<i class="fi fi-plus pl--10"></i>', css_id=>"404011_341",
+			class=>'btn btn-sm btn-soft btn-pill btn-primary p--5',
+			url=>"/adx/_ajax/modal_add_prodfeat.html?id=$args{id}&css_id=404011_341&size=md") } %>
+	</div>
+
+	<h3 class="fs--20 mt-2 mb-3 float-left">Artikeleigenschaften / Konfiguration</h3>
+
+	<span class="float-left pt-2 ml-3" XXXdata-toggle="tooltip" XXXdata-placement="right" XXXdata-original-title="Produkt-Spezifikation erstellen">
+		<% ${ $A->modal( label=>'<i class="fi fi-task-list"></i>', css_id=>"503190_487", tooltip=>'Produkt-Spezifikation erstellen',
+			url=>"/adx/_ajax/modal_prod_spec.html?id=$args{id}&f_id=999999&css_id=503190_487") } %>
+	</span>
+
+	<table class="table table-striped table-sm table-hover mt-2">
+	<tr>
+		<th>Eigenschaft</th>
+		<th>Wert</th>
+		<th class="pl-4">Referenz</th>
+		<th class="pl-5">Zugewiesen</th>
+		<th>Gewicht</th>
+		<th>Edit</th>
+	</tr>
+%	foreach (sort keys %{ $prdinf->{feat} }) {
+%		my ($weight, $label, $ident, $f_id) = split /\t/;
+%		next if $label eq '_discount_perc';
+%		my ($instime, $val) = @{$C->query("select instime, `description` from products_feat where id=$f_id")};
+		<tr>
+		<td><b>
+%			if ($label eq '_exclude') {
+				<span class="text-brown-300">[ <% $ident =~ /^EXCLUDE/ ? 'Exclude' : $ident %> ]</span>
+%			}
+%			else {
+				<% $label %>
+%			}
+		</b></td>
+		<td class="prism-limit-len-404282">
+%			if ($ident =~ /\_URL$/) {
+%				(my $val_disp = $val) =~ s/^https:\/\///; $val_disp =~ s/^www\.//;
+				<a target="_blank" href="<% $val %>"><% $val_disp %></a>
+%			}
+%			else {
+				<% $val %>
+%			}
+		</td>
+		<td class="pl-4 font-weight-bold fs--17"><code><% uc $ident %></code></td>
+		<td class="pl-5"><% $C->trans_date_short_nt($instime) %></td>
+		<td><% $weight %></td>
+		<td>
+			<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>"404011_351_$f_id",
+				url=>"/adx/_ajax/modal_edit_product_feature.html?id=$args{id}&f_id=$f_id&css_id=404011_351_$f_id") } %>
+%			if ($debug) {
+				<a href="/adm_db_edit.html?table=products_feat&wcl=id%3D<% $f_id %>">DB Edit</a>
+%			}
+		</td>
+		</tr>
+%	}
+	</table>
+
+	<input type="hidden" name="id" value="<% $args{id} %>">
+		<div class="float-end mb-2">
+			<input type="button" value="Zur&uuml;ck" class="btn btn-soft btn-secondary w--150" onclick="document.location='products.html'">
+
+			<& inc_modal_link.html, label=>'L&ouml;schen', url=>"/_ajax/modal_adm_del_prod.html?id=$args{id}", size=>'md',
+				class=>'btn btn-warning btn-soft w--150', C=>$C, group_icon=>'fi fi-locked' &>
+
+%			if ($args{cache_count}) {
+				<input type="button" class="btn btn-warning w--150"
+					value="&Auml;nd. verwerfen" onclick="document.f403141_269.action.value='revert'; document.f403141_269.submit()">
+				<input type="button" class="btn btn-success animate-pulse w--150" value="Jetzt Speichern" onclick="save()">
+%			}
+%			else {
+				<input type="submit" class="btn btn-success w--150" value="Speichern" onclick="save()">
+%			}
+		</div>
+
+%	foreach my $key (keys %{$cache_data}) {
+%		(my $key_short = $key) =~ s/^upd\_$args{id}\_//;
+		&bull; <b><% $key_short %></b> = <% $cache_data->{$key} %><br>
+%	}
+	<br />
+
+	<a href="#" class="js-ajax-modal float-start text-dark fs--16"
+		data-href="/_ajax/modal_show_prod_history_sow.html?id=<% $args{id} %>"
+			data-ajax-modal-size="modal-xl"
+			data-ajax-modal-centered="true"
+			ZZdata-ajax-modal-backdrop="static">
+			<span>&#128337; &Auml;nderungsverlauf</span>
+	</a>
+
+	<a href="#" class="js-ajax-modal float-start text-dark fs--16 ml-2"
+		data-href="/_ajax/modal_copy_product_sow.html?id=<% $args{id} %>&title=<% $C->uri_esc($prdinf->{title}) %>"
+			data-ajax-modal-size="modal-md"
+			data-ajax-modal-centered="true"
+			ZZdata-ajax-modal-backdrop="static">
+			<span>&#128203; Produkt kopieren</span>
+	</a>
+
+%	if ($perm->{is_devel}) {
+		<br>Devel: <a href="/adm_db_edit.html?table=products&wcl=id%3D<% $args{id} %>">DB Edit</a>
+%	}
+%	if ($debug) {
+%		foreach ($C->{CGI}->all_parameters) {
+			[ CGI ] - <% $_ %> = "<% $C->{CGI}->param($_) %>"<br>
+%		}
+%	}
+	<div id="XX_403181"><% $C->getSessData('targetp_403181') %></div>
+
+</div>
+
+<form method="post" name="f403141_269">
+<input type="hidden" name="id" value="<% $args{id} %>">
+<input type="hidden" name="action">
+<input type="hidden" name="attr">
+<input type="hidden" name="brand">
+<input type="hidden" name="title_de">
+<input type="hidden" name="title_en">
+<input type="hidden" name="title_fr">
+<input type="hidden" name="desc_long">
+% if ($args{cache_count}) {
+	<input type="hidden" name="f_cache_data" value="1">
+%	foreach my $key (keys %{$cache_data}) {
+%		(my $key_short = $key) =~ s/^upd\_$args{id}\_/upd\_/;
+		<input type="hidden" name="<% $key_short %>" value="<% $cache_data->{$key} %>">
+%	}
+% }
+</form>
+
+<form method="post" name="f311171_149" action="edit-product.html">
+	<input type=hidden name="id" value="<% $args{id} %>">
+	<input type=hidden name="del_disc">
+</form>
+
+<style>
+	#dropz_403181_2.hover { background-color: #D0EFFF !important; }
+	#dropz_403181_3.hover { background-color: #D0EFFF !important; }
+</style>
+
+<script language="JavaScript">
+	function save() {
+		document.f403141_269.brand.value    = document.getElementById('txe_brand').value;
+		document.f403141_269.title_de.value = document.getElementById('txe_title_de').value;
+		document.f403141_269.title_en.value = document.getElementById('txe_title_en').value;
+		document.f403141_269.title_fr.value = document.getElementById('txe_title_fr').value;
+		document.f403141_269.action.value='save';
+		document.f403141_269.submit();
+	}
+	function update(what, xval) {
+		var input = document.createElement("input");
+		input.type = "hidden";
+		input.name = "temp_upd_" + what;
+		xval = xval.replace(/"/g, '&quot;');
+		input.value = xval; 
+		document.f403141_269.appendChild(input);
+	}
+	function update_subm() {
+		document.f403141_269.action.value='update';
+		document.f403141_269.submit();
+	}
+	async function callb_403181(response, el) {
+		var resp = JSON.parse(response);
+		document.getElementById('XX_403181').innerHTML="&bull; File: " + resp.meta.file_path;
+		await sleep(750);
+		document.location="/adx/edit-product.html?id=<% $args{id} %>";
+	}
+	async function callb_403181_2(response, el) {
+		var resp = JSON.parse(response);
+		document.getElementById('XX_403181').innerHTML="&bull; Zusatz-File: " + resp.meta.file_path;
+		await sleep(750);
+		document.location="/adx/edit-product.html?id=<% $args{id} %>";
+	}
+	function sleep(milliseconds) {
+		return new Promise(resolve => setTimeout(resolve, milliseconds));
+	}
+
+	var uploadArea_2 = document.getElementById('dropz_403181_2');
+	var uploadArea_3 = document.getElementById('dropz_403181_3');
+	uploadArea_2.addEventListener('dragover', function(event) {
+		uploadArea_2.classList.add('hover');
+	});
+	uploadArea_2.addEventListener('dragleave', function(event) {
+		uploadArea_2.classList.remove('hover');
+	});
+	uploadArea_3.addEventListener('dragover', function(event) {
+		uploadArea_3.classList.add('hover');
+	});
+	uploadArea_3.addEventListener('dragleave', function(event) {
+		uploadArea_3.classList.remove('hover');
+	});
+
+	function setLang(lang) {
+		document.getElementById('lang_switch_' + lang).classList.remove('btn-outline-dark');
+		document.getElementById('lang_switch_' + lang).classList.add('btn-dark');
+%		for my $lang (qw(de en fr)) {
+			if (lang == '<% $lang %>') {
+%				for my $l (qw(de en fr)) {
+%					next if $l eq $lang;
+					document.getElementById('lang_switch_<% $l %>').classList.remove('btn-dark');
+					document.getElementById('lang_switch_<% $l %>').classList.add('btn-outline-dark');
+%				}
+			}
+%		}
+		const url = '/adx/_ajax/get_product_desc_long.html?id=<% $args{id} %>&lang=' + lang;
+		const div = document.getElementById('desc403272');
+		fetch(url)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Netzwerkantwort war nicht ok');
+				}
+				return response.text(); // Konvertiert die Antwort in Text
+			})
+			.then(data => {
+				div.innerHTML = data;
+			})
+			.catch(error => {
+				console.error('Es gab ein Problem mit dem Fetch-Operation:', error);
+% #				div.innerHTML = 'Fehler beim Laden des Inhalts';
+			});
+	}
+
+	function reloadRootWindow() {
+		document.location = "/adx/edit-product.html?id=<% $args{id} %>";
+	}
+
+	setLang('<% $lang %>');
+
+<%doc>
+	document.addEventListener("DOMContentLoaded", function() {
+		var bild = document.getElementById("pic403151");
+		bild.onload = function() {
+			bild.style.display = "block"; // Bild anzeigen, wenn es geladen ist
+		};
+	});
+</%doc>
+</script>

@@ -1,0 +1,139 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $debug  = $C->getSessData('debug') || 0;
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	id, style, mandatory, label, `description`, ref, det_id, feat_id, stock, weight, amount
+		from	voptions
+		where	lang='de'
+		order	by label, `description`
+	~);
+	$sth->execute();
+
+	my $cur_feat = $A->get_product_feat($id);
+	my %act = ();
+	foreach my $cur (@{ $cur_feat }) {
+		my $opt_id = (split /\t/, $cur)[0];
+		$act{ $opt_id } = 1;
+	}
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Produkt ID <% $id %> &middot; Zusatz-Optionen &middot; Aufpreism&ouml;glichkeiten</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+%				if ($debug) {
+					<p>Template: <code><% $C->this() %></code></p>
+%				}
+
+				<form name="f404081_45">
+				<table class="table table-sm">
+%				my $id_before = 0;
+%				while(my $r = $sth->fetch()) {
+%					my ($id, $style, $mandatory, $label, $desc, $ref, $det_id, $feat_id, $stock, $weight, $amount) = @{$r};
+%					my $amount_incl_vat = sprintf('%.2f', $amount * (1 + $C->{CONFIG}->{vat_ch} / 100));
+					<tr>
+%					if ($id_before != $id) {
+%						my $active = $act{$id} ? 'checked=""' : '';
+						<td style="max-width:65px">
+						     <label class="form-switch form-switch-primary d-block">
+							<input type="checkbox" name="cb_opt_<% $id %>" value="1" <% $active %>>
+								<i data-on="&#10004;" data-off="&#10005;"></i>
+						    </label>
+						</td>
+						<td class="text-center" nowrap>
+%							if ($style == 1) {
+								<a href="options.html?open=<% $id %>">
+								<span data-toggle="tooltip" data-placement="top" data-original-title="Typ 1, St&uuml;ckzahl-relevant"
+							class="text-pink <% $active ? 'animate-pulse' : '' %>"><% $id %><i class="fi fi-bell-full-active ml-1"></i></span>
+								</a>
+%							}
+%							else {
+								<span class="text-gray-500"><% $id %></span>
+%							}
+						</td>
+						<td class="font-weight-bold" nowrap>
+%							if (length($label) > 25) {
+								<span data-toggle="tooltip" data-placement="bottom" data-original-title="<% $label %>">
+									<% $C->shorten_title($label, 25) %>
+								</span>
+%							}
+%							else {
+								<% $label %>
+%							}
+						</td>
+						<td class="fs--11"><% $mandatory ? 'Pflicht' : '&mdash;' %></td>
+%					}
+%					else {
+						<td colspan="4"></td>
+%					}
+					<td><% $desc %><% $amount ? " &middot; $amount_incl_vat" : '' %></td>
+					</tr>
+%					$id_before = $id;
+%				}
+				</table>
+				</form>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="subm404081_98()">
+					<i class="fi fi-check"></i> Okay
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script	type="text/javascript">
+	function subm404081_98() {
+		const checkboxes = document.querySelectorAll('form[name="f404081_45"] input[type="checkbox"][name^="cb_"]');
+		const queryParts = [];
+		checkboxes.forEach(function(checkbox) {
+			if (checkbox.checked) {
+				queryParts.push(encodeURIComponent(checkbox.name) + "=" + encodeURIComponent(checkbox.value));
+			}
+		});
+		const queryString = queryParts.join('&');
+
+		$.ajax({
+			url: '/_ajax/proc_adm_assign_prodopt.html?id=<% $id %>&' + queryString,
+			type: 'GET',
+			dataType: 'html',
+			success: function(response) {
+				reloadRootWindow();
+			},
+			error: function(xhr, status, error) {
+				console.error(error);
+			}
+		});
+		return false;
+	}
+
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();
+	});
+</script>
+
+<%doc>
+	Created: 01Apr2024
+</%doc>

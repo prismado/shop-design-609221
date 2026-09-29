@@ -1,0 +1,20 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+</%init>
+<div class="portlet-header border-bottom">
+	<span>Modal-Beispiel Nr. 2 &ndash; Ajax / JQuery</span>
+</div>
+
+<div class="portlet-body">
+
+% # XX	<& sample_modal_ajax.html, C=>$C &>
+
+	<hr />
+	<p style="font-size:0.8rem">
+		<a href="_ajax/modal_foo.html">Ausgelagerte Modal-Datei</a> <code>_ajax/modal_foo.html</code>
+	</p>
+
+</div>

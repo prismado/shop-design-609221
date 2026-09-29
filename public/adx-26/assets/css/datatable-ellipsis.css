@@ -1,0 +1,57 @@
+table.dataTable tr.odd                { background-color: #EEF2F5; line-height: 2.2; color: black }
+table.dataTable tr.even               { background-color: #fefefe; line-height: 2.2; color: #222222 }
+table.dataTable td.sorting_1          { background-color: #e8ecef; font-weight: 500 }
+table.dataTable tr:hover              { background-color: #d0d0d0 !important; }
+table.dataTable tr:hover td.sorting_1 { background-color: #d3dbe0 !important; }
+
+/* Odd rows */
+.dark table.dataTable tr.odd {
+    background-color: #0b1220;   /* tiefes Navy */
+    line-height: 2.2;
+    color: #e5e7eb;
+}
+
+/* Even rows */
+.dark table.dataTable tr.even {
+    background-color: #152238;   /* sichtbar heller */
+    line-height: 2.2;
+    color: #e5e7eb;
+}
+
+/* Row hover */
+.dark table.dataTable tr:hover {
+    background-color: #1e293b !important;
+}
+
+/* Sorting column hover */
+.dark table.dataTable tr:hover td.sorting_1 {
+    background-color: #1e40af !important;
+}
+
+/* Sorting column base */
+.dark table.dataTable td.sorting_1 {
+    background-color: #172554;   /* dunkles Blau */
+    font-weight: 500;
+    color: #f9fafb;
+}
+
+/* Links in sorting column */
+.dark table.dataTable td.sorting_1 a {
+    color: #60a5fa !important;
+}
+
+.dark table.dataTable td.sorting_1 a:hover {
+    color: #93c5fd !important;
+}
+
+	table.dataTable tr td {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width:150px;
+	}
+
+	.custom-select {
+		width:62px !important; padding-left:10px !important; ZZheight:32px;
+	}
+

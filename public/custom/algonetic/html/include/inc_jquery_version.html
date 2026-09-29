@@ -1,0 +1,20 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $exp_v = $args{exp_v} || '3.4.1';
+</%init>
+<div id="div6_307070">jQuery ist inaktiv</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+	var msg = 'ok';
+	if (jQuery.fn.jquery != '<% $exp_v %>') {
+		msg = 'Erwartung war <% $exp_v %>';
+	}
+	document.getElementById('div6_307070').innerHTML='<code>jQuery ist aktiv; Version: ' + jQuery.fn.jquery + '</code> ' + msg;
+});
+</script>
+<%doc>
+	Created: 07Jul2023
+</%doc>

@@ -1,0 +1,113 @@
+<%init>
+	use ScreenPoint::Core;
+	# XX use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	# XX my $A = ScreenPoint::Auctionline->new($C);
+
+	my $debug  = $C->getSessData('debug') || 0;
+	my $cgi    = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+
+	my $mess_id = $C->get_safe_property( 'google_measurement_id', 'sys' ) || 'N/A';
+
+	my $tpl = $C->exec(
+		comp_file => 'inc_header_seo.html',
+		theme     => 'algonetic',
+		dir       => 'html/include',
+		suppr_chk => 1
+	);
+
+	(my $g_script_out = $tpl->{out}) =~ s/</&lt;/g;
+	    $g_script_out =~ s/>/&gt;/g;
+
+	my $g_track_tag      = $C->txt('google_conv_tracking_tag', 'sys');
+
+	my $g_track_on       = $C->txt('google_conv_tracking_on', 'sys') + 0;
+	(my $g_track_trigger = $C->txt('google_conv_tracking_final_trigger_page_head', 'sys')) =~ s/</&lt;/g;
+	    $g_track_trigger =~ s/>/&gt;/g;
+
+	(my $g_track_head    = $C->txt('google_conv_tracking_head', 'sys')) =~ s/</&lt;/g;
+	    $g_track_head    =~ s/>/&gt;/g;
+</%init>
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<img class="mt-1 mr-2" src="/adx/assets/images/logo/prism_icon_google.svg">
+				<h5 class="modal-title" id="<% $css_id %>">Google Analytics</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="float-end">
+					[ GA4 ] &middot; Measurement-ID: <b class="fs--18"><% $mess_id %></b>
+					<a href="/adm_safe_properties.html?lang=sys&filter=google\_measurement\_"><i class="fi fi-pencil mt--n3"></i></a>
+				</div>
+				Innerhalb <code class="language-html">&lt;head&gt; ... &lt;/head&gt;</code>
+				<p class="mt-3">
+					Inhalt von <code>custom/algonetic/html/include/inc_header_seo.html</code>:
+				</p>
+
+				<pre class="line-numbers" data-start="10"><code class="language-html fs--15"><% $g_script_out %></code></pre>
+
+%				if ($debug) {
+					<p>Template: <code><% $C->this() %></code></p>
+%					foreach ($cgi->all_parameters) {
+						X -- <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%					}
+%				}
+
+				<p>
+%				if ($g_track_on) {
+					Google Conversion Tracking ist <b>aktiviert</b>
+%				}
+%				else {
+					Google Conversion Tracking ist <b>inaktiv</b>
+%				}
+					&middot; [ G-Tag: <code class="font-weight-bold fs--18"><% $g_track_tag %></code> <a
+						href="manage-property.html?area=google_conv_tracking_tag"><i class="fi fi-pencil"></i></a> ]
+				</p>
+
+				<div class="float-end">
+					<a href="manage-property.html?area=google_conv_tracking_head"><i class="fi fi-pencil"></i></a>
+				</div>
+
+				<div class="col-11 pl-0 mt-3">
+					<pre class="line-numbers" data-start="25"><code class="language-html fs--15"><% $g_track_head %></code></pre>
+				</div>
+
+				<div class="float-end">
+					<a href="manage-property.html?area=google_conv_tracking_final_trigger_page"><i class="fi fi-pencil"></i></a>
+				</div>
+
+				Final Trigger: Innerhalb <code class="language-html">&lt;head&gt; ... &lt;/head&gt;</code>
+
+				<div class="col-11 pl-0 mt-3">
+					<pre class="line-numbers" data-start="35"><code class="language-html fs--15"><% $g_track_trigger %></code></pre>
+				</div>
+
+				<p class="mt-3 mb-0">
+					Starten Sie eine neue Tag Assistant-Sitzung, um die Einrichtung der Einwilligung für Websites zu &uuml;berprüfen:
+					<a href="https://tagassistant.google.com/?hl=de">tagassistant.google.com</a>
+				</p>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150">
+					<i class="fi fi-check"></i> Okay
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>

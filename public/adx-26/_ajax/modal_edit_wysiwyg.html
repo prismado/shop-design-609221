@@ -1,0 +1,120 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	use utf8; # -- 22Jan2026
+
+	my $perm   = $C->get_user_perm();
+	my $debug  = $C->getSessData('debug') || 0;
+	my $cgi    = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+	my $lang   = $C->getSessData('xlang') || $cgi->param('lang')   || 'de';
+	my $ai_lang= $lang . 'a';
+
+	my $is_virtual = $C->query("select id from products_desc where product_id=$id and lang='$ai_lang'")->[0];
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+
+		<div class="modal-content">
+%			if ($perm->{is_devel}) {
+				<span onclick="document.getElementById('div_409121_46').style.display=''"
+					style="margin-left:685px; padding-top:20px; position: absolute; cursor:pointer;">AI</span>
+%			}
+
+			<div class="modal-header">
+				<h6 class="modal-title mt-2" id="<% $css_id %>">Beschreibung &middot; ID <% $id %> &middot; [ <% $lang %> ]</h6>
+
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+
+					<img data-toggle="tooltip" data-placement="left" data-original-title="Text automatisch erstellen"
+						class="mr-2" onclick="JavaScript:document.location='_update_product_ai.html?id=<% $id %>&lang=<% $lang %>';"
+							src="assets/images/ai_symb.svg" style="max-width:30px;">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+%				if ($debug) {
+					<p>Produkte-ID <b><% $id %></b> &mdash; Template: <code><% $C->this() %></code><br>
+					<tt>&lt;iframe src="<code>/adx/_wysiwyg_edit_for_iframe.html</code>"&gt;</tt> id: <code>if403281</code> &darr;
+					</p>
+%				}
+
+				<div id="div_409121_46" class="mb-2" style="display:none;">
+					<h6>KI Optionen</h6>
+					<div class="form-label-group mb-3">
+						<input placeholder="Anzahl W&ouml;rter" id="XX_tbd" type="text" value="75" class="form-control">
+						<label for="first_name">Anzahl W&ouml;rter</label>
+					</div>
+				</div>
+
+				<iframe src="/adx/_wysiwyg_edit_for_iframe.html?id=<% $id %>&lang=<% $lang %>" id="if403281"
+					style="width:100%; border:none; height:45vh" frameborder="0"></iframe>
+
+%				if ($debug) {
+					<p class="text-left">
+						<tt>&lt;/iframe&gt;</tt><br>
+%						foreach ($cgi->all_parameters) {
+							[ CGI ] - <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%					}
+					</p>
+%				}
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+%			    if ($is_virtual) {
+				<button type="button" class="btn btn-sm btn-soft btn-warning w--150" onclick="reset409121()"
+					data-toggle="tooltip" data-placement="top" data-original-title="KI-Text-Entwurf verwerfen">
+					<span style="color:red">
+					<i class="fi fi-close mr-2"></i> Verwerfen
+					</span>
+				</button>
+%			    }
+
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="subm403281()">
+					<i class="fi fi-check"></i> Update
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function subm403281() {
+		var iframe = document.getElementById('if403281');
+		var formular = iframe.contentWindow.document.getElementById('f403281_18');
+
+		var hiddenInput = document.createElement('input');
+		    hiddenInput.setAttribute('type', 'hidden');
+		    hiddenInput.setAttribute('name', 'bSave');
+		    hiddenInput.setAttribute('value', '1');
+		formular.appendChild(hiddenInput);
+
+		formular.submit();
+
+		$('#<% $css_id %>').modal('hide');
+
+		setTimeout(function() {
+			setLang('<% $lang %>');
+% #			reloadRootWindow();
+		}, 750);
+	}
+
+	function reset409121() {
+		document.location='_reset_ai_text.html?id=<% $id %>&lang=<% $lang %>&virtual=<% $is_virtual %>';
+	}
+
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();
+	});
+</script>

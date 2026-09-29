@@ -1,0 +1,41 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $id     = $cgi->param('id')     || 0; $id += 0;
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-full" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Modal Test &middot; Foo</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<h5 class="mb-3">Modal Test</h5>
+				<p>Param ID: <b><% $id %></b> &mdash; Template: <code><% $C->this() %></code></p>
+				<p>Eine Ausgelagerte Modal-Datei mit CSS-ID <code><% $css_id %></code>.</p>
+				<p>2 plus 3 = <% 2 + 3 %> am <% $C->now(2) %></p>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary">
+					<i class="fi fi-check"></i> Save changes
+				</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">
+					<i class="fi fi-close"></i> Close
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>

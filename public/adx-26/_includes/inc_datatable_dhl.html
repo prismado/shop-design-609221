@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C      = $args{C};
+	my $dt_ver = $args{dt_ver};
+	my $debug  = $args{debug};
+</%init>
+% if ($debug) {
+	Debug: <% $C->this() %><br>
+	Source: <code>adx/_ajax/server_processing_dhl.html</code><br>
+% }
+
+<table id="dt004" class="table table-datatable table-bordered table-hover table-striped"
+	data-ajax="_ajax/server_processing_dhl.html?foo=<% $$ %>&debug=<% $debug %>"
+	data-items-per-page="15"
+	data-lng-search="Suchen..."
+	data-lng-loading="Wird geladen..."
+	data-custom="<% $dt_ver == 2 ? 'true' : 'false' %>"
+	data-order='[[ 0, "desc" ]]'
+>
+
+<thead>
+<tr>
+	<th>Order-ID</th>
+	<th>Quelle</th>
+% # XXX	<th>Req-ID</th>
+	<th>Status</th>
+	<th>Track Nr.</th>
+	<th>Cr-Time</th>
+</tr>
+</thead>
+
+</table>

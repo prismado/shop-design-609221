@@ -1,0 +1,80 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $cgi->param('lang') || 'de';
+	my $msg  = $cgi->param('msg');
+</%init>
+<div class="footer-hinweis z-index-99" style="opacity:0.95; animation: fadeIn 0.85s ease-in-out forwards !important;" id="footer_404151_87">
+
+	<div class="row">
+		<div class="col-1"></div>
+
+		<div class="col-10">
+			<p class="mb-2 text-dark">
+				<i class="fi fi-squared-info"></i> <b>Der Cookie Consent (<% $lang %>)</b><br>
+					Dies ist ein wichtiger Hinweistext <% $msg %>!
+			</p>
+
+			<label class="form-switch form-switch-primary" style="pointer-events:none !important">
+				<input type="checkbox" style="pointer-events:none !important" id="dummy404152" checked="">
+					<i data-on="&#10004;" data-off="&#10005;"></i>
+					<b>Shop-Funktionalit&auml;t</b> &middot; <span class="text-gray-700 fs--14">tbd</span>
+			</label>
+
+			<label class="form-switch form-switch-primary">
+				<input type="checkbox" name="cb_cat_1048" value="1" checked="">
+					<i data-on="&#10004;" data-off="&#10005;"></i>
+					<b>Personalisierung</b> &middot; <span class="text-gray-700 fs--14">tbd</span>
+			</label>
+
+			<label class="form-switch form-switch-primary">
+				<input type="checkbox" name="cb_cat_1048" value="1" checked="">
+					<i data-on="&#10004;" data-off="&#10005;"></i>
+					<b>Marketing-Cookies</b> &middot; <span class="text-gray-700 fs--14">tbd</span>
+			</label>
+
+			<label class="form-switch form-switch-primary">
+				<input type="checkbox" name="cb_cat_1048" value="1" checked="">
+					<i data-on="&#10004;" data-off="&#10005;"></i>
+					<b>Google Analytics</b> &middot; <span class="text-gray-700 fs--14">tbd</span>
+			</label>
+		</div>
+
+		<div class="col-1 hidden-xs-down" style="display: flex; align-items: center; justify-content: flex-end">
+			<button class="btn btn-primary btn-sm float-end mr-2" onclick="subm_404152_61()">Festlegen</button>
+		</div>
+	</div>
+
+	<div class="row hidden-sm-up">
+		<div class="col-12">
+			<button class="btn btn-primary btn-sm" onclick="subm_404152_61()">Festlegen</button>
+		</div>
+	</div>
+
+</div>
+
+<form name="f_404152_61">
+</form>
+
+<script language="JavaScript">
+	function subm_404152_61() {
+		document.getElementById('footer_404151_87').style.display='none';
+		$.ajax({
+			url: '/_ajax/proc_foo.html?tbd=<% $$ %>&msg=cookie+banner+wurde+geschlossen',
+			type: 'GET',
+			dataType: 'html',
+			success: function(response) {},
+			error: function(xhr, status, error) {
+				console.error(error);
+			}
+		});
+	}
+</script>
+	
+<%doc>
+	Created: 15Apr2024
+</%doc>

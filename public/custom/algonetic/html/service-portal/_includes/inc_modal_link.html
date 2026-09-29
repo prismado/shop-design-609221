@@ -1,0 +1,14 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $url   = $args{url}   || '/_ajax/modal_foo.html';
+	my $size  = $args{size}  || 'md';
+	my $label = $args{label} || '* No label *';
+</%init>
+<a href="#" class="js-ajax-modal <% $args{class} %>"
+	data-href="<% $url %>"
+	data-ajax-modal-size="modal-<% $size %>"
+	data-ajax-modal-centered="true"
+	data-ajax-modal-backdrop="static">
+	<span><% $label %></span>
+</a>

@@ -1,0 +1,301 @@
+<%init>
+	use utf8; # -- 06Apr2026
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $this  = $C->this();
+	my $debug = $C->getSessData('debug');
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid} / $perm->{is_devel} / $perm->{is_admin}
+
+	my $css_id   =  $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $order_id = ($C->{CGI}->param('order_id') + 0) || $C->query('select max(id) from orders where status=4')->[0];
+	my $id       =  $C->{CGI}->param('id') + 0;
+
+	my @paras = ();
+	foreach ($C->{CGI}->all_parameters) {
+		push(@paras, "$_=" . $C->{CGI}->param($_));
+	}
+
+	my $info = join ', ', @paras;
+
+	my $vat_rate = $C->{CONFIG}->{vat} + 0;
+
+	my $is_active = $C->query("select weight from options where id=$id")->[0];
+
+	my $sth = $C->{dbh}->prepare("select label, lang from options_desc where option_id=$id order by 2");
+	   $sth->execute();
+
+	my %labels = ();
+	while(my $r = $sth->fetch()) {
+		my ($label, $lang) = @{$r};
+		$labels{$lang} = $label;
+	}
+
+	my %opt_det = ();
+	   $opt_det{de} = $A->get_opt_details( $id, 'de' );
+	   $opt_det{en} = $A->get_opt_details( $id, 'en' );
+	   $opt_det{fr} = $A->get_opt_details( $id, 'fr' );
+	   $opt_det{it} = $A->get_opt_details( $id, 'it' );
+</%init>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/assets/css/prism_swal.css">
+
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Artikel Option-ID <% $id %> &middot; <% $labels{de} %>
+		<span class="fs--10" style="color:#b1b1b1;">&ndash; Sprachcode "IT" aktuell nicht unterst&uuml;tzt</span></h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+%	if ($debug) {
+		<p><code><% $this %></code></p>
+%	}
+	<form method="post" name="f308281" action="_update_data.html">
+
+	<label class="form-switch form-switch-pill form-switch-primary d-block mb-3 float-end">
+		<input type="checkbox" value="1" <% $is_active ? 'checked' : '' %>
+			onclick="info_404251_59(this.checked)"
+			data-toggle="collapse" name="cb_active" data-target="#public_info">
+			<i data-on="&#10004;" data-off="&#10005;"></i>
+			Aktiv
+	</label><br clear="all" />
+
+	<input type="hidden" name="id"     value="<% $id %>">
+	<input type="hidden" name="lang"   value="de">
+	<input type="hidden" name="x_lang" value="">
+	<input type="hidden" name="action" value="upd_prod_opt">
+
+	<& ../../../../adx/_includes/inc_text_input.html, label=>'Bezeichnung', value_enc=>$labels{de}, tx_class=>'font-weight-bold', id=>404241_53, name=>'label_de' &>
+	<& ../../../../adx/_includes/inc_text_input.html, label=>'Bezeichnung - en', value_enc=>$labels{en},
+		tx_class=>'font-weight-bold', id=>404241_54, name=>'label_en' &>
+	<& ../../../../adx/_includes/inc_text_input.html, label=>'Bezeichnung - fr', value_enc=>$labels{fr},
+		tx_class=>'font-weight-bold', id=>404241_55, name=>'label_fr' &>
+	<& ../../../../adx/_includes/inc_text_input.html, label=>'Bezeichnung - it', value_enc=>$labels{it},
+		tx_class=>'font-weight-bold', id=>404241_56, name=>'label_it' &>
+
+	<p>
+		<a href="#" class="js-ajax-modal btn btn-primary btn-sm btn-pill mb-1"
+			data-href="/_ajax/modal_foo_sow_plus_ajax.html?id=<% $id %>"
+			data-ajax-modal-size="modal-md"
+			data-ajax-modal-centered="true">
+			<span><i class="fi fi-pencil"></i></span>
+		</a>
+	</p>
+
+	<p class="float-end">
+		<a id="l_404241_de" href="#" onclick="changeLang(this, 'de')" style="font-weight:bold; color:black">DE</a>
+		<a id="l_404241_fr" href="#" onclick="changeLang(this, 'fr')" class="ml-3">FR</a>
+		<a id="l_404241_en" href="#" onclick="changeLang(this, 'en')" class="ml-3">EN</a>
+		<a id="l_404241_it" href="#" onclick="changeLang(this, 'it')" class="ml-3">IT</a>
+		<a class="ml-3" onclick="addLeaf()" href="#"
+			data-toggle="tooltip" data-placement="bottom" data-original-title="Auswahl in der aktiven Sprache hinzufügen">
+			<i class="fi fi-plus"></i>
+		</a>
+	</p>
+
+%	my $i = 0;
+%	for my $lang (qw(de en fr it)) {
+		<table class="table ZZtable-sm border" id="t_404241_74_<% $lang %>" style="display:<% ++$i > 1 ? 'none' : '' %>">
+		<tr>
+			<th>Auswahl-Text</th>
+			<th>Referenz-Nr.</th>
+			<th><span class="float-end">Preis</span></th>
+		</tr>
+%		foreach	(@{ $opt_det{ $lang } }) {
+%			my ($x_id, $style, $label, $desc, $ref,	$amount, $stock, $det_id) = split /\t/;
+			<tr>
+			<td class="font-weight-bold" style="width:45%">
+%				if (length($desc) > 42) {
+					<span data-toggle="tooltip" data-placement="bottom"
+						data-original-title="<% $desc %>"><% $C->shorten_title($desc, 42) %></span>
+%				}
+%				else {
+					<% $desc %>
+%				}
+			</td>
+			<td><% $ref %></td>
+			<td><span class="float-end font-weight-bold"><% sprintf('%.2f', $amount * (1 + $vat_rate / 100)) %></span></td>
+			</tr>
+%		}
+		</table>
+%	}
+
+	<p>
+		Editieren:
+		<a href="#" onclick="load_labels('de')">DE</a> / <a href="#" onclick="load_labels('en')">EN</a> / <a href="#" onclick="load_labels('fr')">FR</a> /
+		<a href="#" onclick="load_labels('it')">IT</a>
+	</p>
+
+	<p><a href="#" onclick="delClick(<% $id %>)">Delete</a></p>
+
+	<div id="div_404241_49"></div>
+
+		<div class="modal-footer">
+% #			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft w--150" onclick="document.location='/adx/options.html?cancel=1'">
+				<i class="fi fi-close"></i> Abbrechen
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft w--150" onclick="document.location='/adx/options.html?open=<% $id %>'">
+				<i class="fi fi-pencil"></i> Editieren
+			</button>
+			<button type="button" class="btn btn-success btn-sm btn-soft w--150" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> Speichern
+			</button>
+		</div>
+
+	</form>
+</div>
+
+<span id="del_404080_49"></span>
+
+<script language="JavaScript">
+function info_404251_59 (val) {
+	if (val == false) {
+		$.SOW.core.toast.show('pink', 'WARNUNG', '<center class="fs--19">Option wird deaktiviert</center>', 'top-center', 4000, true);
+	}
+	else {
+		$.SOW.core.toast.show('success', '', '<center class="fs--19">Option wird aktiviert</center>', 'top-center', 3000, true);
+	}
+}
+
+function changeLang(link, lang) {
+	link.style.fontWeight = 'bold';
+	link.style.color      = 'black';
+	document.f308281.x_lang.value = lang;
+
+	if (lang == 'de') {
+		document.getElementById('t_404241_74_de').style.display='';
+		document.getElementById('t_404241_74_fr').style.display='none';
+		document.getElementById('t_404241_74_en').style.display='none';
+		document.getElementById('t_404241_74_it').style.display='none';
+		document.getElementById('l_404241_fr').style.fontWeight='normal';
+		document.getElementById('l_404241_en').style.fontWeight='normal';
+		document.getElementById('l_404241_it').style.fontWeight='normal';
+		document.getElementById('l_404241_fr').style.color='#3a7fff';
+		document.getElementById('l_404241_en').style.color='#3a7fff';
+		document.getElementById('l_404241_it').style.color='#3a7fff';
+	}
+	else if (lang == 'en') {
+		document.getElementById('t_404241_74_en').style.display='';
+		document.getElementById('t_404241_74_fr').style.display='none';
+		document.getElementById('t_404241_74_de').style.display='none';
+		document.getElementById('t_404241_74_it').style.display='none';
+		document.getElementById('l_404241_fr').style.fontWeight='normal';
+		document.getElementById('l_404241_de').style.fontWeight='normal';
+		document.getElementById('l_404241_it').style.fontWeight='normal';
+		document.getElementById('l_404241_fr').style.color='#3a7fff';
+		document.getElementById('l_404241_de').style.color='#3a7fff';
+		document.getElementById('l_404241_it').style.color='#3a7fff';
+	}
+	else if (lang == 'fr') {
+		document.getElementById('t_404241_74_fr').style.display='';
+		document.getElementById('t_404241_74_en').style.display='none';
+		document.getElementById('t_404241_74_de').style.display='none';
+		document.getElementById('t_404241_74_it').style.display='none';
+		document.getElementById('l_404241_de').style.fontWeight='normal';
+		document.getElementById('l_404241_en').style.fontWeight='normal';
+		document.getElementById('l_404241_it').style.fontWeight='normal';
+		document.getElementById('l_404241_en').style.color='#3a7fff';
+		document.getElementById('l_404241_de').style.color='#3a7fff';
+		document.getElementById('l_404241_it').style.color='#3a7fff';
+	}
+	else if (lang == 'it') {
+		document.getElementById('t_404241_74_it').style.display='';
+		document.getElementById('t_404241_74_en').style.display='none';
+		document.getElementById('t_404241_74_fr').style.display='none';
+		document.getElementById('t_404241_74_de').style.display='none';
+		document.getElementById('l_404241_de').style.fontWeight='normal';
+		document.getElementById('l_404241_en').style.fontWeight='normal';
+		document.getElementById('l_404241_fr').style.fontWeight='normal';
+		document.getElementById('l_404241_en').style.color='#3a7fff';
+		document.getElementById('l_404241_de').style.color='#3a7fff';
+		document.getElementById('l_404241_fr').style.color='#3a7fff';
+	}
+}
+
+function load_labels(lang) {
+	document.f308281.lang.value = lang;
+	document.getElementById('t_404241_74_de').style.display='none';
+	document.getElementById('t_404241_74_en').style.display='none';
+	document.getElementById('t_404241_74_fr').style.display='none';
+	if (lang == 'de') {
+		$('#div_404241_49').load('/_ajax/inc_adm_edit_prod_opt.html?lang=de&id=<% $id %>&r=<% rand() %>');
+	}
+	else if (lang == 'en') {
+		$('#div_404241_49').load('/_ajax/inc_adm_edit_prod_opt.html?lang=en&id=<% $id %>&r=<% rand() %>');
+	}
+	else if (lang == 'fr') {
+		$('#div_404241_49').load('/_ajax/inc_adm_edit_prod_opt.html?lang=fr&id=<% $id %>&r=<% rand() %>');
+	}
+}
+
+% # ------------------------------ Delete
+var det_id_to_del;
+document.getElementById('del_404080_49').addEventListener('click', function() {
+  Swal.fire({
+    title: 'ID ' + det_id_to_del + ' <% $C->txt('delete') %>?',
+    text: "Dies kann nicht rückgängig gemacht werden!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor:  '#f1f3f3',
+    confirmButtonText: 'Ja, löschen!',
+    cancelButtonText:  'Abbrechen',
+  customClass: {
+    confirmButton: 'btn w--150 btn-primary',
+    cancelButton:  'btn w--150 text-dark',
+    container: 'custom-swal-alert',
+    popup: 'custom-popup'
+  }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire(
+	'Gelöscht!',
+	'Der Eintrag wurde geloescht.',
+	'success'
+      )
+      // Fuehre hier die Loeschoperation aus
+	$.ajax({
+		url: '/adx/_ajax/proc_del_prod_opt.html?del_det_id=' + det_id_to_del,
+		type: 'GET',
+		dataType: 'html',
+		success: function(response) {
+			setTimeout(function() {
+				document.location = '/adx/options.html';
+			}, 1250);
+		},
+		error: function(xhr, status, error) {
+			console.error(error);
+		}
+	});
+    }
+  })
+});
+
+function delClick(det_id) {
+	det_id_to_del = det_id;
+	document.getElementById('del_404080_49').click();
+}
+% # ------------------------------ /Delete
+
+function addLeaf() {
+	hiddenField = document.createElement('input');
+	hiddenField.type = 'hidden';
+	hiddenField.name = '_add_leaf';
+	const form = document.f308281;
+	form.appendChild(hiddenField);
+	hiddenField.value = '1';
+
+	document.f308281.submit();
+}
+
+</script>
+
+<%doc>
+	Created: 24Apr2024
+</%doc>

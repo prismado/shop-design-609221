@@ -1,0 +1,28 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $dark_logo = $args{dark_logo};
+	my $debug = $args{debug};
+
+	my $mt = $args{ticker} ? ' mt-4' : '';
+	   $mt = ' mt-5' if $args{top_notch};
+</%init>
+
+<div class="d-none d-sm-block<% $mt %>">
+	<div class="clearfix d-flex justify-content-between">
+		<a class="w-100	align-self-center navbar-brand p-3" href="/">
+			<img src="/assets/images/logo/logo_pub<% $dark_logo ? '_dark' : '' %>.svg" height="60" alt="Logo DN1105">
+		</a>
+	</div>
+</div>
+
+<div class="aside-wrapper scrollable-vertical scrollable-styled-light align-self-baseline h-100 w-100"
+	style="scrollbar-color: #dfdfdf #f0f0f0; scrollbar-width:thin;">
+
+	<nav class="nav-deep nav-deep-dark nav-deep-hover fs--15 pb-5">
+		<& left_nav_dark.html, caller=>$args{caller}, perm=>$perm, lang=>$args{lang}, debug=>$debug, A=>$A, C=>$C &>
+	</nav>
+</div>

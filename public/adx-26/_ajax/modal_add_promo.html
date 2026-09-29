@@ -1,0 +1,90 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+
+	my $sth = $C->{dbh}->prepare(q~
+				select	DISTINCT id, SUBSTR(title, 1, 40), price, `count`
+				from	vproducts
+				where	lang='de' AND campaign_id=0 AND `count`>0 AND id NOT IN (select product_id from promo_prods)
+				order	by id desc limit 10~);
+	   $sth->execute();
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Produkt zu Promos hinzuf&uuml;gen</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+			    <form method="post" action="/_sub.html" name="f402172_24_<% $$ %>">
+				<input type="hidden" name="action"  value="add_promo">
+
+				<div class="form-label-group mb-3">
+					<input required="" id="txe_prod_id" name="prod_id" type="text" placeholder="" class="form-control">
+					<label for="txe_prod_id">Produkte-ID eingeben oder aus Liste ausw&auml;hlen</label>
+				</div>
+
+				<table class="table table-sm">
+%				while(my $r = $sth->fetch()) {
+%					my ($prod_id, $title, $price, $count) = @{$r};
+					<tr>
+					<td><a class="link-muted animate-pulse" style="animation-duration:2s; animation-iteration-count:3"
+						href="#" onclick="pick_prod_id(<% $prod_id %>)"><% $prod_id %></a></td>
+					<td><a class="link-muted" href="/product/promo/<% $prod_id %>"><% $title %></a></td>
+					<td><span class="float-right"><% $count %> <small>Stk.</small></span></td>
+					<td><span class="float-end"><% sprintf('%.2f', $price) %> <small>CHF</small></span></td>
+					</tr>
+%				}
+				</table>
+
+				<label class="form-radio form-radio-success">
+					<input type="radio" name="is_active" value="1" checked>
+					<i></i> Promo
+				</label><br />
+
+				<label class="form-radio form-radio-success">
+					<input type="radio" name="is_active" value="-1">
+					<i></i> Super-Promo / Tagesangebot
+				</label>
+
+				<div class="form-label-group mb-3 mt-2">
+					<input required="" placeholder="" id="txe_weight" name="weight" type="text" class="form-control" value="75">
+					<label for="txe_weight">Reihenfolge / Gewicht (je kleiner der Wert desto weiter oben)</label>
+				</div>
+			    </form>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150" onclick="document.f402172_24_<% $$ %>.submit();">
+					<i class="fi fi-check"></i> Zuweisen
+				</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	function pick_prod_id(id) {
+		document.f402172_24_<% $$ %>.prod_id.value=id
+	}
+	$(document).ready(function(){
+		setTimeout(function() {
+			document.f402172_24_<% $$ %>.prod_id.focus();
+		}, 500);
+
+	});
+</script>

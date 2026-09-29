@@ -1,0 +1,44 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $debug = $args{debug};
+	my $perm  = $args{perm};
+	my $id    = $args{id} + 0;
+</%init>
+	<form method="post" enctype="multipart/form-data" id="f403281_18">
+
+	<input type="hidden" name="id" value="<% $id %>">
+
+	<div class="position-relative">
+%		if ($debug) {
+%			(my $this = $C->this()) =~ s/^adx\//adx\/_includes\//;
+			[ <% $this %> ] &middot; <tt>form</tt> id = <code>f403281_18</code> / <tt>textarea</tt>: name = <code>mytxt</code>
+%		}
+		<textarea class="form-control summernote-editor" name="mytxt"
+			data-placeholder="Type yout text here..."
+			data-min-height="575"
+			data-max-height="900"
+			data-focus="false"
+			data-lang="en-US"
+			data-toolbar='[
+			    ["style", ["style"]],
+			    ["font", ["bold", "italic", "underline", "clear"]],
+			    ["fontname", ["fontname"]],
+			    ["color", ["color"]],
+			    ["para", ["ul", "ol", "paragraph"]],
+% #			    ["height", ["height"]],
+			    ["table", ["table"]],
+			    ["insert", ["link", "picture", "video", "hr"]],
+			    ["view", ["codeview"]]
+% #			    ["view", ["fullscreen", "codeview"]],
+% #			    ["help", ["help"]]
+			  ]'
+		><% $args{mytxt} %></textarea>
+	</div>
+
+%	if ($debug > 1) {
+		<input type="submit" class="btn btn-primary" value="Test Submit">
+%	}
+
+	</form>

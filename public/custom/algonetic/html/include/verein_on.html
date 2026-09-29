@@ -1,0 +1,18 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $files = $args{files};
+	my $count = $#{$files} + 1;
+</%init>
+
+<h2><%$count%> Dokumente</h2>
+
+% foreach my $file (@{$files}) {
+%	my $icon = $file =~ /\.pdf$/i ? 'application-pdf' : 'icon-file';
+%	(my $file_disp = $file) =~ s/\.pdf$//i;
+%	    $file_disp =~ tr/_/ /;
+	<p>
+	<a href="produkte/docs/uid_<%$args{UID}%>_<%$file%>"><img
+		style="width:40px" src="images/<%$icon%>.png"> <%$file_disp%></a>
+	</p>
+% }

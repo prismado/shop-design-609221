@@ -1,0 +1,66 @@
+<%init>
+#	=====  Final Order Step  =====
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID      = $C->getSID();
+	my $is_admin = $C->is_admin();
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+
+	my $order_id = $C->getSessData('order_id');
+	my $anon_buy = $C->getSessData('flag_anon_buy');
+
+	if ($order_id) {
+	    my $odat = $A->get_order($order_id);
+	    unless ($odat->{pay_meth} == 14) {
+		$A->mail_order2cust(id => $order_id);
+		$A->mail_order2merchant(id => $order_id);
+
+		$A->set_order_status($order_id, 4); # -- Okay
+	    }
+	}
+
+	$C->del_sess_key('order_id');
+	$A->empty_basket();
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Confirmation | <%$C->{CONFIG}->{site_title}%></title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<& include/content_header.html, SID=>$SID, is_admin=>$is_admin, C=>$C &>
+
+<div id="mainContainer">
+<div class="container">
+<div class="row-fluid">
+
+	<&include/content_sideblock.html, C => $C, A => $A&>
+
+	<div id="productBlock" class="span9">
+	    <div class="well"><h1><% $C->prop('order_confirm_title') %></h1></div>
+
+	    <div id="checkoutBlock">
+		<% $C->prop('confirm_text') %><br><br>
+		<% $C->prop('confirm_email') %><br><br>
+		<a class='btn btn btn-grey' href="."><% $C->prop('btn_backto_shop') %></a><br><br>
+		<& ../mail_templates/confirm_cust_inc_de.html, order_id=>$order_id, lang=>$lang &>
+	    </div>
+	</div>
+
+</div>
+</div>
+</div>
+
+<&include/footer.html, C => $C&>
+
+</body>
+</html>
+

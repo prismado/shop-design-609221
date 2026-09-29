@@ -1,0 +1,38 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $A         = $args{A};
+	my $debug     = $args{debug};
+	my $UID       = $args{UID};
+	my $uinf      = $args{uinf};
+	my $uaddr     = $args{uaddr};
+	my $perm      = $args{perm};
+	my $usr_ident = $args{usr_ident};
+</%init>
+<div class="portlet-header border-bottom">
+	<div class="alert alert-info mb-0">
+		Bitte Ihren Auftrag nach Ihren Angaben erfassen. Sie helfen uns damit diesen sorgf&auml;ltig abwickeln zu k&ouml;nnen.
+	</div>
+</div>
+
+<div class="portlet-body">
+
+%	if ($usr_ident->{uid} && $perm->{is_devel}) {
+		<p class="mt-1">
+			Ich habe Sie erkannt. Guten Tag, <% $usr_ident->{uinf}->{firstname} %> <% $usr_ident->{uinf}->{lastname} %>!
+			&ndash; <% $usr_ident->{uinf}->{email} %> &ndash; lang = "<% $usr_ident->{uinf}->{lang} %>"<br>
+			Gender: <% $usr_ident->{uinf}->{gender} %><br>
+			<% $usr_ident->{uinf}->{street} %><br>
+			<% $usr_ident->{uinf}->{zip} %> <% $usr_ident->{uinf}->{city} %>
+		</p>
+%	}
+
+	<form method="post" name="f29_401141">
+		<& inc_form_info-collection-order.html, lang=>$args{lang}, bSend=>$args{bSend}, checkboxes=>$args{checkboxes},
+			UID=>$UID, uinf=>$uinf, uaddr=>$uaddr, SID=>$args{SID}, perm=>$perm, C=>$C, debug=>$debug &>
+
+		<input type="submit" class="btn btn-primary" value="Abholauftrag Senden" name="bSend">
+	</form>
+
+</div>

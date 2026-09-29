@@ -1,0 +1,88 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $debug  = $C->getSessData('debug') || 0;
+	my $cgi    = $C->{CGI};
+	my $css_id = $cgi->param('css_id') || 'exampleModalFull';
+	my $area   = $cgi->param('area')   || 0; $area += 0;
+
+	my $help = $C->help(area=>$area);
+
+	my @labels = ();
+
+	push(@labels, qq~{ id: '-art_no', name: 'Artikelnummer'  }~);
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="<% $css_id %>" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="<% $css_id %>">Online-Hilfe &middot; Prismado &middot; (<% $area %>)</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<p>Template: <code><% $C->this() %></code></p><br clear="all" />
+
+				<form>
+
+				<input type="text" class="ta_404291_33 form-control float-left"
+					style="min-width:40vw; max-width:50vw !important" autocomplete="off"
+						id="auto404021_27" placeholder="Bindestrich (-) f&uuml;r Auswahl" name="hlp" value="">
+
+				<button type="submit" class="btn btn-primary float-end" stylx="margin-top:-33px">Anzeigen</button>
+				<br clear="all" />
+
+				</form>
+
+%				if ($debug) {
+					<br />
+%					foreach ($cgi->all_parameters) {
+						X -- <b><% $_ %></b> = "<code><% $cgi->param($_) %></code>"<br>
+%					}
+%				}
+
+				<br />
+%				foreach my $h (@{ $help->{web} }) {
+%					foreach (sort keys %{ $h }) {
+						&bull; <b><% $_ %></b> = <% $h->{$_} %><br>
+%					}
+					<hr />
+%				}
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w--150" data-dismiss="modal">
+					<i class="fi fi-close"></i> Schliessen
+				</button>
+
+<%doc>
+				<button type="button" class="btn btn-sm btn-soft btn-primary w--150">
+					<i class="fi fi-check"></i> Okay
+				</button>
+</%doc>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<& ../_includes/inc_typeahead_v2024_js.html, i_class=>'ta_404291_33', suggest_data=>$help->{out}, A=>$A &>
+
+<%doc>
+<script type="text/javascript">
+	$(document).ready(function(){
+		alert('I am ready.');
+});
+</script>
+</%doc>
+
+<%doc>
+	Created: 29Apr2024
+</%doc>

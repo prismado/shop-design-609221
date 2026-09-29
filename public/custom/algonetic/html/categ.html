@@ -1,0 +1,85 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $token_id = $C->getSessData('token_id') || 0;
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $sort_clause = $A->get_sort_clause_products($C->{CGI}->param('order')) || 'ORDER BY instime DESC';
+
+	my $debug = $C->{CGI}->param('debug');
+	my $pkg = $C->{CGI}->param('pkg');
+	my $cat_id = $C->{CGI}->param('id') || 1;
+	   $cat_id = 1 unless $cat_id =~ /^\d+$/;
+
+	my $search_orig = $C->{CGI}->param('q');
+	(my $search = $search_orig) =~ s/'/''/g;
+	    $search =~ s/ /%/g;
+	$cat_id = 0 if $search;
+
+	my $invis_cat = $A->get_invisible_categs();
+	my $invis_cat_str = $A->{invisible_categs};
+
+    my $SID = $C->getSID();
+    my $basket_count = $C->query("SELECT COUNT(*) FROM basket WHERE sid=$SID")->[0];
+
+	my @wclause = ();
+	# push(@wclause, $token_id ? "campaign_id IN ($token_id, 0)" : 'campaign_id=0');
+	push(@wclause, "cat_id NOT IN ($invis_cat_str)") if $invis_cat_str;
+	push(@wclause, "lang='$lang'");
+	push(@wclause, q~`condition` != 'IN'~);
+	push(@wclause, "(count>0 OR `condition`='OR')");
+	push(@wclause, "getPieces(id)=$pkg") if $pkg;
+	push(@wclause, "(desc_long LIKE '%$search%' OR title LIKE '%$search%' OR description LIKE '%$search%')") if $search;
+	push(@wclause, "cat_id=$cat_id") if $cat_id;
+
+	my $wcl = join ' AND ', @wclause;
+
+	my $errstr = '';
+	my $stmt = qq~
+		SELECT DISTINCT id, price, title, description, count, campaign_id, extra, `condition` FROM vproducts_long where $wcl $sort_clause
+	~;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $errstr = $DBI::errstr;
+	my $rows = $sth->rows();
+
+	my $label = $C->query("select label FROM categories WHERE id=$cat_id AND lang='$lang'")->[0] || "$rows products";
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$C->{CONFIG}->{site_title}%> - Start</title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, basket_count=>$basket_count, SID=>$SID, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+% if ($debug) {
+	<%$stmt%> -- <%$ENV{db_name}%><br>
+	Invisible Categories: <%$invis_cat_str%><br>
+% }
+% if ($errstr) {
+	ERR <%$errstr%><br>
+% }
+
+<&include/prod_list.html, sth=>$sth, lang=>$lang, search=>$search, search_orig=>$search_orig, CORE=>$C, A=>$A, debug=>$debug, SID=>$SID&>
+
+</div><!-- End container -->
+</div><!-- End row -->
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+	</BODY>
+</HTML>

@@ -1,0 +1,109 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+
+	my $debug      = $args{debug};
+	my $perm       = $args{perm};
+	my $cgi        = $args{cgi};
+	my $dev_host   = $args{host_env_prim} eq 'yes' ? 1 : 0;
+	my $res_ftp    = $args{res_ftp};
+	my $example_fn = $args{example_fn};
+
+	(my $exmpl_fn = $args{example_file}) =~ s/^$C->{CONFIG}->{DOCUMENT_ROOT}\///;
+</%init>
+<div class="portlet-body">
+
+% # XX	<span class="float-end fs--14"><a href="dev-sftp.html?tests=<% $tests %>">Reload</a></span>
+
+	<form clasx="" method="post">
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="Host" id="hostname" type="text" name="host" value="<% $cgi->{host} %>" autocomplete="off" class="form-control">
+		<label for="hostname">Host</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="Host" id="port" type="text" name="port" value="<% $cgi->{port} %>" autocomplete="off" class="form-control">
+		<label for="port">Port</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="X User" id="user" type="text" name="user" value="<% $cgi->{user} %>" autocomplete="off" class="form-control">
+		<label for="user">User</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="Password" id="pass" type="text" name="pass" value="<% $cgi->{pass} %>" autocomplete="off" class="form-control">
+		<label for="pass">Password</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="Remote Dir" id="rdir" type="text" name="remote_dir" value="<% $cgi->{remote_dir} %>" autocomplete="off" class="form-control">
+		<label for="rdir">Remote Directory</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="P Directory" id="dir" type="text" name="dir" value="<% $cgi->{dir} || $exmpl_fn %>" autocomplete="off" class="form-control">
+		<label for="dir">Directory or Localfile</label>
+	</div>
+
+	<div class="form-label-group mt-10 mb-3 pl-0 col-6">
+		<input placeholder="command put / get" id="cmd" type="text" name="cmd" value="<% $cgi->{cmd} %>" autocomplete="off" class="form-control">
+		<label for="dir">SFTP Command</label>
+	</div>
+
+	<div class="form-label-group mb-3">
+		<select id="sel_406210_31" name="func" class="form-control bs-select">
+			<option value="ftp">$C-&gt;ftp( )</option>
+			<option value="sftp" selected>$C-&gt;sftp( )</option>
+		</select>
+		<label for="select_options">Select tbd</label>
+	</div>
+
+	<input type="submit" class="btn btn-primary w--180" name="bSubmit">
+
+	</form>
+
+%	my $sth = $C->{dbh}->prepare(qq~SELECT id, `source`, importance, sid, module, service, action, tstamp, rc FROM log  
+%					where service like 'mail\_%' AND uid=$perm->{uid} ORDER by id DESC LIMIT 99~);
+%	   $sth->execute();
+	<table class="mt-3">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $src, $imp, $sid, $mod, $serv, $action, $ts, $rc) = @{$r};
+		<tr class="<% $imp == 1 ? 'font-weight-bold' : '' %>">
+			<td class="pr-2" nowrap><% $C->trans_date($ts) %></td>
+			<td class="pr-2"><% $serv %></td>
+			<td class="<% $imp > 2 ? 'text-green-600' : '' %>"><% $action %></td>
+		</tr>
+%	}
+	</table>
+
+	<p class="mt-5">
+		<% $exmpl_fn %><br>
+%		foreach (keys % {$example_fn}) {
+			&bull; <b><% $_ %></b> = <% $example_fn->{$_} %><br>
+%		}
+		<br />
+
+		<tt>$ENV{HTTP_X_SERVER_ADDR}</tt> = "<code><% $ENV{HTTP_X_SERVER_ADDR} %></code>"<br><br>
+
+%		foreach (sort keys %{ $res_ftp }) {
+%			next if $_ eq 'system';
+			&larr; <b><% $_ %></b> = <% $res_ftp->{$_} %><br>
+%		}
+%		foreach (sort keys %{ $res_ftp->{system} }) {
+			&larr; [ system ] &middot; <% $_ %> = <% $res_ftp->{system}->{$_} %><br>
+%		}
+		<% ${ $res_ftp->{system}->{err} } %><br>
+
+		Siehe auch <a href="https://shop.algonetic.ch/_systex/install/help/de/11/1/?filter=ftp" target="_blank">(S-)FTP</a>
+	</p>
+
+% #	<pre class="line-numbers" data-start="10"><code class="language-perl">my $foo = '1'; # -- tbd</code></pre>
+
+<%doc>
+</%doc>
+
+</div>

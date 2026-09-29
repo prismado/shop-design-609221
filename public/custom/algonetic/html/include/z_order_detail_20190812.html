@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	unless ($C->is_logged_in()) {
+		# XXX $C->redir('/signin.html');
+	}
+
+	my $UID = $C->getUID();
+	   $UID = $C->getSessData('_anon_uid') if $UID < 1;
+
+	my $dbh = $C->{dbh};
+	my $id = $C->{CGI}->param('id') || 0;
+
+	my $order_dat = $A->get_order($id);
+
+	unless ($C->is_admin()) {
+		unless ($UID == $order_dat->{uid}) {
+			# $m->out("XX $UID vs $order_dat->{uid}<br>");
+			$C->redir('/signin.html');
+		}
+	}
+
+	my $sth = $dbh->prepare("SELECT prod_id, count, campaign_id, price FROM orders_products WHERE order_id=$id");
+	   $sth->execute();
+
+	if ($C->{CGI}->param('bResend')) {
+		$A->mail_order2cust(id => $id);
+		$m->out("Sent!<br>");
+	}
+</%init>
+
+<&../../mail_templates/confirm_cust_inc_de.html, order_id => $id&>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+
+% my $id_before = 0;
+% # XXX while(my $r = $sth->fetch()) {
+% # XXX }
+
+</table><br>
+
+Liefer-Datum: <% $order_dat->{delivery_date} %><br><br>
+
+Bemerkungen: <% $order_dat->{ref} %> / Shipping: <% $order_dat->{'XX shipping'} %><br><br>
+
+% # XXX Total: <b>CHF <% $order_dat->{amount_incl_vat} %></b><br><br>
+
+<form>
+<input type=hidden name=id value="<%$id%>">
+<input type=submit class='btn btn-basket' name=bResend value='E-Mail nochmals senden'>
+<input type=button class='btn btn-grey' onclick='JavaScript:history.go(-1)' value='Zur&uuml;ck'>
+</form>
+
+% if ($C->is_devel()) {
+	<br><br>
+
+	<a style='color:maroon; font-weight:bold' href='admix.html?func=orders&id=<% $id %>'>Del</a> ...
+% }

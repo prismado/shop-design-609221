@@ -1,0 +1,164 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $id   = $cgi->param('id') + 0;
+	my $type = $cgi->param('type') + 0;
+
+	my $perm = $C->get_user_perm();
+
+	my $uid = $perm->{uid}; # -- 22Sep2023
+
+	my $addr = $A->get_address_by_id($uid, $type);
+	# XXX my $addr = $A->get_address_by_id($id, $type);
+
+	my $prop_name = 'bill_addr';
+	   $prop_name = 'deliv_addr' if $type == 2;
+</%init>
+<form novalidate class="bs-validate" method="post">
+<input type="hidden" name="action" value="upd_addr">
+<input type="hidden" name="type"   value="<% $type %>">
+
+	<div class="modal-header">
+		<h2 class="modal-title fs--18 m-0">
+			<% $C->txt($prop_name, 'de') %>
+		</h2>
+
+		<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+			<span class="fi fi-close fs--18" aria-hidden="true"></span>
+		</button>
+	</div>
+
+	<div class="modal-body">
+
+		<div class="row">
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<select name="addr_gender" class="form-control js-ajax bs-select mb-3" data-live-search="true">
+					<option value="">Anrede...</option>
+					<option value="1"<% $addr->{gender} == 1 ? ' selected' : '' %>>Herr</option>
+					<option value="2"<% $addr->{gender} == 2 ? ' selected' : '' %>>Frau</option>
+					<option value="3"<% $addr->{gender} == 3 ? ' selected' : '' %>>Firma</option>
+				</select>
+			</div>
+			<div class="col-12 col-sm-6 col-lg-6"></div>
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<div class="form-label-group mb-3">
+					<input required placeholder="<% $C->prop('firstname') %>" id="addr_first_name" value="<% $addr->{firstname} %>"
+						name="addr_first_name" type="text" class="form-control">
+					<label for="addr_first_name"><% $C->prop('firstname') %></label>
+				</div>
+			</div>
+				
+			<div class="col-12 col-sm-6 col-lg-6">
+				<div class="form-label-group mb-3">
+					<input required placeholder="<% $C->prop('lastname') %>" id="addr_last_name" value="<% $addr->{lastname} %>"
+						name="addr_last_name" type="text" class="form-control">
+					<label for="addr_last_name"><% $C->prop('lastname') %></label>
+				</div>
+			</div>
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<div class="form-label-group mb-3">
+					<input placeholder="Phone Number" id="addr_phone" value="<% $addr->{phone} %>"
+						name="addr_phone" type="text" class="form-control">
+					<label for="addr_phone">Phone Number</label>
+				</div>
+			</div>
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<div class="form-label-group mb-3">
+					<input placeholder="<% $C->prop('company') %>" id="addr_company_name" value="<% $addr->{company} %>"
+						name="addr_company_name" type="text" class="form-control">
+					<label for="addr_company_name"><% $C->prop('company') %></label>
+				</div>
+			</div>
+
+			<div class="col-12 col-sm-12 col-lg-12 mb--20">
+% #				<div class="form-label-group mb-3">
+				<div class="form-label-group">
+					<input required placeholder="<% $C->prop('street') %>" id="addr_address_1"
+						name="addr_address_1" type="text" class="form-control" value="<% $addr->{street} %>">
+						<label for="addr_address_1"><% $C->prop('street') %></label>
+				</div>
+
+<%doc>
+				<div class="form-label-group mb-3">
+					<input placeholder="Apt, Suite, Unit, Building, Floor, etc" id="addr_address_2"
+						name="addr_address_2" type="text" class="form-control">
+					<label for="addr_address_2">Apt, Suite, Unit, Building, Floor, etc</label>
+				</div>
+</%doc>
+			</div>
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<div class="form-label-group mb-3">
+					<input placeholder="<% $C->prop('zip') %>" id="addr_zipcode" value="<% $addr->{zip} %>"
+						name="addr_zipcode" type="text" class="form-control">
+					<label for="addr_zipcode"><% $C->prop('zip') %> <% $addr->{country} %></label>
+				</div>
+			</div>
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<div class="form-label-group mb-3">
+					<input placeholder="<% $C->prop('city') %>" id="addr_city" value="<% $addr->{city} %>"
+						name="addr_city" type="text" class="form-control">
+					<label for="addr_city"><% $C->prop('city') %></label>
+				</div>
+			</div>
+
+			<div class="col-12 col-sm-6 col-lg-6">
+				<!-- 
+					based on `SOW : Ajax Select` plugin 
+					documentation/plugins-sow-ajax-select.html
+				-->
+% #				<select name="addr_country" class="form-control js-ajax bs-select" data-ajax-target="#addr_state" data-live-search="true">
+				<select name="addr_country" class="form-control js-ajax bs-select" data-live-search="true">
+					<option value="">Land...</option>
+					<option value="CH"<% $addr->{country} eq 'CH' ? ' selected' : '' %>>Schweiz</option>
+					<option value="LI"<% $addr->{country} eq 'LI' ? ' selected' : '' %>>Liechtenstein</option>
+				</select>
+			</div>
+
+<%doc>
+			<div class="col-12 col-sm-6 col-lg-6">
+				<!-- 
+					based on `SOW : Ajax Select` plugin 
+					documentation/plugins-sow-ajax-select.html
+				-->
+				<select name="addr_state" id="addr_state" class="form-control bs-select" disabled=""
+					data-ajax-url="_ajax/select_ajax_state_list.php" 
+					data-ajax-method="GET" 
+					data-ajax-params="['action','get_state_list']['param2','value2']" 
+					data-live-search="true">
+					<option value="">Select Country First</option>
+				</select>
+			</div>
+</%doc>
+
+		</div>
+
+	</div>
+
+%	foreach (sort keys %$perm) {
+% # XXX		XX <% $_ %> = <% $perm->{$_} %><br>
+%	}
+
+	<div class="modal-footer">
+		<a href="#" class="btn btn-sm btn-secondary" data-dismiss="modal">
+			<i class="fi fi-close"></i>
+			Cancel
+		</a>
+
+		<button type="submit" class="btn btn-sm btn-primary">
+			<i class="fi fi-check"></i>
+			&Auml;nderungen speichern
+		</button>
+	</div>
+
+</form>

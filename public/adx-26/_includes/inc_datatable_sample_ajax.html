@@ -1,0 +1,28 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C      = $args{C};
+	my $dt_ver = $args{dt_ver};
+</%init>
+
+<table id="dt004" class="table table-datatable table-bordered table-hover table-striped"
+	data-ajax="_ajax/server_processing_sample.html"
+	data-items-per-page="15"
+	data-lng-search="Suchen..."
+	data-lng-loading="Wird geladen..."
+	data-custom="<% $dt_ver == 2 ? 'true' : 'false' %>"
+	data-order='[[ 0, "asc" ]]'
+>
+
+<thead>
+<tr>
+	<th>Title</th>
+	<th>Source</th>
+	<th>Subject</th>
+	<th>D-ID</th>
+	<th>Cr-Time</th>
+	<th>Size KB</th>
+</tr>
+</thead>
+
+</table>

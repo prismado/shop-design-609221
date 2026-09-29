@@ -1,0 +1,62 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C = $s{C};
+	my $A = $s{A};
+
+	my $perm    = $s{perm};
+	my $cgi     = $C->{CGI};
+	my $debug   = $cgi->param('debug') || 0;
+	my $bShow   = $cgi->param('bShow404261_10');
+
+	my $tpl;
+	my $outfile = '';
+	if ($bShow) {
+		$outfile = "upload/zz_trash_product_export$$\.xls";
+		$tpl = $C->exec(
+			comp_file => 'create_sections_json.html', outfile=>$outfile,
+			theme=>'algonetic', dir=>'macros', A=>$A, debug=>$debug
+		);
+	}
+</%init>
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+
+% if ($perm->{is_devel}) {
+	<div class="float-end">
+		<a href="/adx/show.html?macro=products-export&debug=2">Debug 2</a> &ndash;
+		<a href="/adx/show.html?macro=products-export">Debug off</a>
+	</div>
+% }
+<h3 class="fs--25 mb-2">Sections</h3>
+<p>Verwalten von Men&uuml;-Eintr&auml;gen der <a href="/adx/config.html">Konfiguration</a> Prismado-Admin-Funktionen</p>
+
+<%doc>
+%	if ($bShow) {
+		<a href="/<% $outfile %>" class="btn btn-sm btn-secondary mb-3 w--150 animate-pulse">
+			<i class="fi fi-arrow-download m-0-md"></i>
+				<span class="d-none d-lg-inline-block">Download</span>
+		</a>
+%	}
+</%doc>
+	<a href="/adx/show.html?macro=sys_sections&bShow404261_10=1<% $debug ? "&debug=$debug" : '' %>" class="btn btn-sm btn-primary mb-3 w--200">
+		<i class="fi fi-arrow-download m-0-md"></i>
+			<span class="d-none d-lg-inline-block">JSON-Code</span>
+	</a>
+
+% if ($bShow) {
+	<br />
+	<% $tpl->{out} %>
+% }
+
+% if ($debug) {
+	<br />
+%	foreach (sort keys %s) {
+%		next if $s{$_} =~ /^ScreenPoint\:\:.+/ or /^perm$/ or /^dir$/;
+		[ S ] &middot; <b><% $_ %></b> = <code><% $s{$_} %></code><br>
+%	}
+
+%	foreach ($cgi->all_parameters) {
+		[ CGI ] &middot; <% $_ %> = "<% $cgi->param($_) %>"<br>
+%	}
+% }

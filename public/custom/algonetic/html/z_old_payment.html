@@ -1,0 +1,203 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $SID = $C->getSID();
+	my $cgi = $C->{CGI};
+	my $anon_uid = my $flag_error = 0;
+
+	if ($C->getSessData('flag_anon_buy')) {
+		my $anon_uid = $C->getSessData('_anon_uid');
+		if ($anon_uid) {
+			$C->log( msg => "WARN: Anon user already created: UID $anon_uid", importance => 1 );
+		}
+
+		my %data = ();
+		foreach ($cgi->all_parameters) {
+			my $val = $cgi->param($_);
+			$data{$_} = $val if $val;
+		}
+
+		if (length($data{lastname_1}) < 2 && length($data{lastname_2}) < 2) { # -- >>((
+			$flag_error++;
+		}
+
+		foreach (sort keys %data) {
+			$C->log( msg => "(anon) <b>$_</b> = \"$data{$_}\"", importance => 2 );
+		}
+
+		$data{uname}        = "anon$$\@localhost";
+		$data{cust_email}   = $data{email} || $data{uname};
+		$data{cust_surname} = $data{firstname_2};
+		$data{cust_name}    = $data{lastname_2} || $ENV{REMOTE_ADDR};
+		$data{cust_street}  = $data{street_2};
+		$data{cust_city}    = $data{city_2};
+		$data{cust_zip}     = $data{zip_2};
+		$data{cust_gender}  = $data{gender_2};
+		$data{sid}          = $SID;
+
+		unless ($anon_uid) {
+			# -- Create user ... !
+			my ($rc, $msg) = $A->create_user( \%data );
+			$anon_uid = $A->{uid};
+			$C->saveSessData('_anon_uid', $anon_uid);
+			$C->{dbh}->do("UPDATE users SET uname='anonymous$anon_uid', status=4 WHERE id=$anon_uid");
+			$C->log( msg => "Temp user created: rc=$rc $msg UID $anon_uid $data{cust_email}", importance => 1 );
+		}
+		else {
+			# -- Update ...
+			$data{firstname} = $data{firstname_2};
+			$data{lastname}  = $data{lastname_2};
+			$data{street}    = $data{street_2};
+			$data{city}      = $data{city_2};
+			$data{zip}       = $data{zip_2};
+			my $rc = $A->set_address_by_id($anon_uid, 1, \%data);
+			$C->log( msg => "Address of UID $anon_uid updated, rc=$rc $A->{errstr}", importance => 1 );
+		}
+
+		$C->del_sess_key('flag_anon_buy') unless $flag_error; # -- Reset
+	}
+
+	if ($C->{CGI}->param('bConfirmOrder')) {
+		$C->redir('/order_confirm.html');
+	}
+
+	my $pay_meth = $C->getSessData('pay_meth');
+
+	$C->log(msg=>"XX pay_meth is $pay_meth", importance=>1);
+
+	my $order_id = 0;
+	if ($C->{CGI}->param('agb_check') eq 'accept') {
+		$anon_uid ||= $C->getSessData('_anon_uid');
+		$order_id = sprintf('%08d', $A->save_order($C->getSessData('order_id'), $anon_uid));
+		if ($order_id < 0) {
+			$m->redirect('/');
+		}
+		$C->saveSessData('order_id', $order_id); # -- Save for the next step
+	}
+	else {
+		$C->redir('/summary_agb.html'); # -- AGBs not accepted
+	}
+
+	my $pay_info = my $pay_text = 'n.a.';
+
+	if ($pay_meth eq 'cc') {
+		# -- $r->internal_redirect('/payment_kk.html');
+		$r->internal_redirect('/payment_kk2.html');
+		$m->auto_send_headers(0);
+		$m->clear_buffer;
+		$m->abort;
+	}
+	elsif ($pay_meth eq 'pc') {
+		$C->redir('/payment_pc.html');
+	}
+	elsif ($pay_meth eq 'pcd') {
+		$C->redir('/payment_pcd.html');
+	}
+	elsif ($pay_meth eq 'pp') {
+		$C->redir('/payment_pp.html');
+	}
+	elsif ($pay_meth eq 'inv') {
+		$pay_info = $C->prop('invoice_infos'); # -- Rechnungs-Informationen
+		$pay_text = $C->prop('invoice_text'); # -- Die Rechnung mit dem Gesamtbetrag wir Ihnen zusammen mit der Lieferung in den nächsten Tagen zugestellt!
+	}
+	elsif ($pay_meth eq 'pre') {
+		my $bank_account = $C->slurp_file("$C->{CONFIG}->{DOCUMENT_ROOT}/_includes/merchant_bank_account.html");
+		$pay_info = $C->prop('vk_infos'); # -- Informationen Vorauszahlung
+		$pay_text = "Bitte die Gesamtsumme wie unten ersichtlich auf folgendes Konto überweisen: ${$bank_account}<b>WICHTIG: Bestellungsnummer vermerken!</b><br /><br/>Sie erhalten diese Informartionen auch noch in der Bestell-Bestätigung<br /><br />";
+	}
+	elsif ($pay_meth eq 'cod') {
+		$pay_info = $C->prop('payment_info');
+		$pay_text = $C->prop('payment_text');
+	}
+	else {
+		$pay_text = "<span style='color:red'>Unknown payment method &laquo;$pay_meth&raquo; or not implemented.</span>";
+	}
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $cur_voucher_value = $A->get_cur_voucher_value();
+	my $shipping = $C->getSessData('checkout_zahlungsart_select') eq 'cod' ? $A->{'ship_tot_cod'} : $A->{'ship_tot_cc'};
+	my $ship_meth = $C->getSessData('ship_meth');
+        my $ship_meth_amount = sprintf('%.2f', $C->{CONFIG}->{"ship_$ship_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+	my $total = $C->decimal_mark($A->get_basket_total() + $shipping + $ship_meth_amount - $cur_voucher_value);
+</%init>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><%$C->{CONFIG}->{site_title}%> - Payment</title>
+<&include/head_metablock.html, C=>$C&>
+<&include/head_cssload.html&>
+</head>
+
+<body>
+<&include/content_header.html, SID=>$SID, C=>$C&>
+
+<div id="mainContainer">
+ <div class="container">
+ <div class="row-fluid">
+
+<&include/content_sideblock.html, C => $C, A => $A&>
+
+<div id="checkoutBlock" class="span9">
+<div class="well"><% $C->prop('payment') %></div>
+</div>
+
+<div id="stepWrapper" class="span9">
+<div class="span3"><div class="stepBox"><span class="badge label-normal">1</span> <% $C->prop('order_finalize') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">2</span> <% $C->prop('order_overview') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-success">3</span> <% $C->prop('payment') %></div></div>
+<div class="span3"><div class="stepBox"><span class="badge label-normal">4</span> <% $C->prop('confirmation') %></div></div>
+</div>
+
+<div id="checkoutContent"  class="span9">      
+      
+ <form action="#" method="post">
+
+<div class="no-more-tables">     
+<table class="table table-hover">
+          <thead data-title="<%$C->prop('order')%> <%$order_id%>" class="well">
+              <tr>
+              <th colspan="2"><%$C->prop('order')%> <%$order_id%></th>
+            </tr>
+          </thead>
+<tr><td colspan="2"><h4><%$pay_info%></h4></td></tr> 
+<tr><td colspan="2">
+<%$pay_text%>
+</td></tr> 	
+<tr><td><h4><% $C->prop('sum_total') %> <% $C->{CONFIG}->{vat}%> % <% $C->prop('mwst') %>&nbsp;</h4></td>
+<td><h4>CHF <% $total %></h4></td></tr>
+</table>
+
+</div><!-- end no-more-tables   -->
+
+% if ($flag_error) {
+	ERROR<br>
+% }
+% else {
+ <input id="payment_submit_kk" class="btn btn-basket" type="submit" 
+			name="bConfirmOrder" value="<% $C->prop('but_send') %>">
+% }
+ </form> 
+ 
+% if ($C->is_devel() or $C->getPermaSessData('debug')) {
+	<br>
+%	my $tot = $A->get_basket_total(1); # -- debug
+	<br><tt>get_basket_total():</tt> <% $tot %>
+% # XXX	<&_includes/debug.html, CORE=>$C, A=>$A&>
+% # XXX	<&_includes/page_info.html, 'END'&>
+% }    
+<br /><br />
+
+</div><!-- End checkoutBlock -->		
+
+</div><!-- End container -->	
+</div><!-- End row -->	
+</div><!-- End mainContainer -->
+
+<&include/footer.html, C => $C&>
+
+</BODY>
+</HTML>

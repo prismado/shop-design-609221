@@ -1,0 +1,60 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $lang = $args{lang};
+
+	my $order_id = $C->getSessData('order_id') + 0;
+	$C->del_sess_key('order_id'); # -- Last chance to cleanup order_id in this session
+
+	my $ship_meth = $C->getSessData('ship_meth');
+	my $ship_meth_amount = sprintf('%.2f', $C->{CONFIG}->{"ship_$ship_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+
+	my $order_inf = $A->get_order($order_id);
+	my $total = $order_inf->{amount_incl_vat};
+	   $total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+
+	(my $total_no_dot = $total) =~ tr/\.//d;
+
+	$C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
+
+	$C->del_sess_key('order_id');
+	$A->empty_basket();
+</%init>
+	<div class="well">
+		<h3>PayPal <% $C->prop('payment') %></h3>
+	</div>
+
+	<h5><% $C->prop('order') %> Nr. <% $order_id %></h5>
+
+	<p><% $C->prop('paypal_redirect_text') %></p>
+
+<form name="ccform" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="locale.x" value="de_DE"> <!-- de_DE / fr_FR / en_US -->
+<input type="hidden" name="cmd" value="_xclick" />
+<input type="hidden" name="business" value="<%$C->{CONFIG}->{paypal_merchant_id}%>" />
+
+<input type="hidden" name="item_name" value="<%$C->{CONFIG}->{paypal_item_name}%>" />
+<input type="hidden" name="amount" value="<%$total%>" /> <!-- e.g. 43.45 -->
+<!-- XX input type="hidden" name="shipping" value="0.00" / -->
+<input type="hidden" name="currency_code" value="CHF" />
+<input type="hidden" name="invoice" value="<%$order_id%>">
+<input type="hidden" name="custom" value="first_name last_name">
+
+<input type="hidden" name="return"        value="https://<% $C->{CONFIG}->{HTTP_HOST} %>/order_detail.html" />
+<input type="hidden" name="cancel_return" value="http<%$ENV{HTTPS} ? 's' : ''%>://<%$C->{CONFIG}->{HTTP_HOST}%>/" />
+
+<input type="hidden" name="notify_url" value="http<%$ENV{HTTPS} ? 's' : ''%>://<%$C->{CONFIG}->{HTTP_HOST}%>/_callback/complete_order_paypal.html" />
+
+% # -- <input type="submit" value="Bitte warten / Please wait ..." style="font-size:xx-small;border-color:black;border-width=1;">
+<input class='btn btn-primary btn-lg mt-2' type=submit value="mit Paypal Zahlen">
+</form>
+
+
+<script language=JavaScript>
+	var updateDiv = function () {
+		document.ccform.submit();
+	}
+	var myTimer = window.setTimeout(updateDiv, <% $args{delay} %>);
+</script>

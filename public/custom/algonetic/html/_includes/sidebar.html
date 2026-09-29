@@ -1,0 +1,47 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{C};
+	my $A     = $args{A};
+	my $perm  = $args{perm};
+	my $debug = $args{debug};
+
+	my $mt = $args{ticker} ? ' mt-4' : '';
+	   $mt = ' mt-5' if $args{top_notch};
+</%init>
+<%doc>
+	LOGO
+	visibility : desktop only
+</%doc>
+<div class="d-none d-sm-block<% $mt %>">
+	<div class="clearfix d-flex justify-content-between">
+% #		Logo: width: 110 / height: 60px max
+		<a class="w-100	align-self-center navbar-brand p-3" href="/">
+			<img src="/assets/images/logo/logo-prismado-400x150.avif" height="60" alt="DN1105">
+% # XX			<img src="/assets/images/logo/logo-prismado-400x120.avif" height="60" alt="DN1105">
+% # XX			<img src="/assets/images/logo/logo_pub.svg" height="60" alt="DN1105">
+		</a>
+	</div>
+</div>
+
+<div class="aside-wrapper scrollable-vertical scrollable-styled-light align-self-baseline h-100 w-100" style="scrollbar-color: #dfdfdf #f0f0f0; scrollbar-width:thin;">
+<%doc>
+	IMPORTANT NOTE:
+	Curently using ajax navigation!
+	remove .js-ajax	class to have regular links!
+</%doc>
+
+%	# -- Orig: nav-deep-dark
+	<nav class="nav-deep nav-deep-light nav-deep-hover fs--15 pb-5">
+		<& left_nav.html, caller=>$args{caller}, perm=>$perm, lang=>$args{lang}, debug=>$debug, A=>$A, C=>$C &>
+	</nav>
+
+%	if ($perm->{is_devel}) {
+		<p class="p-3 mt--n20">
+			<& ../include/inc_debug.html, C=>$C &><br />
+			<a href="/__foo.html">Foo (public)</a><br />
+			<a href="/adx/_layout.html">Layout</a> (here, ADX)<br />
+			<a href="https://docs.ch2.be/w/auctionline2023/layout">Layout Wiki</a><br>
+		</p>
+%	}
+</div>

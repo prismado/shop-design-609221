@@ -1,0 +1,65 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id    = $args{id};
+	my $p_inf = $args{p_inf};
+</%init>
+<small>
+%	if ($p_inf->{mand_count}) {
+		<a class="text-dark" href="/product/tagesangebot-limitiert/<% $id %>"><% $p_inf->{mand_count} %> Option(en) ausw&auml;hlen</a>
+%	}
+%	else {
+		<span class="mt-n2 mb-0 mr-4" data-toggle="tooltip" data-placement="top"
+		    data-original-title="In den Warenkorb">
+			<a href="#" style="text-decoration:none" class="fs--20"	onclick="JavaScript:add2bask(<%	$id %>)"><img alt="Zu Warenkorb"
+				rel="nofollow"
+				src="/assets/images/icon_add_to_basket.svg" style="width:22px !important; margin-bottom:4px !important">
+					<span class="fs--15 text-dark">In den Warenkorb</span>
+			</a>
+		</span>
+%	}
+</small>
+<%doc>
+- _get_product_v2 = 0.8001
+- art_no = 1648
+- art_no_ref = 681
+- brand = HP
+- campaign_id = 0
+- cat_id = 1072
+- cat_ids = 1033,1059,1069,1072
+- cat_name = BF HP
+- cat_names = Computer, PC & mehr, HP, BF HP
+- categs = ARRAY(0x55d9fa48a938)
+- condition = OR
+- count = 99999999
+- count2 = 99999999
+- count_product = 1216
+- currency = CHF
+- desc_keyw = Core i7-12700, 256 GB, Kein BS, 16 GB, Nvidia xy, Win10, Neu
+- description = Intel Core i7-12700, 16 GB RAM, 256 GB SSD inkl. Betriebssystem NEU und Originalverpackt (versiegelt)
+- discount_perc = 14.8211243611584
+- extra = 1
+- feat = HASH(0x55d9fa478400)
+- id = 648
+- instime = 2018-04-29 13:19:26
+- is_promo = -1
+- mand_count = 1
+- mand_opt_689 = Dä Festplatten-Upgrade
+- pfeat = HASH(0x55d9fa478790)
+- price = 46.4224872231687
+- price_enduser = 46.40
+- price_enduser_net = 39.54
+- price_enduser_unrounded = 46.4224872231687
+- price_incl_vat = 50.00
+- price_orig = 54.5
+- price_orig_incl_vat = 58.70
+- prod_type = 1
+- sale_type = 2
+- teaser = 195122992996 6.15 2023-11-17 21:33:10 2023-11-17 06:00 2023-11-18 06:00 2023-11-17 06:00
+- title = HP Elité TWR 8001 G9x abcdefgh-adei345i
+- title_enc = hp-elite-twr-8001-g9x-abcdefgh-adei345i
+- vat = 7.70
+- vat_amount = 3.57
+- xchange = 1
+- xtra_imgs = ARRAY(0x55d9fa4ac4e8)
+</%doc>
