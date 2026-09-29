@@ -46,8 +46,13 @@
 <& partials/left_nav.html, v => \%v, A => $A, C => $C &>
 
 <!-- Produkte (Mitte, ca. 70%) -->
-<section>
 
+<section>
+	<& parts/main.html, C => $C &>
+</section>
+
+<%doc>
+XXX:
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
 		<!-- Produktbild + Beschreibung -->
@@ -117,6 +122,8 @@
 	</div>
 
 </section>
+/XXX
+</%doc>
 
   <!-- Tagesangebote (rechts, ca. 15%) -->
   <aside id="tagesangebote" class="mt-10 lg:mt-0 scroll-mt-24">
