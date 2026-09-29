@@ -21,7 +21,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foo | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
+<title>Foo 609291 | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -185,7 +185,10 @@ XXX:
 </div>
 
 <& partials/footer.html, C => $C &>
+<& partials/footer_js.html, C => $C &>
 
+<%doc>
+XXX:
 <script>
   // Höhe des fixierten Headers messen, damit das Navigationsmenü direkt darunter andockt
   function updateHeaderHeight() {
@@ -253,6 +256,8 @@ XXX:
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
+/XXX
+</%doc>
 
 </body>
 </html>
