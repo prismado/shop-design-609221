@@ -23,7 +23,8 @@
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 			<p class="text-sm text-gray-600 leading-relaxed"><% $prod->{desc_long} %></p>
 %			foreach (@{$imgs->{pics}}) {
-				XX ........ <% $_ %><br>
+				XX <% $_ %> &rarr;
+				<img src="../<% $_ %>"><br>
 %			}
 %			if ($perm->{is_devel}) {
 				<p class="mt-5">XX <% $C->{CONFIG}->{DOCUMENT_ROOT} %></p>
