@@ -9,6 +9,7 @@
 	my $this = $C->this(); # -- product/index
 	my @path_elems = split /\//, $this;
 	my $home = $#path_elems ? '..' : '.';
+	   $home = '' if $this =~ /index$/;
 </%init>
 <!-- ===== HEADER ===== -->
 <header class="sticky top-0 z-40 shadow-md">
