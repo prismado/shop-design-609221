@@ -49,7 +49,8 @@
 
 				<!-- Bilder-Modal: gross, mit Vor-/Zurück-Navigation (Hauptbild + Zusatzbilder) -->
 				<div id="gallery-modal-<% $id %>"
-					class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4">
+					class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4
+						opacity-0 transition-opacity duration-300 ease-out">
 					<button type="button" class="gallery-close absolute top-4 right-4
 						text-white/80 hover:text-white p-2" aria-label="Schliessen">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -64,7 +65,8 @@
 							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 						</svg>
 					</button>
-					<img class="gallery-modal-img max-h-[85vh] max-w-[90vw] rounded-lg object-contain" src="" alt="">
+					<img class="gallery-modal-img max-h-[85vh] max-w-[90vw] rounded-lg object-contain
+						scale-95 opacity-0 transition-all duration-300 ease-out" src="" alt="">
 					<button type="button" class="gallery-next absolute right-2 sm:right-6
 						text-white/80 hover:text-white p-2" aria-label="Nächstes Bild">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -97,10 +99,18 @@
 						show(i);
 						modal.classList.remove('hidden');
 						modal.classList.add('flex');
+						requestAnimationFrame(function () {
+							modal.classList.remove('opacity-0');
+							modalImg.classList.remove('scale-95', 'opacity-0');
+						});
 					}
 					function closeModal() {
-						modal.classList.add('hidden');
-						modal.classList.remove('flex');
+						modal.classList.add('opacity-0');
+						modalImg.classList.add('scale-95', 'opacity-0');
+						setTimeout(function () {
+							modal.classList.add('hidden');
+							modal.classList.remove('flex');
+						}, 300);
 					}
 
 					if (mainBtn) mainBtn.addEventListener('click', function () { openModal(0); });
