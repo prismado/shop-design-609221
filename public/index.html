@@ -6,9 +6,7 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	my %v = (
-		daily_609231 => 'Tagesangebote am Montag'
-	);
+	my %v = (daily_609231 => 'Tagesangebote am Montag');
 
 	my $cgi = $C->{CGI};
 	my $debug = $cgi->param('debug');
@@ -40,7 +38,8 @@
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
 
-<& partials/left_nav.html, v => \%v, A => $A, C => $C &>
+<& partials/left_nav.html, A => $A, C => $C &>
+% # XXX <& partials/left_nav.html, v => \%v, A => $A, C => $C &>
 
 <!-- Produkte (Mitte, ca. 70%) -->
 <section>
@@ -74,13 +73,7 @@
 	<& partials/daily_offer.html, C => $C &>
 </div>
 
-<& partials/footer.html, C => $C &>
-<& partials/footer_js.html, C => $C &>
-
-<%doc>
-XXX:
-/XXX
-</%doc>
-
+	<& partials/footer.html, C => $C &>
+	<& partials/footer_js.html, C => $C &>
 </body>
 </html>
