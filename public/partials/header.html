@@ -9,7 +9,7 @@
 	my $this = $C->this(); # -- product/index
 	my @path_elems = split /\//, $this;
 	my $home = $#path_elems ? '..' : '.';
-	   $home = '' if $this eq 'index';
+	   $home = '.' if $this eq 'index';
 </%init>
 <!-- ===== HEADER ===== -->
 <header class="sticky top-0 z-40 shadow-md">
@@ -32,7 +32,7 @@
 			d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
             </span>
-            <input type="text" placeholder="<% $home %> - <% $this %> qqq Was suchst du?"
+            <input type="text" placeholder="<% $home %> - <% $this %> eee Was suchst du?"
               class="w-full rounded-full border-0 bg-white/95 py-2.5 pl-11 pr-4 text-sm text-gray-800
 			placeholder:text-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-white/80 transition">
           </div>
