@@ -234,7 +234,10 @@
 				}
 
 				btn.addEventListener('click', function () {
-					fetch('../dyn/add-to-basket.html?id=<% $id %>', { method: 'POST' })
+					var body = new URLSearchParams();
+					body.set('id', '<% $id %>');
+
+					fetch('../dyn/add-to-basket.html', { method: 'POST', body: body })
 						.then(function (res) { return res.json(); })
 						.then(function (data) {
 							if (data.rc === 0) {
