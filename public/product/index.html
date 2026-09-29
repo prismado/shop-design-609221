@@ -126,7 +126,10 @@
 </div>
 
 <& partials/footer.html, C => $C, home => $home &>
+<& partials/footer_js.html, C => $C, home => $home &>
 
+<%doc>
+XXX:
 <script>
   // Höhe des fixierten Headers messen, damit das Navigationsmenü direkt darunter andockt
   function updateHeaderHeight() {
@@ -194,6 +197,8 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
+/XXX
+</%doc>
 
 </body>
 </html>
