@@ -53,78 +53,12 @@
 
 <%doc>
 XXX:
-	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-
-		<!-- Produktbild + Beschreibung -->
-		<div>
-			<img src="https://placehold.co/450x450/d8d8d8/a8a8a8?text=Produkt-\nBild"
-				class="w-full rounded-2xl object-cover border border-gray-200 bg-white"
-				loading="lazy">
-
-			<div class="mt-6">
-				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
-				<p class="text-sm text-gray-600 leading-relaxed"><% $prod->{desc_long} %></p>
-			</div>
-		</div>
-
-		<!-- Produktdetails -->
-		<div>
-			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $prod->{brand} %></p>
-			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><% $prod->{title} %></h1>
-
-			<p class="text-xs text-gray-400 mb-5">
-				Artikelnummer <% $prod->{art_no} %>
-%			if ($perm->{is_devel}) {
-				&middot;
-				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc" 
-					class="underline hover:text-gray-600">Edit desc.</a>
-				&ndash;
-				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_discount" 
-					class="underline hover:text-gray-600">Edit disc.</a>
-%			}
-			</p>
-
-			<div class="flex flex-wrap items-end gap-3 mb-1">
-%			if ($prod->{discount_perc}) {
-				<span class="text-3xl font-bold text-red-600">CHF <% $prod->{price_incl_vat} %></span>
-				<span class="text-base text-gray-400 line-through mb-0.5">CHF <% $prod->{price_orig_incl_vat} %></span>
-				<span class="bg-red-600 text-white text-xs font-bold
-					px-2 py-1 rounded-full mb-0.5">-<% $prod->{discount_perc} %>%</span>
-%			}
-%			else {
-				<span class="text-3xl font-bold text-gray-900">CHF <% $prod->{price_incl_vat} %></span>
-%			}
-			</div>
-
-			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
-
-			<div class="flex flex-wrap gap-3 mb-8">
-				<a href="#!" class="inline-flex items-center justify-center gap-2 bg-[#1c1512]
-			hover:bg-red-600 text-white text-sm font-medium px-6 py-3 rounded-full transition shadow">In den Warenkorb</a>
-				<a href="#!" class="inline-flex items-center justify-center gap-2
-					border border-gray-300 hover:border-red-300 hover:text-red-700 text-sm
-					font-medium px-6 py-3 rounded-full transition">In die Merkliste</a>
-			</div>
-
-			<& partials/inc_prod_spec.html &>
-
-%			if ($perm->{is_devel}) {
-			<ul class="mt-8 pt-6 border-t border-dashed border-gray-300 text-xs text-gray-400 space-y-1">
-%			foreach (sort keys %$prod) {
-%				next if $_ eq 'desc_long' or $_ eq 'description' or $_ eq 'title' or $_ eq 'lang' or /^price/
-%					or $_ eq 'brand' or /^count/ or /^art_no/;
-				<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
-%			}
-			</ul>
-%			}
-		</div>
-
-	</div>
-
-</section>
 /XXX
 </%doc>
 
+<& partials/daily_offer.html, C => $C &>
+<%doc>
+XXX:
   <!-- Tagesangebote (rechts, ca. 15%) -->
   <aside id="tagesangebote" class="mt-10 lg:mt-0 scroll-mt-24">
     <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1 flex items-center gap-1.5">
@@ -181,6 +115,8 @@ XXX:
       Angebote nur solange Vorrat reicht
     </div>
   </aside>
+/XXX
+</%doc>
 
 </div>
 
@@ -189,73 +125,6 @@ XXX:
 
 <%doc>
 XXX:
-<script>
-  // Höhe des fixierten Headers messen, damit das Navigationsmenü direkt darunter andockt
-  function updateHeaderHeight() {
-    const header = document.querySelector('header');
-    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
-  }
-  updateHeaderHeight();
-  window.addEventListener('resize', updateHeaderHeight);
-  window.addEventListener('load', updateHeaderHeight);
-
-  // Sprachauswahl
-  const langBtn = document.getElementById('lang-btn');
-  const langMenu = document.getElementById('lang-menu');
-  const langCurrent = document.getElementById('lang-current');
-  langBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    langMenu.classList.toggle('hidden');
-  });
-  document.querySelectorAll('.lang-opt').forEach(opt => {
-    opt.addEventListener('click', () => {
-      langCurrent.textContent = opt.dataset.code;
-      langMenu.classList.add('hidden');
-    });
-  });
-  document.addEventListener('click', () => langMenu.classList.add('hidden'));
-
-  // Warenkorb
-  let cartCount = 0;
-  const cartBadge = document.getElementById('cart-count');
-  document.querySelectorAll('.cart-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      cartCount++;
-      cartBadge.textContent = cartCount;
-      cartBadge.classList.remove('pop');
-      void cartBadge.offsetWidth;
-      cartBadge.classList.add('pop');
-    });
-  });
-
-  // Merkliste
-  let wishlistCount = 0;
-  const wishlistBadge = document.getElementById('wishlist-count');
-  document.querySelectorAll('.wishlist-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const svg = btn.querySelector('svg');
-      const active = svg.classList.toggle('text-red-500');
-      svg.classList.toggle('text-gray-600');
-      svg.setAttribute('fill', active ? 'currentColor' : 'none');
-      wishlistCount += active ? 1 : -1;
-      wishlistBadge.textContent = wishlistCount;
-      wishlistBadge.classList.remove('pop');
-      void wishlistBadge.offsetWidth;
-      wishlistBadge.classList.add('pop');
-    });
-  });
-
-  // Scroll-Reveal-Animation
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-</script>
 /XXX
 </%doc>
 
