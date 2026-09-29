@@ -9,7 +9,8 @@
 
 	my $prod = $A->get_product($count + 1);
 
-	my $img_url = "produkte/p1_thmb.jpg"; # -- https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild
+	my $prod_id = $count + 1;
+	my $img_url = "produkte/p$prod_id\_thmb.jpg"; # -- https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild
 </%init>
 
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
