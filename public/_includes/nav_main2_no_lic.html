@@ -1,0 +1,56 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $perm = $args{perm};
+</%init>
+<br>
+% if ($args{warnings}) {
+	<span style="color:red">WARNING: <%$args{warnings}%> (<%$ENV{db_name}%>)</span><br><br>
+% }
+
+% if ($args{license}->{status} != 1) {
+	<% $C->bootstrap_alert($args{license}->{msg}, 'danger') %><br />
+% }
+<table cellspacing=0 cellpadding=0 border=0 align=center style='width:100%'>
+<tr valign=top><td>
+	<table align=center id='table_list' border=0 cellspacing=10 style='width:100%'>
+
+	<& _mini_main_func2.html, label => 'Stock', icon => 'icon-th',
+		link => 'not_auth.html', desc => 'Diese Funktion ist zurzeit gesperrt' &>
+
+	</table>
+	</td>
+
+	<td>&nbsp;</td>
+
+	<td>
+	<table align=center id='table_list' border=0 cellspacing=10 style='width:100%'>
+
+	<& _mini_main_func2.html, label => 'tbd', icon => 'icon-sitemap',
+		link => '.', desc => 'Diese Funktion ist zurzeit gesperrt' &>
+
+	</table>
+	</td>
+
+</table>
+
+<hr />
+<% $C->get_property('content_lic_bcst', '_global') %>
+
+% if ($perm->{is_devel}) {
+	<hr />
+	<h4>Devel</h4>
+	<p>DN40: <a href="adm_license.html">License</a> still okay?? <% $args{license}->{status} %></p>
+	<p><a href="adm_log.html?importance=2&filter=warn&filtertype=not">Log</a></p>
+% }
+% elsif ($perm->{is_licensor}) {
+	<p><a href="adm_license.html">License</a></p>
+% }
+
+% unless ($C->is_admin()) {
+	<table id='table_list2'></table>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,129 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $id = $cgi->param('id');
+
+	my $sth;
+	my $key;
+	my $label;
+	my $weight = 0;
+	my $list = 0; # -- Set to 1 if a list view ist required
+
+	if ($cgi->param('bUpdate')) {
+		(my $label = $cgi->param('label')) =~ s/'/''/g;
+		my $weight = $cgi->param('weight') || 0;
+		my $featkey = $cgi->param('key') || '* No Key *';
+		my $stmt = '';
+
+		my $featkey_db = $C->query("SELECT featkey FROM config_prod_feat WHERE id=$id")->[0];
+
+		$stmt = "UPDATE config_prod_feat SET featname='$label' WHERE featkey='$featkey' AND lang='$lang'";
+		$C->{dbh}->do($stmt) or $m->out("$stmt $DBI::errstr<br>");
+
+		$stmt = "UPDATE config_prod_feat SET weight=$weight, featkey='$featkey' WHERE featkey='$featkey_db'";
+		$C->{dbh}->do($stmt) or $m->out("$stmt $DBI::errstr<br>");
+
+		$m->out("Updated: ID $id <b>$label</b><br>");
+		$id = 0; $list = 1;
+	}
+	elsif ($cgi->param('bAdd')) {
+		$C->{dbh}->do("INSERT INTO config_prod_feat (featkey, lang, featname) VALUES ('aaa', 'de', '(new)')");
+		$C->{dbh}->do("INSERT INTO config_prod_feat (featkey, lang, featname) VALUES ('aaa', 'en', '(new)')");
+		$C->{dbh}->do("INSERT INTO config_prod_feat (featkey, lang, featname) VALUES ('aaa', 'fr', '(new)')");
+		$id = 0; $list = 1;
+	}
+	elsif ($cgi->param('bDelete')) {
+		my $featkey = $C->query("SELECT featkey FROM config_prod_feat WHERE id=$id")->[0];
+		$C->{dbh}->do("DELETE FROM config_prod_feat WHERE featkey='$featkey'") or $m->out("$DBI::errstr<br>");
+		$id = 0; $list = 1;
+	}
+	elsif ($id) {
+		my $featkey = $C->query("SELECT featkey FROM config_prod_feat WHERE id=$id")->[0];
+		($key, $label, $weight) = @{$C->query(
+			"select featkey, featname, weight FROM config_prod_feat WHERE featkey='$featkey' AND lang='$lang'")};
+	}
+	else { $list = 1; }
+
+	if ($list) {
+		my $order_by = $cgi->param('sort') || 'featkey';
+		$sth = $C->{'dbh'}->prepare(
+			"select id, featkey, featname, weight FROM config_prod_feat WHERE lang='$lang' ORDER BY $order_by");
+		$sth->execute();
+		$m->out($sth->rows() . ' rows<br>');
+	}
+</%init>
+
+<h2>Edit Feature Keys &laquo;<% $lang %>&raquo; (XML Import)</h2>
+
+<script type="text/javascript">document.title='Adm: Artikel Konfigurieren';</script>
+
+% if ($id) {
+	&larr; <a href='admix.html?func=config_items'>Zur&uuml;ck</a><br><br>
+
+	<b>Hinweis:</b><br><br>
+
+	Die Gewichtung wird zum Zeitpunkt des Artikelimports angewandt. Je kleiner, desto h&ouml;her oben wird das Feature
+	angezeigt. Negative Werte sind grunds&auml;tzlich möglich, führen aber in der Wirkung zu einem Teaser Text!
+	<br><br>
+% }
+
+<form method=post>
+<input type=hidden name=func value='config_items'>
+<input type=hidden name=id value="<% $id %>">
+
+<table cellspacing=0 cellpadding=2 border=0 width='100%' id='table_list'>
+
+<tr style='background-color:#cccccc; font-weight:bold'><td><a href='admix.html?func=config_items&sort=featkey'>XML Key</a></td><td>Label</td>
+<td align=right style='padding-right:33px'><a href='admix.html?func=config_items&sort=weight'>Gewicht</a></td>
+<td>In Gebrauch</td></tr>
+
+% if ($id) {
+	<tr><td colspan=4></td></tr>
+	<tr><td>&lt;<b><% $key %></b>&gt;</td><td><% $label %></td> <td></td> <td></td> </tr>
+	<tr><td><input type=text name=key value="<% $key %>" size=22></td>
+	<td><input type=text name=label value="<% $label %>" size=52></td>
+	<td><input type=text name=weight size=4 value="<% $weight %>"></td>
+	<td>...</td>
+	</tr>
+% }
+% else {
+% while(my $r = $sth->fetch()) {
+%	my ($id, $featkey, $featnam, $weight) = @{$r};
+%	my $ids = $A->get_feature_usage($featkey);
+	<tr style='line-height:100%' onmouseover="this.className='highlight_noptr'" onmouseout="this.className=''">
+	<td>&lt;<a href='admix.html?func=config_items&id=<% $id %>'><% $featkey %></a>&gt;</td>
+	<td><% $featnam %></td>
+	<td align=right style='padding-right:33px'><% $weight %></td>
+	<td>
+%	foreach (@{$ids}) {
+		<a href='admix.html?func=edit_item&id=<% $_ %>'><% $_ %></a>
+%	}
+	</td>
+	</tr>
+% }
+% }
+
+% if ($id) {
+	<tr><td colspan=4></td></tr>
+	<tr><td></td><td>
+	<input type=submit value='Update' name=bUpdate class=saveButton>&nbsp;&nbsp;&nbsp; 
+	<input type=submit value='Delete' name=bDelete class=delButton>&nbsp;&nbsp;&nbsp;
+	<input type=button value='Cancel' onclick='history.go(-1)' class=canButton>
+	</td></tr>
+% }
+
+</table><br>
+
+<input type=submit name=bAdd value='Key Hinzuf&uuml;gen' class=goButton><br>
+
+</form>
+
+
+% if ($C->is_devel()) {
+	<h4>admix_items</h4>
+% }

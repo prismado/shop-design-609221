@@ -1,0 +1,30 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+</%init>
+
+<h2>Special Tools</h2>
+
+<ol>
+<li><a href="config2.html?key=render_category_15j">Special Category Rendering</a> (Advanced Users)<br>
+Currently set to "<b><%$C->{CONFIG}->{render_category_15j}%></b>" &ndash; (1=active, 0=inactive)
+<br><br></li>
+
+<li><a href="config2.html?key=default_keywords">Default Keyword (SEO)</a><br>
+Currently set to "<b><%$C->{CONFIG}->{default_keywords}%></b>" &ndash; (Comma-separated)
+<br><br></li>
+
+<li><a href="config2.html?key=default_description">Default Description (SEO)</a><br>
+Currently set to "<b><%$C->{CONFIG}->{default_description}%></b>" 
+<br><br></li>
+
+<li><a href="adm_custom.html">Customization</a> <sup>new</sup><br>
+Customize Shop individually<br><br></li>
+
+<li><a href="admix.html?func=options">Options / Features</a></li>
+</ol>
+
+<%doc>
+	__METACLONING__
+</%doc>

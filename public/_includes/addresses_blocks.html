@@ -1,0 +1,49 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $suppress_upd = $args{suppress_upd_butt} || 0;
+
+	my $remarks = $C->getSessData('checkout_bemerkungen') || $C->{CGI}->param('checkout_bemerkungen');
+	my $delivery_date = $C->getSessData('checkout_liefer_date') || $C->{CGI}->param('checkout_liefer_date');
+	my $addr_bill = $A->get_address(1);
+	my $addr_deliv = $A->get_address(2);
+	
+</%init>
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+<div class="adressBox">
+<strong><% $C->p('deliv_addr') %>:</strong><br>
+                  <% $addr_deliv->{firstname} %> <% $addr_deliv->{lastname} %><br>
+                   <% $addr_deliv->{company} %><br>
+			  <% $addr_deliv->{street} %><br>
+			  <% $addr_deliv->{zip} %> <% $addr_deliv->{city} %><br>
+                     Schweiz 
+%			unless ($suppress_upd) {
+<a href="account.html?showProfile=1"><img src="images/anpassen_grey.gif" 
+					alt="Adresse &auml;ndern" width="27" height="17" border="0"></a>
+				   <a href="account.html?showProfile=1"><% $C->p('cng_adress') %></a>
+%			}                     
+                     </div>
+  
+            
+<div class="adressBox">
+<strong><% $C->p('bill_addr') %>:</strong><br>
+                <% $addr_bill->{firstname} %> <% $addr_bill->{lastname} %><br>
+			  <% $addr_bill->{company} %><br>
+			  <% $addr_bill->{street} %><br>
+			  <% $addr_bill->{zip} %> <% $addr_bill->{city} %><br>
+                  Schweiz 
+%			unless ($suppress_upd) {
+<a href="account.html?showProfile=1"><img src="images/anpassen_grey.gif" 
+					alt="Adresse &auml;ndern" width="27" height="17" border="0"></a>
+				   <a href="account.html?showProfile=1"><% $C->p('cng_adress') %></a>
+			
+%			}
+                
+                  </div>
+
+
+              
+

@@ -1,0 +1,198 @@
+<%init>
+	# -- Subject to be distributed 1:1 to every pGATE shop!!
+
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $id = my $cat_id = $C->{CGI}->param('id') + 0;
+	my $campaign_id     = $C->{CGI}->param('campaign_id');
+	my $show_invisible  = $C->{CGI}->param('show_invisible') + 0;
+	my $debug           = $C->{CGI}->param('debug');
+
+	if ($C->{CGI}->param('action') eq 'add_item') {
+		my $new_prod_id = $A->add_item(cat_id => $id);
+		$m->redirect("admix.html?func=edit_item&id=$new_prod_id");
+	}
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my @wclause = ();
+	my $label = '';
+
+	if ($campaign_id) {
+		$label = "Campaign Id $campaign_id";
+		# XXX $wcl = "campaign_id=$campaign_id";
+	}
+	else {
+		$label = $C->query("SELECT label FROM categories WHERE id=$id AND lang='$lang'")->[0];
+		# XXX $wcl = "cat_id=$id";
+	}
+
+	push(@wclause, "getprodFeat(id, 'RA')=$args{ra}") if $args{ra};
+
+	# XXX $wcl = "$wcl and (`condition` != 'IN' or `condition` IS NULL)"  unless $show_invisible;
+
+	my $wcl = join ' AND ', @wclause;
+
+	my $stmt = qq~	SELECT 	DISTINCT id, art_no, title, description, price, count, `condition`, getprodFeat(id, 'id'),
+				getprodFeat(id, 'RA'), getprodFeat(id, 'currency_id'), campaign_id, instime
+			FROM 	vproducts_1_02
+			WHERE 	lang='$lang' AND $wcl 
+			ORDER 	BY instime DESC~;
+
+	my $sth = $C->{'dbh'}->prepare($stmt);
+	   $sth->execute() or $m->out("ERROR $DBI::errstr<br>");
+
+	my $rows = $sth->rows();
+
+	my $breadcrumb = $A->get_breadcrumb($id);
+
+	my ($child_id, $child_label) = @{$C->query("select id, label FROM categories WHERE parent_id=$id")};
+
+	my %type_map = ( 'SO' => 'Stock', 'OR' => 'Many', 'IN' => 'Invisible', 'IP' => 'Info' );
+</%init>
+% if ($debug) {
+	<% $C->html_debug($stmt) %>
+% }
+<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript">
+    $(function(){
+       $('table.data-table.sort').dataTable( {
+            "bPaginate": false,
+            "bLengthChange": false,
+            "bFilter": false,
+            "bSort": true,
+            "bInfo": false,
+            "bAutoWidth": false 
+        });
+       $('table.data-table.full').dataTable( {
+            "bPaginate": true,
+            "bLengthChange": true,
+            "bFilter": true,
+            "bSort": true,
+            "bInfo": true,
+            "bAutoWidth": true,
+            "sPaginationType": "full_numbers",
+            "sDom": '<""f>t<"F"lp>',
+            "sPaginationType": "bootstrap"
+        });
+    });
+</script>
+
+<div style='margin-top:10px' class="pull-right">
+	<h2 style="margin-top:0px">
+% # XXX	<a href="adm_special_keys.html?area=article_numbering"><i class="icon-wrench"></i></a> &middot;
+% if ($show_invisible) {
+% # XXX	<a href="admix.html?func=items_expand&id=<%$cat_id%>">Hide Invisible</a>
+% }
+% # XXX	&middot; <a href="adm_print_items.html?cat_id=<%$id%>"><i class="icon-print"></i></a>
+	</h2>
+</div>
+
+<script type="text/javascript">document.title="<%$rows%> x <%$label%> - Adm Artikel Verwalten";</script>
+
+<h2><a href="auctionl_navision_orders.html">&uarr;</a>&nbsp;&rsaquo;&nbsp;
+<% "$rows Items" %> &ndash; RA <% $args{ra} %></h2>
+
+% if ($debug) {
+	<%$stmt%><br>
+%	my $st = $C->{dbh}->prepare("select product_id from products2categ where cat_id=$id order by 1 desc");
+%	   $st->execute();
+%	while(my $rr = $st->fetch()) {
+		X -- Product ID <a href="admix.html?func=edit_item&id=<%$rr->[0]%>"><%$rr->[0]%></a><br>
+%	}
+% }
+% if ($sth->rows()) {
+<table class='mytable table-striped table-first-column-number data-table sort display table-hover'>
+
+<thead>
+<th>Product</th>
+<th nowrap style='text-align:center'>Item ID</th>
+<th>Art No</th>
+<th>External</th>
+<th style="text-align:center">Assigned</th>
+<th style='text-align:right'>Count</th>
+<th style='text-align:center'>Type</th>
+<th style='text-align:right'>PPU&nbsp;</th>
+<th style="text-align:right">Edit&nbsp;</th>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $art_no, $title, $desc, $price, $count, $condition, $ext_id, $RA, $currency_id, $campa_id, $instime) = @{$r};
+%	my $curr = $currency_id == 2 ? 'EUR' : $C->{CONFIG}->{default_curr};
+%	my $assigned = $C->query("select instime FROM products2categ WHERE product_id=$id AND cat_id=$cat_id")->[0] || $instime;
+%	my $label_col = $condition eq 'SO' ? 'success' : 'info';
+%	   $label_col = 'important' if $condition eq 'IN';
+%	my ($option_id, $special_art_no) = @{$C->query("select o.id, label from options o, options_desc c where o.id=option_id AND o.id IN (select CAST(substr(featkey, 3, 8) AS UNSIGNED) from products_feat where product_id=$id and lang='de') and style=1 limit 1")};
+%	my $discount = $C->query("select discount from products_discount where product_id=$id and status=1")->[0];
+%	$art_no = substr($art_no, 0, 18) . '...' if length($art_no) > 18;
+%	$desc = substr($desc, 0, 33) . '...' if length($desc) > 33;
+%	$desc =~ s/\</&lt;/g;
+%	$desc =~ s/\>/&gt;/g;
+	<tr valign=top style="line-height:200%" onmouseover="this.className='highlight_noptr'" onmouseout="this.className=''">
+	<td nowrap style="padding-top:5px; padding-bottox:0px">
+		<div class="pull-left">
+			<span rel="tooltip" data-original-title="Open Customer View" data-placement="top"><a
+				target="_blank" href="product.html?id=<%$id%>"><img
+				style='box-shadow: 7px 7px 4px #888888; margin-right:20px; margin-top:5px'
+				src='/produkte/p<%$id%>_mini.jpg' width='<%$C->{CONFIG}->{default_imgsize_mini} * 0.9%>'></a></span>
+		</div>
+		<a style='font-weight:bold' href='product.html?id=<%$id%>'>
+		<% $A->shorten_title($title, 60) %></a><br>
+		<%$desc%>
+%		my $st = $C->{dbh}->prepare("select cat_id FROM products2categ WHERE cat_id != $cat_id AND product_id=$id"); $st->execute();
+%		while(my $rr = $st->fetch()) {
+			<%$rr->[0]%>
+%		}
+	</td>
+	<td style='width:22; text-align:center; padding-top:5px; font-weight:bold'><%$id%></td>
+	<td style='text-aligx:center; padding-top:5px'><%$art_no%>
+%		if ($campa_id) {
+			(Campaign <% $campa_id %>)
+%		}
+	</td>
+	<td><% $ext_id %> <% $RA %></td>
+	<td style="text-align:center; padding-top:5px"><a
+		href="adm_modify_assign_time.html?id=<%$id%>"><%(split / /, $C->trans_date_short($assigned))[0]%></a></td>
+	<td style='text-align:right; padding-top:5px'>
+%	if ($option_id) {
+		<a href="admix.html?func=options&id=<%$option_id%>"><%$special_art_no%></a>
+%	}
+%	else {
+		<%$condition eq 'OR' ? '&infin;' : $count%>
+%	}
+	</td>
+
+	<td style='text-align:center; padding-top:5px'><span
+		class='label label-<%$label_col%>'><%$type_map{$condition} || "* $condition *"%></span></td>
+
+	<td nowrap style='width:86px; text-align:right; padding-top:5px; font-weight:bold; color:<%$discount ? 'maroon' : 'black'%>'>
+		<%sprintf('%.2f', $price)%> <%$curr%>
+%	if ($discount) {
+		<br><span style="font-size:11px">- <%sprintf('%.2f', $discount)%> %</span>
+%	}
+	</td>
+
+	<td style='width:52; text-align:right'><a href='admix.html?func=edit_item&id=<% $id %>'><i
+		style="font-size:18px; margin-top:10px" class="icon-edit"></i></a>&nbsp;</td>
+	</tr>
+% }
+
+</table><br>
+% }
+% else {
+	No items at this time<br><br>
+% }
+
+% if ($id) {
+<a href='admix.html?func=items_expand&id=<%$id%>&action=add_item'>Add Item</a> &middot;
+<a href="adm_categ.html?id=<%$id%>">Edit Category</a> &middot;
+<a href="adm_del_products.html?id=<%$id%>">Delete Products</a>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

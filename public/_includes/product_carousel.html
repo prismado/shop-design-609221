@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $d = $args{d};
+
+	my $sth = $C->{dbh}->prepare("SELECT featkey FROM products_feat WHERE product_id=$args{id} AND featname='_image'");
+	   $sth->execute();
+</%init>
+% if ($d->{price_incl_vat} != $d->{price_orig_incl_vat}) {
+	<span class="aktionsOffer"></span>
+% }
+<div class="productImage">
+	<img rel="Facebook image" id="productImage" src="produkte/p<%$args{id}%>_orig.jpg" title="<% $d->{'title'} %>" />
+
+<ul id="product_carousel" class="elastislide-list">
+<li><a href="#"><img src="produkte/p<%$args{id}%>_orig.jpg" data-largeimg="produkte/p<%$args{id}%>_orig.jpg" /></a></li>
+% while(my $r = $sth->fetch()) {
+<li><a href="#"><img src="produkte/p<%$args{id}%>_<%$r->[0]%>_thmb.jpg" data-largeimg="produkte/p<%$args{id}%>_<%$r->[0]%>_orig.jpg" /></a></li>
+% }
+</ul>
+
+</div>
+
+% # -- <li><a href="#"><img src="layout/demo_produkts/image3_250x250.jpg" data-largeimg="layout/demo_produkts/image3_1024x1024.jpg" /></a></li>

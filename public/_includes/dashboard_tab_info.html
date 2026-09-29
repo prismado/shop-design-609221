@@ -1,0 +1,48 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $debug = $args{debug};
+
+	my $env = $C->get_webenv();
+
+	my %map = (
+		daemon    => 'Daemon',
+		db        => 'Database',
+		kernel_release => 'Kernel Rel.',
+		server_ip => 'Server IP',
+		uptime    => 'Uptime',
+		webuser   => 'Web User'
+	);
+</%init>
+<h3>Publigate Online Shop</h3>
+
+<p>
+by <a target="_blank" href="https://algonetic.com">algonetic ltd</a>
+	&amp; <a target=_blank href="http://ps-media.ch">ps-media GmbH</a>
+</p>
+<p>
+% if ($C) {
+	<table class="mytable table-hover">
+	<tr><td><b>Hostname</b></td><td><% $env->{hostname} %></td></tr>
+	<tr><td><b>OS</b></td><td><% $env->{os} %></td></tr>
+%	foreach (sort keys %{$env}) {
+%		next if $_ eq 'VERSION' or $_ eq 'db_orig' or $_ eq 'hostname' or $_ eq 'os' or $_ eq 'uname_all' or $_ eq 'uname_rel' or $_ eq '__TSTAMP__';
+	<tr>
+		<td><b><% $map{$_} || $_ %>:</b></td><td><% $env->{$_} %></td>
+	</tr>
+%	}
+	</table>
+%	if ($debug) {
+		HTTP_X_SERVER_ADDR = "<% $ENV{HTTP_X_SERVER_ADDR} %>"<br>
+		SERVER_ADDR = "<% $ENV{SERVER_ADDR} %>"<br>
+		<a href="adm_db_edit.html?table=work&wcl=k%3D%27env_V0.8015_os%27">Edit Workval</a>
+%	}
+% }
+% else {
+	Host: <b>*** N/A ***</b>
+% }
+</p>
+<%doc>
+	__METACLONING__
+</%doc>

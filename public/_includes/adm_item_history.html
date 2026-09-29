@@ -1,0 +1,8 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id = $args{id};
+	my $C  = $args{C};
+</%init>
+XX <% $id %> <% $C->now(4) %>
+<br />

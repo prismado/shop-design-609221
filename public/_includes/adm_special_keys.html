@@ -1,0 +1,232 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $area = $args{area};
+
+	my $cgi = $C->{CGI};
+
+	my $id  = $cgi->param('id') || $cgi->param('delid');
+	   $id *= 1;
+	my $val = $cgi->param('val');
+	my $key = $cgi->param('key');
+	my $bUpdate = $cgi->param('bUpdate');
+
+	$m->redirect('adm_pay_methods.html') if $cgi->param('bCancel') && $area =~ /^pay_cost_/;
+	$m->redirect('adm_special_keys.html?area=six') if $cgi->param('bCancel') && $area =~ /^six_.+/;
+
+	my @appmsgs = ();
+
+	if ($cgi->param('bAdd')) {
+		my $key = $C->{CGI}->param('key');
+		$C->{dbh}->do("INSERT INTO config (`key`, val) VALUES ('$key', '-')");
+	}
+	elsif ($bUpdate) {
+		# $m->out("XX Update $id constr ($area)<br>");
+	}
+	elsif ($key) {
+		$id = $C->query("select id FROM config WHERE `key`='$key'")->[0];
+	}
+	elsif ($cgi->param('delid')) {
+		$C->{dbh}->do("delete FROM config WHERE id=$id");
+		$id = 0;
+	}
+
+	if ($id && length($val)) {
+		$val =~ s/'/''/g;
+		$C->{dbh}->do("UPDATE config SET val='$val' WHERE id=$id");
+	}
+
+	if ($area eq 'order_email') {
+		unless ($C->{CONFIG}->{order_email_sender}) {
+			push(@appmsgs, '<b>WARN</b> Undefined: order_email_sender');
+			my $exist = $C->query("select id from config where `key`='order_email_sender'")->[0];
+			unless ($exist) {
+				$C->{dbh}->do(q~insert into config (`key`, val) values ('order_email_sender', '')~);
+				$C->{dbh}->do(q~insert into config (`key`, val) values ('order_email_sender__explain',
+					'<a href="adm_masterdata.html?pane=3">Check SPF Record!</a>')~);
+				$C->refresh_config();
+					push(@appmsgs, 'Empty config key created');
+			}
+		}
+	}
+
+	my $stmt = "SELECT id, `key`, val FROM config WHERE `key` LIKE '$area%' AND `key` NOT LIKE '%__explain' ORDER BY `key` LIMIT 99999";
+	   $stmt = "SELECT id, `key`, val FROM config WHERE `key` LIKE '$area%' LIMIT 1" if $area =~ /__explain$/;
+	   $stmt = "SELECT id, `key`, val FROM config WHERE id=$id" if $id;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $m->out("ERR $DBI::errstr<br>");
+	my $rows = $sth->rows();
+
+	(my $area_disp = $area) =~ tr/a-z/A-Z/;
+	    $area_disp =~ s/\_$//;
+</%init>
+<p class="pull-right" style='margin-top:20px'>
+	Config of <% $A->shorten_title($C->{CONFIG}->{site_title}, 50) %> &middot; IP <%$C->getOwnIP()%>
+</p>
+
+<div class="alert alert-warning" style="width:40vw">
+	<b style="color:red">***** INFO *****</b> &rarr; <a href="adx/special_keys.html"><b>New Version</b></a> &larr;
+</div>
+
+<h2><% $rows %> Settings for &laquo;<%$area_disp%>&raquo;<%$args{debug} ? ' - Debug' : ''%></h2>
+
+% if ($args{debug} > 1) {
+	<%$stmt%><br>
+	<%$C->html_debug('Rows: ' . $sth->rows())%>
+% }
+<form>
+<input type=hidden name=id value="<% $id %>">
+
+<table class='table table-striped table-hover'>
+
+<thead>
+<tr>
+<th style="width:255px"><% $area =~ /\_$/ ? $area_disp : 'Configuration' %> Key</th>
+<th>Value</th>
+</tr>
+</thead>
+
+% if ($area_disp eq 'SMTP') {
+	<tr>
+		<td><a href="adm_special_keys.html?area=mail_relay">MTA</a> / Mail Relay Host</td>
+		<td style="font-weight:bold"><% $C->{CONFIG}->{mail_relay} || 'localhost' %></td>
+	</tr>
+% }
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+%	$val =~ s/</&lt;/g;
+%	$val =~ s/>/&gt;/g;
+%	$val = '********' if $key =~ /_pass$/ or $key =~ /\_pass\_\_.+/;
+%	my $extra_info = $C->query("select val from config where `key`='$key\__explain'")->[0] || '';
+%	my $key_disp = $key;
+%	   $key_disp =~ s/^$area// if $area =~ /\_$/;
+	<tr>
+	<td>
+%	if ($key =~ /__explain$/) {
+		<a href='config2.html?id=<%$id%>'>.</a>
+%	}
+%	else {
+		<a href='adm_special_keys.html?area=<%$key%>&id=<%$id%>'><% uc $key_disp %></a>
+%	}
+	</td>
+	<td>
+%	if ($key =~ /^pay_cost_/) {
+		<%sprintf('%.2f', $val)%> &middot; <b>(<%sprintf('%.2f', $val * (1 + $C->{CONFIG}->{vat} / 100))%>
+		<%$C->{CONFIG}->{default_curr}%>)</b>
+%	}
+%	else {
+		<span style="font-weight:bold"><%$val%></span>
+		<div class="pull-right"><%$extra_info%></div>
+%	}
+%	if ($args{debug} > 1) {
+		&middot; <a style="color:red" href="config2.html?delid=<%$id%>">del</a>
+%	}
+	</td>
+	</tr>
+% }
+
+</table>
+</form>
+
+% if ($area_disp eq 'SMTP') {
+	&rsaquo; <a href="adm_masterdata.html?pane=3">Send Testmail</a><br>
+% }
+
+% if ($rows == 1) {
+%	my ($id, $val) = @{$C->query("select id, val FROM config WHERE `key`='$area'")};
+%	(my $val_enc = $val) =~ s/"/&quot;/g;
+%	my $explain = $C->query("select val from config where `key`='$area\__explain'")->[0];
+%	unless ($id) {
+%		# -- WARNING: No id found
+%		($id, $val) = @{$C->query("select id, val FROM config WHERE `key` LIKE '$area%'")};
+%	}
+%	if ($explain) {
+		<%$explain%>
+%		if ($args{debug}) {
+			<a href="adm_special_keys.html?area=<%$area%>__explain">Edit</a>
+%		}
+		<br>
+%	}
+	<form method=post>
+	<input type=hidden name=area value="<%$area%>">
+	<input type=hidden name=id value="<%$id%>">
+	<input type=hidden name=debug value="<%$args{debug}%>">
+	<input style='margin-top:10px; width:350px' value="<% $val_enc %>" type=text name="val">
+	<input type=submit class="btn btn-primary" name=bUpdate value="Update Value">
+%	if ($area =~ /^pay_cost_/) {
+		<input type=submit class="btn" name=bCancel value="Back">
+%	}
+%	elsif ($area =~ /^six_.+/) {
+		<input type=submit class="btn" name=bCancel value="Back">
+%	}
+%	else {
+		<input type=button class="btn" onclick="JavaScript:history.go(-1)" value="Back">
+%	}
+	</form>
+%	if ($bUpdate) {
+		<b>Updated!</b><br>
+%	}
+% }
+% elsif ($rows == 0) {
+	<% $C->bootstrap_alert(qq~<b>Not found</b> &ndash; <a href="adm_special_keys.html?area=$area&debug=1">Create?</a>~,
+		'danger') %><br />
+% }
+
+% if ($area eq '2co') {
+	<p>2co_mode: T(est) or P(productive)<br>
+	Required: 2co_p_priv_key, 2co_p_pub_key, 2co_t_priv_key, 2co_t_pub_key</p>
+% }
+% elsif ($area eq 'article_numbering') {
+	<p><b>auto</b> = Automatic article numbering</p>
+% }
+% elsif ($area eq 'order_email') {
+	See also: <a href="adm_special_keys.html?area=smtp_">SMTP Settings</a><br>
+% }
+% elsif ($area eq 'ship_pic') {
+%	my $key_id = $C->query("select id FROM properties WHERE `key`='pickup_infos_de'")->[0];
+%	my $text = $C->query("select val FROM properties WHERE id=$key_id")->[0];
+%	my $key_id_2 = $C->query("select id FROM properties WHERE `key`='pickup_infos_2_de'")->[0];
+%	my $text_2 = $C->query("select val FROM properties WHERE id=$key_id_2")->[0];
+%	my $key_id_3 = $C->query("select id FROM properties WHERE `key`='pickup_infos_3_de'")->[0];
+%	my $text_3 = $C->query("select val FROM properties WHERE id=$key_id_3")->[0];
+	<p>
+%		if ($key_id) {
+			<div style='background-color:#f1f1f1' class="well">
+				<div class="pull-right">
+					<a class="btn btn-mini" href="adm_property.html?id=<%$key_id%>">Edit Text</a>
+%				if ($key_id_2) {
+					<a class="btn btn-mini" href="adm_property.html?id=<%$key_id_2%>">Edit Text 2</a>
+%				}
+%				if ($key_id_3) {
+					<a class="btn btn-mini" href="adm_property.html?id=<%$key_id_3%>">Edit Text 3</a>
+%				}
+				</div>
+				<%$text%> <%$text_2 || ''%> <%$text_3 || ''%>
+			</div>
+%		}
+%		else {
+			*** Please <a
+				href="adm_properties.html?action=add">create property</a> <b>"pickup_infos"</b> ***
+%		}
+	</p>
+% }
+
+% if (@appmsgs) {
+	<br />
+%	my $msg = join '<br>', @appmsgs;
+	<% $C->bootstrap_alert($msg, 'success') %>
+% }
+
+% if ($args{debug} || $C->is_devel()) {
+	<form method=post>
+	<input type=hidden name=area value="<%$area%>">
+	Key: <input type=text name='key'> <input type=submit value='Add' name=bAdd></form><br>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,23 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $C = $args{C};
+</%init>
+<input type='hidden' name='_featwei_<%$args{feat_id}%>' value='<%$args{weight}%>'>
+<input type='hidden' name='_featnam_<%$args{feat_id}%>' value="<%$args{feat_name}%>">
+<tr>
+<td nowrap><a
+% # XXX	href='admix.html?func=edit_item&action=del_feat&id=<%$args{feat_id}%>'><i class='icon-remove'
+	href='_del_feat_from_product.html?id=<% $args{feat_id} %>&prod_id=<% $args{prod_id} %>'><i class='icon-remove'
+	style='color:red'></i></a> <b>Exclude Value</b></td>
+<td><input type='text' name="_featkey_<%$args{feat_id}%>"
+	style='margin-top:10px; width:145px; color:#666; font-size:11px;'
+	value='<%$args{feat_key}%>'></td>
+<td colspan=2><abbr title="Exclude values are comma separated"><input type='text' name='_featval_<%$args{feat_id}%>'
+	style='margin-top:10px; width:380px;'
+	value='<%$args{dat}%>'></abbr>
+</td>
+</tr>
+<%doc>
+	__METACLONING__
+</%doc>

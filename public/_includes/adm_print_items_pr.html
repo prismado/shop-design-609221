@@ -1,0 +1,82 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cat_id = $args{cat_id};
+	my $col    = $args{col};
+
+	if ($col) {
+		my $status = $C->getSessData("print_items_$col") == 2 ? 1 : 2;
+		$C->saveSessData("print_items_$col", $status);
+	}
+
+	my $sth = $C->{dbh}->prepare(qq~
+			select	id, art_no, price, title, `description`, count, `condition`, instime
+			from	vproducts_1_02
+			where	cat_id=$cat_id and lang='de'
+	~);
+	$sth->execute();
+
+	my $settings = $C->get_sess_array_hash('print_items', 'ASC');
+</%init>
+<table class="table table-striped">
+<thead>
+	<tr>
+%  unless ($settings->{print_items_title} == 2) {
+	<th>Product</th>
+% }
+%  unless ($settings->{print_items_id} == 2) {
+	<th style="text-align:right; padding-right:10px">ID</th>
+% }
+%  unless ($settings->{print_items_art_no} == 2) {
+	<th>Art No</th>
+%  }
+%  unless ($settings->{print_items_count} == 2) {
+	<th style="text-align:right; padding-right:10px">Count</th>
+%  }
+%  unless ($settings->{print_items_instime} == 2) {
+	<th>Created</th>
+%  }
+%  unless ($settings->{print_items_description} == 2) {
+	<th>Description</th>
+%  }
+%  unless ($settings->{print_items_price} == 2) {
+	<th style="text-align:right">Price</th>
+%  }
+	</tr>
+</thead>
+<tbody>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $art_no, $price, $title, $desc, $count, $cont, $instime) = @{$r};
+	<tr>
+%  unless ($settings->{print_items_title} == 2) {
+	<td nowrap style="font-weight:bold"><%$title%></td>
+%  }
+%  unless ($settings->{print_items_id} == 2) {
+	<td style="text-align:right; padding-right:10px"><%$id%></td>
+%  }
+%  unless ($settings->{print_items_art_no} == 2) {
+	<td><%$art_no%></td>
+%  }
+%  unless ($settings->{print_items_count} == 2) {
+	<td style="text-align:right; padding-right:10px"><%$count%></td>
+%  }
+%  unless ($settings->{print_items_instime} == 2) {
+	<td><% (split / /, $C->trans_date_short($instime))[0] %></td>
+%  }
+%  unless ($settings->{print_items_description} == 2) {
+	<td><%$desc%></td>
+%  }
+%  unless ($settings->{print_items_price} == 2) {
+	<td nowrap style="text-align:right"><% sprintf('%.2f', $price) %> <% $C->{CONFIG}->{default_curr} %></td>
+%  }
+	</tr>
+% }
+</tbody>
+</table>
+
+<%doc>
+	__METACLONING__
+</%doc>

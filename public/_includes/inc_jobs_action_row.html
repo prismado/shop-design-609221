@@ -1,0 +1,37 @@
+<%init>
+	my %args = $m->caller_args(0);
+</%init>
+<tr style="height:35px">
+<td><%$args{i}%></td>
+<td style="text-align:center; padding-right:20px; padding-top:6px">
+%	if ( $args{action} eq 'googlefeed' ) {
+	    <span rel="tooltip" data-original-title="Click to specify categories and run job..." data-placement="bottom">
+		<i style="cursor:pointer; font-size:26px"
+			onclick="modal_run()" class="icon-play-circle"></i>
+	    </span>
+%	}
+%	elsif ( $args{action} eq 'nodesass' ) {
+	    <span rel="tooltip" data-original-title="Click to specify details and run job..." data-placement="bottom">
+		<i style="cursor:pointer; font-size:26px"
+			onclick="modal_run_nodejs_sass()" class="icon-play-circle"></i>
+	    </span>
+%	}
+%	elsif ( $args{action} eq 'creditcheck' ) {
+	    <span rel="tooltip" data-original-title="Click to specify details and run job..." data-placement="bottom">
+		<i style="cursor:pointer; font-size:26px"
+			onclick="modal_run_creditcheck()" class="icon-play-circle"></i>
+	    </span>
+%	}
+%	else {
+	    <span rel="tooltip" data-original-title="Click to run job" data-placement="top">
+		<i style="cursor:pointer; font-size:26px"
+			onclick="mydo('<%$args{action}%>')" class="icon-play-circle"></i>
+	    </span>
+%	}
+</td>
+<td style="font-weight:bold"><% $args{label} %></td>
+<td><% $args{desc} %></td>
+</tr>
+<%doc>
+	__METACLONING__
+</%doc>

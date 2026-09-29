@@ -1,0 +1,51 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $lang = $args{'lang'} || 'de';
+	my $discount = $A->get_discount($id);
+	my $price_net = sprintf('%.2f', $d->{price} * (1 - $discount / 100) * (1 + $C->{CONFIG}->{vat} / 100));
+</%init>
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+<table border="0" cellpadding="1" cellspacing="1">
+<tr><td height="10">&nbsp;</td><td align="right">&nbsp;</td></tr>
+<tr><td  height="17"><% $C->p('article_nr') %></td><td  align="right"><% $d->{'art_no'} %></td></tr>
+% # XXX <tr><td height="17"><% $C->p('order_range') %></td><td align="right">1787</td></tr>
+<tr><td height="17"><% $C->p('available') %></td><td align="right"><% $d->{count} %></td></tr>
+<tr><td height="17"><% $C->p('condition') %></td><td align="right"><% $d->{condition} %></td></tr>
+<tr><td height="17"><% $C->p('warranty') %></td><td align="right">1 Monat</td></tr>
+<tr><td height="17" colspan="2">&nbsp;</td></tr>
+<tr><td height="17" colspan="2"><div align="center" class="preis_d">
+				
+%	if ($discount) {
+		<span style='color:#ff6400;'> CHF </span><span style='color:#ff6400;'
+			id=dynTotal><% sprintf('%.2f', $d->{price_incl_vat} + $d->{upsell_tot}) %></span><br /><br>
+		<span style='font-size:14px;'>anstatt<br /><s>CHF <% $d->{price_orig_incl_vat} %></s></span>
+%	}
+%	else {
+		CHF <span id=dynTotal><% sprintf('%.2f', $d->{price_incl_vat} + $d->{upsell_tot}) %></span>
+%	}
+		</div>
+		
+</td></tr>
+<tr><td height="17" colspan="2">
+<div align="center"><%$C->p('incl')%> <%$C->{CONFIG}->{vat}%> % <%$C->p('mwst')%></div></td>
+</tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+	  
+<tr align="center">
+	<td height="36" colspan="2">
+
+	<div id="addtoCart"><a class="blu_btn"
+		href="basket.html?id=<%$id%>"><%$C->p('to_basket')%></a></div>
+
+</td></tr>
+</table>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'END'&>
+% }

@@ -1,0 +1,62 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	use File::Copy;
+
+	my $bExport = $cgi->param('bExport');
+	my $bNext   = $cgi->param('bNext');
+	my $include_anon = $cgi->param('include_anon');
+
+	my $target_file = "$ENV{DOCUMENT_ROOT}/produkte/zz_trash_import.txt";
+
+	my $file_header;
+	my $errstr = '';
+
+	if ($bExport) {
+		$A->export_customers(include_anon=>$include_anon);
+	}
+</%init>
+<h2><span style='font-size:30px; margin-right:5px' class="icon-group pull-left text-info"></span>Export Customers to file</h2>
+
+% if ($bNext && !$errstr) {
+% #	<h3>Columns found:</h3>
+	<br>
+	<form method=post>
+	<input style="margin-top:-2px" type=checkbox name="include_anon" value="1"> Include anonymous customers<br><br>
+
+	<input type=submit class='btn btn-primary' value="Export" name=bExport>
+	<input type=button class='btn' value="Cancel" onclick="document.location='export_customers.html'">
+	</form>
+% }
+% elsif ($bExport) {
+	Finished.<br><br>
+
+	<a href="adm_log.html?importance=4">Log</a> &middot;
+	<a href="produkte/zz_trash_export.txt">Download</a><br><br>
+
+	<input type=button class="btn" onclick="document.location='customers.html'" value="Customers"><br>
+% }
+% else {
+	<div class="well">
+		&bull; <b>cust_email</b> <small>(mandatory)</small><br>
+		&bull; cust_surname<br>
+		&bull; cust_name<br>
+		&bull; cust_company<br>
+		&bull; cust_street<br>
+		&bull; cust_zip<br>
+		&bull; cust_city<br>
+		&bull; cust_phone<br>
+	</div>
+	<form enctype="multipart/form-data" method=post>
+	<input type=submit class='btn btn-primary' value="Next ..." name=bNext>
+	<input type=button class='btn' value="Cancel" onclick="document.location='customers.html'">
+	</form>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

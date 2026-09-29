@@ -1,0 +1,233 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	$m->redirect('adm_vouchers.html') if $cgi->param('bCan');
+
+	my @app_msgs = ();
+
+	my $delid = $cgi->param('delid');
+	my $id    = $cgi->param('id');
+
+	if ($delid) {
+		$C->{dbh}->do("delete FROM vouchers WHERE id=$delid");
+		$m->redirect('adm_vouchers.html');
+	}
+	elsif ($args{bUpd}) {
+		my $vcode  = $cgi->param('vcode'); $vcode =~ tr/a-z/A-Z/;
+		my $amount = $cgi->param('amount') || 0;
+		my $count_available = $cgi->param('count_available') || 0;
+		my $perc   = $cgi->param('perc') || 0;
+		my $valid_from = $args{time_from_db};
+		my $valid_to   = $args{time_to_db};
+		my $categ_id   = $cgi->param('categ_id'  ) || 0;
+
+		$dbh->do(qq~	UPDATE	vouchers
+				SET	amount=$amount, vcode='$vcode', perc=$perc,
+					valid_from='$valid_from',
+					valid_to='$valid_to',
+					count_available=$count_available,
+					categ_id=$categ_id
+				WHERE	id=$id~)
+			or $m->out("ERR $DBI::errstr<br>");
+	}
+
+	my ($vcode, $instime, $amount, $perc, $valid_from, $valid_to,
+		$count_available, $count_used, $categ_id, $status) = @{$C->query(
+		"select vcode, instime, amount, perc, valid_from, valid_to,
+		count_available, count_used, categ_id, status FROM vouchers WHERE id=$id")};
+
+	my $categ = $C->query("select label FROM categories WHERE id=$categ_id")->[0];
+
+	my ($vld_from_date, $vld_from_time) = split / /, $valid_from;
+	my ($vld_to_date  , $vld_to_time  ) = split / /, $valid_to;
+	$vld_from_time = '08:30';
+
+	my $categs = $A->get_categories();
+	my $all_categs = $categs->{result};
+</%init>
+<div style='float:right; margin-top:10px'>
+	<div id="success-toggle-button" style="margin-right:1em;">
+	<input type="checkbox" <%!$status ? '' : 'checked'%>
+		onchange="$('#ajx_1').load('_ajx_set_voucher_status.html?id=<%$id%>&rand=<%rand()%>');">
+	</div>
+</div>
+
+<h2>E-Voucher &middot; ID <%$id%></h2>
+
+<a href="adm_vouchers.html">Up</a><br><br>
+
+<script language=JavaScript>
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_voucher.html?id=' + id);
+	}
+</script>
+
+% if (@app_msgs) {
+	<%join '<br>', @app_msgs%><br>
+% }
+
+<div id='ajx_1'></div>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+<table cellspacing=0 cellpadding=0 border=0 style='width:100%'>
+<tr valign=top>
+<td>
+
+<table class='mytable'>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6; width:140px'>Voucher Code</th>
+<td><input type=text name=vcode style='margin-top:10px; font-weight:bold; width:155px' value="<%$vcode%>">
+</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Valid from</th>
+<td>
+  <div class="row-fluid">
+
+  <div class="span6">
+
+    <div class="span6" style="margin-top:5px; margin-right:-40px">
+	<div class="input-append datepicker date" data-date="<% $args{date_from} %>" data-date-format="dd.mm.yyyy">
+		<input class="span7" size="16" type="text" value="<% $C->trans_date($vld_from_date || $C->now(1)) %>" name="date_frox"
+			id="date-picker-input">
+		<span class="add-on"><i class="icon-th"></i></span>
+	</div>
+    </div>
+
+  <div class="span4" style="margin-top:5px">
+   <div class="input-append bootstrap-timepicker-component">
+      <input type="text" class="span6 timepicker input-small" id="mytimepicker" name="time_frox" value="00:00">
+      <span class="add-on">
+        <i class="icon-time"></i>
+      </span>
+    </div>
+  </div>
+
+  </div>
+  </div>
+</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Valid to</th>
+<td>
+  <div class="row-fluid">
+  <div class="span6">
+    <div class="span6" style="margin-top:5px; margin-right:-40px">
+	<div class="input-append datepicker date" data-date="<% $args{date_from} %>" data-date-format="dd.mm.yyyy">
+		<input class="span7" size="16" type="text" value="<% $C->trans_date($vld_to_date || $C->now(1)) %>" name="date_tx"
+			id="date-picker-input">
+		<span class="add-on"><i class="icon-th"></i></span>
+	</div>
+    </div>
+
+  <div class="span4" style="margin-top:5px">
+   <div class="input-append bootstrap-timepicker-component">
+      <input type="text" class="span6 timepickex input-small" ix="mytimepicker" name="time_tx" value="00:00">
+      <span class="add-on">
+        <i class="icon-time"></i>
+      </span>
+    </div>
+  </div>
+
+  </div>
+  </div>
+</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Amount <%$C->{CONFIG}->{default_curr}%></th>
+<td><input type=text name=amount style='margin-top:10px; width:130px; text-align:right; margin-right:10px;' value="<%sprintf('%.2f', $amount)%>">
+	<small>Enter as net amount without VAT &rarr; <i>{AMOUNT}</i> / <b><% $C->{CONFIG}->{vat} + 0 %></b></small>
+</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Percentage</th>
+<td><input type=text name=perc style='margin-top:10px; width:44px; text-align:right' value="<%sprintf('%.1f', $perc)%>"> %</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Category</th>
+<td>
+<select name="categ_id" style="margin-top:5px">
+<option value="0">&bull; Please select (optional)</option>
+% foreach my $cat (@{$all_categs}) {
+%	my $label = $A->shorten_title($cat->{label}, 16);
+%	my $style = !$cat->{parent_id} ? 'font-weight:bold' : '';
+%	   $style = 'color:#cccccc' unless $cat->{visible};
+	<option value="<% $cat->{id} %>" <% $cat->{id} == $categ_id ? 'selected' : '' %>
+		style="<% $style %>"><% $label %></option>
+% }
+</select>
+<%doc>
+&nbsp;&nbsp;&nbsp;&nbsp;
+	Product ID <input type=text name=email style='margin-top:10px; width:44px; text-align:right' value="0">
+</%doc>
+</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Usage Limit</th>
+<td><input type=text name=count_available style='margin-top:10px; width:44px; text-align:right; margin-right:22px'
+	value="<%$count_available%>"> Used: <%$count_used || 0%> time(s)</td>
+</tr>
+
+</table>
+</td>
+<td>
+	<table class=mytable style='margin-left:11px'> </table>
+</td></tr>
+</table><br>
+
+<input type=submit class="btn btn-primary" name=bUpd value="Update">&nbsp;&nbsp;&nbsp;
+<input type=submit class="btn" value="Back" name=bCan>&nbsp;&nbsp;&nbsp;
+<input type=button class="btn btn-danger" onclick="modal(<%$id%>)" value="Delete...">
+</form>
+
+% if ($args{bUpd}) {
+%	my $msg = $C->trans_date($args{time_from_db}) . ' - ' . $C->trans_date($args{time_to_db});
+	<div class="alert alert-success fade in">
+		<button type="button" class="close" data-dismiss="alert">×</button>
+		<b>Updated</b> <% $msg %>
+	</div>
+% }
+
+<div id='ajx_2'></div>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary">Save changes</button>
+  </div>
+</div>
+
+<h3>Recent order(s) with this Voucher</h3>
+% my $st = $C->{dbh}->prepare("select order_id from orders_details where xkey='voucher_id' and xval='$id' order by id desc limit 3;");
+% $st->execute();
+% if ($st->rows() < 1) {
+	No usage yet.
+% }
+% while(my $r = $st->fetch()) {
+	&middot; <a href="admix.html?func=orders&id=<%$r->[0]%>"><%$r->[0]%></a><br>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

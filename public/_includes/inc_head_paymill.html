@@ -1,0 +1,72 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <script type="text/javascript">
+        var PAYMILL_PUBLIC_KEY = '<%$C->{CONFIG}->{PAYMILL_PUBLIC_KEY}%>';
+% # XXX        var PAYMILL_PUBLIC_KEY = '8a8394c73b4607be013b4875f69710f1';
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript" src="https://bridge.paymill.de/"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            function PaymillResponseHandler(error, result) {
+
+                if (error) {
+                    // Shows the error above the form.
+                    $(".payment-errors").text(error.apierror);
+
+                } else {
+                    $(".payment-errors").text("");
+
+                    var form = $("#payment-form");
+
+                    // Token
+                    var token = result.token;
+
+                    // Insert token into form in order to submit to server
+                    form.append("<input type='hidden' name='paymillToken' value='" + token + "'/>");
+
+                    form.get(0).submit();
+                }
+
+                $(".submit-button").removeAttr("disabled");
+            }
+
+            $("#payment-form").submit(function (event) {
+
+                // Deactivate submit button to avoid further clicks
+                $('.submit-button').attr("disabled", "disabled");
+
+                if (false == paymill.validateCardNumber($('.card-number').val())) {
+                    $(".payment-errors").text("Invalid card number");
+                    $(".submit-button").removeAttr("disabled");
+                    return false;
+                }
+
+                if (false == paymill.validateExpiry($('.card-expiry-month').val(), $('.card-expiry-year').val())) {
+                    $(".payment-errors").text("Invalid expiration date");
+                    $(".submit-button").removeAttr("disabled");
+                    return false;
+                }
+
+                paymill.createToken({
+                    number:$('.card-number').val(),
+                    exp_month:$('.card-expiry-month').val(),
+                    exp_year:$('.card-expiry-year').val(),
+                    cvc:$('.card-cvc').val(),
+                    cardholder:$('.card-holdername').val(),
+		    amount:$('.card-amount').val(),
+		    currency:$('.card-currency').val()
+                }, PaymillResponseHandler);
+
+                return false;
+            });
+        });
+
+    </script>
+<%doc>
+	__METACLONING__
+</%doc>

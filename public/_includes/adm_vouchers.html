@@ -1,0 +1,89 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+	my $this = $C->this();
+
+	if ($cgi->param('bAdd')) {
+		(my $now = $C->now(5)) =~ tr/-//d;
+		$now =~ s/^20//;
+		$now = substr($now, 0, 10);
+		my $errstr = '';
+		$C->{dbh}->do("INSERT INTO vouchers (vcode, count_used) VALUES ('V$now', 0)") or $errstr = $DBI::errstr;
+		if ($errstr) {
+			$now = "$now\-$$";
+			$C->{dbh}->do("INSERT INTO vouchers (vcode) VALUES ('V$now')") or $errstr = $DBI::errstr;
+		}
+		my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+		$m->redirect("adm_voucher.html?id=$last_id");
+	}
+</%init>
+<h2><i class="icon-gift"></i> E-Vouchers &middot; Online-Gutscheine</h2>
+
+<a href="adm_vouchers.html?bAdd=1"><i class="icon-plus"></i> Add Voucher</a><br>
+
+<div id="<% $this %>">
+
+	<style type="text/css" media="screen">
+% # XXX		@import "DataTables/media/css/site_jui.ccss";
+		@import "DataTables-1.9.1/media/css/demo_table_jui.css";
+		@import "DataTables/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+		/*
+		 * Override styles needed due to the mix of three different CSS sources! For proper examples
+		 * please see the themes example in the 'Examples' section of this site
+		 */
+		.dataTables_info { padding-top: 0; }
+		.dataTables_paginate { padding-top: 0; }
+		.css_right { float: right; }
+		#example_wrapper .fg-toolbar { font-size: 0.8em }
+		#theme_links span { float: left; padding: 2px 10px; }
+	</style>
+		
+	<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#example').dataTable( {
+				"bJQueryUI": true,
+				"sPaginationType": "full_numbers",
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "_includes/_server_processing_vouchers.html"
+			} );
+
+			var oTable = $('#example').dataTable();
+			oTable.fnSort( [ [0,'desc'] ] );
+		} );
+	</script>
+
+<div id="fw_container">
+<div id="fw_content">
+
+<div style="width:100%; margin-top: 1em; margin-left:auto; margin-right:auto;">
+	
+<div id="theme_links" class="fg-toolbar ui-widget-header ui-corner-all fg-buttonset fg-buttonset-multi">
+	<div class="css_clear"></div>
+</div>
+
+<table class='mytable table-hover' id='example'>
+<thead>
+<tr>
+	<th style='width:155px'>Voucher Code</th>
+	<th style="width:72px; text-align:right; padding-right:11px">ID</th>
+	<th stylx='width:135px'>Valid From</th>
+	<th stylx='width:135px'>Valid To</th>
+	<th stylx='width:135px'>Created</th>
+	<th style='text-align:center'>Amount <%$C->{CONFIG}->{default_curr}%></th>
+	<th style='text-align:center'>[ % ]</th>
+	<th style='text-align:center'>Active</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+        my $C = $args{C};
+	my $A = $args{A};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $id = $C->{CGI}->param('id') || 0;
+
+	my $d = $A->get_product($id);
+	my $upsell = $A->get_upsell_opts($id);
+	$d->{upsell_tot} = $A->{total_incl_vat};
+</%init>
+% # XX <title><%$C->p('page_title')%> - ID <%$id%> - <%$C->{CONFIG}->{'site_title'}%> - <%$d->{instime}%> - <%$lang%></title>
+<script src="http://www.google.com/jsapi"></script>
+<script>google.load("jquery", "1.4");</script>
+%
+% if ($C->is_admin()) {
+	<a href='admix.html?func=edit_item&id=<% $id %>'>EDIT</a>
+% }
+% if ($C->is_devel()) {
+	&middot; <a href="layout/product.html">NEW LAYOUT (PS)</a>
+% }
+
+<&prod_detail2_old.html, id => $id, C => $C, A => $A, d => $d, lang => $lang&>
+

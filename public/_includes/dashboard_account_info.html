@@ -1,0 +1,24 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $UID = $args{UID};
+
+	my $uinf = $C->get_user_info($UID);
+</%init>
+<ul class="unstyled cards not-bottom">
+<li>
+	<i class="icon-user pull-left text-info"></i>
+	    <p class="info" style="margin-bottom:12px"><strong><%$uinf->{firstname}%> <%$uinf->{lastname}%></strong> (<%$uinf->{uname}%>)</p>
+	    <p class="info small"><%$uinf->{email}%></p>
+</li>
+
+<li>
+	<i class="icon-book pull-left text-info"></i>
+	    <p class="title"><strong>Reporting</strong></p>
+	    <p class="info small"><a href="adm_log.html?importance=2">Log activities</a></p>
+</li>
+
+</ul>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,37 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	unless ($C->is_logged_in()) {
+		$C->redir('/signin.html');
+	}
+
+	my $uinfo = $C->get_user_info($args{UID});
+</%init>
+<div class="navbar">
+	<div class="navbar-inner">
+	<ul class="nav pull-right">
+		<li><a href='#'><b><%$C->{CONFIG}->{site_title}%></b></a></li>
+%	if ($C->is_devel()) {
+	    <li class="hidden-phone"><a target=_blank href="http://swissrem.pgate.net/_notes.html" role="button">Dev-N</a></li>
+%	}
+	    <li id="fat-menu" class="dropdown">
+	    	<a href="#" role="button" class="dropdown-toggle"
+			data-toggle="dropdown"><i class="icon-user"></i> <%$uinfo->{firstname}%> <%$uinfo->{lastname}%><i
+				class="icon-caret-down"></i></a>
+		<ul class="dropdown-menu">
+		    <li><a tabindex="-1" href="account2.html">My Account</a></li>
+		    	<li class="divider"></li>
+		    <li><a tabindex="-1" class="visible-phone" href="#">Settings</a></li>
+		    	<li class="divider visible-phone"></li>
+		    <li><a tabindex="-1" href="signin.html">Sign in</a></li>
+		    <li><a href="#" onclick='JavaScript:document.logoutForm.submit()'><span>Logout <% $C->whoami() %></span></a></li>
+		</ul>
+	    </li>
+	</ul>
+	<a href="."><img border=0 src="images/logo_admin2.png" width=259 height=58 title='Hermes &middot; E-Mail Management'></a>
+	</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

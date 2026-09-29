@@ -1,0 +1,8 @@
+<%init>
+	my %args = $m->caller_args(0);
+</%init>
+<tr valign=top><td><a href="<%$args{link}%>"><span style='font-size:32px; color:#458EB2' class="<%$args{icon}%>"></span></a></td>
+<td>&nbsp;</td>
+<td><a href='<%$args{link}%>'><%$args{label}%></a><br>
+<small><%$args{desc}%></small><br><br>
+</td></tr>

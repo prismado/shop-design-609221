@@ -1,0 +1,34 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $stay_logged = $C->getPermaSessData('_stay_logged_in');
+	my $uname = $C->get_previous_loginname() if $stay_logged;
+</%init>
+%
+% # -- Loginform (mitte)
+%
+	<% $C->p('login_txt') %>
+<br><br>
+
+<form action="account.html" method="post" name="form1sub" id="form1">
+<table>
+	<tr>
+	  <td ><label><strong><% $C->p('username') %>:</strong></label></td>
+	  <td ><label><strong><% $C->p('password') %>:</strong></label></td>
+	  <td ></td>
+	</tr>
+	<tr>
+	  <td><input id="LoginEmail" type="text"   name="user" size="35" value="<% $uname %>">&nbsp;&nbsp;</td>
+	  <td><input id="LoginPwd" type="password" name="pass" value="" size="35">&nbsp;&nbsp;</td>
+	  <td><input id="Login" class="submit" type="submit" name="bSend" value=" <% $C->p('but_login') %>"></td>
+	</tr>
+	<tr>
+	  <td colspan="2"><input id="LoginKeepLoggedIn" class="chbox" type="checkbox" name="stay_logged_in"
+			value="1" <% $stay_logged ? 'checked' : '' %>> <% $C->p('check_login') %> </td>
+	  <td><a href="registration.html" class="CR" rel="nofollow"><% $C->p('open_account') %></a><br />
+	    <a href="send_pwd.html" class="CR"   rel="nofollow"><% $C->p('forgot_pwd') %></a></td>
+	</tr>
+</table>
+</form>
+
+<script language='JavaScript'>document.form1sub.user.focus();</script>

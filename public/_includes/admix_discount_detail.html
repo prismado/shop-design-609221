@@ -1,0 +1,69 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $id = $C->{CGI}->param('id') || 0;
+
+	if ($C->{CGI}->param('bDel')) {
+		my $prod_id = $C->query("select product_id FROM products_discount WHERE id=$id")->[0];
+		$C->{dbh}->do("DELETE FROM products_discount WHERE id=$id");
+		# -- $m->out("Deleted: ID $id / Prod ID $prod_id<br>");
+		$m->redirect("admix.html?func=edit_item&id=$prod_id");
+	}
+	elsif ($C->{CGI}->param('bUpd')) {
+		my $discount = $C->{CGI}->param('discount') || 0;
+		my $prod_id = $C->{CGI}->param('prod_id') || 0;
+		my $status = $C->{CGI}->param('status') || 1;
+		(my $description = $C->{CGI}->param('description')) =~ s/'/''/g;
+		$C->{dbh}->do(qq~	UPDATE 	products_discount 
+					SET 	discount=$discount, status=$status, description='$description', product_id=$prod_id
+					WHERE 	id=$id~);
+		$m->out("Updated discount $discount %<br>");
+	}
+
+	my ($instime, $prod_id, $discount, $description, $status) = @{$C->query(
+		"SELECT instime, product_id, discount, description, status FROM products_discount WHERE id=$id")};
+</%init>
+
+<script type="text/javascript">document.title='Admin: Discount Detail ID <% $id %>';</script>
+
+<h3>Discount (Rabatt)</h3>
+
+% if ($status == 2) {
+	<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<strong>Notice</strong> Discount is currently inactive.
+	</div>
+% }
+
+<form method=post>
+<input type=hidden name=func value='discount'>
+<input type=hidden name=id value='<% $id %>'>
+
+<table class='mytable'>
+
+<tr><th>Prod ID</th> <td><input style='margin-top:9px; width:33px; text-align:center' type=text name=prod_id value="<%$prod_id%>">
+&nbsp;&nbsp;<a href="admix.html?func=edit_item&id=<%$prod_id%>">Product</a>
+</td></tr>
+<tr><td>Ins. Time</td> <td><%$C->trans_date_short($instime)%></td></tr>
+<tr><th>Rabatt</th> <td><input style='margin-top:9px; width:99px; text-align:center' type=text name=discount value="<%$discount%>"> %</td></tr>
+<tr><th>Description</th> <td><input style='margin-top:9px; width:422px' placeholder="Optional" type=text name=description value="<%$description%>"></td></tr>
+<tr><th>Status</th> <td><input style='margin-top:9px; width:22px; text-align:center'
+	type=text name=status value="<%$status%>"> (1=aktiv, 2=inaktiv)</td></tr>
+
+</table><br><br>
+
+<input type=button class='btn' value='Zur&uuml;ck' onclick='JavaScript:history.go(-1)'>&nbsp;&nbsp;
+<input type=submit class='btn btn-primary' value='Update' name=bUpd>&nbsp;&nbsp;
+<input type=submit class='btn btn-danger' value='Delete' name=bDel>
+</form>
+
+% if ($C->is_devel()) {
+	<br><br>
+	<&debug.html, CORE => $C, A => $A&>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

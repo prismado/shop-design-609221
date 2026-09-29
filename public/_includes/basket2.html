@@ -1,0 +1,213 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $C = $args{C};
+	my $is_devel = $args{is_devel};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $vat_factor = 1 + $C->{CONFIG}->{vat} / 100;
+
+	my $count  = $C->{CGI}->param('count') || 1;
+
+	my $rc = 0;
+	my $msg = $args{msg} || $C->getSessData('app_msg') || ''; # -- empty
+
+	my $basket_h = $A->get_basket_items(); # -- $basket_h->rows() items
+
+	my $item_count = $basket_h->rows();
+
+	my $basket_total = $A->get_basket_total();
+</%init>
+% if ($args{debug}) {
+	<&page_info.html, 'START Basket Include'&>
+% }
+
+<div class="box_head"><h3><% $C->p('main_title') %></h3></div><!--end box_head -->
+<div class="text">
+
+% if ($msg) {
+%	if ($rc or $msg =~ /Error/i) {
+		<div style='color:red;'><% $msg %></div>
+%	}
+%	else {
+		<%$msg%>
+%	}
+% }	    
+% else {
+%	# -- NO MSG AT THIS TIME
+	<% $C->p('basket_text') %> <% $C->p('mwst_text') %>
+% }
+<br><br>
+
+<br>
+% if ($C->{CONFIG}->{minimum_amount_order} > $basket_total && $item_count && !($C->{CONFIG}->{min_quant_surcharge} > 0)) {
+	<div style='padding-left:10px; padding-top:10px; padding-bottom:10px; background-color:#840202; color:white'>
+	Der Mindestbestellwert von CHF <%sprintf('%.2f', $C->{CONFIG}->{minimum_amount_order})%> ist unterschritten.</div><br>
+	<form name="basket" id="basket" action="basket.html" method="post">
+% }
+% else {
+<form name="basket" id="basket" action="checkout2.html" method="post">
+% }
+<input type=hidden name=src value='basket'>
+        
+<table class="cart_table">
+		<thead>
+		<tr>
+			<th><h4>Bild</h4></th>
+			<th><h4><% $C->p('piece') %></h4></th>
+			<th class="first_td"><h4><% $C->p('prod_name') %></h4></th>
+                        <th><h4><% $C->p('price_p_piece') %></h4></th>
+			<th><h4><% $C->p('sub_total') %></h4></th>
+			<th></th>
+			
+		</tr>
+% if ($item_count < 1) {
+<tr>
+<th colspan=6 align=center><a href='/categ.html?id=<%$C->{CONFIG}->{default_cat_id}%>'><%$C->p('no_items')%></a></th>
+</tr>
+% }
+	</thead>
+
+% my $total = 0;    	   
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count, $basket_id) = @{$r};
+%	my $d = $A->get_product($prod_id);
+%	my $opts_upsell = $A->get_upsell_opts($prod_id);
+%	my $ups_price_tot = $A->{total};
+%	my $opts_prod = $A->get_basket_options_by_prod($prod_id);
+%	my $details = $A->get_basket_details($basket_id);
+%	my $price = sprintf('%.2f', $d->{price_incl_vat} + $A->{basket_options_sum} * $vat_factor + sprintf('%.2f', $ups_price_tot * $vat_factor));
+%	# XXX my $price = sprintf('%.2f', sprintf('%.2f', ($d->{price} + $A->{basket_options_sum}) * $vat_factor) + sprintf('%.2f', $ups_price_tot * $vat_factor));
+%	my $total_line = $count * $price;
+%	$total += $total_line;
+
+	<tbody>
+		<tr> 
+	<td><img src="produkte/p<%$prod_id%>_mini.jpg" style='width:50px'></td>
+                  <td class="quantity">
+						
+<label>
+	<input class="gray_btn" type="button" id="min_qty"  value="-" onclick='icount_sub(<%$basket_id%>)'>
+</label>
+<label><input name="count_<%$basket_id%>" type="text" value="<%$count%>" maxlength="3" id='count_<%$basket_id%>' size="2"></label>
+		<label>
+			<input class="gray_btn" type="button" id="max_qty" value="+" onclick="icount_add(<%$basket_id%>)">
+		</label>
+			</td>
+
+				<td  class="first_td">
+						<div class="clearfix">
+							<span>
+                             
+<strong><a href="/product.html?id=<% $prod_id %>"><%$d->{title}%></a></strong>
+% if ($args{debug}) {
+	<b style='color:maroon'>Bask ID <%$basket_id%></b>
+% }
+<br>
+ <div>		<% $d->{description} %></div>
+
+%		if (@{$opts_upsell}) {
+			<br>
+%		}
+%		foreach (@{$opts_upsell}) {
+%			my ($id, $foo, $title, $desc, $price) = split /\t/;
+			<nobr>&bull; <% $title %> <% $desc %>, CHF <% $price %><br></nobr>
+%		}
+
+<%doc>
+		<table style='width:300px; margin-top:6px; margin-bottom:6px'>
+%		foreach (@{$opts_prod}) {
+%			my ($id, $ref, $price) = split /\t/;
+			<tr><td style='text-align:left'>Option <%$ref%></td>
+				<td style='text-align:right'><%sprintf('%.2f', $price * $vat_factor)%> CHF</td></tr>
+%		}
+		</table>
+</%doc>
+
+% #		Optionen: CHF <%sprintf('%.2f', $A->{basket_options_sum_vat})%> X <%$basket_id%><br>
+
+		<table class="basket-parameter">
+%		foreach (@{$details}) {
+%			my ($feat_id, $ref, $price) = split /\t/;
+%			my $label = $C->query("select label FROM options_desc WHERE option_id=$feat_id and lang='de'")->[0];
+%			my $ref_short = (split /_/, $ref)[1]; $ref_short =~ s/^[RL]//;
+			<tr><td class="paramteter_row"><%$label%></td>
+				<td class="paramteter_style">
+%				if ($label eq 'Farbe' or $label eq 'Material') {
+			<%$C->query("SELECT description FROM voptions where id=$feat_id AND ref='$ref' AND lang='de'")->[0]%>
+%				}
+%				else {
+					<%sprintf('%.2f', $ref_short)%>
+%				}
+				</td>
+				<td class="paramteter_style">
+%					if ($price) {
+						<%sprintf('%.2f', $price)%> CHF
+%					}
+				</td></tr>
+%		}
+		</table>
+
+	</span>
+							</div>
+						</td>        
+
+		<td><h5>CHF&nbsp;<% $price %></h5></td>
+		<td><h5>CHF&nbsp;<% $C->decimal_mark($total_line) %></h5></td>
+              	<td><div id="produktTitle"><% $d->{title} %></div>
+		<a class="delete_item" href="basket.html?action=del&id=<%$basket_id%>">delete</a></td>
+
+	</tr>
+% }				
+	<tr>
+      <td colspan="4"><h5 class="sumText"><% $C->p('sum_total') %> <% $C->{CONFIG}->{vat}%>% <% $C->p('mwst') %>&nbsp;</h5></td>
+		<td class="total_price" nowrap><h5 class="sum">CHF <% $C->decimal_mark($total) %></h5></td>
+			<td></td>
+			</tr>	
+			</tbody>
+	</table>    
+  
+% if ($item_count > 0) {
+     <input id="zur_kasse" class="blu_btn" type="submit" 
+			name="bCheckout" value="<%$C->p('to_payment')%>">
+% }
+		<input id="weiter_einkaufen" class="gray_btn" type="button" 
+			name="weiter_einkaufen" value="<% $C->p('cont_shopping') %>" 
+			onclick="window.location='/'">
+
+	   </form>
+
+ 	  </div><!-- end text -->
+         
+
+% if ($args{debug}) {
+	get_basket_total_net() = CHF <%$basket_total%><br>
+	minimum_amount_order = "<%$C->{CONFIG}->{minimum_amount_order}%>"<br>
+% }
+
+<script language=JavaScript>
+	function icount_add(basket_id) {
+		c = document.getElementById('count_' + basket_id).value;
+		document.getElementById('count_' + basket_id).value = parseInt(c) + 1;
+		$('#ajx_autocalc').load('ajx_basket_autocalc.html?action=add&id=' + basket_id);
+	}
+	function icount_sub(basket_id) {
+		c = document.getElementById('count_' + basket_id).value;
+		if (c < 1) { return; }
+		document.getElementById('count_' + basket_id).value = parseInt(c) - 1;
+		$('#ajx_autocalc').load('ajx_basket_autocalc.html?action=sub&id=' + basket_id);
+	}
+</script>
+
+<div id=ajx_autocalc></div>
+
+% $C->del_sess_key('app_msg'); # -- Reset
+
+% if ($is_devel) {
+	SID <%$args{SID}%> | DB <%$ENV{db_name}%><br>
+	XX -- "<%$A->{corrections}%>"
+	<&page_info.html, 'END'&>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

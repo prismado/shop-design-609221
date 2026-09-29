@@ -1,0 +1,98 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{CORE};
+	my $A         = $args{A};
+	my $addr_info =$args{addr_info};
+
+	my $par = $m->caller(1);
+
+	my $SID = $C->getSID();
+	my $sth = $C->{dbh}->prepare("select `key`, val from session where sid=$SID ORDER BY id DESC LIMIT 500");
+	   $sth->execute();
+	my %sess_key_memo = ();
+
+	# my $this_title = $m->current_comp->title;
+
+	my $order_id = $C->getSessData('order_id');
+	my $voucher  = $C->getSessData('voucher');
+
+	my @git_lines = `find $C->{CONFIG}->{DOCUMENT_ROOT}/.git/objects/ |head -3`;
+</%init>
+% unless (defined $A) {
+	<b style='color:red; font-size:20px'>*** WARNING!! &rarr; Call with $A! ***</b><br>
+% }
+
+[ <% $par->title %> ] &mdash; Cur. SID <% $SID %> &mdash; <b>CGI:</b><br>
+% foreach my $k ($C->{CGI}->all_parameters) {
+	&bull; <% $k %> = "<% $C->{CGI}->param($k) %>"<br>
+% }
+<br>
+
+<h3>Session</h3>
+<table cellspacing=0 cellpadding=3 style="font-size:14px">
+% while(my $r = $sth->fetch()) {
+%	my ($k, $v) = @{$r};
+%	unless ($sess_key_memo{$k}) {
+		<tr style="line-height:10px"><td style="font-weight:bold; width:255px"><tt><% $k %></tt></td>
+		<td style="text-align:center">"<%$v%>"</td>
+		<td><a style="color:red" href="_debug.html?delsesskey=<%$k%>">X</a></td></tr>
+		<tr><td colspan="3"><hr noshade></td></tr>
+%		$sess_key_memo{$k} = 1;
+%	}
+% }
+</table>
+
+<table cellspacing=0 cellpadding=3 style="font-size:12px">
+% foreach (sort keys %{$addr_info}) {
+	<tr><td><% $_ %></td><td><% $addr_info->{$_} %></td></tr>
+% }
+</table>
+
+% if ($order_id) {
+%	my $amount_incl_vat = $C->query("select amount_incl_vat FROM orders WHERE id=$order_id")->[0];
+	<hr noshade size=1>
+	<h2>Order ID <%$order_id%></h2>
+	amount_incl_vat = <%$amount_incl_vat%><br>
+%	my $sth = $C->{dbh}->prepare("select xkey, xval FROM orders_details WHERE order_id=$order_id AND xval > ' ' ORDER BY xkey");
+%	   $sth->execute();
+%	while(my $r = $sth->fetch()) {
+%		next unless $r->[1];
+		&ndash; <b><%$r->[0]%></b> = <%$r->[1]%><br>
+%	}
+% }
+
+% if ($voucher && defined $A) {
+%	my $voucher_info = $A->get_voucher_info($voucher);
+	<hr noshade size=1>
+	Voucher <%$voucher%><br>
+	Current Value: <%$A->get_cur_voucher_value()%><br>
+%	foreach (sort keys %{$voucher_info}) {
+%		next unless $voucher_info->{$_};
+		<b><%$_%></b> = "<%$voucher_info->{$_}%>"<br>
+%	}
+% }
+
+<br>
+% foreach my $gl (@git_lines) {
+%	next unless $gl =~ /\.git\/objects\/.+\/.+/;
+%	$gl =~ s/$C->{CONFIG}->{DOCUMENT_ROOT}\///; chomp $gl;
+	<a href="<% $gl %>?x=<% $$ %>">Check the unwanted access to the Git directory</a><br>
+% }
+<br />
+
+% if (defined $A) {
+	Basket Total: <b><%$C->{CONFIG}->{default_curr}%> <% $A->get_basket_total() %></b><br />
+	<% $A->{_msgs} %>
+% }
+
+% if ($args{debug}) {
+	<hr>
+%	foreach (sort keys %ENV) {
+%		next if /pass/i;
+		&bull; <b><%$_%></b> = <%$ENV{$_}%><br>
+%	}
+% }
+<%doc>
+	__METACLONING__
+</%doc>

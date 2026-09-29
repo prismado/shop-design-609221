@@ -1,0 +1,60 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $lang = $args{'lang'} || 'de';
+	my $discount = $A->get_discount($id);
+	my $price_net = sprintf('%.2f', $d->{price} * (1 - $discount / 100) * (1 + $C->{CONFIG}->{vat} / 100));
+</%init>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+<table>
+<tr valign=top>
+<td>
+	<img src="produkte/p<%$id%>_thmb.jpg" width="170">
+	<%$C->p('image_text')%>
+	<&prod_summary.html, C => $C, A => $A, d => $d, id => $id&>
+</td>
+
+<td style='vertical-align:top; padding-left:22px'>
+<%$d->{desc_long}%><br><br>
+
+<&prod_detail_textblock.html, CORE => $C, A => $A, d => $d, id => $id, lang => $lang&>
+
+</td></tr>
+</table><br>
+
+% if ($C->is_devel()) {
+%	if ($C->{CGI}->param('dump')) {
+		<table>
+%		foreach (sort keys %$d) {
+%			next if $_ eq 'feat' or $_ eq '_rc';
+			<tr><td nowrap><b><%$_%></b></td><td style='padding-left:22px'>"<%$d->{$_}%>"</td></tr>
+%		}
+		</table>
+		<table>
+%		foreach (sort keys %{$d->{feat}}) {
+			<tr><td nowrap><b><%$_%></b></td><td style='padding-left:22px'>"<%$d->{feat}->{$_}%>"</td></tr>
+%		}
+		</table>
+%	}
+	<&page_info.html, 'END'&>
+% }
+
+<%doc>
+% if ($d->{brand}) {
+	<% $d->{brand} %>.gif"><br>
+% }
+
+% if ($d->{teaser}) {
+	<% $d->{teaser} %><br>
+% }
+
+% if ($discount) {
+	<img src="images/offer_small.png" width="170" height="30" alt="offer">
+% }
+</%doc>

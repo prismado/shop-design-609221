@@ -1,0 +1,37 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id');
+	# XXX my $uinfo = $C->get_user_info($id);
+	my $vcode = $C->query("select vcode FROM vouchers WHERE id=$id")->[0];
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=delid value="<%$id%>">
+%
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Please confirm</h3>
+  </div>
+%
+  <div class="modal-body">
+	<p>
+		Are you sure you want to delete Voucher ID <%$id%> &middot; <%uc $vcode%>?
+	</p>
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-danger" type=submit value="Delete">
+  </div>
+%
+</div>
+%
+</form>

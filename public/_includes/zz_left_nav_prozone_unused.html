@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+%
+% # -- Left Navigation
+%
+<TABLE border=0 cellSpacing=0 cellPadding=0 width="100%">
+		  <TBODY>
+		    <TR>
+		      <TD class="cat_title" align=left><% $C->p('categories') %></TD>
+		    </TR>
+		    <TR>
+		      <TD><TABLE style="PADDING-BOTTOM: 10px" border=0 cellSpacing=0 cellPadding=0 width=220>
+			  <TBODY>
+			    <TR>
+			      <TD vAlign=top><TABLE class="infoBox" border=0 cellSpacing=0 cellPadding=0 width="100%">
+				    <TR>
+				      <TD><& categ.html, CORE => $C &></TD>
+				    </TR>
+				</TABLE></TD>
+			    </TR>
+			  </TBODY>
+			</TABLE></TD>
+		    </TR>
+		    <TR>
+		      <TD align=left class="cat_title"><% $C->p('companyshop') %></TD>
+		    </TR>
+		    <TR>
+		      <TD height=20 align="left"><TABLE class="infoBoxContents" border=0 cellSpacing=0 cellPadding=0 width="100%">
+			  <TBODY>
+			    <TR>
+			      <TD><IMG border=0 alt="" src="images/pixel_trans.gif" width="100%" height=1></TD>
+			    </TR>
+			    <TR>
+			      <TD><A class="categor" href="prozone.html">Login</A></TD>
+			    </TR>
+			    <TR>
+			      <TD><IMG border=0 alt="" src="images/pixel_trans.gif" width="100%" height=1></TD>
+			    </TR>
+			  </TBODY>
+			</TABLE></TD>
+		    </TR>
+		    <TR>
+		      <TD align=left class="cat_title"><% $C->p('personal_login') %></TD>
+		    </TR>
+		    <TR>
+		      <TD vAlign=top ><& loginform.html, CORE => $C &></TD>
+		    </TR>
+		    <TR>
+		      <TD align=left class="cat_title"><% $C->p('informations') %></TD>
+		    </TR>
+		    <TR>
+		      <TD vAlign=top><& infobox.html, CORE => $C &></TD>
+		    </TR>
+		    <TR>
+		      <TD vAlign=top></TD>
+		    </TR>
+		  </TBODY>
+		</TABLE>
+

@@ -1,0 +1,38 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $id = $args{id}; # -- Product ID
+	my $lang = $args{lang} || 'de';
+	my $type = $args{type};
+
+	my $res = $A->get_options($id, $lang);
+
+	my $C = $A->{C};
+	my $cur_sel = '';
+</%init>
+% if ($C->is_devel()) {
+	<&page_info.html, 'Start'&>
+% }
+%
+% my $opt_id_before = 0;
+% foreach (@{$res}) {
+%	my ($opt_id, $style, $label, $desc, $val, $amount) = split /\t/;
+%	next unless $style == $type;
+%	$amount *= (1 + $C->{CONFIG}->{vat} / 100);
+%	unless ($opt_id == $opt_id_before) {
+%		$cur_sel = $C->getSessData("prod_id_$id\_$opt_id");
+		<% $opt_id_before ? '</select>' : '' %>
+		<label><%$label%></label>
+		<select name="opt_<% $opt_id %>" 
+	onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<% $id %>&opt_id=<% $opt_id %>&rnd=<% $$ %>');">
+		<option value=''>Bitte w&auml;hlen [<%$opt_id%>]</option>
+%	}
+	<option value="<%$val%>"<%$val eq $cur_sel ? ' selected' : ''%>><%$desc%></option>
+%	$opt_id_before = $opt_id;
+% }
+
+<% $opt_id_before ? '</select>' : '' %>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'END'&>
+% }

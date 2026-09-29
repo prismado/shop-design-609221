@@ -1,0 +1,74 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	# my $A = $args{A};
+
+	use Digest::SHA1  qw(sha1_hex);
+
+	my $sha1 = '7d39d9f9e4e98635415a29ea60120c98c009fefe';
+
+	my $data =	"AMOUNT=$args{total_no_dot}$sha1" .
+			"CURRENCY=CHF$sha1" .
+			"EMAIL=test.x\@sirnach.ath.cx$sha1" .
+			"LANGUAGE=de_DE$sha1" .
+			"ORDERID=$args{order_id}$sha1" .
+			"PSPID=$C->{CONFIG}->{payment_pcd_pspid}$sha1";
+
+        my $digest = sha1_hex($data);
+</%init>
+
+	<input type=hidden name=AMOUNT      value="<%$args{total_no_dot}%>">
+	<input type=hidden name=CURRENCY    value="CHF">
+	<input type=hidden name=LANGUAGE    value="de_DE">
+	<input type=hidden name=PSPID       value="<%$C->{CONFIG}->{payment_pcd_pspid}%>">
+	<INPUT type=hidden name=EMAIL       value="test.x@sirnach.ath.cx">
+	<INPUT type=hidden NAME=SHASIGN     value="<%$digest%>">
+	<input type=hidden name=ORDERID     value="<%$args{order_id}%>">
+
+<%doc>
+	<INPUT type="hidden" NAME="PSPID" value="<%$C->{CONFIG}->{payment_pcd_pspid}%>">
+	<INPUT type="hidden" NAME="ORDERID" value="<%$args{order_id}%>">
+	<INPUT type="hidden" NAME="AMOUNT" value="<%$args{total_no_dot}%>"> <!-- 6.50 -->
+	<INPUT type="hidden" NAME="CURRENCY" value="CHF">
+	<INPUT type="hidden" NAME="LANGUAGE" value="de">
+	<!-- lay out information -->
+
+	<INPUT type="hidden" NAME="TITLE" value="Mr. Phone-Gadget">
+
+	<INPUT type="hidden" NAME="BGCOLOR" value="yellow">
+	<INPUT type="hidden" NAME="TXTCOLOR" value="blue">
+	<INPUT type="hidden" NAME="TBLBGCOLOR" value="green">
+	<INPUT type="hidden" NAME="TBLTXTCOLOR" value="black">
+	<INPUT type="hidden" NAME="BUTTONBGCOLOR" value="#cccccc">
+	<INPUT type="hidden" NAME="BUTTONTXTCOLOR" value="red">
+	<INPUT type="hidden" NAME="FONTTYPE" value="Arial">
+
+	<INPUT type="hidden" NAME="LOGO" value="fill here your logo file name">
+	<!-- or dynamic template page -->
+	<INPUT type="hidden" NAME="TP" value="fill here your template page">
+	<!-- post-payment redirection -->
+	<INPUT type="hidden" NAME="ACCEPTURL"    VALUE="http://<%$ENV{HTTP_HOST}%>/_callback/complete_order_postcard.html?x=accept">
+	<INPUT type="hidden" NAME="DECLINEURL"   VALUE="http://www.screenpoint.net/env3823.html">
+	<INPUT type="hidden" NAME="EXCEPTIONURL" VALUE="http://www.screenpoint.net/env3823.html">
+	<INPUT type="hidden" NAME="CANCELURL"    VALUE="http://www.screenpoint.net/env3823.html">
+	<INPUT type="hidden" NAME="BACKURL"      VALUE="http://www.screenpoint.net/env3823.html">
+	<!-- miscellanous -->
+	<INPUT type="hidden" NAME="HOMEURL" VALUE="http://<%$ENV{HTTP_HOST}%>/">
+	<INPUT type="hidden" NAME="CATALOGURL" VALUE="">
+	<INPUT type="hidden" NAME="CN" value="<%$C->{CONFIG}->{site_title}%>">
+	<INPUT type="hidden" name="EMAIL" value="test.x@sirnach.ath.cx">
+	<INPUT type="hidden" NAME="PM" VALUE="">
+	<INPUT type="hidden" NAME="BRAND" VALUE="">
+	<INPUT type="hidden" NAME="OWNERZIP" VALUE="8001">
+	<INPUT type="hidden" NAME="OWNERADDRESS" VALUE="">
+	<INPUT type="hidden" NAME="OWNERADDRESS2" VALUE="">
+	<INPUT type="hidden" NAME="SHASIGN" value="7d39d9f9e4e98635415a29ea60120c98c009fefe">
+	<INPUT type="hidden" NAME="ALIAS" VALUE="">
+	<INPUT type="hidden" NAME="ALIASUSAGE" VALUE="">
+	<INPUT type="hidden" NAME="ALIASOPERATION" VALUE="">
+	<INPUT type="hidden" NAME="COM" VALUE="">
+	<INPUT type="hidden" NAME="COMPLUS" VALUE="">
+	<INPUT type="hidden" NAME="PARAMPLUS" VALUE="">
+	<INPUT type="hidden" NAME="USERID" VALUE="">
+	<INPUT type="hidden" NAME="CREDITCODE" VALUE="">
+</%doc>

@@ -1,0 +1,54 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $q = $C->{CGI}->param('q');
+
+	my ($categ_ids, $label) = $A->get_categ_nav();
+	my $open = 0;
+	my $box_id = 0; 
+</%init>
+% if($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+<div class="nav-button">Menu</div>
+<nav>
+<ul id="nav" role="navigation">
+
+% foreach my $cat_id (@{$categ_ids}) {
+%	my @ids = split /\t/, $cat_id;
+%	if ($#ids == 0) {
+%		if ($open) {
+		</li>
+	</div><!-- end kategorie-box -->
+%		}
+%	$box_id = '' unless $box_id;
+
+		<div class='menu-button<%$box_id%>'><%$label->{$cat_id}%></div>
+		<div id="box<%$box_id%>" class="kategorie-box<%$box_id%>">
+%		$open = 1; $box_id++;
+%	}
+%	elsif ($#ids > 1) {
+%		my $count = $A->get_categ_count($ids[2]);
+		<ul class="sub-menu">
+		<li><a href="category.html?id=<%$ids[2]%>"><%$label->{$ids[2]}%> (<%$count%>)</a></li>
+% # -- List:	<li><a href="categ.html?id=<%$ids[2]%>"><%$label->{$ids[2]}%> (<%$count%>)</a></li>
+		</ul>
+%	}
+%	else {
+%		my $count = $A->get_categ_count_sub_only($ids[1]);
+		<li class="top-level item-with-ul"><a class="link-with-ul"
+			href="#"><%$label->{$ids[1]}%> (<span class="numberMenu"><%$count%></span>)</a>
+%	}
+% }
+		</li>
+		</div>
+</ul>
+</nav>
+
+<%doc>
+<br><br>
+<a class="twitter-timeline" href="https://twitter.com/MrPhoneGadget" data-widget-id="454955708715237376">Tweets von @MrPhoneGadget</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</%doc>

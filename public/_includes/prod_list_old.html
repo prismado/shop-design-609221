@@ -1,0 +1,137 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $lang = $args{lang};
+	my $sth = $args{sth};
+	my $vat_fac = 1 + ($C->{CONFIG}->{vat} || 0.0) / 100;
+	my $cat_id = $C->{CGI}->param('id') || 1;
+	my $extra_label = $C->query("SELECT extra_label FROM categories WHERE id=$cat_id AND lang='$lang'")->[0];
+	my $sc_url = $ENV{SCRIPT_URL} || 'categ.html';
+
+	$C->load_properties('categ');
+        my $prop = $C->{property}->{categ};
+        my $l = $lang eq 'de' ? '' : "_$lang";
+</%init>
+
+<table width="98%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+	    <td valign="top">
+	<!-- Header -->
+	<table cellspacing="0" cellpadding="0" width="100%" border="0" bgcolor="#dddddd">
+	<tr valign="bottom">
+	  <th  height="18" align="left">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+	<td width="40" height="10"><a href='<% $sc_url %>?id=<% $cat_id %>&order=1,a'><img border="0" src="images/sort_selected_up.gif" width="23" height="9" title='Up'></a></td>
+	<td width="54" rowspan="2"><a class="header" href="<% $sc_url %>?id=<% $cat_id %>&order=1,a"><% $prop->{"article$l"} %></a></td>
+	<td width="27%" rowspan="2">&nbsp;</td>
+	<td width="23"><a href="<% $sc_url %>?id=<% $cat_id %>&order=2,a"><img border="0" src="images/sort_unselected_up.gif" width="23" height="9" title='Config Up'></a></td>
+	<td  rowspan="2"><a class="header" href="<% $sc_url %>?id=<% $cat_id %>&order=2,a"><% $prop->{"config$l"} %></a></td>
+	<td width="150" rowspan="2">&nbsp;</td>
+	      </tr>
+	      <tr>
+	<td height="9"><a href="<% $sc_url %>?id=<% $cat_id %>&order=1,d"><img border="0" src="images/sort_unselected_down.gif" width="23" height="9" alt="Down"></a></td>
+	<td><a href="<% $sc_url %>?id=<% $cat_id %>&order=2,d"><img border="0" src="images/sort_unselected_down.gif" width="23" height="9" alt="Sort desc"></a></td>
+	      </tr>
+	    </table>
+	  </th>
+	  <th align="left"> <table cellspacing="0" cellpadding="0" border="0">
+	      <tr>
+	<td width="23"><a href="<% $sc_url %>?id=<% $cat_id %>&order=5,a"><img border="0" src="images/sort_unselected_up.gif" width="23" height="9" alt="OS asc." ></a></td>
+	<td width="66" rowspan="2" class="header" ><% $extra_label %></td>
+	<td width="10" rowspan="2" >&nbsp;</td>
+	      </tr>
+	      <tr>
+	<td height="9"><a href="<% $sc_url %>?id=<% $cat_id %>&order=5,d"><img border="0" src="images/sort_unselected_down.gif" width="23" height="9" alt="OS desc." ></a></td>
+	      </tr>
+	    </table></th>
+	  <th  align="right"> <table width="75" border="0" cellpadding="0" cellspacing="0">
+	      <tr>
+	<td width="23"><a href="<% $sc_url %>?id=<% $cat_id %>&order=3,a"><img border="0" src="images/sort_unselected_up.gif" width="23" height="9" alt="count asc." ></a></td>
+	<td width="52" rowspan="2"><a class="header" href="#XX"><% $prop->{"avail$l"} %></a></td>
+	      </tr>
+	      <tr>
+	<td><a href="<% $sc_url %>?id=<% $cat_id %>&order=3,d"><img border="0" src="images/sort_unselected_down.gif" width="23" height="9" alt="count desc." ></a></td>
+	      </tr>
+	    </table></th>
+	  <th align="right"><table width="152" border="0" cellpadding="0" cellspacing="0">
+	      <tr>
+	<td align="right"><a href="<% $sc_url %>?id=<% $cat_id %>&order=4,a"><img border="0" src="images/sort_unselected_up.gif" width="23" height="9" alt="price asc." ></a></td>
+	<td width="121" rowspan="2" align="right"><a class="header" href="#XX"><% $prop->{"price$l"} %></a></td>
+	      </tr>
+	      <tr>
+	<td align="right"><a href="<% $sc_url %>?id=<% $cat_id %>&order=4,d"><img border="0" src="images/sort_unselected_down.gif" width="23" height="9" alt="price desc." ></a></td>
+	      </tr>
+	    </table></th>
+	</tr>
+	      </table>	      
+	      <!-- End Header -->
+	      <hr  size="1" >
+	      
+	<!-- Produkt List -->	      
+	</td>
+	  </tr>
+	</table>
+	
+
+	
+<table cellspacing="0" cellpadding="0" width="98%" border="0">
+% while(my $r = $sth->fetch()) {
+%       my ($id, $price, $title, $desc, $count, $campaign_id, $extra, $condition) = @{$r};
+%	my $teaser = $A->get_teaser($id);
+%	$teaser = "<br>$teaser" if $teaser;
+%	$price = sprintf('%.2f', $price * $vat_fac);
+%	my $prod_info = $A->get_product($id);
+	<tr>
+	  <td width="7%"><img src="/produkte/p<% $id %>_mini.jpg" width="<% $C->{CONFIG}->{default_imgsize_mini} %>" height="50" ></td>
+	  <td width="18%" valign="middle"><span><a href="product.html?id=<% $id %>"
+		class="small_link"><% $title %></a></span></td>
+	  <td width="30%" height="40" valign="middle"><% $desc %>
+%		if ($condition) {
+			<span class="smallText"> (<% $condition %>)</span>
+% 		}
+		<% $teaser %> 
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<br>
+		<b style='color:maroon'>Special Price: CHF <% $prod_info->{price_incl_vat} %></b>
+			(<s><% $C->{CONFIG}->{default_curr} %> <% $prod_info->{price_orig_incl_vat} %></s>)
+%	}
+	</td>
+	  <td width="11%" align="right" valign="middle" ><table width="100%"  border="0" cellpadding="0" cellspacing="0">
+	      <tr>
+	<td width="20" align="left"><% $extra ? "<img src='images/icon_extra_label_$extra\.gif' width=20 height=20>" : '' %></td>
+	<td align="left" class="smallText"><% $extra %></td>
+	      </tr>
+	    </table></td>
+	  <td width="12%" align="right" valign="middle" ><table border="0" cellspacing="0" cellpadding="0">
+	      <tr>
+	<td width="53" align="right"><% $count %></td>
+	<td width="23" align="right">
+		<% $campaign_id ? '<img src="images/icon_company.png" alt="Firmenshop" width="16" height="16">' : '' %>
+	</td>
+	      </tr>
+	    </table></td>
+	  <td width="22%" align="right" valign="middle" ><table border="0" cellspacing="0" cellpadding="0">
+	      <tr>
+	<td width="82%" align="right"><% $C->{CONFIG}->{default_curr} %>
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<b style='color:maroon'><% $prod_info->{price_incl_vat} %></b>
+%	}
+%	else {
+		<b><% $price %></b>
+%	}
+	</td>
+	<td>&nbsp;</td>
+	<td><a href='basket.html?id=<% $id %>'><img border=0 src="images/basket_orange.gif" alt="Produkt in den Warenkorb" 
+		width="27" height="17" ></a></td>
+	      </tr>
+	    </table></td>
+	</tr>
+	<tr><td colspan=7><hr noshade size=1></td></tr>
+% }
+</table>
+
+% if ($C->is_devel()) {
+	<& debug.html, CORE => $C &>
+% }

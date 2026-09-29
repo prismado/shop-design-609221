@@ -1,0 +1,170 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $C = $args{C};
+	my $report = $args{report};
+</%init>
+<script type="text/javascript">
+$(function () {
+    /*
+    Colors 
+    #54a0f6
+    #a93018
+    #90c654
+    #A97518
+    #41B3DF
+    */
+    $(".small.bar.graph").peity("bar", { colours: ['#54a0f6'], height: 24, width: 92});
+    $(".small.line.graph").peity("line", {strokeColour: '#84bbf9', colour: 'rgba(132,187,249, .3)', height: 25, width: 92});
+
+    //Visits
+    var visitsData = [
+        {
+            label: "Orders",
+ 	    data: [<%join ', ', sort @{$report}%>],
+            color: '#84bbf9',
+        }
+    ];
+
+    var visitsOptions = {
+        grid: {
+            borderWidth: 0
+        },
+       xaxis: {
+         ticks: [
+           [1, "Jan"],
+           [2, "Feb"],
+           [3, "Mar"],
+           [4, "Apr"],
+           [5, "Mai"],
+           [6, "Jun"],
+           [7, "Jul"],
+           [8, "Aug"],
+           [9, "Sep"],
+           [10, "Okt"],
+           [11, "Nov"],
+           [12, "Dez"]
+         ]
+       },   
+        series: {
+            lines: { 
+                show: true,
+                fill: true,
+                fillColor: 'rgba(132,187,249, .3)'
+            },
+            points: { show: true }
+        },
+    };
+
+    $.plot($("#visits-chart"), visitsData, visitsOptions);
+    $(window).resize(function(){
+        $.plot($("#visits-chart"), visitsData, visitsOptions);
+    });
+    //-Visits
+
+    //Conversions
+    var conversionsData = [
+        {
+            data: [[5, 10], [6,19], [7,17], [8,21], [9,15], [10,17], [11,13], [12,5], [1,8], [2,12], [3,14], [4,8]],
+            color: '#84bbf9',
+        }
+    ];
+
+    var conversionsOptions = {
+        grid: {
+            borderWidth: 0,
+            //borderColor: '#ddd',
+        },
+       yaxis: {
+           tickLength: 0,
+         ticks: [
+           [0, "0"],
+           [5, "5"],
+           [10, "10"],
+           [15, "15"],
+           [20, "20"],
+         ]
+       },
+       xaxis: {
+         tickLength: 0,
+         ticks: [
+           [5, "E"],
+           [6, "F"],
+           [7, "G"],
+           [8, "H"],
+           [9, "H"],
+           [10, "I"],
+           [11, "J"],
+           [12, "K"],
+           [1, "A"],
+           [2, "B"],
+           [3, "C"],
+           [4, "D"],
+         ]
+       },   
+        series: {
+            bars: { 
+                show: true,
+                fill: true,
+                fillColor: 'rgba(132,187,249, .3)',
+                barWidth: .8,
+                align: "center"
+            },
+        },
+    };
+
+    $(window).resize(function(){
+        $.plot($("#conversions-chart"), conversionsData, conversionsOptions);
+    });
+    $.plot($("#conversions-chart"), conversionsData, conversionsOptions);
+    //-Conversions
+
+    //SEO
+    var seoData = [
+        {
+            //label: "",
+% # XXX            data: [[1, 2050], [2,3300], [3,2600], [4,2937], [5,1900], [6,2400], [7,1500], [8, 2900]],
+            color: '#a93018',
+        }
+    ];
+
+    var seoOptions = {
+        grid: {
+            borderWidth: 0
+        },
+       xaxis: {
+         ticks: [
+           [5, "May"],
+           [6, "June"],
+           [7, "July"],
+           [8, "Aug"],
+           [9, "Sept"],
+           [10, "Oct"],
+           [11, "Nov"],
+           [12, "Dec"],
+           [1, "Jan"],
+           [2, "Feb"],
+           [3, "March"],
+           [4, "April"]
+         ]
+       },   
+        series: {
+            lines: { 
+                show: true,
+                //fill: true,
+                //fillColor: 'rgba(132,187,249, .3)'
+            },
+            points: { show: true }
+        },
+    };
+
+    $.plot($("#seo-chart"), seoData, seoOptions);
+    $(window).resize(function(){
+        $.plot($("#seo-chart"), seoData, seoOptions);
+    });
+    //-seo
+});
+</script>
+<%doc>
+	__METACLONING__
+</%doc>

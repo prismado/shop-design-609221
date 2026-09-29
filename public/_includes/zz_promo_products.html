@@ -1,0 +1,30 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	# my $sth = $C->{dbh}->prepare("SELECT product_id FROM promo_prods WHERE is_active=1 ORDER BY weight");
+	#    $sth->execute();
+</%init>
+
+<div id="infoBox">
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+
+<%doc>
+****************************************************************************
+	Variante für Promo-Produkte nach ihrer Gewichtung
+****************************************************************************
+
+% while(my $r = $sth->fetch()) {
+	<& render_promo_prod.html, id => $r->[0], A => $A, CORE => $C &>
+
+% }
+</%doc>
+
+% foreach (@{$A->promo_ids()}) {
+	<& render_promo_prod.html, id => $_, A => $A, CORE => $C &>
+% }
+
+</div>

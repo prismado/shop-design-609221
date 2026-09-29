@@ -1,0 +1,99 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	use File::Copy;
+
+	my $bImport = $cgi->param('bImport');
+	my $bNext   = $cgi->param('bNext');
+	my @appmsgs = ();
+
+	my $target_file = "$ENV{DOCUMENT_ROOT}/produkte/zz_trash_import.txt";
+
+	my $file_header;
+	my $f_err = 0;
+	my $errstr = '';
+
+	if ($bNext) {
+		my $ifile = $cgi->param('ifile') || '';
+		my $upload_tempfilename = $cgi->tmpFileName($ifile);
+		copy $upload_tempfilename, $target_file or ($errstr = $!);
+		if ($errstr) {
+			push(@appmsgs, "ERROR $!");
+			$f_err++;
+		}
+		else {
+			push(@appmsgs, 'Import ready. File Size: ' . (-s $target_file) . ' Bytes');
+		}
+		$file_header = $C->file_header($target_file);
+	}
+	elsif ($bImport) {
+		my $pass = $cgi->param('pass');
+		my $anon = $cgi->param('import_anonymous');
+		my %args = (foo=>'bar', anon=>$anon);
+		# XXX $A->import_customers($target_file, $pass);
+		$A->import_customers($target_file, $pass, \%args);
+	}
+</%init>
+<div style="margin-top:20px" class="pull-right">
+	<a target="_blank" href="https://docs.ch2.be/w/publigate/import">Help</a>
+</div>
+<h2><span style='font-size:30px; margin-right:5px' class="icon-group pull-left text-info"></span>Import Customers from file</h2>
+
+% if ($bNext && !$errstr) {
+	<h3><% $#{$file_header} + 1 %> Columns found:</h3>
+%	foreach (@{$file_header}) {
+		&bull; <%$_%> (<%length($_)%>)<br>
+%	}
+	<br>
+	<form method=post>
+	<b>Set Password</b> &mdash; If the column <code>cust_pwd</code> is missing in the import file:<br>
+	<input style='margin-top:5px' placeholder="Password" type=text name=pass value="welcom<%$$%>"><br><br>
+
+	<input style="margin-top:0px" type=checkbox name="import_anonymous"
+		value="1"> Import the customers as anonymous users (Purpose as newsletter addresses)<br><br>
+
+	<input type=submit class='btn btn-primary' value="Import Now!" name=bImport>&nbsp;&nbsp;
+	<input type=button class='btn' value="Cancel" onclick="document.location='import_customers.html'">
+	</form>
+% }
+% elsif ($bImport) {
+	Finished.<br><br>
+
+	<a href="adm_log.html?importance=4&showmodule=0&filter=import_customers">Log</a>
+	<br><br>
+
+	<input type=button class="btn" onclick="document.location='customers.html'" value="Customers"><br>
+% }
+% else {
+	<div class="well">
+		&bull; <b>cust_email</b> <small>(mandatory)</small><br>
+		&bull; cust_surname<br>
+		&bull; cust_name<br>
+		&bull; cust_company<br>
+		&bull; cust_street<br>
+		&bull; cust_zip<br>
+		&bull; cust_city<br>
+		&bull; cust_phone<br>
+	</div>
+	<h3>Please choose import file (CSV)</h3>
+	<form enctype="multipart/form-data" method=post>
+	<input id="picture" type="file" name="ifile" style="width:278px; margin-top:5px"/><br><br>
+
+	<input type=submit class='btn btn-primary' value="Next ..." name=bNext>
+	<input type=button class='btn' value="Cancel" onclick="document.location='customers.html'">
+	</form>
+% }
+
+% if (@appmsgs) {
+	<% $C->bootstrap_alert((join '<br>', @appmsgs), $f_err ? 'danger' : 'success') %>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,59 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id');
+
+	my $sth = $C->{dbh}->prepare(
+		"select order_id from orders_products where prod_id=$id order by 1 desc limit 999");
+	   $sth->execute();
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+%
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Article Information</h3>
+  </div>
+%
+  <div class="modal-body">
+	<p>
+	<span style='float:right; margin-bottom:15px'><img src="images/sale_yellow.png"></span>
+		<h2>This article has been sold</h2>
+		<table class="mytable table-hover table-striped">
+		<thead>
+		<th style='width:123px'>Sale Time</th>
+		<th style='text-align:center'>Order ID</th>
+		<th>User</th>
+		<th style='text-align:right'>Status</th>
+		</thead>
+%	while(my $r = $sth->fetch()) {
+%		my $order_id = $r->[0];
+%		my ($instime, $uname, $status) = @{$C->query("select instime, uname, status from vorders where id=$r->[0]")};	
+		<tr>
+			<td><%$C->trans_date_short($instime)%></td>
+			<td style='text-align:center'><a href="admix.html?func=orders&id=<%$r->[0]%>"><%$order_id%></a></td>
+			<td><%$uname%></td>
+			<td style='text-align:right'><%$status == 3 ? 'STORNO' : $status%></td>
+		</tr>
+% 	}
+		</table><br>
+	</p>
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

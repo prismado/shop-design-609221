@@ -1,0 +1,85 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post action="_soap_deltavista.html">
+<input type=hidden name=action value="creditcheck">
+<input type=hidden name=func value="edit_item">
+
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog"
+	style="width:800px !important; margin-left:-400px !important"
+	aria-labelledby="myModalLabel" aria-hidden="true">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+    <h3 id="myModalLabel">Credit Check</h3>
+
+  </div>
+  <div class="modal-body" style="padding-top:10px">
+	<h3 style="margin-top:-5px !important; margin-bottom:-10px !important">Deltavista / CRIF Credit Check</h3>
+
+	<table class="mytable table-hover" style="border:0 !important;">
+
+	<tr style="border:0 !important">
+	<td style="border-bottom-style: none !important; padding-bottom:15px">
+		Salutation
+	</td>
+	<td colspan="3" style="border-bottom-style: none !important; padding-bottom:15px">
+		<select style="margin-top:10px;" name="gender">
+		<option value="1">Mr.</option>
+		<option value="1">Mrs.</option>
+		<option value="3">(Company)</option>
+		</select>
+	</td>
+	</tr>
+
+	<tr style="border:0 !important">
+	<& inc_text_input_modal.html, label=>'First name', name=>'firstname' &>
+	<& inc_text_input_modal.html, label=>'Surname', name=>'lastname' &>
+	</tr>
+	<tr><td colspan="4" style="border-bottom-style: none !important"></td></td></tr>
+
+	<tr style="border:0 !important">
+	<& inc_text_input_modal.html, label=>'Company<br><small>Salutation = Company</small>',
+		placeholder=>'Company', name=>'company' &>
+	<& inc_text_input_modal.html, label=>'', name=>'' &>
+	</tr>
+	<tr><td colspan="4" style="border-bottom-style: none !important"></td></td></tr>
+
+	<tr style="border:0 !important">
+	<& inc_text_input_modal.html, label=>'Street', name=>'street' &>
+	<& inc_text_input_modal.html, label=>'No', name=>'street_no' &>
+	</tr>
+	<tr><td colspan="4" style="border-bottom-style: none !important"></td></td></tr>
+
+	<tr style="border:0 !important">
+	<& inc_text_input_modal.html, label=>'Zip Code', name=>'zip' &>
+	<& inc_text_input_modal.html, label=>'City', name=>'city' &>
+	</tr>
+	<tr><td colspan="4" style="border-bottom-style: none !important"></td></td></tr>
+
+	<tr style="border:0 !important">
+	<& inc_text_input_modal.html, label=>'', name=>'' &>
+	<& inc_text_input_modal.html, label=>'Country<br><small>(ISO Code)</small>',
+		placeholder=>'Country (ISO Code)', name=>'country', value=>"CHE" &>
+	</tr>
+	<tr><td colspan="4" style="border-bottom-style: none !important"></td></td></tr>
+
+	</table>
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" namx=bXX type=submit value="Check!">
+  </div>
+</div>
+
+</form>

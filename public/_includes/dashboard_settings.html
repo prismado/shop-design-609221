@@ -1,0 +1,37 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+
+% # XXX <a href="adm_config.html">General Configuration</a><br>
+
+% # <p> </p>
+<p>
+% if ($C) {
+	Host: <%$C->getOwnHostname()%>
+% }
+% else {
+	Host: <b>*** N/A ***</b>
+% }
+</p>
+
+<ul class="unstyled cards not-bottom">
+
+<li>
+	<i class="icon-cog pull-left text-info"></i>
+	    <p class="info" style="margin-bottom:12px"><strong>Properties</strong></p>
+	    <p class="info small"><a href="adm_properties.html">Multilingual labels &amp; content</a></p>
+</li>
+
+<li>
+	<i class="icon-cog pull-left text-info"></i>
+	    <p class="info" style="margin-bottom:12px"><strong>General Configuration</strong></p>
+	    <p class="info small"><a href="adm_config.html">System Vars, Properties, VAT, ...</a></p>
+</li>
+
+</ul>
+
+
+<%doc>
+	__METACLONING__
+</%doc>

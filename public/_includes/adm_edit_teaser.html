@@ -1,0 +1,110 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $id      = $cgi->param('id') + 0;
+	my $bUpdate = $cgi->param('bUpdate');
+	my $bUpload = $cgi->param('bUpload');
+	my $delid   = $cgi->param('delid') + 0;
+	my $updID   = $cgi->param('bUpdID');
+
+	my $extradir = '';
+
+	if ($bUpdate) {
+		use File::Copy;
+		my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+		if ($C->{CONFIG}->{custom}) {
+			my $theme = $C->{CONFIG}->{theme};
+			$extradir = "/custom/$theme/html";
+		}
+		if ($upload_tempfilename) {
+			my $rc = copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/img_slides/s$id\.jpg"
+				or $m->out("ERR ($upload_tempfilename) $!<br>");
+		}
+		(my $xtext   = $cgi->param('xtext')) =~ s/'/''/g;
+		my $prod_id  = $cgi->param('prod_id') + 0;
+		my $categ_id = $cgi->param('categ_id') + 0;
+		my $is_active= $cgi->param('is_active') + 0;
+		my $any_url  = $cgi->param('any_url');
+
+		my $url = $categ_id ? "category-$categ_id-list.html" : $any_url;
+		   $url = '' if $prod_id;
+		my $lang = $cgi->param('lang');
+		$dbh->do("update teaser set xtext='$xtext', prod_id=$prod_id, url='$url', lang='$lang', is_active=$is_active WHERE id=$id")
+			or $m->out("ERR $DBI::errstr<br>");
+	}
+	elsif ($bUpload) {
+		use File::Copy;
+		my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+		if ($C->{CONFIG}->{custom}) {
+			my $theme = $C->{CONFIG}->{theme};
+			$extradir = "/custom/$theme/html";
+		}
+		if ($upload_tempfilename) {
+			my $rc = copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/img_slides/s$id\.jpg"
+				or $m->out("ERR ($upload_tempfilename) $!<br>");
+		}
+		(my $xtext = $cgi->param('xtext')) =~ s/'/''/g;
+		my $prod_id = $cgi->param('prod_id');
+		   $prod_id = 0 unless $prod_id =~ /^\d+$/;
+		# $dbh->do("update teaser set xtext='$xtext', prod_id=$prod_id WHERE id=$id") or $m->out("ERR $DBI::errstr<br>");
+	}
+	elsif ($updID) {
+		my $id = $cgi->param('id');
+		my $prod_id = $cgi->param('prod_id');
+		$dbh->do("update teaser SET prod_id=$prod_id WHERE id=$id") or $m->out("ERR $DBI::errstr<br>");
+		$m->out("X -- Prod ID $prod_id &rarr; ID $id<br>");
+	}
+	elsif ($delid) {
+		unlink "$ENV{DOCUMENT_ROOT}/img_slides/s$delid\.jpg" or $m->out("ERR $!<br>");
+		$dbh->do("delete FROM teaser WHERE id=$delid");
+		$m->out("Deleted: ID $delid<br>");
+	}
+
+	my $sth = $dbh->prepare(q~	SELECT	id, is_active, weight, prod_id, last_mod, 
+						last_user, valid_from, valid_to, xtext 
+					FROM 	teaser
+					ORDER	BY id DESC LIMIT 9999~);
+	$sth->execute();
+</%init>
+<h2>Update Teaser ID <%$id%> &middot; (Front Page)</h2>
+
+<script language=JavaScript>
+	function del_slide(id) {
+		if (confirm(' OK to delete Slide ID ' + id)) {
+			document.location="adm_teaser.html?delid="+id;
+		}
+	}
+</script>
+
+<div class="fancy-tab-container">
+	<ul class="nav nav-tabs two-tabs fancy">
+		<li class="active"><a href="#fancy-upgrade" data-toggle="tab">Teaser</a></li>
+		<li><a href="#fancy-whyupgrade" data-toggle="tab">Upload Picture</a></li>
+	</ul>
+
+    <div class="tab-content">
+	<div class="tab-pane fade in active" id="fancy-upgrade">
+		<&inc_teaser_edit.html, A=>$A, C=>$C, id=>$id&>
+	</div>
+	<div class="tab-pane fade" id="fancy-whyupgrade">
+		<br />
+		<form enctype="multipart/form-data" method=post>
+		<input type=hidden name=id value="<%$id%>">
+		<input style='font-size:10px' type="file" name="file" />
+		<input type=submit class='btn btn-primary' value="Upload Picture" name=bUpload><br>
+		</form>
+		<ul class="cards">
+		<li>Best picture size: 1470px x 500px</li>
+		<li>Recommended format: JPG</li>
+		</ul>
+	</div>
+    </div>
+</div>
+
+<%doc>
+	__METACLONING__
+</%doc>

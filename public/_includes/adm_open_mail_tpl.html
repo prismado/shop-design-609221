@@ -1,0 +1,56 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my @refs = ();
+
+	opendir(D, "$ENV{DOCUMENT_ROOT}/_mail_templates") or $m->out("ERR $!<br>");
+	while(my $f = readdir(D)) {
+		next unless $f =~ /\.(html|txt)$/;
+		push(@refs, $f);
+	}
+	closedir(D);
+
+	my %desc = (
+		'confirm_cust_de.txt'	=> 'Wrapper',
+		'resend_password.html'	=> '<a href="send_pwd.html">Passwort vergessen</a>'
+	);
+
+	my $tpl = $args{tpl};
+	my $lang = $C->{CGI}->param('lang') || 'de';
+
+	my $order_id = $C->query('select MAX(id) FROM orders')->[0];
+	my $content = $C->lwp_get(GET=>"http://$C->{CONFIG}->{HTTP_HOST}/_mail_templates/$tpl?order_id=$order_id&lang=$lang");
+</%init>
+<h1>E-Mail Template: <%$tpl%> &ndash;
+%    if ($lang eq 'de') {
+	de | <a style="color:#ccc" href="adm_open_mail_tpl.html?tpl=<%$tpl%>&lang=en">en</a>
+%    }
+%    else {
+	<a style="color:#ccc" href="adm_open_mail_tpl.html?tpl=<%$tpl%>&lang=de">de</a> | en
+%    }
+	&ndash; (Sample <a href="adm_order_detail_cust.html?id=<% $order_id %>">Order <% $order_id %></a>)</h1>
+
+% if ($args{tpl} =~ /\.txt$/) {
+	<pre>
+% }
+
+<%${$content}%>
+
+% if ($args{tpl} =~ /\.txt$/) {
+	</pre>
+% }
+
+<hr>
+
+<ol>
+% foreach my $f (sort @refs) {
+	<li><a href="_mail_templates/<%$f%>"><%$f%></a> <%$desc{$f}%></li>
+% }
+</ol>
+
+<%doc>
+	Algo-23
+	__METACLONING__
+</%doc>

@@ -1,0 +1,42 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $id = $args{id};
+	my $d = $A->get_product($id);
+	my $lang = $C->getSessData('_current_lang') || 'de';
+    my $prod_info = $A->get_product($id);
+</%init>
+<div class="aktionenBox" onclick="location.href='product.html?id=<%$id%>';" >
+<!--Rabatt Symbol Anzeige -->
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+			<span class="aktionsOffer"></span>
+%	}
+<span><%$d->{title}%></span>
+<a class="iinfo" href="product.html?id=<%$id%>"><IMG title="" src="produkte/p<%$id%>_thmb.jpg" alt=""></a>
+<div class="aktionsDetails">
+<%$d->{description}%>
+<%doc>
+<table>
+% my $i = 0;
+% foreach (sort keys %{$d->{feat}}) {
+%	last if ++$i > 6; # -- Max. 6 features here
+%	my ($weight, $feat_name, $feat_key, $feat_id) = split /\t/;
+%	next if $feat_name eq '_new_' or $feat_name eq 'link';
+%	my $dat = $d->{feat}->{$_};
+
+	<tr valign=top><td><%$feat_name%></td><td><%$dat%></td></tr>
+% }
+</table>
+</%doc>
+</div><!--end aktionsDetails -->
+<!--Rabatt Preis Abfrage -->
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+			<div class="aktionPreis sale">CHF <% $prod_info->{price_incl_vat} %></div>	
+%	}
+%	else {
+<div class="aktionPreis">CHF <%$d->{price_incl_vat}%></div>			
+%	}
+
+<div class="aktionButtons"><a class="blu_btn" href="product.html?id=<%$id%>">Bestellen | Produkte Ansicht</a></div>
+</div> <!--end aktionenBox -->

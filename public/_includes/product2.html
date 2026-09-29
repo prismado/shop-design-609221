@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+        my $C = $args{C};
+	my $A = $args{A};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $id = $C->{CGI}->param('id') || 0;
+
+	my $d = $args{d};
+	# XXX my $d = $A->get_product($id); # -- Get all product information
+
+	# XXX my $upsell = $A->get_upsell_opts($id);
+	# XXX $d->{upsell_tot} = $A->{total_incl_vat};
+</%init>
+% # -- JQuery 1.7 included within footer.html
+% # -- <script src="http://www.google.com/jsapi"></script>
+% # -- <script>google.load("jquery", "1.4");</script>
+%
+% if ($C->is_admin()) {
+	<div style="height:30px; margin-bottom:5px;"><a href='admix.html?func=edit_item&id=<% $id %>'>EDIT</a></div>
+% }
+
+<&prod_detail2.html, id => $id, C => $C, A => $A, d => $d, lang => $lang&>
+
+

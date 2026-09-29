@@ -1,0 +1,105 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $bUpdate = $cgi->param('bUpdate');
+	if ($bUpdate) {
+		my $prod_type = $cgi->param('prod_type');
+		$C->{dbh}->do("update products set prod_type=$prod_type where id=$args{id}");
+		$args{d} = $A->get_product($args{id}); # -- Refresh data
+	}
+
+	my ($super_cat_id, $super_cat_label) = $C->get_super_cat($args{d}->{cat_ids});
+</%init>
+<h2>Debug MM Product-ID <%$args{id}%> &ndash; (<%$super_cat_id%> <%$super_cat_label%>)</h2>
+
+<form method="post">
+<input type=hidden name="id" value="<%$args{id}%>">
+
+<table cellspacing=0 cellpadding=3>
+<tr style="background-color:#ccc">
+	<th style='text-align:left; width:175px'>Key</th><th style='text-align:left'>Value</th>
+</tr>
+% foreach (sort keys %{$args{d}}) {
+%	next if $_ eq 'pfeat' or $_ eq '_rc';
+%	next unless length($args{d}->{$_});
+%	if ($_ eq 'desc_long') {
+%		$args{d}->{$_} =~ s/\</&lt;/g;
+%		$args{d}->{$_} =~ s/\>/&gt;/g;
+%	}
+	<tr valign="top"><td style="font-weight:bold"><%$_%></td>
+	<td>
+%		if ($_ eq 'feat') {
+%			my $hashref = $args{d}->{$_};
+			<% !%{$hashref} ? 'NONE' : '' %>
+			<table cellspacing="0" cellpadding="3">
+%			foreach (sort keys %{$hashref}) {
+%				my ($x, $y, $ident, $u) = split /\t/;
+%				$ident = '' if $ident =~ /^new\d+$/;
+				<tr>
+				<td><%$x%></td><td style="font-weight:bold"><%$y%></td>
+				<td><%$ident%></td><td style="font-size:9px"><%$u%></td>
+				<td style="font-weight:bold"><%$hashref->{$_}%></tr>
+%			}
+			</table>
+%		}
+%		elsif ($_ eq 'pfeat') {
+%			foreach (sort keys %{$args{d}->{$_}}) {
+				<%$_%><br>
+%			}
+%		}
+%		else {
+%			if ($_ eq 'prod_type') {
+%				my $vat = length($C->{CONFIG}->{"vat_$args{d}->{$_}"}) ?
+%					$C->{CONFIG}->{"vat_$args{d}->{$_}"} : $C->{CONFIG}->{vat};
+				<input type=text name=prod_type style="width:55px; text-align:center" value="<%$args{d}->{$_}%>">
+%				my $area = $args{d}->{$_} > 1 ? "vat_$args{d}->{$_}" : 'vat';
+				&rarr; VAT <a href="adm_special_keys.html?area=<%$area%>"><%$vat%> %</a>
+%			}
+%			elsif ($_ eq 'cat_id') {
+				<%$args{d}->{$_}%> &middot; <a href="admix.html?func=items_expand&id=<%$args{d}->{$_}%>&debug=1">Category</a>
+%			}
+%			elsif ($_ eq 'vat') {
+				<%sprintf('%.2f', $args{d}->{$_})%> %
+%			}
+%			else {
+				<%$args{d}->{$_}%>
+%			}
+%		}
+	</td></tr>
+% }
+</table><br />
+
+Weight: <% $args{d}->{pfeat}->{"-002\t_exclude\traw_weight"} %> kg<br><br>
+
+% foreach (keys %{ $args{d}->{pfeat} }) {
+	XX "<%$_%>" = "<% $args{d}->{pfeat}->{$_} %>"<br>
+% }
+
+<input type="submit" value="Update" name="bUpdate">
+<input type="button" name="bCancel" onclick="document.location='admix.html?func=edit_item&id=<%$args{id}%>'" value="Back to Product">
+
+</form>
+
+% my $sth = $C->{dbh}->prepare("select featname, substr(featkey, 3, 8), `description` from products_feat where product_id=$args{id} and lang='$args{d}->{lang}' and featkey like '\\_o%'");
+%    $sth->execute();
+
+<h2>Active Options</h2>
+
+% while(my $r = $sth->fetch()) {
+%	my ($featname, $featkey, $description) = @{$r};
+%	my $label = $C->query("select label from options_desc where option_id=$featkey")->[0];
+	&bull; <%$featkey%> (<% $label %>)<br>
+% }
+<br>
+
+% unless (defined $A) {
+	<b style='color:red; font-size:20px'>*** WARNING!! &rarr; Call with $A! ***</b><br>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

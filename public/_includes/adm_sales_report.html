@@ -1,0 +1,321 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $sel_pay_meths = $args{sel_pay_meths};
+	my $sel_status    = $args{sel_status};
+
+	my $cgi = $C->{CGI};
+
+	my $bUpdate      = $args{bUpdate};
+	my $date_from_db = $C->trans_date_to_db($cgi->param('date_from'));
+	my $date_to_db   = $C->trans_date_to_db($cgi->param('date_to'));
+	my $campaign_id  = $cgi->param('campaign_id') + 0;
+
+	my %pay_meth_hr = ( 1=>'Creditcard', 2=>'COD', 3=>'Invoice', 4=>'PayPal', 5=>'Postcard', 6=>'Pre-payment',
+		7=>'pcd', 8=>'Paymill', 9=>'2Checkout', 10=>'Creditcard PCI3', 11=>'TWINT', 14=>'SIX Saferpay', 15=>'TWINT (SIX)', 16=>'Payrexx' );
+
+	my %status_hr = ( 1=>'New', 2=>'Pending', 3=>'Cancelled', 4=>'Okay' );
+
+	my @wcls = ();
+	push(@wcls, "o.instime between '$date_from_db 00:00:00' and '$date_to_db 23:59:59'");
+	push(@wcls, "pay_meth IN ($args{selected_pay_meths})") if $args{selected_pay_meths};
+	push(@wcls, "q.campaign_id=$campaign_id") if $campaign_id;
+	push(@wcls, "status IN ($args{selected_status_ids})") if $args{selected_status_ids};
+	my $wcl = join ' AND ', @wcls;
+
+	my $revenue = $C->query(qq~
+		SELECT	SUM(p.count * p.price)
+		FROM	orders_products p, orders o, products q
+		WHERE	order_id=o.id AND q.id=prod_id
+			AND $wcl
+	~)->[0];
+
+	my @wcl_rev = ();
+	push(@wcl_rev, "instime BETWEEN '$date_from_db 00:00:00' and '$date_to_db 23:59:59'");
+	push(@wcl_rev, "status IN ($args{selected_status_ids})" ) if $args{selected_status_ids};
+	push(@wcl_rev, "pay_meth IN ($args{selected_pay_meths})") if $args{selected_pay_meths};
+
+	my $status_clause = join ' AND ', @wcl_rev;
+	my $reven_net = $C->query(qq~
+		SELECT	SUM(amount_incl_vat)
+		FROM	orders
+		WHERE	$status_clause
+	~)->[0];
+
+	my $stmt = qq~
+		SELECT	p.id, order_id, o.instime, pay_meth, prod_id, p.count, p.campaign_id, q.campaign_id, p.price, amount_incl_vat, status,
+			SUBSTR(d.title, 1, 40)
+		FROM	orders_products p, orders o, products q, products_desc d
+		WHERE	order_id=o.id AND q.id=prod_id AND q.id=d.product_id AND d.lang='$C->{CONFIG}->{default_lang}'
+			AND $wcl
+		ORDER	BY o.instime
+	~;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>$stmt<br>");
+
+	my %active_pay_meth = ();
+	foreach (qw(cc pc3 pp pc prx six sit pcd cod inv pre pmi twi)) {
+		$active_pay_meth{$_} = $C->{CONFIG}->{"pay_meth_$_"} if  $C->{CONFIG}->{"pay_meth_$_"};
+	}
+
+	my %pay_meth_id = (
+		cc  => 1,
+		cod => 2,
+		pc  => 5,
+		pcd => 7,
+		pre => 6,
+		pmi => 8,
+		inv => 3,
+		pc3 => 10,
+		pp  => 4,
+		twi => 11,
+		six => 14,
+		sit => 15,
+		prx => 16
+	);
+
+	my @status_ids   = qw(4 3);
+	   @status_ids   = qw(1 2 3 4) if $args{debug};
+
+	my $st = $C->{dbh}->prepare(q~
+		select	d.id, token, company_id, name
+		from 	campaign_data d, companies c
+		where	company_id=c.id
+		order 	by id desc 
+		limit 	9999
+	~);
+	   $st->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $order_count = 0;
+	my %order_memo = ();
+</%init>
+<h2><i class="icon-bar-chart"></i> Sales Report &middot; [2]</h2>
+
+% if ($args{debug}) {
+%	if ($args{debug} > 2) {
+		<% $C->pretty_stmt($stmt) %><br>
+%	}
+	<% $C->html_debug("$wcl") %>
+% }
+<form method="post">
+<input type=hidden name="debug" value="<% $args{debug} %>">
+
+<div class="row-fluid">
+  <div class="span3">
+	From
+	<div class="input-append datepicker date" data-date="<% $args{date_from} %>" data-date-format="dd.mm.yyyy">
+		<input class="span6" size="16" type="text" value="<% $args{date_from} %>" name="date_from" id="date-picker-input">
+		<span class="add-on"><i class="icon-th"></i></span>
+	</div>
+
+	To
+	<div class="input-append datepicker date" data-date="<% $args{date_to} %>" data-date-format="dd.mm.yyyy">
+		<input class="span6" size="16" type="text" value="<% $args{date_to} %>" name="date_to" ix="date-picker-input">
+		<span class="add-on"><i class="icon-th"></i></span>
+	</div>
+	<br />
+
+	Restrict on these sales<br />
+	<select name="campaign_id">
+	<option value="0">&middot; ProZone</option>
+%	while(my $r = $st->fetch()) {
+%		my ($id, $token, $company_id, $name) = @{$r};
+		<option <% $id == $campaign_id ? 'selected' : '' %> value="<% $id %>"><% $token %> &ndash; <% $name %></option>
+%	}
+	</select>
+  </div>
+
+<div class="span3">
+	<br />
+	<div class="well" style="padding-top:0px">
+		<h3 style="margin-top:0px">Payment&nbsp;Methods</h3>
+%		foreach (sort keys %active_pay_meth) {
+			 <input type="checkbox" <% $sel_pay_meths->{$pay_meth_id{$_}} ? 'checked' : '' %>
+				name="pay_meth_<% $pay_meth_id{$_} %>"> <% $pay_meth_hr{$pay_meth_id{$_}} %><br>
+%		}
+		<div style="margin-top:10px !important" id="extra_paymeth_link">
+			<a href="#"
+	onclick="getElementById('extra_paymeth_link').style.display='none'; getElementById('deact_pay_meths').style.display=''">Show disabled pay methods</a>
+		</div>
+		<span id="deact_pay_meths" style="display:none">
+%		foreach my $pay_code (keys %pay_meth_id) {
+%			next if $active_pay_meth{$pay_code};
+			<input type="checkbox" <% $sel_pay_meths->{$pay_meth_id{$pay_code}} ? 'checked' : '' %>
+				name="pay_meth_<% $pay_meth_id{$pay_code} %>"> <i><% $pay_meth_hr{$pay_meth_id{$pay_code}} || "* $pay_code *" %></i><br>
+%		}
+		</span>
+	</div>
+</div>
+
+	<div class="span2">
+		<br />
+		<div class="well" style="padding-top:0px">
+			<h3 style="margin-top:0px">Order Status</h3>
+%			foreach my $status_id (@status_ids) {
+				<input type="checkbox" <% $sel_status->{$status_id} ? 'checked' : '' %>
+					name="status_<% $status_id %>"> <% $status_hr{$status_id} %><br>
+%			}
+		</div>
+	</div>
+
+	<div class="span4">
+		<br />
+		<div class="pull-right">
+		<input class="btn btn-primary" type="submit" name="bUpdate" value="Show Report">
+		</div>
+	</div>
+
+</form>
+
+</div>
+
+
+<div id="report_area" style="display:<% $bUpdate ? '' : 'none' %>">
+
+<br clear="all" />
+<div class="pull-right stats">
+	<div class="stat">
+		<p class="main-detail text-warning">
+				<nobr>CHF <% $C->decimal_mark($reven_net) %></nobr>
+		</p>
+		<p class="info"><nobr>Revenue Total</nobr></p>
+	</div>
+</div>
+
+<div class="pull-right stats" style="margin-right:50px">
+	<div class="stat">
+		<p class="main-detail text-warning" style="font-size:0.95rem">
+			<nobr><% $C->{CONFIG}->{default_curr} %> <% $C->decimal_mark($revenue) %></nobr>
+		</p>
+		<nobr>Total Product Value</nobr>
+	</div>
+</div>
+
+<h2>Report&nbsp;&nbsp;
+% foreach (split /,/, $args{selected_status_ids}) {
+	<% $status_hr{$_} %>&nbsp;&nbsp;
+% }
+</h2>
+
+<table id="exampleTab" class="table table-first-column-number data-table sort table-striped table-hover display">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Order Time<span class="sort-icon"></span></th>
+      <th>Item ID<span class="sort-icon"></span></th>
+      <th>Item<span class="sort-icon"></span></th>
+      <th>Category<span class="sort-icon"></span></th>
+      <th>ProZone<span class="sort-icon"><span></th>
+	<th style="text-align:right">Item Price&nbsp;<span class="sort-icon"></span></th>
+      <th style="text-align:right">Amount Total&nbsp;<span class="sort-icon"></span></th>
+      <th>Pay Meth<span class="sort-icon"></span></th>
+%  unless ($args{selected_status_ids} =~ /^\d+$/) {
+      <th>Status<span class="sort-icon"></span></th>
+%  }
+    </tr>
+  </thead>
+  <tbody>
+% my $total = 0.0; my %memo = my %prod_summ = ();
+% while(my $r = $sth->fetch()) {
+%	my ($id, $order_id, $instime, $pay_meth, $prod_id, $count, $campaign_id1, $campaign_id2, $price, $amount_incl_vat, $status, $title) = @{$r};
+%	my ($cat_id, $label) = @{$C->query("select cat_id, label from products2categ m, categories c where c.id=cat_id AND lang='de' and product_id=$prod_id limit 1")};
+%	$total += $amount_incl_vat unless $memo{$order_id}; $memo{$order_id} = 1;
+%	$order_count++ unless $order_memo{$order_id}; $order_memo{$order_id} = 1;
+%	$prod_summ{$prod_id} += $count;
+	<tr>
+		<td style="font-weight:bold"><% $order_id %></td>
+		<td data-order="<% (split / /, $instime)[0] %>"><% $C->trans_date_short_nt($instime) %></td>
+		<td><% $count %> &times; ID <% $prod_id %></td>
+		<td><% $title %></td>
+		<td data-order="<% $label %>"><% $cat_id %> &ndash; <% $label %></td>
+		<td>
+%		if ($campaign_id2) {
+%			my ($token, $company_id) = @{$C->query("select token, company_id from campaign_data where id=$campaign_id2")};
+			<% $token %>
+%		}
+		</td>
+		<td style="text-align:right"><% $C->decimal_mark($price) %></td>
+		<td style="text-align:right"><% $C->decimal_mark($amount_incl_vat) %></td>
+		<td><% uc ($pay_meth_hr{$pay_meth} || "* $pay_meth *") %>
+%			if ($args{selected_pay_meths} == 16) {
+%				my $uuid = $C->query("select xval from orders_details where order_id=$order_id and xkey='pay_resuuid'")->[0];
+				<% $uuid %>
+%			}
+		</td>
+%  unless ($args{selected_status_ids} =~ /^\d+$/) {
+		<td><% $status_hr{$status} || "* $status *" %></td>
+%  }
+	</tr>
+% }
+  </tbody>
+</table>
+<br clear="all" />
+<h2>Total Revenue: <% $C->decimal_mark($total) %> / <% $order_count %> Orders</h2><br />
+
+<table cellspacing=0 cellpadding=6 style="border:1px solid #cccccc">
+<tr style="background-color:#f0f0f0">
+	<th>Prod-ID</th>
+	<th style="text-align:left; padding-left:20px">Product</th>
+	<th>Sold</th>
+	<th style="padding-left:25px">On Stock</th>
+	<th style="padding-left:60px">ProZone&nbsp;</th>
+</tr>
+% my $tot_count = 0;
+% foreach (sort keys %prod_summ) {
+%	my $title = $C->query("select title from products_desc where product_id=$_")->[0];
+%	my ($on_stock, $camp_id) = @{$C->query("select `count`, campaign_id from products where id=$_")};
+%	my $comp = '';
+%	   $comp = $C->query("select token from campaign_data where id=$camp_id")->[0] if $camp_id;
+%	$tot_count += $prod_summ{$_};
+	<tr style="border-top:1px solid #cccccc">
+	<td style="text-align:right"><a href="adm_edit_product.html?id=<% $_ %>"><% $_ %></a></td>
+	<td style="padding-left:20px"><% $title %></td>
+	<td style="text-align:right"><% $prod_summ{$_} %></td>
+	<td style="text-align:right"><% $on_stock %></td>
+	<td style="text-align:right"><% $comp || '&mdash;&nbsp;' %></td>
+	</tr>
+% }
+	<tr style="border-top:2px solid #cccccc; font-weight:bold">
+		<td></td>
+		<td style="padding-left:20px">Total</td>
+		<td style="text-align:right"><% $tot_count %></td>
+		<td style="text-align:right"></td>
+		<td></td>
+	</tr>
+</table>
+
+<%doc>
+% if ($args{selected_pay_meths} == 16) {
+%	my $sth = $C->{dbh}->prepare(qq~select id from orders where instime between '$date_from_db 00:00:00' and '$date_to_db 23:59:59' and pay_meth=16 order by 1~);
+%	   $sth->execute();
+	<h4><% $sth->rows() %> Order-IDs</h4>
+	<table cellspacing=0 cellpaddign=4 border="1" style="width:60%">
+%	while(my $r = $sth->fetch()) {
+%		my $items = $A->get_order_items(order_id=>$r->[0]);
+		<tr>
+		<td><% $r->[0] %></td>
+		<td>
+		<table border="0" cellspacing=0 cellpadding=4 style="width:100%">
+%		foreach my $itm (@{$items->{item_rows}}) {
+%			next if $itm->{title} eq 'Versand' or $itm->{unit_price} < 0;
+			<tr>
+			<td><% $itm->{count} %> &times; <% $itm->{title} %></td>
+			<td style="text-align:right">Campaign-ID <% $itm->{campaign_id} %></td>
+			</tr>
+%		}
+		</table>
+		</td>
+		</tr>
+%	}
+	</table>
+% }
+</%doc>
+
+</div>
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,60 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $id = $C->{CGI}->param('id');
+
+	$C->load_properties('account');
+	my $prop = $C->{property}->{'account'};
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my %addr_label = ( 1 => $prop->{"bill_addr$l"}, 2 => $prop->{"deliv_addr$l"} );
+
+	my $sth = $C->{dbh}->prepare(qq~SELECT	id, price, title, description, count, extra
+					FROM 	vproducts 
+					WHERE 	cat_id IN (select id FROM categories WHERE parent_id =9) AND lang='de'~);
+	$sth->execute();
+
+	my %opt_cur = ();
+	my $opts = $A->get_product_options($id);
+	$opt_cur{$_} = 1 foreach @{$opts};
+
+	my $opt_count = $sth->rows();
+</%init>
+%
+<!-- b><% $prop->{"your_login_name$l"}%>:</b -->
+
+<h4><%$opt_count%> options available</h4>
+
+<form method=post>
+<input type=hidden name=func value='edit_item'>
+<input type=hidden name=id value='<% $id %>'>
+
+<table cellspacing=0 cellpadding=0>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $price, $title) = @{$r};
+%	my $checked = $opt_cur{$id} ? ' checked' : '';
+	<tr><td><input type=checkbox name="opt_<% $id %>" style='margin-left:0'<% $checked %>>&nbsp;&nbsp;</td>
+		<td align=right><a href='admix.html?func=edit_item&id=<% $id %>'>ID <% $id %></a>&nbsp;&nbsp;&nbsp;</td>
+		<td><b><% $title %></b>&nbsp;&nbsp;</td>
+		<td align=right><% $price %> <% $C->{CONFIG}->{default_curr} %></td>
+	</tr>
+% }
+</table><br>
+
+% if ($opt_count) {
+<input type=submit value='Zuweisen' name=bAssignOpt class=goButton>
+% }
+
+</form><br>
+
+% if ($C->is_devel()) {
+	<&debug.html, CORE=>$C, A=>$A&>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

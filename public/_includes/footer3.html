@@ -1,0 +1,139 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+<div id="footer">
+<div class="fhead">
+	    <div class="inside clearfix">
+	  <div class="fheadText">Zahlungs-Methoden</div>
+	  <div class="fheadIcon"><IMG alt="Payment" src="images/icon_payment.png"></div>
+	    </div>
+  </div>
+  <div class="inside clearfix">
+
+
+<div id="footer_main">
+      <dl id="footerBox">
+        <h2>2015 © zzshop.ch </h2>
+        <dd>by Screenpoint AG<br />
+        <br />
+        <br><br>
+       </dd>
+       
+
+      </dl>
+      <dl id="footerBox1">
+        <h2>Informationen:</h2>
+        <dd><a href="info_customerservice.html">- Kundenservice</a><br>
+        <a href="info_agb.html">- Unsere AGB's</a><br>
+        <a href="info_impressum.html">- Impressum</a><br>
+        </dd>
+      </dl>
+
+           <dl id="foterBox2">
+        <h2>Besuchen Sie uns auf</h2>
+        <dd></dd>        <a href="https://www.facebook.com/wlanbox" target="_blank" class="socialtag1">Facebook</a>
+	<a class="socialtag2" target="_blank"  href="#">Google+</a>
+      </dl>
+</div>
+    
+	<div id="sitmap">
+      <dd><A class="foot" href="info_agb.html">AGB's</A>&nbsp;&nbsp;|&nbsp;&nbsp;
+        <A class="foot" href="info_impressum.html">Impressum</A>&nbsp;&nbsp;|&nbsp;&nbsp;
+     <A class="foot" href="basket.html">Warenkorb</A>&nbsp;|&nbsp;&nbsp;
+     <A class="foot" href="account.html">Mein Konto</A>&nbsp;&nbsp;|&nbsp;&nbsp;
+     <A class="foot" href="contact.html">Kontakt</A>&nbsp;&nbsp;|&nbsp;&nbsp;
+     <A class="foot" href="_layout.html">Dev</A></dd>
+	</div>
+  
+
+  </div><!-- end footer inside-->
+</div><!-- end footer -->
+
+<script type="text/javascript" src="http<%$ENV{HTTPS} ? 's' : ''%>://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript" src='js/jquery.elevatezoom.js'></script>
+<script type="text/javascript" src="js/jquery.fancybox.pack.js"></script>
+<script type="text/javascript" src="js/jquery.flexnav-min.js"></script>
+% # <script type="text/javascript" src="js/jquery.imagezoom.min.js"></script>
+<script type="text/javascript" src="js/modernizr.custom.17475.js"></script>
+<script type="text/javascript" src="js/jquery.elastislide.js"></script>
+
+<script type="text/javascript">
+// Image Zoom Script 2015	
+$(document).ready(function () {
+$("#zoom_03").elevateZoom({gallery:'gallery_01', cursor: 'pointer', zoomType: "inner", galleryActiveClass: "active", responsive: "true", imageCrossfade: true, loadingIcon: "http://www.elevateweb.co.uk/spinner.gif"}); 
+
+$("#zoom_03").bind("click", function(e) {  
+  var ez =   $('#zoom_03').data('elevateZoom');
+  ez.closeAll(); //NEW: This function force hides the lens, tint and window	
+	$.fancybox(ez.getGalleryList());
+  return false;
+}); 
+
+$(".fancyButton").bind("click", function(e) {  
+  var ez =   $('#zoom_03').data('elevateZoom');
+  ez.closeAll(); //NEW: This function force hides the lens, tint and window	
+	$.fancybox(ez.getGalleryList());
+  return false;
+}); 
+
+}); 
+</script>
+
+
+<script>
+        $("[role='navigation']").flexNav();
+</script>
+<%doc>
+
+<script>
+// Image Zoom Script Old
+        $(function(){
+                var carsousel = $('#product_carousel').elastislide({start:0,minItems:1,
+                onClick:function( el, pos, evt ) {
+                        el.siblings().removeClass("active");
+                        el.addClass("active");
+			            carsousel.setCurrent( pos );
+                        evt.preventDefault();
+                        var demo2obj = $('#productImage').data('imagezoom');
+                        demo2obj.changeImage(el.find('img').attr('src'),el.find('img').data('largeimg'));
+                },
+                onReady:function(){
+                        // Wichtig **********************init imagezoom Set Default Images*****************************
+			$('#productImage').ImageZoom({bigImageSrc:'produkte/p<%$args{id}%>_orig.jpg'});
+                        $('#product_carousel li:eq(0)').addClass('active')
+                }
+        });});
+</script>
+
+</%doc>
+
+% unless ($C->is_admin()) {
+<script type="text/javascript">
+// Right Cl.
+$(document).ready(function(){
+$("body").bind("contextmenu",function(e){
+        return false;
+    });
+	
+});
+</script>
+% }
+
+<%doc>
+% # <!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://wp.pgate.net/zz-piwik/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+% # <!-- End Piwik Code -->
+</%doc>

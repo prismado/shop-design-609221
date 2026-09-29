@@ -1,0 +1,192 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $hide_inact = $C->{CGI}->param('hide_inact');
+	my ($deliv_country, $ship_check) = split /\|/, $C->{CGI}->param('deliv_country');
+
+	my $ship_info;
+	my $art_no_check = '';
+	if ($deliv_country) {
+		$C->{dbh}->do("update users_addr set country='$deliv_country' where user_id=$args{UID} and type=2");
+		$ship_info = $A->get_shipping_v4(ship_meth=>$ship_check);
+		$art_no_check = $ship_info->{art_no};
+	}
+
+	my %shipping_hr = (
+		cc           => 'Credit Card',
+		ins          => 'Insurance',
+		inv          => 'Invoice / Rechnung',
+		pic          => 'Self-pickup',
+		exp          => 'Express',
+		box          => 'Special Box',
+		postpac_prio => 'PostPac Priority',
+		std          => 'Standard (Default)'
+	);
+
+	my % ship_hr = (
+		amount => 'Amount',
+		art_no => 'Art No.',
+		vat    => 'VAT'
+	);
+
+	my $st = $C->{dbh}->prepare("select substr(`key`, 6, 15) from config where `key` like 'ship\\_%' order by 1 desc");
+	   $st->execute();
+	my @active_ship_codes = ();
+	while(my $rr = $st->fetch()) {
+		my $val = $rr->[0];
+		next if $C->{CONFIG}->{"shipping_inact_$val"};
+		push(@active_ship_codes, qq~<option value="$val">$shipping_hr{$val}</option>~);
+	}
+	my $ship_sel = join '', @active_ship_codes;
+
+	my $shipping_cat_id = $C->{CONFIG}->{shipping_cat_id} + 0;
+	my $extra_wcl = $hide_inact ? q~and length(getProdFeat(id, 'ship_meth')) > 0~ : '';
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select 	id, title, art_no, price, 
+			(select prod_type from products where id=v.id limit 1) AS tax_id, 
+			(select val+0 from config where
+				`key`=CONCAT('vat_', (select prod_type from products where id=v.id limit 1)) limit 1) AS tax_perc,
+			getProdFeat(id, 'currency_id'),
+			getProdFeat(id, 'ship_meth')
+		from 	vproducts_1_02 v
+		where 	lang='de' and cat_id=$shipping_cat_id $extra_wcl
+		order	by 2
+	~);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+</%init>
+<div style="margin-top:10px" class="pull-right">
+%	if ($hide_inact) {
+	<a href="adm_shipping_v4.html">Show inactive</a>
+%	}
+%	else {
+	<a href="adm_shipping_v4.html?hide_inact=1">Hide inactive</a>
+%	}
+</div>
+
+<h2><span style='font-size:30px; margin-right:5px'
+	class="icon-truck pull-left text-info"></span><% $sth->rows() %> Shipping Items &middot;
+		<small>(Shipping Model 4: Entries stored as products)</small></h2>
+
+% unless ($C->{CONFIG}->{shipping_cat_id} > 0) {
+	ERR: Add Config Key <a href="config2.html">shipping_cat_id</a><br>
+% }
+
+<form method="post">
+
+<table class="mytable table-hover <% $deliv_country ? '' : 'table-striped' %>">
+<thead>
+	<tr>
+		<th>Title</th>
+		<th>Art No</th>
+		<th>Mapped to</th>
+		<th style="text-align:right">Price</th>
+		<th style="text-align:center">Tax-ID</th>
+		<th style="text-align:center">VAT %</th>
+		<th></th>
+	</tr>
+</thead>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $title, $art_no, $price, $tax_id, $tax_perc, $currency_id, $ship_meth) = @{$r};
+%	(my $title_disp = $title) =~ s/^Versand //;
+%	$shipping_hr{$ship_meth} ||= "* Inactive *";
+%	my $font_weight = $hide_inact ? 'normal' : 'bold';
+	<tr style="<%$art_no eq $art_no_check ? 'background-color:#daeafd !important' : ''%>">
+		<td style="font-weight:bold"><% $title_disp %></td>
+		<td><%$art_no%></td>
+		<td><select style="margin-top:5px; margin-bottom:5px; <%$ship_meth eq '' ? 'color:#ccc' : "font-weight:$font_weight"%>"
+			name="map_<%$id%>">
+			<option value="<%$ship_meth%>"><%$shipping_hr{$ship_meth}%></option>
+			<%$ship_sel%>
+			<option value="">(inactive)</option>
+		</select></td>
+		<td style="text-align:right; font-weight:bold"><% sprintf('%.2f', $price) %> <%$currency_id == 1 ? 'CHF' : 'EUR'%></td>
+		<td style="text-align:center"><% $tax_id %></td>
+		<td style="text-align:center"><% sprintf('%.2f', $tax_perc) %>%</td>
+		<td style="text-align:center"><a href="admix.html?func=edit_item&id=<%$id%>"><i class="icon-pencil"></i></a></td>
+	</tr>
+% }
+</table><br />
+
+<input name="bUpdate" type="submit" class="btn btn-primary" value="Update">
+<input type="button" class="btn" value="Back" onclick="document.location='adm_shipping.html'">
+
+</form>
+
+% if ($args{bUpdate} ) {
+	Updated.<br>
+% }
+
+<p>
+	<a href="admix.html?func=items_expand&id=<% $C->{CONFIG}->{shipping_cat_id} %>">List Shipping Products</a>
+	&nbsp;&nbsp;|&nbsp;&nbsp;
+	<a href="adm_vat.html">VAT / TAX-IDs</a>
+</p>
+
+<hr />
+<div class="pull-right">
+
+<form class="form-horizontal" name="checkForm">
+<input type="hidden" name="hide_inact" value="<%$hide_inact%>">
+  <label class="control-label">Select - Delivery Country</label>
+  <div class="controls">
+	<select name="deliv_country" onchange="document.checkForm.submit()">
+	<option value="">&middot; Country</option>
+	<option value="CH|std" <%$deliv_country eq 'CH' && $ship_check eq 'std' ? 'selected' : ''%>>CH - Schweiz - std</option>
+	<option value="CH|exp" <%$deliv_country eq 'CH' && $ship_check eq 'exp' ? 'selected' : ''%>>CH - Schweiz - exp</option>
+	<option value="AT|std" <%$deliv_country eq 'AT' && $ship_check eq 'std' ? 'selected' : ''%>>AT - &Ouml;sterreich - std</option>
+	<option value="AT|exp" <%$deliv_country eq 'AT' && $ship_check eq 'exp' ? 'selected' : ''%>>AT - &Ouml;sterreich - exp</option>
+	<option value="DE|std" <%$deliv_country eq 'DE' && $ship_check eq 'std' ? 'selected' : ''%>>DE - Deutschland - std</option>
+	<option value="DE|exp" <%$deliv_country eq 'DE' && $ship_check eq 'exp' ? 'selected' : ''%>>DE - Deutschland - exp</option>
+	<option value="XY|std" <%$deliv_country eq 'XY' && $ship_check eq 'std' ? 'selected' : ''%>>WW - World - std</option>
+	<option value="XY|exp" <%$deliv_country eq 'XY' && $ship_check eq 'exp' ? 'selected' : ''%>>WW - World - exp</option>
+	</select>
+  </div>
+</form>
+
+</div>
+
+% if ($deliv_country) {
+	<table style="width:444px" class="mytable table-hover table-striped">
+	<thead>
+	<tr>
+	<th colspan="2">
+		<div class="pull-right"><% $shipping_hr{$ship_check} %>&nbsp;</div>
+		<% $deliv_country %>
+	</th>
+	</tr>
+	</thead>
+%	foreach (sort keys %{$ship_info}) {
+%		next if /^\_/ or $_ eq 'currency_id' or $_ eq 'ship_meth' or $_ eq 'country'
+%			or $_ eq 'vat_perc' or $_ eq 'tax_id' or $_ eq 'art_no';
+		<tr><td>
+%			if ($_ eq 'vat') {
+				<% sprintf('%.2f', $ship_info->{vat_perc}) %> % VAT &ndash;
+					(Tax ID <% $ship_info->{tax_id} %>)
+%			}
+%			else {
+				<% $ship_hr{$_} || "* $_ *" %>
+%			}
+		</td>
+		<td style="font-weight:bold; text-align:right"><%$ship_info->{$_}%>
+%			if ($_ eq 'amount') {
+				<% $ship_info->{currency_id} == 1 ? 'CHF' : 'EUR' %>
+%			}
+%			elsif ($_ eq 'vat') {
+				<% $ship_info->{currency_id} == 1 ? 'CHF' : 'EUR' %>
+%			}
+		</td></tr>
+%	}
+	<tr>
+		<td>Art No.</td>
+		<td style="font-weight:bold; text-align:right"><% $ship_info->{art_no} %></td>
+	</tr>
+	</table>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

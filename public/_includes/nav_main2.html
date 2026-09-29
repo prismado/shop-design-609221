@@ -1,0 +1,95 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $perm = $args{perm};
+
+	my $lt = $C->_lt_();
+	my $fresh_order_count = $C->query("select count(*) from orders where time_to_sec(timediff(NOW(), instime)) $lt 36000")->[0];
+	my $order_info = $fresh_order_count ? "<span class='badge badge-info'>$fresh_order_count</span>" : '';
+</%init>
+<br>
+% if ($C->{CONFIG}->{maintenance}) {
+	<% $C->bootstrap_alert(q~<div class="pull-right"><a href="adm_special_keys.html?area=maintenance"><i
+		class="icon-edit"></i></a></div>
+		<b>NOTE</b>&nbsp;&nbsp;
+		Maintenance Mode is <a href="adm_special_keys.html?area=maintenance">active</a>!~,
+		'success') %><br />
+% }
+% if ($C->{CONFIG}->{show_modal_news}) {
+	<a class="btn btn-mini" href="adm_special_keys.html?area=show_modal_">Modal News active</a><br><br>
+% }
+% if ($args{warnings}) {
+	<span style="color:red">WARNING: <%$args{warnings}%> (<%$ENV{db_name}%>)</span><br><br>
+% }
+
+% if ($args{license}->{status} != 1) {
+	<% $C->bootstrap_alert($args{license}->{msg}, 'danger') %><br />
+% }
+<table cellspacing=0 cellpadding=0 border=0 align=center style='width:100%'>
+<tr valign=top><td>
+	<table align=center id='table_list' border=0 cellspacing=10 style='width:100%'>
+
+	<& _mini_main_func2.html, label => "Orders $order_info", icon => 'icon-shopping-cart',
+		link => 'adm_orders.html', desc => 'Customer orders' &>
+
+	<& _mini_main_func2.html, label => 'Customers / Users', icon => 'icon-group',
+		link => 'customers.html', desc => 'Manage customer and admin accounts' &>
+
+	<& _mini_main_func2.html, label => 'Shipping', icon => 'icon-truck',
+		link => 'adm_shipping.html', desc => 'Configure shipping costs' &>
+
+	<& _mini_main_func2.html, label => 'Stock', icon => 'icon-th',
+		link => 'adm_stock.html', desc => 'Item stock numbers / Inventories' &>
+
+% unless ($C->{CONFIG}->{admin_hide_newsletter}) {
+	<& _mini_main_func2.html, label => 'Newsletter', icon => 'icon-envelope-alt',
+		link => 'adm_newsletter.html', desc => 'Newsletter Management' &>
+% }
+	</table>
+	</td>
+
+<td>&nbsp;</td>
+
+	<td>
+	<table align=center id='table_list' border=0 cellspacing=10 style='width:100%'>
+
+% if ($args{debug}) {
+	<& _mini_main_func2.html, label => 'Devel Extra Functions', icon => 'icon-cogs',
+		link => 'adm_special.html', desc =>
+		'Development functions and system settings<br>
+		<a href="adm_custom.html">Themes</a>' &>
+% }
+
+	<& _mini_main_func2.html, label => 'Categories', icon => 'icon-sitemap',
+		link => 'adm_categs.html', desc => 'Create, update, delete categories' &>
+
+	<& _mini_main_func2.html, label => 'Payment', icon => 'icon-money',
+		link => 'adm_pay_methods.html', desc => 'Define payment options, manage <a href="adm_vouchers.html">E-Vouchers</a>' &>
+
+% if ($C->{CONFIG}->{custom_admin}) {
+	<&adm_custom_menu.html, C=>$C, debug=>$args{debug}&>
+% }
+
+	<& _mini_main_func2.html, label => 'Shop Configuration', icon => 'icon-cog',
+		link => 'adm_config.html', desc =>
+		'Special functions and system settings<br>
+		<a href="adm_properties.html">Properties</a>
+			&middot; <a href="adm_properties.html?filter=content">Content Properties</a>' &>
+
+	</table>
+	</td>
+
+</table>
+
+% if ($perm->{is_devel}) {
+	<h4>Devel</h4>
+	<p><a href="adm_license.html">License</a> still okay?? <% $args{license}->{status} %> &mdash; <a href="adx/">NEW: /adx</a></p>
+% }
+
+% unless ($C->is_admin()) {
+	<table id='table_list2'></table>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

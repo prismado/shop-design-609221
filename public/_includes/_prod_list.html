@@ -1,0 +1,99 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $lang = $args{lang};
+	my $sth = $args{sth};
+	my $vat_fac = 1 + ($C->{CONFIG}->{vat} || 0.0) / 100;
+	my $cat_id = $C->{CGI}->param('id') || 1;
+	my $extra_label = $C->query("SELECT extra_label FROM categories WHERE id=$cat_id AND lang='$lang'")->[0];
+	my $sc_url = $ENV{SCRIPT_URL} || 'categ.html';
+
+	$C->load_properties('categ');
+        my $prop = $C->{property}->{categ};
+        my $l = $lang eq 'de' ? '' : "_$lang";
+</%init>
+
+<div id="aktionsBanner">    
+<b>Kontaktlinsen machen Spass!</b><br><br>
+
+
+Kontaktlinsen und Kontaktlinsen Zubehör erhalten Sie in unserem Kontaktlinsen Shop. Wir führen Tageslinsen, Wochenlinsen, Monatslinsen und Farblinsen aller führenden Herstellern. Hier unsere Kontaktlinsen Empfehlungen:
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+</div><!-- aktionsBanner -->
+
+
+  <!-- Produkt List -->	       
+<div id="products_outer">
+ 
+  <!-- Produkt Filter -->	
+<div class="filter_content">
+<div class="sortText"><a href="<% $sc_url %>?id=<% $cat_id %>&order=2,a"><% $prop->{"config$l"} %></a></div>			
+<div class="pro_sort">
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=1,a'>"><img border="0" src="images/arrow_up.png"  title='Up'></a>
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=2,a"><img border="0" src="images/arrow_down.png"  alt="Down"></a>
+</div><!--end pro_sort-->
+<div class="sortText"><a href="<% $sc_url %>?id=<% $cat_id %>&order=4,a"><% $prop->{"price$l"} %></a></div>
+<div class="pro_sort">
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=4,a"><img border="0" src="images/arrow_up.png"  title='Up'></a>
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=4,d"><img border="0" src="images/arrow_down.png"  alt="Down"></a>
+</div><!--end pro_sort-->
+<div class="sortText"><a  href="<% $sc_url %>?id=<% $cat_id %>&order=3,a"><% $prop->{"avail$l"} %></a></div>
+<div class="pro_sort">
+ <a href='<% $sc_url %>?id=<% $cat_id %>&order=3,a'><img border="0" src="images/arrow_up.png"  title='Up'></a>
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=3,d"><img border="0" src="images/arrow_down.png" alt="Down"></a>
+</div><!--end pro_sort-->
+
+</div><!--end filter_content-->
+
+% while(my $r = $sth->fetch()) {
+%       my ($id, $price, $title, $desc, $count, $campaign_id, $extra, $condition) = @{$r};
+%	my $teaser = $A->get_teaser($id);
+%	$teaser = "<br>$teaser" if $teaser;
+%	$price = sprintf('%.2f', $price * $vat_fac);
+%	my $prod_info = $A->get_product($id);
+ <!-- Produkt Show -->	  
+			<ul class="product_show clearfix" onclick="location.href='product.html?id=<% $id %>';">
+				<li class="clearfix">
+ <!-- SALE Symbol anzeigen wenn Rabaat -->
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+<span class="aktionsOfferSmall"></span>
+%	}
+
+					<div class="img"><a href="#" class="image"><img src="/produkte/p<% $id %>_mini.jpg" width="<% $C->{CONFIG}->{default_imgsize_mini} %>" ></a></div>
+<div class="product_desc"><h6><a href="product.html?id=<% $id %>"><% $title %></a></h6></div>
+<div class="product_desc1"><% $desc %>
+<%doc> 
+%		if ($condition) {
+%				<span class="smallText"> (<% $condition %>)</span>
+%		}
+</%doc>
+
+		<% $teaser %> 
+<%doc> 
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<br>
+		<span style='color:#199de8'>Preis Reduktion: CHF <% $prod_info->{price_incl_vat} %></span> anstatt
+			(<s><% $C->{CONFIG}->{default_curr} %> <% $prod_info->{price_orig_incl_vat} %></s>)
+%	}
+</%doc>
+</div>
+
+<div class="product_price"><h5>
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<span style='color:#199de8'><% $C->{CONFIG}->{default_curr} %> <% $prod_info->{price_incl_vat} %></span>
+%	}
+%	else {
+	<% $C->{CONFIG}->{default_curr} %> <% $price %>
+%	}
+</h5>
+</div>
+						<div class="pro_buttons"><a class="blu_btn" href="product.html?id=<% $id %>">Bestellen</a></div>
+			</li>
+            </ul><!--end product_show -->	
+% }            
+         
+            </div><!--end products_outer -->
+

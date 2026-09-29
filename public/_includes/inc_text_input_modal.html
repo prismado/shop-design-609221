@@ -1,0 +1,10 @@
+<%init>
+	my %args = $m->caller_args(0);
+</%init>
+<td style="border-bottom-style: none !important"><%$args{label}%></td>
+
+<td style="border-bottom-style: none !important">
+%  if ($args{name}) {
+	<input name="<%$args{name}%>" value="<%$args{value}%>" placeholder="<%$args{placeholder} || $args{label}%>">
+%  }
+</td>

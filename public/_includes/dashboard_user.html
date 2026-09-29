@@ -1,0 +1,284 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+
+	$m->redirect('customers.html') if $cgi->param('bCan');
+
+	my @app_msgs = ();
+
+	my $id           = $cgi->param('id');
+	my $bAddDetail   = $cgi->param('bAddDetail');
+	my $bAddDiscount = $cgi->param('bAddDiscount') + 0;
+	my $bUpd         = $cgi->param('bUpd');
+	my $deldet     = $cgi->param('deldet');
+	my $openperm   = $cgi->param('openperm');
+	my $opendet    = $cgi->param('opendet');
+	my $tab_special_cond = $cgi->param('tab_special_cond') + $bAddDiscount;
+
+	# -- my $UINF = $C->get_user_info($id);
+	my $UINF = $A->get_user_info($id);
+	my ($name, $is_admin, $is_devel, $tstamp, $pass, $rel_token, $newsletter) = @{$C->query(
+		"select uname, is_admin, is_devel, tstamp, pass, rel_token, newsletter FROM users WHERE id=$id")};
+
+	if ($bAddDetail) {
+		my $xkey = $cgi->param('user_detail_key');
+		my $xval = $cgi->param('user_detail_val');
+		$C->{dbh}->do("insert into users_details (user_id, xkey, xval, tstamp) values ($id, '$xkey', '$xval', NOW())");
+	}
+	elsif ($deldet) {
+		$C->{dbh}->do("delete from users_details where id=$deldet");
+	}
+	elsif ($args{bInvitation}) {
+		my $res = $A->send_register_invitation(id=>$id);
+		foreach (sort keys %{$res}) {
+			push(@app_msgs, "&bull; <b>$_</b> = $res->{$_}");
+		}
+	}
+	elsif ($bUpd) {
+		$is_devel = $cgi->param('is_devel') || 0;
+		$is_admin = $cgi->param('is_admin') || 0;
+		my $uname = $cgi->param('uname');
+		my $email = $cgi->param('email');
+		my $dob   = $cgi->param('dob');
+		my $lang  = $cgi->param('lang');
+		my $file  = $cgi->param('file');
+		my $status = $cgi->param('status') + 0;
+		$newsletter = $cgi->param('newsletter') || 0;
+		(my $remarks = $cgi->param('user_remarks')) =~ s/\</&lt;/g;
+		my $gender = $cgi->param('gender') || 0;
+		   $gender = 0 unless $gender =~ /^\d+$/;
+		$C->{dbh}->do("UPDATE users SET uname='$uname', dob='$dob', gender=$gender, is_admin=$is_admin, is_devel=$is_devel, status=$status, newsletter=$newsletter WHERE id=$id")
+			or $m->out("ERROR $DBI::errstr<br>");
+
+		$C->set_user_detail($id, 'lang', $lang);
+
+		my $rc_email = $C->set_email_by_id($id, $email);
+		# push(@app_msgs, "XX msg_set_email_by_id: \"$C->{msg_set_email_by_id}\"");
+		push(@app_msgs, "Updated ($email). rc=$rc_email <span style='font-size:10px; color:#bbb'>(3=Invalid E-Mail)</span>");
+		$C->set_user_detail($id, 'user_remarks', $remarks);
+		push(@app_msgs, 'DN60: User remark was added.') if length($remarks);
+
+		foreach my $updkey ($cgi->all_parameters()) {
+			next unless $updkey =~ /^udet\_(.+)/;
+			my $xkey = $1;
+			$A->set_user_detail($id, $xkey, $cgi->param($updkey));
+		}
+
+		for (qw(pic inv special1 special2 special3)) {
+			if ($cgi->param("_ud_cb_pay_$_")) {
+				$C->set_user_detail($id, "cb_pay_$_", 'on');
+			}
+			else {
+				$C->set_user_detail($id, "cb_pay_$_", '');
+			}
+		}
+
+		foreach ($cgi->all_parameters()) {
+			next unless /^disc_(\d+)_amount$/;
+			my $amount = $cgi->param("disc_$1_amount") + 0;
+			my $perc   = $cgi->param("disc_$1_perc") + 0;
+			$C->{dbh}->do("update users_details set xval='$perc', xkey='special_cond_$amount' where id=$1");
+		}
+
+		my %d = ();
+		$d{firstname} = $cgi->param('firstname');
+		$d{lastname}  = $cgi->param('lastname');
+		$d{gender}    = $gender;
+		$d{company}   = $cgi->param('company_1');
+		$d{street}    = $cgi->param('street_1');
+		$d{zip}       = $cgi->param('zip_1');
+		$d{city}      = $cgi->param('city_1');
+		$d{phone}     = $cgi->param('phone_1');
+
+		my $rc = $A->set_address_by_id($id, 1, \%d);
+		if ($rc) {
+			$m->out("ERROR<br>");
+		}
+		else {
+			$UINF = $A->get_user_info($id); # -- refresh
+			$name = $uname;
+		}
+
+		if ($file) {
+			use File::Copy;
+			my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+			my $short_filename = $C->transform_to_short_file_name($file);
+			my $copyto = "$ENV{DOCUMENT_ROOT}/produkte/docs/uid_$id\_$short_filename";
+			if ($copyto =~ /\.php$/i or $copyto =~ /\.html$/i) {
+				$C->log(msg=>"WARN: Security Violation: $copyto", importance=>1);
+			}
+			else {
+				my $rc = copy $upload_tempfilename, $copyto or $C->log(msg=>"ERR $!", importance=>1);
+				$C->log(msg=>"Document uploaded to UID $id ($file): $copyto");
+			}
+		}
+	}
+	elsif ($cgi->param('bUpdateAddr')) {
+		my $type = $cgi->param('type');
+		$m->out("Address updated<br>");
+		my %d = ();
+		foreach ($cgi->all_parameters()) {
+			$d{$_} = $C->trim($cgi->param($_));
+		}
+		delete $d{type};
+		$A->set_address_by_id($id, $type, \%d);
+	}
+	elsif ($bAddDiscount) {
+		$C->set_user_detail($id, 'special_cond_9999', '0.0');
+	}
+	elsif ($cgi->param('bDelDisc')) {
+		my $d_id = $cgi->param('bDelDisc') + 0;
+		$C->{dbh}->do("delete from users_details where id=$d_id");
+	}
+	elsif ($cgi->param('bAdd')) {
+		my $uname     = $cgi->param('uname');
+		my $firstname = $cgi->param('firstname');
+		my $lastname  = $cgi->param('lastname');
+		if ($uname && $firstname && $lastname) {
+			$C->{dbh}->do(qq~INSERT users (uname, pass)
+						VALUES ('$uname', 'test')~)
+				or $m->out("ERROR $DBI::errstr<br>");
+			my $uid = $C->query('SELECT MAX(id) FROM users')->[0];
+			$C->{dbh}->do(qq~INSERT INTO users_addr (user_id, firstname, lastname)
+						VALUES ($uid, '$firstname', '$lastname')~)
+				or $m->out("ERROR $DBI::errstr<br>");
+		}
+	}
+	elsif ($cgi->param('bSendPW')) {
+		my $data = qq~<b><u>Your Shop Login</u></b><br><br>
+
+				Hello $UINF->{firstname},<br><br>
+
+				Please keep this e-mail for future reference.<br><br>
+
+				System: $C->{CONFIG}->{site_title}<br><br>
+
+				<table cellspacing=0 cellpadding=0>
+				<tr><td>URL:</td><td style='padding-left:20px'><a
+					href="http://$C->{CONFIG}->{HTTP_HOST}">http://$C->{CONFIG}->{HTTP_HOST}</a></td></tr>
+
+				<tr><td>Login / Username:</td><td style='padding-left:20px; height:25px'>$name</td></tr>
+
+				<tr><td>Password:</td><td style='padding-left:20px'>$pass</td></tr></table><br><br>
+
+				You may change your password at any time after login via menu "My Account".<hr noshade size=1>~;
+		$C->mail_x(  to => $UINF->{email},
+			from_realname => $C->{CONFIG}->{HTTP_HOST},
+			sender        => $C->{CONFIG}->{order_email} || 'hostmaster@screenpoint.net',
+			to_realname   => "$UINF->{firstname} $UINF->{lastname}",
+			subject       => "Your Shop Login",
+			title         => 'dashboard_user',
+			data          => \$data
+		);
+		$C->set_workval("sent_pw_$id", $C->now(2));
+	}
+	elsif ($cgi->param('delid')) {
+		my $id = $cgi->param('delid') + 0;
+		$C->{dbh}->do("delete FROM users WHERE id=$id");
+		$C->{dbh}->do("delete FROM users_addr    WHERE user_id=$id");
+		$C->{dbh}->do("delete FROM users_details WHERE user_id=$id");
+		$C->redir('/customers.html');
+	}
+
+	my $LABEL_ADMIN = '<span class="label label-info">Admin</span>';
+	my $LABEL_USER  = '<span class="label label-success">User</span>';
+	my $LABEL_DEVEL = '<span class="label label-important">Devel</span>';
+
+	my %status_hr   = ( 1=>'New User', 2=>'Released', 3=>'Blocked', 4=>'Anon Reg', 5=>'Bounce' );
+	my %pay_meth_hr = ( pic => 'Self-pickup', inv => 'Invoice' );
+	my %ostatus_hr = (
+		1 => '<span class="label pull-right">New</span>',
+		2 => 'Pending CC',
+		3 => '<span class="label pull-right">Can</span>',
+		4 => '<span class="label label-success pull-right">Okay</span>'
+	);
+
+	my $order_count = $C->query("SELECT count(*) FROM orders WHERE uid=$id")->[0];
+	my $user_docs = $C->get_user_docs($id);
+	my $user_docs_count = $#{$user_docs} + 1;
+
+	my %gender_array = ( 1 => 'Male', 2 => 'Female', 3 => 'Company' );
+
+	my $user_perm = $C->get_user_perm($id);
+</%init>
+<script language=JavaScript>
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_user.html?id=' + id);
+	}
+	function edit_addr(id, type) {
+		$('#ajx_3').load('_includes/ajx_modal_edit_addr.html?id=' + id + '&type=' + type);
+	}
+</script>
+
+% if ($args{debug}) {
+%	foreach (sort $cgi->all_parameters) {
+%		next unless length($cgi->param($_));
+		<% $C->html_debug("<b>$_</b> = " . $cgi->param($_)) %>
+%	}
+%	if ($args{debug} > 1) {
+		<tt>$A-&gt;get_user_info(<%$id%>)</tt> &rarr; UINF->{gender}: <b>"<% $UINF->{gender} %>"</b> /
+			UINF->{company}: <b>"<% $UINF->{company} %>"</b>
+%	}
+% }
+
+<%doc>
+<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<strong>Holy guacamole!</strong> This is an alert for your awesome web application.
+</div>
+</%doc>
+
+<table cellspacing=0 cellpadding=0>
+<tr><td>
+<span class="cards">
+<h2><span style='font-size:30px; margin-right:5px' class="icon-user pull-left text-info"></span><%$UINF->{firstname}%> <%$UINF->{lastname}%></h2>
+</span>
+</td>
+<td style='padding-left:33px'><p style='margin-top:11px'><a href="customers.html">Up</a></p></td>
+</tr>
+</table>
+
+<div id='ajx_1'></div>
+
+<& inc_dashboard_user_form.html, id=>$id, UINF=>$UINF, A=>$A, C=>$C, debug=>$args{debug} &>
+
+% if ($bUpd or $args{bInvitation}) {
+	<% $C->bootstrap_alert((join '<br>', @app_msgs), 'success') %><br>
+% }
+
+% if ($args{debug} or $openperm or $opendet) {
+	<& inc_dashboard_user_details.html, id=>$id, openperm=>$openperm, opendet=>$opendet, A=>$A, C=>$C, debug=>$args{debug} &>
+% }
+
+<div id='ajx_2'></div>
+<div id='ajx_3'></div>
+
+% if ($order_count) {
+	<p><% $order_count %> Order(s)</p>
+%	my $st = $C->{dbh}->prepare("select id, instime, amount_incl_vat, status from orders where uid=$id order by id desc limit 25");
+%	   $st->execute();
+	<table class="mytable table-striped table-hover" style="width:50%">
+%	while(my $rr = $st->fetch()) {
+%		my ($order_id, $instime, $amount_incl_vat, $status) = @{$rr};
+%		my $style= $status == 3 ? 'text-decoration:line-through' : '';
+		<tr>
+		<td><% $C->trans_date_short($instime) %></td>
+		<td><a style="<% $style %>" href="admix.html?func=orders&id=<%$ order_id %>">Order-ID <% $order_id %></a></td>
+		<td style="text-align:right; <% $style %>"><% $C->decimal_mark($amount_incl_vat) %> <% $C->{CONFIG}->{default_curr} %></td>
+		<td style="text-align:right"><% $ostatus_hr{$status} %></td>
+		</tr>
+%	}
+	</table>
+% }
+% else {
+	<div class="alert fade in">
+		<button type="button" class="close" data-dismiss="alert">×</button>
+		<b>Note</b>&nbsp;&nbsp;No orders yet
+	</div>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

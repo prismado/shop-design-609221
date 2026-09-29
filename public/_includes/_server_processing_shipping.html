@@ -1,0 +1,89 @@
+<%init>
+        use ScreenPoint::Core;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $importance = $cgi->param('importance') || 3;
+	my $sid        = $cgi->param('sid') || 0;
+
+	my @dbcols = qw(sale_type_id pay_meth amount_net threshold_from id);
+
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+	if ($dbcols[$sortcol] eq 'sale_type_id') {
+		$order = 'threshold_from, pay_meth';
+		$direction = 'asc';
+	}
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my @where_clause = ();
+	my $wildcard_search = '%' . "$sSearch%";
+	push(@where_clause, 'threshold_from>0');
+	push(@where_clause, "amount_net LIKE '$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $wclause = $wcl ? "WHERE $wcl" : '';
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	shipping
+			$wclause
+			ORDER 	BY $order 
+			$area~;
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM shipping $wclause")->[0];
+
+	while(my $r = $sth->fetch()) {
+		my ($sale_type, $pay_meth, $amount_net, $threshold, $id) = @{$r};
+		$amount_net = sprintf('%.2f', $amount_net);
+		my $amount_incl_vat = sprintf('%.2f', $amount_net * 1.077);
+		my @arr = ();
+		$r->[0] = "<span class='label'>$sale_type</span>";
+		$r->[1] = 'COD'         if $pay_meth == 3;
+		$r->[1] = 'Economy'     if $pay_meth == 4;
+		$r->[1] = '<span style="color:yellow; background-color:red; font-weight:bold; padding:4px">Post Prio</span>'   if $pay_meth == 8;
+		$r->[2] = "<div style='text-align:right; margin-right:40px; font-weight:bold'><a href='adm_shipping2_detail.html?id=$id'>$amount_net</a></div>";
+		$r->[3] = "<div style='text-align:right; margin-right:40px; font-weight:bold'><a href='adm_shipping2_detail.html?id=$id'>$amount_incl_vat</a></div>";
+		$r->[4] = "<div style='text-align:right; margin-right:10px; font-weight:bold'>$threshold</div>";
+		foreach (@{$r}) {
+			push(@arr, $_);
+		}
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	__METACLONING__
+</%doc>

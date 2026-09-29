@@ -1,0 +1,235 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $errstr = '';
+	my @appmsgs = ();
+	my $now10 = $C->now(10);
+	my $perm  = $C->get_user_perm();
+
+	$C->redir('/_error.html') unless $perm->{is_admin};
+
+	my $is_devel = $perm->{is_devel};
+	my $debug    = $C->getSessData('debug') || 0;
+	my $odat     = $A->get_order($id);
+	my $o_dat    = $A->get_order_prepare(order_id=>$id);
+	my $o_stat   = $A->get_order_status(id=>$id);
+
+	push(@appmsgs, qq~<b>***** This order has already been paid. *****</b><br>
+			Payment via $o_stat->{pay_meth_hr}<br />~) if $o_stat->{paid};
+
+	my $font_size_odata = '1.05rem';
+
+	# push(@appmsgs, q~<b>NOTE</b>&nbsp;&nbsp;Please verify the data and click the <b>"Generate PDF"</b> button in the top right corner.~);
+
+	my %salut_map = (
+		1 => 'Herr<br>',
+		2 => 'Frau<br>'
+	);
+</%init>
+<style type="text/css">
+	.modal-body { max-height:70vh; }
+</style>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id   value="<% $id %>">
+<input type=hidden name=func value="orders">
+<input type=hidden name=otime value="<% $odat->{instime} %>">
+<input type=hidden name=pdf_save_as value="upload/qr_bill_<% $id %>_<% $now10 %>.pdf">
+<input type=hidden name=paid value="<% $o_stat->{paid} %>">
+%
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+	style="width:92%; position: absolute; left: 240px; top:-10px">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Order-ID <%$id%></h3>
+  </div>
+
+  <div class="modal-body">
+	<div class="pull-right">
+		<input type="submit" class="btn btn-warning" name="bGenPDF2" value="temp">
+		<input type="submit" class="btn btn-primary" name="bGenPDF" value="Generate PDF">
+	</div><br clear="all" />
+
+	<div class="pull-right" style="font-size:1.0rem"><br />
+		Standard IBAN: <b><% $C->prp('site_iban') %></b>
+	</div>
+	<div style="margin-top:-30px; font-size:1.5rem; font-weight:bold"><i class="icon icon-qrcode"></i> QR Invoice
+		<sup style="font-size:0.69rem">&ndash; [ <% $odat->{lang} || 'de' %> ]</sup>
+	</div>
+
+	<div style="font-size:1.1rem; line-height:130%; margin-top:20px">
+	<% $salut_map{ $odat->{gender} } %> 
+	<b><% $odat->{firstname} %> <% $odat->{lastname} %></b><br />
+	<% $odat->{street} %><br />
+	<% $odat->{country} %>-<% $odat->{zip} %> <% $odat->{city} %>
+	</div><br />
+
+	Customer-ID <b><% $odat->{uid} %></b> &mdash; Customer E-Mail <b><% $odat->{email} %></b> &mdash;
+		Pay Meth <b><% $odat->{pay_meth} %> <% ucfirst $odat->{checkout_zahlungsart_select} %></b>
+		&mdash; Status <b><% $odat->{status} %></b> &mdash; Purchase at: <b><% $odat->{instime_swiss} %></b><br><br>
+
+	<table class="mytable table-hover table-striped" style="line-height:220%; margin-bottom:20px">
+	<tr>
+		<th style="text-align:center">Count</th>
+		<th>Items</th>
+		<th>Price</th>
+		<th>Article Info</th>
+		<th style="text-align:right">Amount CHF</th>
+	</tr>
+%	my $subtot = 0.0;
+%	while(my $row = $A->get_order_positions()) {
+		<tr>
+		<td style="font-size:<% $font_size_odata %>; text-align:center"><% $row->{count} %> &times;</td>
+		<td><a href="admix.html?func=edit_item&id=<% $row->{prod_id} %>"><b
+			style="font-size:<% $font_size_odata %>"><% $row->{title} %></b></a>
+%		    if ($row->{prod_discount_perc} > 0) {
+			<br /><small>CHF <% sprintf('%.2f', $row->{price}) %> netto<br>
+			./. <% $row->{prod_discount_perc} %> %
+			</small>
+%		    }
+%			if ($row->{option_id_0}) {
+				<br />
+				+ <% $row->{option_name_0} %> &rarr; CHF <% sprintf('%.2f', $row->{option_price_0}) %>
+%			}
+%			if ($row->{campaign_id}) {
+				<br />
+				Campaign-ID <% $row->{campaign_id} %>
+%			}
+		</td>
+		<td><% sprintf('%.2f', $row->{price_enduser_unrounded}) %> CHF <small>+ <% $row->{vat_perc} %> % VAT</small></td>
+		<td><% $row->{art_no} %><br />
+		<small>
+%		foreach (sort keys %$row) {
+%			next unless length( $row->{$_} );
+%			next if $_ eq 'count' or $_ =~ /^price/ or $_ eq 'position' or $_ eq 'title' or $_ eq 'prod_id' or $_ eq 'version' or $_ eq 'id' or $_ eq 'prod_type' or $_ eq 'total_line_incl_tax' or $_ eq 'prod_discount_perc' or $_ eq 'vat_perc' or $_ =~ /^option_.+_0$/ or $_ eq 'total_line' or $_ eq 'total_line_incl_surcharge_tax' or $_ eq 'campaign_id' or $_ eq 'total_line_incl_surcharge' or $_ eq 'art_no';
+%			next unless $row->{$_};
+%		}
+		</small></td>
+		<td style="text-align:right; font-size:1.0rem">
+%			my $unit_price = $row->{price} * (1 - $row->{prod_discount_perc} / 100) + $row->{option_price_0};
+%			my $line_tot   = $row->{count} * $unit_price;
+%			$subtot += $line_tot;
+			<% sprintf('%.2f', $line_tot) %>
+		</td>
+		</tr>
+%	}
+
+	<tr>
+		<td colspan="4">Shipping (<% $odat->{ship_meth_amount} %> incl. <% $odat->{vat_rate} %> % VAT)</td>
+		<td style="text-align:right; font-size:1.0rem"><% sprintf('%.2f', $odat->{ship_meth_amount} / (1 + $odat->{vat_rate} / 100)) %></td>
+	</tr>
+
+	<tr>
+		<td colspan="4">VAT</td>
+		<td style="text-align:right">
+	<% sprintf('%.2f', $odat->{amount_incl_vat} - sprintf('%.2f', $odat->{ship_meth_amount} / (1 + $odat->{vat_rate} / 100)) - $subtot) %>
+		</td>
+	</tr>
+
+	<tr style="font-size:1.2rem">
+		<td colspan="4"><b>Total CHF</b></td>
+		<td style="text-align:right"><b><% $odat->{amount_incl_vat} %></b></td>
+	</tr>
+
+	</table>
+
+	<div class="pull-right">
+%		if ($o_stat->{paid}) {
+			<input type="checkbox" style="margin-top:-3px"
+				name="generate_as_bill" value="1"> Generate as invoice instead of payment receipt
+			<% $is_devel ? '&mdash;' : '' %>
+%		}
+%		if ($is_devel) {
+			<input type="checkbox" style="margin-top:-3px" name="recalc_vat" value="1"> Recalculate VAT &mdash;
+			<input type="checkbox" style="margin-top:-3px" name="debug" value="3"> Debug Level 3
+			&mdash; <a href="_debug.html">&#128030; Debug <% $debug ? 'Off' : 'On' %></a>
+%		}
+	</div>
+	<input type=text name="pdf_iban" style="width:30%; height:30px"
+		placeholder="IBAN &middot; Bitte leer lassen f&uuml;r Standard-IBAN-Konto"><br />
+
+%	if ($errstr) {
+		<% $C->bootstrap_alert("ERR $errstr", 'danger') %>
+%	}
+
+%    if (@appmsgs) {
+	<% $C->bootstrap_alert( (join "<br>\n", @appmsgs), 'success' ) %>
+%    }
+
+	<& inc_order_status.html, id=>$id, o_stat=>$o_stat, limit=>5, C=>$C, A=>$A &>
+
+% # XX ------------ 13Dec2024
+<%perl>
+	my $ord_items = $A->get_order_items(order_id=>$id, show_options=>1, debug=>2);
+
+	my @b_arr_2 = ();
+	foreach my $row (@{ $ord_items->{item_rows} }) {
+		my %d = ( date=>'1970-01-01', text=>$row->{title}, quant=>$row->{count}, price=>$row->{unit_price_inc_vat},
+			info=>$row->{info}, prod_id=>$row->{prod_id} );
+		push(@b_arr_2, \%d);
+	}
+</%perl>
+
+% if ($is_devel) {
+	<br>
+	<code>$A-&gt;get_order_items(order_id=&gt;<% $id %>, show_options=&gt;1)</code> &ndash; <small>V<% $ord_items->{VERSION} %></small><br><br>
+
+	<table class="mytable">
+% foreach my $d (@b_arr_2) {
+	<tr>
+	<td nowrap><% $d->{quant} ? "$d->{quant} &times;" : '' %></td>
+	<td><% $C->shorten_title($d->{text}, 35) %></td>
+	<td>
+%	foreach (sort keys %{ $d }) {
+%		next if /^date$/ or /^quant$/ or /^price$/ or /^text$/ or /^prod_id$/;
+%		next unless length( $d->{$_} );
+		<b><% $_ %></b> = <% $d->{$_} %><br>
+%	}
+	</td>
+	<td><b><% $d->{price} %></b></td>
+	<td>
+%		if ($d->{prod_id}) {
+			<a href="/adm_db_edit.html?table=orders_products&wcl=order_id%3D<% $id %>+and+prod_id=<% $d->{prod_id} %>">E</a>
+%		}
+	</td>
+	</tr>
+% }
+	</table>
+
+%     foreach (sort keys %{ $ord_items }) {
+%	next unless /^x_feat_prod_id_\d+/;
+	X -- <b><% $_ %></b> = <% $ord_items->{$_} %><br>
+%     }
+% }
+
+% if ($debug) {
+%	foreach (sort keys %$o_stat) {
+%		next if $_ eq 'id' or $_ eq 'VERSION' or $_ eq 'status_recs';
+		[ get_order_status ] &rarr; <b><% $_ %></b> = <code>"<% $o_stat->{$_} %>"</code><br>
+%	}
+% }
+
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

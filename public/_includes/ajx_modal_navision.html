@@ -1,0 +1,103 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use utf8;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $data = $A->auctionl_parse_navision_xml("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/data/import/datacopy/RA-$id\-utf.xml");
+
+	my ($categ_arr, $cat_label) = $A->get_categ_nav_v2();
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	c.id, instime, token, company_id, name, c.discount 
+		from 	campaign_data c, companies p
+		where	company_id=p.id
+		order 	by c.id desc 
+		limit 	999
+	~);
+	$sth->execute();
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post action="_run_tool.html">
+<input type=hidden name=action value="import">
+<input type=hidden name="navision_id" value="<%$id%>">
+
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog"
+	style="width:780px !important; margin-left:-380px !important"
+	aria-labelledby="myModalLabel" aria-hidden="true">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+  </div>
+  <div class="modal-body" style="padding-top:10px">
+	<div style="background-color:#295d75; color:white; margin-top:2px; padding-top:15px; padding-bottom:15px; top:0; position:sticky; width:103%">
+		<div class="pull-right">
+			<% $#{$data} + 1%> Position(en)&nbsp;&nbsp;
+		</div>
+		<h2 style="color:white; font-weight:bold; margin-top:-10px !important; margin-bottom:-10px !important">
+			&nbsp;&nbsp;Auftrag RA <%$id%></h2>
+	</div><br /><br />
+
+	<select name="cat_id">
+	<option value="0">&middot; Kategorie</option>
+%	foreach (@{$categ_arr}) {
+%		my ($sup_id, $sub_id) = split /\t/, $_;
+%		if ($sub_id) {
+			<option value="<%$sub_id %>">&rarr; <% $C->web_enc($cat_label->{$sub_id}) %></option>
+%		}
+%		else {
+			<option value="<%$sup_id%>"><% $cat_label->{$sup_id} %></option>
+%		}
+%	}
+	</select>
+
+	<select name="prozone_id" style="margin-left:25px">
+	<option>&middot; Mitarbeiter-Aktion</option>
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $instime, $token, $company_id, $name, $discount) = @{$r};
+		<option value="<%$id%>"><%$token%> &ndash; <%$name%></option>
+%	}
+	</select><br /><br />
+
+%	foreach (@{$data}) {
+%		my $hash = $_;
+		<div class="pull-right" style="margin-top:5px">
+			CHF <% sprintf('%.2f', $hash->{preis}) %> &middot;
+				<span style="padding-top:3px; padding-bottom:2px" class="label label-success"><%$hash->{zustand}%></span>
+		</div>
+		<h5>&nbsp;<% $hash->{anzahl} %> &times;
+			<% $hash->{bezeichnung} %> <% $hash->{prozessor} %> &middot; (<% $hash->{kategorie} %>)</h5>
+		<table class="mytable table-striped">
+%		foreach (sort keys %{$hash}) {
+%			next if $_ eq 'bezeichnung' or $_ eq 'anzahl' or $_ eq 'konfigtext' or $_ eq 'nettogewicht' or $_ eq 'preis'
+%				or $_ eq 'waehrung' or $_ eq 'garantie' or $_ eq 'kategorie' or $_ eq 'floppydisk'
+%				or $_ eq 'netzwerkkarte' or $_ eq 'wireless' or $_ eq 'optischeslaufwerk' or $_ eq 'grafikkarte'
+%				or $_ eq 'schnittstellen' or $_ eq 'gehaeusetyp' or $_ eq 'festplatte'
+%				or $_ eq 'prozessortakt' or $_ eq 'prozessor' or $_ eq 'zustand' or $_ eq 'tastatur';
+			<tr>
+			<td style="width:24%"><b><%ucfirst $_%></b></td>
+			<td><% substr($hash->{$_}, 0, 62) %></td>
+			</tr>
+%		}
+		</table>
+		<br /><br />
+%	}
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Abbrechen</button>
+	<input class="btn btn-success" namx=bXX type=submit value="Importieren!">
+  </div>
+</div>
+
+</form>

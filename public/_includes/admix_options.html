@@ -1,0 +1,136 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $lang = $args{lang};
+
+	if ($C->{CGI}->param('bAdd')) {
+		my $opt_id = $A->add_option($C->{CGI}->param('new_id'));
+		$m->redirect("admix.html?func=options&id=$opt_id");
+	}
+
+	my $style = $C->{CGI}->param('style') + 0;
+	my $debug = $C->{CGI}->param('debug');
+	my $wcl = $style ? "AND style=$style" : '';
+
+	my $stmt = qq~
+		SELECT	id, style, mandatory, label, description, ref, amount
+		FROM 	voptions 
+		WHERE 	lang='$lang' $wcl
+		ORDER 	BY id, weight~;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+
+	$sth->execute() or $m->out("ERROR $DBI::errstr<br>");
+
+	my $active_lang = 'color:black; font-weight:bold; cursor:text';
+
+	my $foo = $C->query(qq~SELECT id, option_id, details_id, count(*) 
+		FROM options_feat where lang='$lang' group by details_id having count(*) > 1~)->[0];
+	my $problem_count = $C->{query_rows}; # -- Must return 0
+
+	# -- select * from options_feat where lang='de' and details_id not in (select id from options_details);
+	# -- Must return 0 rows, otherwise delete them
+</%init>
+<script type="text/javascript">document.title='Options (Admin)';</script>
+
+% if ($problem_count) {
+	<% $C->bootstrap_alert("<b>WARN</b> $problem_count problem(s) found ($lang)", 'danger', 'margin-top:10px; margin-bottom:10px') %>
+%	my $st = $C->{dbh}->prepare(qq~SELECT id, option_id, details_id, count(*) FROM options_feat where lang='$lang' group by details_id having count(*) > 1~);
+%	$st->execute();
+%	while(my $rr = $st->fetch()) {
+%		my ($id, $option_id, $details_id, $count) = @{$rr};
+		&bull; <a href="admix.html?func=options&id=<%$option_id%>&debug=1">Option-ID <% $option_id %></a> -
+			Detail-ID <%$details_id%> (<%$count%> &times;)<br>
+%	}
+% }
+
+% if ($C->is_devel() or $debug) {
+	<&page_info.html, 'Start'&>
+	<%$stmt%><br>
+% }
+
+<div style="margin-top:10px" class="pull-right">
+	<a style="<% $lang eq 'de' ? $active_lang : '' %>" href="_change_lang.html?lang=de">de</a> &middot; 
+	<a style="<% $lang eq 'en' ? $active_lang : '' %>" href="_change_lang.html?lang=en">en</a> &middot;
+	<a style="<% $lang eq 'fr' ? $active_lang : '' %>" href="_change_lang.html?lang=fr">fr</a>
+</div>
+
+<h2>Product / Item Options (Features)</h2>
+
+<% $C->bootstrap_alert(q~<b>INFO</b> &middot; <a href="/adx/options.html">Funktionsupdate</a>~, 'danger') %><br>
+
+% my $act_style = 'font-weight:bold; color:black';
+Show:	<a style="<% $style == 1 ? $act_style : '' %>" href="admix.html?func=options&style=1">Style 1</a> &middot;
+	<a style="<% $style == 2 ? $act_style : '' %>" href="admix.html?func=options&style=2">Style 2</a> &middot;
+	<a style="<% $style == 3 ? $act_style : '' %>" href="admix.html?func=options&style=3">Style 3</a> &middot;
+	<a style="<% $style == 4 ? $act_style : '' %>" href="admix.html?func=options&style=4">Style 4</a> &middot;
+	<a style="<% $style == 6 ? $act_style : '' %>" href="admix.html?func=options&style=6">Style 6</a> &middot;
+	<a href="admix.html?func=options">All</a><br><br>
+
+<form method=post>
+<input type=hidden name=func value='options'>
+<div style='margin-top:-40px; margin-bottom:10px'
+	class="pull-right"><input type=submit value='Add Option' name=bAdd class='btn btn-primary'></div>
+
+<table class='table table-hover'>
+
+% my $id_before = my $line_count = 0;
+% while(my $r = $sth->fetch()) {
+%	my ($id, $style, $mandatory, $label, $desc, $ref, $amount) = @{$r};
+%	my $inc_art_no = $C->query("select inc_art_no FROM options WHERE id=$id")->[0];
+%	$ref = '&larr; Identified by' if $ref =~ /^_IDENT_\d+$/;
+%	$label =~ s/</&lt;/;
+%	$label =~ s/>/&gt;/;
+%	if ($id != $id_before) {
+%		if ($line_count++) {
+			</table>
+			<table class='table table-hover'>
+%		}
+		<thead>
+		<tr><th colspan=2><a href='admix.html?func=options&id=<%$id%>'><span
+			style='font-weight:bold; font-size:16px'>Edit</span></a>&nbsp;&nbsp;ID <%$id%>&nbsp;&nbsp;
+				<b style='font-size:120%'><%$label%>&nbsp;&nbsp;&nbsp;</b>
+%				if ($inc_art_no) {
+					&rarr; Art. No
+%				}
+			</th>
+			<th style="text-align:center; width:77px">
+				<% $style !=3 && $style != 6 ? 'Stock' : '&nbsp;' %>
+			</th>
+			<th>
+				<span class='pull-right' style='margin-left:40px'>Mandatory:
+					<%$mandatory ? '<b>Yes</b>' : '<b style="color:red">No</b>'%></span>
+				<span class='pull-right'>Type <b><%$style%></b></span>
+			</th>
+		</tr>
+		</thead>
+%	}
+	<tr>
+	<td width='35%'>&bull;&nbsp;&nbsp;<% $desc %></td>
+	<td width="30%"><%$ref%></td>
+	<td style="text-align:center">
+%		if ($style != 3 && $style != 6) {
+%			my $count = $C->query("SELECT stock FROM voptions where id=$id and ref='$ref' and lang='$lang'")->[0];
+			<% $count %>
+%		}
+	</td>
+	<td style='text-align:right'><% sprintf('%.2f', $amount) %>&nbsp;&nbsp;<% $C->{CONFIG}->{'default_curr'} %></td>
+	</tr>
+%	$id_before = $id;
+% }
+
+</table>
+
+Optional ID <input type=text name=new_id value=0 style='text-align:center; width:55px; margin-top:5px; margin-left:11px'><br><br>
+<div class="pull-right">
+	<a href="/adx/options.html">Funktionsupdate</a>
+</div>
+
+<input type=submit value='Add Option' name=bAdd class='btn btn-primary'>
+</form>
+<%doc>
+	Algo-23
+	__METACLONING__
+</%doc>

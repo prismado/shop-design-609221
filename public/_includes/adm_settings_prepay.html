@@ -1,0 +1,57 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my %d = ();
+	my $bUpdate = $cgi->param('bUpdate');
+
+	foreach (qw(username password message)) {
+		$d{$_} = $C->{CONFIG}->{"sms_$_"};
+	}
+
+	if ($bUpdate) {
+		foreach (qw(username password message)) {
+			(my $val = $cgi->param($_) || '') =~ s/'/''/g;
+			# XXX $dbh->do("UPDATE config SET val='$val' WHERE `key`='sms_$_'") or $m->out("ERROR $DBI::errstr<br>");
+			$d{$_} = $val;
+			$C->log(msg=>"SMS $_: $val", importance=>1);
+		}
+	}
+</%init>
+<div style='margin-top:10px' class="pull-right">
+	<a target="_blank" href="https://www.sms-club.ch/">Register</a>
+</div>
+
+<div class="pull-left"><span style='font-size:26px; color:#41414C; margin-top:20px; margin-right:5px; float:left'
+	class="icon-money"></div>
+<h2 class="pull-left">Prepay &middot; Special Settings</h2>
+<br clear='all' />
+
+<ul>
+<li><a href="adm_properties.html?filter=prepay">Prepay Properties</a></li>
+<li><a href="_includes/merchant_bank_account.html">Bank Account</a></li>
+</ul>
+
+<form method=post>
+
+<table class='table table-striped table-hover'>
+
+</table>
+
+<input type=submit class='btn btn-primary' value="Update" name=bUpdate>
+
+<div style='display:none' id="sms_test_recip">
+	<br>
+	<div class="controls"> </div>
+
+</div>
+</form>
+% if ($bUpdate) {
+	<b>Updated</b>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

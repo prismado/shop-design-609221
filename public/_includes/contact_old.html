@@ -1,0 +1,66 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $addr = $A->get_address(1); # -- Owner Data
+</%init>
+            <form name="contact_form" id="contact_form" action="#" method="post">
+          
+            <table width="705" border="0" cellpadding="0" cellspacing="2">
+              <tr>
+                <th class="reg_form_title" colspan="2"><% $C->p('form_title') %></th>
+              </tr>
+              <tr>
+                <td width="156">&nbsp;</td>
+                <td width="543">&nbsp;</td>
+              </tr>
+              <tr>
+                <td>
+                  <% $C->p('form_emailadress') %>
+                </td>
+                <td><input name="contact_email" type="text" class="formfield" id="contact_email"
+			value="<% $C->get_email($C->getUID()) %>" size="37" >
+                  <span >*</span></td>
+              </tr>
+              <tr>
+                <td><label><% $C->p('form_gender') %></label></td>
+                <td><select name="contact_gender" class="formfield">
+                  <option value="<% $C->p('form_male') %>"  SELECTED><% $C->p('form_male') %></option>
+                  <option value="<% $C->p('form_female') %>" ><% $C->p('form_female') %></option>
+                  </select></td>
+              </tr>
+              <tr>
+                <td><label><% $C->p('form_surname') %></label></td>
+                <td><input name="contact_surname" type="text" class="formfield" value="<% $addr->{firstname} %>" size="37" maxlength="255">
+                  <span >*</span></td>
+              </tr>
+              <tr>
+                <td><label><% $C->p('form_name') %></label></td>
+                <td><input name="contact_name" type="text" class="formfield" value="<% $addr->{lastname} %>" size="37" maxlength="255">
+                  <span >*</span></td>
+              </tr>
+              <tr>
+                <td><label><% $C->p('form_tel') %></label></td>
+                <td><input name="contact_tel" type="text" class="formfield" value="" size="37" maxlength="128"></td>
+              </tr>
+              <tr>
+                <td><label><% $C->p('form_mobile') %></label></td>
+                <td><input name="contact_mobile" type="text" class="formfield" value="" size="37" maxlength="128"></td>
+              </tr>
+              <tr><th colspan="2">&nbsp;</th></tr>
+              <tr>
+                <td><label><% $C->p('form_subject') %></label></td>
+                <td><input name="contact_subject" type="text" class="formfield" value="" size="37" maxlength="128"></td>
+              </tr>
+               <tr > <td align="left" valign="top"><% $C->p('form_message') %></td>
+                <td align="left"><textarea  name="contact_message" cols="30" rows="6"></textarea></td>
+              </tr>
+              <tr><th colspan="2">&nbsp;</th></tr>
+               <tr >
+               <td align="left" valign="top"></td>
+                <th colspan="2" align="left"><input id="contact_submit" class="submit_orange"
+			type="submit" name="bSubmit" value="<% $C->p('btn_senden') %>"></th>
+              </tr>
+            
+            </table>
+              </form>

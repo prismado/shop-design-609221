@@ -1,0 +1,71 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	# XXX my $enduser_price = $C->query("select getProdFeat($id, 'enduser_price')")->[0];
+	# XXX    $enduser_price = sprintf('%.2f', $enduser_price);
+	my $gtin = $C->query("select getProdFeat($id, 'GTIN')")->[0];
+
+	my $raw_weight   = $C->query("select getProdFeat($id, 'raw_weight')")->[0];
+	my $product_type = $C->query("select getProdFeat($id, 'product_type')")->[0];
+	my $title        = $C->query("select title FROM products_desc WHERE product_id=$id AND lang='de' ORDER BY id DESC LIMIT 1")->[0];
+	my $campaign_id  = $C->query("select campaign_id from products where id=$id")->[0];
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	c.id, instime, token, company_id, name, c.discount 
+		from 	campaign_data c, companies p
+		where	company_id=p.id
+		order 	by c.id desc 
+		limit 	9999
+	~);
+	   $sth->execute();
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+<form method=post action="_product_tool.html">
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=action value="update_extra">
+<input type=hidden name=func value="edit_item">
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Update Extra Data: &laquo;<% $title %>&raquo;</h3>
+  </div>
+  <div class="modal-body">
+	<center>
+		Campaign-ID [<%$campaign_id%>]:
+		<select style="margin-top:10px" name="campaign_id">
+		<option value="0">&middot; Bitte ausw&auml;hlen</option>
+%		while(my $r = $sth->fetch()) {
+%			my ($id, $instime, $token, $company_id, $name, $discount) = @{$r};
+			<option <% $id == $campaign_id ? 'selected' : '' %>
+				value="<%$id%>"><%$token%> &ndash; <%$name%></option>
+%		}
+		</select><br><br>
+
+		GTIN / EAN-Nr.:
+		<input style="margin-top:8px; width:120px; text-align:right; margin-left:10px; padding-right:10px; font-weight:bold"
+			type="text" name="gtin" value="<% $gtin %>"><br><br>
+
+		Raw Weight [kg]:
+		<input style="margin-top:8px; width:50px; text-align:right; margin-left:10px; padding-right:10px; font-weight:bold"
+			type="text" name="raw_weight" value="<% $raw_weight %>"><br><br>
+
+		Product Type:
+		<select style="margin-top:10px" name="product_type">
+		<option value="general">General Product</option>
+		<option value="foo" <% $product_type eq 'foo' ? ' selected' : '' %>>Foo</option>
+		<option value="bar" <% $product_type eq 'bar' ? ' selected' : '' %>>Bar</option>
+		</select>
+	</center>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" name=bXX type=submit value="Update">
+  </div>
+</div>
+</form>

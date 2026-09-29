@@ -1,0 +1,121 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{CORE};
+	my $A    = $args{A};
+	my $lang = $args{lang};
+
+	if ($C->{CGI}->param('bSave')) {
+		$A->update_promo_prods();
+		$m->out('Aktualisiert<br>');
+	}
+	elsif ($C->{CGI}->param('bAdd')) {
+		$A->add_promo_row();
+	}
+	elsif ($C->{CGI}->param('subfunc') eq 'delPromo') {
+		$A->del_promo_row();
+	}
+
+	my $sth = $C->{dbh}->prepare("SELECT id, product_id, weight, is_active FROM promo_prods ORDER BY weight");
+	   $sth->execute();
+</%init>
+<script type="text/javascript" src="lib/DataTables-1.9.4/media/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="lib/DataTables-1.9.4/media/js/jquery.dataTables.bootstrap.js"></script>
+
+<script type="text/javascript">document.title='Admin: Promo Artikel';</script>
+
+<span class="pull-right" style='margin-top:10px'>
+<a href="adm_teaser.html">Teaser</a>
+</span>
+
+<h2><%$sth->rows()%> Promotions</h2>
+
+<form method=post>
+<input type=hidden name=func value='promo'>
+
+<table id="myTable" class='table table-hover data-table sort display'>
+
+<thead>
+<tr>
+<th>Item-ID</th>
+<th width="12%" style="text-align:center">Image</th>
+<th>Product<span class="sort-icon"><span></th>
+<th>Art No<span class="sort-icon"><span></th>
+<th style="width:90px" align=right>Price<span class="sort-icon"><span></th>
+<th style='text-align:center'>Order</th>
+<th align=center>Active</th>
+<th style='text-align:center' align=center>Count</th>
+<th>del</th>
+</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $product_id, $weight, $is_active) = @{$r};
+%	my $d;
+%	$d = $A->get_product($product_id) if $product_id;
+%	$d->{title} ||= 'N/A'; $d->{description} ||= 'N/A';
+%	my $prod_img = $product_id ? "produkte/p$product_id\_thmb.jpg" : 'images/_prod_img_not_found_mini.jpg';
+	<tr valign=top style="<% $is_active < 0 ? 'background-color:#d8d8d8 !important' : '' %>">
+	<td data-order="<%$id%>"><input type=text name="prodid_<%$id%>" value="<%$product_id%>"
+			style='font-weight:bold; width:55px; text-align:center'></td>
+
+	<td style='text-align:center'><img style="width:90px" src='<%$prod_img%>'></td>
+	<td><a href='product.html?id=<% $product_id %>'><b><% $d->{title} %></b></a><br>
+			<%substr($d->{description}, 0, 77) . '...'%>
+%		if ($d->{campaign_id} ){
+			<% $C->bootstrap_alert('<b>WARNING</b>&nbsp;&nbsp;Pro Zone Product', 'danger') %>
+%		}
+	</td>
+	<td><% $d->{art_no} %></td>
+	<td style='text-align:right' nowrap>
+%		if ($d->{discount_perc} > 0) {
+			<span style="color:red"><% sprintf('%.2f', $d->{price}) %> <% $C->{CONFIG}->{default_curr} %></span><br />
+			<b><% $d->{discount_perc} %> %</b>
+%		}
+%		else {
+			<% sprintf('%.2f', $d->{price}) %> <% $C->{CONFIG}->{default_curr} %>
+%		}
+	</td>
+	<td style='text-align:center'><input type=text name="weight_<%$id%>" value="<%$weight%>"
+			style='width:38px; text-align:right'></td>
+	<td style="text-align:center">
+	    <abbr title="Less than 0 = Product Highlight">
+		<input type=text name="active_<% $id %>" value="<% $is_active %>"
+			style='width:15px; text-align:center'>
+	    </abbr>
+	</td>
+
+	<td style='text-align:center'>
+		<span class="label label-<% $d->{count_product} < 3 && $d->{condition} eq 'SO' ? 'info' : 'success' %>">
+			<big><% $d->{condition} eq 'SO' ? $d->{count_product} : '&infin;' %></big>
+		</span>
+	</td>
+	<td style='text-align:center'><a
+		href='admix.html?func=promo&subfunc=delPromo&id=<% $id %>'><i style='color:red' class="icon-remove"></i></a></td>
+	</tr>
+% }
+
+</table><br clear="all" /><br />
+
+<input type=submit value='Update' name=bSave class='btn btn-primary'>
+</form>
+
+<form method=post>
+<input type=hidden name=func value='promo'>
+<input type=submit value='Add ...' name=bAdd class=btn>
+</form>
+
+<script type="text/javascript" charset="utf-8">
+	$(document).ready( function() {
+		$('#myTable').dataTable(
+		{
+			"bPaginate": false,
+			"sPaginationType": "full_numbers",
+			"iDisplayLength": 500
+		} );
+	} );
+</script>
+
+<%doc>
+	__METACLONING__
+</%doc>

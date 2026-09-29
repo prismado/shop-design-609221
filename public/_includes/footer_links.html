@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+<TABLE style="MARGIN-TOP: 17px" border=0 cellSpacing=0 cellPadding=0 width="100%">
+  <TBODY>
+    <TR vAlign=top align=right>
+      <TD width=290><IMG border=0 alt="" src="images/visa.png" width=264 height=46></TD>
+<td><iframe src="http://www.facebook.com/plugins/likebox.php?href=https%3A%2F%2Fwww.facebook.com%2Fauctionline&amp;width=360&amp;colorscheme=light&amp;show_faces=false&amp;border_color&amp;stream=false&amp;header=true&amp;height=62" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:360px; height:62px;" allowTransparency="true"></iframe></td>
+      <TD style="padding-top:10px;"><A class="foot" 
+    	href="index.html">Home</A>&nbsp;&nbsp;|&nbsp;&nbsp;<A class="foot" 
+    	href="basket.html"><% $C->p('basket') %></A>&nbsp;&nbsp;|&nbsp;&nbsp;<A class="foot" 
+    	href="account.html"><% $C->p('account') %></A>
+	&nbsp;&nbsp;|&nbsp;&nbsp;<A class="foot" href="contact.html"><% $C->p('contact') %></A>
+% if ($C->is_admin()) {
+	&nbsp;&nbsp;|&nbsp;&nbsp;<A class="foot" href="edit.html?p=<% $C->this() %>">EDIT</A>
+% }
+	&nbsp;&nbsp;|&nbsp;&nbsp;<A class="foot" href="_layout.html">Dev</A>
+    		
+    		<IMG style="DISPLAY: block" src="images/spacer.gif" height=10><SPAN 
+    			class=CR>&copy; Copyright 2013 &middot; Screen Point AG &middot; PS media</SPAN>
+	</TD>
+    </TR>
+  </TBODY>
+</TABLE>

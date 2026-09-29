@@ -1,0 +1,77 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	$C->redir('/') unless $C->is_admin();
+
+	my $errstr = '';
+
+	my $d = $A->get_order($id);
+	delete $d->{'XX total_incl_vat'};
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post action="_update_order.html">
+<input type=hidden name=id value="<%$id%>">
+%
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Order ID <%$id%></h3>
+  </div>
+%
+  <div class="modal-body">
+	<p>
+	<b>Manual Corrections</b><br><br>
+
+%	if ($errstr) {
+		<% $C->bootstrap_alert("ERR $errstr", 'danger') %>
+%	}
+
+	<table class="table table-hover table-striped">
+%	foreach (sort keys %{$d}) {
+%		next if /^\_.+/ or /^cb\_pay\_.+/ or /^deliv\_.+/;
+%		next unless length($d->{$_});
+		<tr>
+		<td><% ucfirst $_ %></td>
+		<td>
+			<div class="pull-right"
+		onclick="document.getElementById('<%$_%>_read_only').style.display='none'; document.getElementById('<%$_%>').style.display=''"><i
+			style="cursor:pointer" class="icon-edit"></i></div>
+
+			<span id="<%$_%>_read_only">
+				<b><% $d->{$_} %></b>
+			</span>
+
+			<span style="display:none" id="<%$_%>">
+				<input type="text" name="<%$_%>" value="<%$d->{$_}%>">
+			</span>
+		</td>
+		</tr>
+%	}
+	</table>
+	</p>
+  </div>
+%
+  <div class="modal-footer">
+	<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input type="submit" class="btn btn-info" name="bAddStat" value="Add Order Status">
+	<input type="submit" class="btn btn-success" name="bUpdate" value="Update">
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

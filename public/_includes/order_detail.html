@@ -1,0 +1,52 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	unless ($C->is_logged_in()) {
+		# XXX $C->redir('/signin.html');
+	}
+
+	my $UID = $C->getUID();
+	my $SID = $C->getSID();
+
+	my $dbh = $C->{dbh};
+	my $id = $C->{CGI}->param('id') || 0;
+
+	my $order_dat = $A->get_order($id);
+
+	unless ($C->is_admin()) {
+		unless ($UID == $order_dat->{uid}) {
+			# -- Could not verify permission so far ...
+			$C->log(msg => "WARN: Order $id: $UID vs $order_dat->{uid} / SID $SID vs $order_dat->{sid}",
+				module=>'order_detail', importance => 2);
+			$C->redir('/signin.html') unless $SID == $order_dat->{sid};
+		}
+	}
+
+	if ($C->{CGI}->param('bResend')) {
+		$A->mail_order2cust(id => $id);
+		$m->out("Sent!<br>");
+	}
+</%init>
+<&../_mail_templates/confirm_cust_inc_de.html, order_id => $id&>
+
+Liefer-Datum: <% $order_dat->{delivery_date} %><br><br>
+
+<form>
+<input type=hidden name=id value="<%$id%>">
+<input type=submit class='btn btn-primary' name=bResend value='Nochmals senden'>
+<input type=button class="btn" onclick='JavaScript:history.go(-1)' value='Zur&uuml;ck'>
+</form>
+
+% if ($C->is_devel()) {
+	<br><br>
+
+	amount_incl_vat = <%$order_dat->{amount_incl_vat}%><br><br>
+
+	<a style='color:maroon; font-weight:bold' href='admix.html?func=orders&id=<% $id %>'>Del</a> ...
+% }
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,142 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	$C->load_properties('account');
+	my $prop = $C->{property}->{'account'};
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my %addr_label = ( 1 => $prop->{"bill_addr$l"}, 2 => $prop->{"deliv_addr$l"} );
+
+	$C->saveSessData('flag_anon_buy', 1);
+</%init>
+
+<div id="adressblocks" class="adressonetimeBox">
+
+<div class="accountBox_headtop"><h5>Adressen eingeben</h5></div>  
+    <ol>
+	  <li class="row clearfix"><small>(FELDER MIT EINEM * MÜSSEN AUSGEFÜLLT WERDEN)</small><br /><br />
+
+
+	    <label class="input_tag" for="email">E-Mail<em>*</em></label>
+	    <div class="inputOuter">
+	<input class="required" type="text" name="email" required="required" id="email" value="">
+			    </div>
+	  </li>
+    </ol>
+
+% for (my $i = 2; $i > 0; $i--) {
+%	my $addr = $A->get_address($i);
+
+    <div class="accountBox_head"><h5><%$addr_label{$i}%></h5></div>
+		
+	<ol>
+<%$i== 1 ? '<li class="row clearfix"><input type="button" class="gray_btn" id="show_rech" name="show_rech" value="Andere Rechnungsadresse erfassen" onClick="expandIt(invoice_addr);">
+                </li><div id="invoice_addr">' : ''%>
+                
+
+	  <li class="row clearfix">
+	    <label class="input_tag" for="gender_<%$i%>">Anrede<em><%$i==2 ? '*' : ''%></em></label>
+	    <div class="inputOuter">
+			<select name="gender_<%$i%>">
+			<option value="1">Herr</option>
+			<option value="2">Frau</option>
+			<option value="0">Firma</option>
+			</select>
+	    </div>
+	  </li>
+
+	  <li class="row clearfix">
+	    <label class="input_tag" for="firstname_<% $i %>">Vorname<em><%$i==2 ? '*' : ''%></em></label>
+	    <div class="inputOuter">
+		<input class="<%$i== 2 ? 'required' : ''%>" id="firstname_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="firstname_<%$i%>" value="<%$addr->{firstname}%>"> 
+	    </div>
+	  </li>
+		  
+	  <li class="row clearfix">
+	    <label class="input_tag" for="lastname_<% $i %>">Nachname<em><%$i==2 ? '*' : ''%></em></label>
+	    <div class="inputOuter">
+		<input class="<%$i== 2 ? 'required' : ''%>" id="lastname_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="lastname_<%$i%>" value="<%$addr->{lastname}%>"> 
+	    </div>
+	  </li> 
+		  
+	 <li class="row clearfix">
+	    <label class="input_tag" for="company_<% $i %>">Firma</label>
+	    <div class="inputOuter">
+	      <input  type="text" id="company_<% $i %>" value="<% $addr->{company} %>" name="company_<% $i %>">
+	    </div>
+	  </li>  
+
+     <li class="row clearfix">
+	    <label class="input_tag" for="street_<%$i%>"> Adresse<em><%$i==2 ? '*' : ''%></em></label>
+	    <div class="inputOuter">
+		<input class="<%$i== 2 ? 'required' : ''%>" id="street_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="street_<%$i%>" value="<%$addr->{street}%>"> 
+	    </div>
+	  </li> 
+		  
+	  <li class="row clearfix">
+	    <label class="input_tag" for="zip_<% $i %>">PLZ<em><%$i==2 ? '*' : ''%></em></label>
+	    <div class="inputOuter">
+		<input class="<%$i== 2 ? 'half required' : 'half'%>" id="ip_<%$i%>" street_<%$i%><%$i==2 ? 'required="required"' : ''%> type="text"
+			name="zip_<%$i%>" value="<%$addr->{zip}%>"> 
+       </div>
+	  </li>
+
+      <li class="row clearfix">
+	    <label class="input_tag" for="city_<% $i %>">Ort<em><%$i==2 ? '*' : ''%></em></label>
+	    <div class="inputOuter">
+		<input class="<%$i== 2 ? 'half required' : 'half'%>" id="city_<%$i%>" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="city_<%$i%>" value="<%$addr->{city}%>"> 
+	       </div>
+	  </li>
+
+% #	<li class="row clearfix">
+% #	    <label class="input_tag" for="phone_<% $i %>">Telefon</label>
+% #	    <div class="inputOuter">
+% #	      <input type=text value='<% $addr->{phone} %>' name="phone_<% $i %>">
+% #		   </div>
+% #	  </li>
+<%$i== 1 ? '</div>' : ''%>
+	</ol>
+
+% }
+
+
+% # -----  BUTTONS  ----- # %
+
+<ol>
+<li class="row clearfix">
+    <div class="inputOuter">
+      <input type="checkbox" id="agb_check" name="agb_check" value="accept">
+      <label for="agb_check"><span>Einverstanden mit den<a target="_blanc" href="info_agb.html"> Allgemeinen Geschäftsbedingungen</a><span></label>
+    </div>
+</li>
+</ol>
+
+<div class="buttons">
+	<input id="submit_summary" class="blu_btn" type="submit" name="submit_summary" value="Weiter">
+	<input id="return" class="gray_btn" type="button" name="return"  onclick="javascript:history.back()" value="Cancel">
+</div>
+
+% if ($C->is_devel() or $C->getPermaSessData('debug')) {
+	<&debug.html, CORE=>$C&>
+% }
+
+</div>
+<script language="JavaScript">
+  invoice_addr.style.display = "none";
+  function expandIt(whichEl) {
+	whichEl.style.display = (whichEl.style.display == "none" ) ? "" : "none";
+  }
+  function dynCollapse() {
+	elTwo.style.display = "none";
+  }
+</script>

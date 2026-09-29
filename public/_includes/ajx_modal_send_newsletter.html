@@ -1,0 +1,70 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $subject   = $C->query("select subject FROM newsletter WHERE id=$id")->[0];
+	my $rec_count = $C->query("select count(*) from users where newsletter=1 and uname not like 'anonymous%'")->[0];
+	my $ano_count = $C->query("select count(*) from users where newsletter=1 and uname like 'anonymous%'")->[0];
+
+	my $settings = $A->get_newsletter_settings();
+
+	my $proc_time = int(($rec_count + $ano_count) * $settings->{send_sleep} / 60);
+	   $proc_time = "$proc_time Min.";
+
+	my $res = $C->calc_time_v2(DM=>$proc_time);
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+%
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Please confirm</h3>
+  </div>
+%
+  <div style="padding-top:10px" class="modal-body">
+	<% $C->bootstrap_alert(qq~<span style="font-size:16px; font-weight:bold"><i
+		class="icon-bullhorn"></i> Are you sure you want to send Newsletter ID $id?</span>~, 'danger') %><br />
+		<table class="mytable table-hover">
+		<tr>
+		<td style="font-weight:bolx; width:150px">Subject</td>
+		<td style="font-weight:bold"><% $subject %></td>
+		</tr>
+		<tr>
+		<td stylx="font-weight:bold">Mail Relay</td>
+		<td style="font-weight:bold"><% $settings->{mail_relay} %></td>
+		</tr>
+		<tr>
+		<td stylx="font-weight:bold">Est. processing time</td>
+		<td style="font-weight:bold"><% $proc_time %> &rarr; until <% $res->{date_time_swiss} %></td>
+		</tr>
+		</table><br />
+
+		<input type="radio" style="margin-top:-5px" name="scope" value="1" checked> Send To <b><% $rec_count %></b> Registered Customers<br>
+		<input type="radio" style="margin-top:-5px" name="scope" value="2"> Include Anonymous Users <b>(+ <%$ano_count%>)</b><br>
+  </div>
+%
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-success" name="bSend" type=submit value="Send">
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,20 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+</%init>
+<meta name="keywords" content="<%$d->{pfeat}->{"-001\tmeta\tkeywords"} || "$d->{title},$C->{CONFIG}->{default_keywords}"%>">
+<meta name="description" content="<%$d->{description}%>">
+<meta name="page-topic" content="<%$d->{description}%>" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="revisit-after" content="10 days">
+<meta name="robots" content="index,follow,noodp,noydir" />
+<meta name="language" content="de,de-at,de-ch" />
+<meta name="copyright" content="Copyright 2015"/>
+<meta name="publisher" content="ps-media.ch"/>
+<link rel="canonical" href="http://<%$ENV{HTTP_HOST}%>/article-<%$id%>-<%$d->{title_enc}%>.html" />
+<%doc>
+	__METACLONING__
+</%doc>

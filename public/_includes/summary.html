@@ -1,0 +1,125 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $basket_h = $A->get_basket_items();
+	my $prod_options = $A->get_basket_options();
+
+	my $pay_meth = $C->{CGI}->param('checkout_zahlungsart_select') || $C->getSessData('checkout_zahlungsart_select') || '';
+	# -- One of: "cod", "cc", "paypal", "inv"
+	unless ($pay_meth) {
+		$m->out('XX missing pay meth<br>');
+	}
+
+	$C->saveSessData('pay_meth', $pay_meth);
+	$C->cgi2session();
+
+	my $voucher = $C->{CGI}->param('voucher');
+
+	my $basket_total = $A->get_basket_total($C->is_devel());
+
+	my $voucher_info = $A->get_voucher_info($voucher);
+
+	my $ship_meth = $C->getSessData('ship_meth');
+	my $ship_meth_amount = $C->{CONFIG}->{"ship_$ship_meth"};
+</%init>
+<!-- ######################################################################################################## -->
+
+
+        <table class="checkoutTable">
+          <thead>
+            <tr>
+              <th class="first_td"><h4><% $C->p('prod_name') %></h4></th>
+              <th><h4><% $C->p('piece') %></h4></th>
+              <th><h4><% $C->p('price_p_piece') %></h4></th>	
+
+% #<th><h4><% $C->p('artikelnr') %></td>
+
+              <th class="last_td"><h4><% $C->p('sub_total') %></h4></th>
+            </tr>
+% if ($basket_h->rows() < 1) {
+	<th colspan="4" align="center"><a href='/categ.html?id=1'><% $C->p('no_items') %></a></th>
+    </tr>
+             </thead>
+          <tbody> 
+% }
+% my $ship_tot = 0; # XX -- Could be read from "get_basket_total.al"
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count) = @{$r};
+%	my $d = $A->get_product($prod_id);
+%	my $price_incl_vat = sprintf('%.2f', ($d->{price} + $A->{basket_options_hash}->{$prod_id}) * (1 + $C->{CONFIG}->{vat} / 100));
+%	my $total_line = $count * $price_incl_vat;
+%	$ship_tot += $A->get_shipping( pay_meth => $pay_meth eq 'cod' ? 3 : 4, count => $count ) unless $C->{CONFIG}->{shipping_free_as_of};
+
+          </thead>
+          <tbody>
+            <tr>
+            <td class="first_td"><a href="/product.html?id=<% $prod_id %>"><% $d->{'title'} %></a><br />
+
+                        <% $d->{description} %></td>
+              <td class="quantity"><% $count %></td>
+              <td><h5>CHF&nbsp;<% $price_incl_vat %></h5></td>
+              <td  class="last_td"><h5>CHF&nbsp;<% $C->decimal_mark($total_line) %></h5></td>
+            </tr>
+% }
+% if ($C->{CONFIG}->{shipping_free_as_of}) {
+%	$ship_tot = $basket_total < $C->{CONFIG}->{shipping_free_as_of} ? $C->{CONFIG}->{shipping_amount} : 0;
+% }
+%	$ship_tot += $ship_meth_amount;
+            <tr>
+              <td colspan="3" class="left"><a href="info_customerservice.html"><% $C->p('delivery_cost') %></a> <% $C->p('package') %></td>
+              <td class="last_td">CHF&nbsp;<% sprintf('%.2f', $ship_tot * (1 + $C->{CONFIG}->{vat} / 100)) %></td>
+            </tr>
+
+% my $grand_tot = sprintf('%.2f', $basket_total + $ship_tot * (1 + $C->{CONFIG}->{vat} / 100));
+
+% if ($voucher) {
+	<tr>
+		<td class="left">Voucher <b><%uc $voucher%></b></td>
+		<td colspan=2>
+%		my $discount = 0;
+%		if ($voucher_info->{is_valid}) {
+			Voucher ist g&uuml;ltig
+%			if ($voucher_info->{amount} > 0) {
+%				$grand_tot = sprintf('%.2f', $grand_tot - $voucher_info->{amount});
+%				$grand_tot = '0.00' if $grand_tot < 0;
+%				$discount = sprintf('%.2f', $voucher_info->{amount});
+%			}
+%			if ($voucher_info->{perc} > 0) {
+%				my $disc = sprintf('%.2f', $basket_total * $voucher_info->{perc} / 100);
+%				$discount += $disc;
+%				$grand_tot = sprintf('%.2f', $grand_tot - $disc);
+			<%sprintf('%.2f', $voucher_info->{perc})%> % auf <%$basket_total%>
+%			}
+%		}
+%		else {
+			<span style='color:red'>Voucher ist ung&uuml;ltig</span>
+			<%$voucher_info->{_msg}%>
+%		}
+		</td>
+		<td class="last_td"><%sprintf('%.2f', $discount)%></td>
+	</tr>
+% }
+
+% # -- Gesamtsumme inkl.
+            <tr>
+              <td colspan="3"><h5 class="sumText"><% $C->p('sum_total') %> <% $C->{CONFIG}->{vat}%>% MWST &nbsp;</h5></td>
+              <td class="last_td"><h5>CHF&nbsp;<% $C->decimal_mark($grand_tot) %></h5></td>
+            </tr>
+%	my $vat = sprintf('%.2f', $grand_tot / (100 + $C->{CONFIG}->{vat}) * $C->{CONFIG}->{vat});        
+            <tr>
+              <td colspan="3" class="left"><% $C->p('include') %> <% $C->{CONFIG}->{vat}%>% MWST</td>
+              <td  width="150" class="last_td">CHF&nbsp;<% $vat %></td>
+            </tr>
+          </tbody>
+        </table>
+        
+<!-- ######################################################################################################## -->
+
+% if ($C->is_devel() or $C->getPermaSessData('debug')) {
+	<&page_info.html, 'End of include'&>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

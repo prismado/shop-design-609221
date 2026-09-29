@@ -1,0 +1,105 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	use utf8; # -- 30Aug2026
+	use CGI qw(-utf8); # -- 31Aug2026
+	binmode(STDERR, ':encoding(UTF-8)'); # -- 31Aug2026
+
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $order_id = $args{order_id};
+	my $odat     = $args{odat};
+
+	# my $cgi = $C->{CGI};
+	my $cgi = CGI->new; # -- 31Aug2026
+
+	my $company_sig = '<p>' . $C->prp('closing_greeting') . '</p>' . $C->render_property('contact_adress', 'de');
+	my $md5_secret  = $C->md5_secret($order_id);
+
+	if ($cgi->param('bSend')) {
+		my @text_lines = ();
+		foreach (split /\n/, $C->{CGI}->param('txt')) {
+			tr/\r//d;
+			push(@text_lines, $_);
+		}
+		my $txt = join "<br>\n", @text_lines;
+		#    $txt = $C->web_enc($txt); # -- 31Aug2026
+		$txt =~ s/\{\{link}}/http:\/\/$C->{CONFIG}->{HTTP_HOST}\/checkout.html?id=$order_id&check=$md5_secret/;
+		$txt = "$txt\n$company_sig";
+		# XXX $C->mail_generic(
+		$C->mail_x(
+			to      => $cgi->param('email'),
+			sender  => $C->{CONFIG}->{order_email},
+			subject => $cgi->param('subject_str'),
+			encode_subj => 1,
+			data        => \$txt
+		);
+		$A->put_order_detail($order_id, '_mail_sent', $C->now(3));
+		$A->set_order_status($order_id, 800, 'E-Mail: ' . $cgi->param('subject_str'), 'adm_sendmail');
+	}
+
+	my $instime   = $C->trans_date_short($odat->{instime});
+	my %status_hr = ( 1 => 'New', 3 => 'STORNO', 4 => 'OK' );
+</%init>
+<h2>Send Mail to Customer &middot; Order-ID: <a href="admix.html?func=orders&id=<%$order_id%>"><%$order_id%></a> &middot;
+	Status <b><% $status_hr{$odat->{order_status}} || "* $odat->{order_status} *" %></b></h2>
+
+<table class="table table-hover table-striped">
+	<tr><th style="width:255px;">Reminder sent</th><td>
+%	  if ($odat->{_mail_sent}) {
+		<span class="label label-success"><% $odat->{_mail_sent} %></span>
+%	  }
+%	  else {
+		N/A
+%	  }
+	</td></tr>
+	<tr><th>Von</th><td><% $C->{CONFIG}->{order_email_sender} %></td></tr>
+	<tr><th>E-Mail Senden an</th><td><%$odat->{email}%></td></tr>
+</table><br/>
+
+% unless ($C->{CGI}->param('bSend')) {
+<form method=post>
+<div class="con_title">
+	Subject:&nbsp;&nbsp;&nbsp;<input type=text name=subject_str value="Offene Bestellung, Order-ID <% $order_id %>"
+		style="width:350px; font-weight:bold;">
+	&mdash; <a target='_blank' href="checkout.html?id=<%$order_id%>&check=<%$md5_secret%>">Link</a>
+</div><br>
+
+<input type=hidden name=order_id value="<% $order_id %>">
+<input type=hidden name=email value="<% $odat->{email} %>">
+	<textarea rows=11 style='width:66%' name=txt>
+% if ($odat->{gender} == 1) {
+Sehr geehrter Herr <% $odat->{lastname} %>
+% }
+% else {
+Sehr geehrte Frau <% $odat->{lastname} %>
+% }
+
+Herzlichen Dank f&uuml;r Ihren Besuch in unserem Online-Shop <% $C->{CONFIG}->{HTTP_HOST} %>
+
+Ihre Bestellung von <b><%$instime%></b> konnte noch nicht abgeschlossen werden.
+
+Mit nachfolgendem Link können Sie Ihre Bestellung erneut aufnehmen und per Online-Zahlung oder Rechnung abschliessen:
+
+<a href="{{link}}">http://<% $C->{CONFIG}->{HTTP_HOST} %>/checkout.html?id=<%$order_id%></a>
+
+Besten Dank.</textarea><br>
+<% $company_sig %><br>
+	<input type=submit value='Send' name=bSend class="btn btn-primary">&nbsp;&nbsp;
+	<input type=button onclick="javascript:history.back()" class="btn" value="Cancel">
+</form>
+% }
+% else {
+	<br>
+	<b><% $cgi->param('subject_str') %></b><br><br>
+
+	Sent to <% $odat->{email} %>!
+% }
+
+<hr />
+% foreach (sort keys %{ $odat }) {
+%	next unless (/status/ or /msg/);
+%	next unless length($odat->{$_});
+%	next if /^\_.+/ or /^deliv\_\_.+/;
+	&bull; <b><% $_ %></b> = <% $odat->{$_} %><br>
+% }

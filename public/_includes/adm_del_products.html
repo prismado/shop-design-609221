@@ -1,0 +1,48 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id');
+	my $confirm = $cgi->param('confirm');
+
+	my $categ_name = $C->query("SELECT label FROM categories WHERE lang='de' AND id=$id")->[0];
+</%init>
+
+<h2>Delete Products</h2>
+
+Delete all products from Category ID <a href="adm_categ.html?id=<%$id%>"><%$id%> <%$categ_name%></a><br><br>
+
+% if ($cgi->param('bDel')) {
+%	my $sth = $C->{dbh}->prepare("SELECT id, title FROM vproducts WHERE cat_id=$id AND lang='de'");
+%	   $sth->execute();
+	<table class=mytable>
+%	while(my $r = $sth->fetch()) {
+%		my ($prod_id, $title) = @{$r};
+%		my $rc = 0; my $msg ='n.a.';
+%		($rc, $msg) = $A->del_product($prod_id) if $confirm;
+		<tr><td><%$prod_id%> <%$title%></td><td><%$rc%> <%$msg%></td></tr>
+%	}
+	</table><br>
+% }
+
+% unless ($confirm) {
+	<form>
+	<input type=hidden name=id value="<%$id%>">
+	<input type=checkbox style='margin-top:-5px' name=confirm
+		value=1> Delete <%$A->get_categ_count($id)%> products.<br><br>
+
+	<% $C->bootstrap_alert('Last warning! This operation cannot be undone!', 'danger') %><br />
+
+	<input type=submit name=bDel class='btn btn-danger' value="Delete Products">
+	</form>
+% }
+
+% # XXX if ($C->is_devel()) {
+% # XXX }
+
+<%doc>
+	__METACLONING__
+</%doc>

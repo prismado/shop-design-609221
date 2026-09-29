@@ -1,0 +1,82 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	if ($C->{CGI}->param('bAdd')) {
+		my $rc = $A->add_discount();
+		$m->out("XX $rc / $A->{errstr}<br>");
+		$m->out('Discount added.<br>') unless $rc;
+	}
+	elsif ($C->{CGI}->param('bDelGroup')) {
+		# my $lat_time = 14400; # -- 4 hours
+		my $lat_time = 600; # -- 10 min
+		my $count = $C->query(
+			"SELECT COUNT(*) FROM products_discount WHERE time_to_sec(timediff(now(), instime)) < $lat_time")->[0];
+		$C->{dbh}->do("delete from products_discount WHERE time_to_sec(timediff(now(), instime)) < $lat_time");
+		$m->out("$count Recently assigned discount(s) cancelled<br>");
+	}
+	elsif ($C->{CGI}->param('bAssign')) {
+		$A->add_group_discount();
+	}
+
+	my $sth = $C->{dbh}->prepare(
+		"SELECT id, instime, product_id, discount, status, time_to_sec(timediff(now(), instime)) FROM products_discount ORDER BY product_id DESC LIMIT 100");
+	   $sth->execute() or $m->out('Err<br>');
+</%init>
+
+<script type="text/javascript">document.title='Admin: Discount';</script>
+
+<h3>Rabatte</h3>
+
+<form method=post name=discForm>
+<input type=hidden name=func value='discount'>
+
+<input type=submit value='+ 1 Rabatt' name=bAdd>&nbsp;&nbsp;&nbsp;
+<input type=button value='Rabatt auf Gruppe ...'
+	onclick="this.style.display='none'; discount_list.style.display='none'; $('#ajx_1').load('_includes/discount.html')">&nbsp;&nbsp;&nbsp;
+<input type=submit value='Undo' name=bDelGroup>
+<br><br>
+
+% if ($C->{CGI}->param('action') eq 'group') {
+	<& discount.html &>
+% }
+
+<div id='ajx_1'></div>
+
+<div id=discount_list style='display:<% $C->{CGI}->param('action') eq 'group' ? 'none' : ''  %>'>
+
+Kürzlich hinzu gefügte Rabatte:<br><br>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+<tr style='font-weight:bold; background-color:#ddd'>
+	<td align=center>ID</td>
+	<td align=right>Prod ID</td>
+	<td align=center>Ins. Time</td>
+	<td align=right>Discount</td>
+	<td align=center>Status</td>
+</tr>
+
+% my $id_before = 0;
+% while(my $r = $sth->fetch()) {
+%	my ($id, $instime, $prod_id, $discount, $status, $ago) = @{$r};
+%	my $id_disp = sprintf('%08d', $id);
+%	my $style = $ago < 600 ? ' bgcolor="yellow"' : '';
+	<tr<% $style %>>
+	<td align=center><a href='admix.html?func=discount&id=<% $id %>'><% $id_disp %></a></td>
+	<td align=right><a href='admix.html?func=edit_item&id=<% $prod_id %>'><% $prod_id %></a></td>
+	<td align=center><% substr($C->trans_date($instime), 0, 16) %></td>
+	<td align=right><% $discount %> %</td>
+	<td align=center><% $status %></td>
+	</tr>
+% }
+</table>
+</div>
+
+</form>
+
+% if ($C->is_devel()) {
+	<br><br>
+	<& debug.html, CORE => $C &>
+% }

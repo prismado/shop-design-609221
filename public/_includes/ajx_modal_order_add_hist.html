@@ -1,0 +1,134 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $perm = $C->get_user_perm();
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $now_m1 = $C->now(1, -86400);
+	my $now_m2 = $C->now(1, -86400 * 2);
+	my $now_m3 = $C->now(1, -86400 * 3);
+	my $now_m4 = $C->now(1, -86400 * 4);
+	my $now_m5 = $C->now(1, -86400 * 5);
+	my $now_m6 = $C->now(1, -86400 * 6);
+	my $now_m7 = $C->now(1, -86400 * 7);
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<style>
+	.help-block { margin-top: -5px !important; font-size: 12px; }
+</style>
+
+<form name="f409041_14" method=post>
+<input type=hidden name=id   value="<%$id%>">
+<input type=hidden name=func value="orders">
+
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">History-Eintrag hinzuf&uuml;gen &ndash; Order-ID <% $id %></h3>
+  </div>
+
+  <div class="modal-body" style="padding-top:0px">
+	<br>
+%	if ($perm->{is_devel}) {
+		<select class="pull-right" onchange="sel_506_151(this)" id="s506151">
+			<option>- Bitte w&auml;hlen -</option>
+			<option>DHL-Versand offen</option>
+			<option>Bearbeitung in Galaxus CMI erforderlich</option>
+			<option>Sendung unterwegs</option>
+			<option>Sendung zugestellt</option>
+		</select>
+%	}
+
+	<p style="margin-left:-5px;">Notiz f&uuml;r Bestell-Verlauf hinzuf&uuml;gen</p>
+
+	<input type=text name="text" id="in_409041" autocomplete="off"
+		style="font-size:18px; padding:10px; margin-left:-5px; margin-top:10px; width:95%;" placeholder="Individueller Text">
+
+	<label class="checkbox">
+		<input type="checkbox" name="cb_cust_info" value="1">
+		F&uuml;r Kunde einsehbar
+	</label>
+
+	<label class="checkbox">
+		<input type="checkbox" name="cb_reminder" value="1">
+		Innerhalb von 24 Std. erinnern und sp&auml;ter quittieren
+	</label>
+
+%	if ($perm->{is_devel}) {
+	<div class="controls" style="margin-top:30px;">
+		<input type="text" class="form-control" name="src" value="Admin">
+		<p class="help-block">Source
+			&rarr;  [ <a href="#" onclick="document.f409041_14.src.value='CMI';">CMI</a> &ndash;
+				  <a href="#" onclick="document.f409041_14.src.value='DHL';" stylx="margin-left:5px;">DHL</a> ]
+		</p>
+	</div>
+
+	<div class="controls" style="margin-top:15px;">
+		<input type="text" class="form-control" name="uid" value="0">
+		<p class="help-block">Assign another UID than <% $perm->{uid} %></p>
+	</div>
+
+	<div class="controls" style="margin-top:15px;">
+		<input type="text" class="form-control" name="time" value="<% $C->now(1) %>">
+		<p class="help-block">Assign a specific time
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m1 %>';"><% substr($C->trans_date_short_nt($now_m1), 0, 6) %></a> |
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m2 %>';"><% substr($C->trans_date_short_nt($now_m2), 0, 6) %></a> |
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m3 %>';"><% substr($C->trans_date_short_nt($now_m3), 0, 6) %></a> |
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m4 %>';"><% substr($C->trans_date_short_nt($now_m4), 0, 6) %></a> |
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m5 %>';"><% substr($C->trans_date_short_nt($now_m5), 0, 6) %></a> |
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m6 %>';"><% substr($C->trans_date_short_nt($now_m6), 0, 6) %></a> |
+			<a href="#" onclick="document.f409041_14.time.value='<% $now_m7 %>';"><% substr($C->trans_date_short_nt($now_m7), 0, 6) %></a>
+		</p>
+	</div>
+%	}
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Abbrechen</button>
+	<input class="btn btn-primary" name="bAddHist" type=submit value="Speichern">
+  </div>
+
+</div>
+
+</form>
+
+<script language="JavaScript">
+    setTimeout(function() {
+        document.getElementById('in_409041').focus();
+    }, 500); // 500 Millisekunden Verzögerung
+
+	function sel_506_151(val) {
+		document.f409041_14.text.value = val.value;
+%		# -- Bearbeitung im CMI reforderlich
+% # XXX		if (val.value.startsWith('Bearbeitung')) {
+		if (/^Bearbeitung .* CMI .*/.test(val.value)) {
+			document.f409041_14.src.value = 'CMI';
+			document.f409041_14.cb_reminder.checked = true;
+		}
+%		# -- DHL-Versand offen:
+		if (val.value.startsWith('DHL')) {
+			document.f409041_14.src.value = 'DHL';
+			document.f409041_14.cb_reminder.checked = true;
+		}
+%		# -- Sendung unterwegs / zugestellt:
+		if (val.value.startsWith('Sendung')) {
+			document.f409041_14.src.value = 'DHL';
+			document.f409041_14.cb_cust_info.checked = true;
+		}
+	}
+</script>
+
+
+<%doc>
+	Created: 04Sep2024
+	__METACLONING__
+</%doc>

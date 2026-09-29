@@ -1,0 +1,28 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $token_id = $C->getSessData('token_id') || 0;
+	my $wcl = $token_id ? "campaign_id IN ($token_id, 0)" : 'campaign_id=0';
+
+	my $sth = $C->{'dbh'}->prepare("SELECT id, label FROM categories WHERE visible=1 AND lang='$lang' ORDER BY weight");
+	   $sth->execute();
+	my $count = 0;
+</%init>
+%
+% # -- Categories Link(s)
+%
+<table width="100%" align="center" cellpadding="0" cellspacing="0" class="infoBoxContents">
+<tbody>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $label) = @{$r};
+%	my $count = $C->query("SELECT count(*) FROM vproducts where lang='$lang' AND cat_id=$id AND $wcl AND count>0")->[0];
+	<tr>
+	<td><a class="categor" href="categ.html?id=<% $id %>"><% $label %> (<span class="number"><% $count %></span>)</a></td>
+	</tr>
+<tr><td><img src="images/trennlinien_menu.gif" height="1" width="163"></td></tr>
+% }
+</tbody>
+</table>

@@ -1,0 +1,43 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+%
+% # -- Left Navigation
+%
+<TABLE border=0 cellSpacing=0 cellPadding=0 width="100%">
+		  <TBODY>
+		    <TR>
+		      <TD class="cat_title" align=left><% $C->p('categories') %></TD>
+		    </TR>
+		    <TR>
+		      <TD><TABLE style="PADDING-BOTTOM: 10px" border=0 cellSpacing=0 cellPadding=0 width=220>
+			  <TBODY>
+			    <TR>
+			      <TD vAlign=top><TABLE class="infoBox" border=0 cellSpacing=0 cellPadding=0 width="100%">
+				    <TR>
+				      <TD><& categ.html, CORE => $C &></TD>
+				    </TR>
+				</TABLE></TD>
+			    </TR>
+			  </TBODY>
+			</TABLE></TD>
+		    </TR>
+		    <TR>
+		      <TD align=left class="cat_title"><% $C->p('personal_login') %></TD>
+		    </TR>
+		    <TR>
+		      <TD vAlign=top ><& loginform.html, CORE => $C &></TD>
+		    </TR>
+		    <TR>
+		      <TD align=left class="cat_title"><% $C->p('informations') %></TD>
+		    </TR>
+		    <TR>
+		      <TD vAlign=top><& infobox.html, CORE => $C &></TD>
+		    </TR>
+		    <TR>
+		      <TD vAlign=top></TD>
+		    </TR>
+		  </TBODY>
+		</TABLE>
+

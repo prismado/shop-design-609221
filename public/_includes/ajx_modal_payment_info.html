@@ -1,0 +1,63 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $errstr = '';
+
+	my $sth = $C->{dbh}->prepare(qq~
+		SELECT 	SUBSTR(xkey, 5, 26) AS ref, xval 
+		FROM 	orders_details 
+		WHERE 	order_id=$id AND (xkey LIKE '2co_%' or xkey LIKE 'pay%') AND xkey != 'pay_refno'
+		ORDER 	BY 1
+	~);
+	$sth->execute() or ($errstr = $DBI::errstr);
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=func value="orders">
+<input type=hidden name=action value="storno">
+%
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Order ID <%$id%></h3>
+  </div>
+%
+  <div class="modal-body">
+	<p>
+	<b>Payment information</b><br><br>
+
+%	if ($errstr) {
+		<% $C->bootstrap_alert("ERR $errstr", 'danger') %>
+%	}
+
+	<table class="table table-hover table-striped">
+%	while(my $r = $sth->fetch()) {
+%		my ($key, $val) = @{$r};
+%		next if $key eq 'cost' && $val+0 < 0.01;
+		<tr><th><%$key%></th><td><%$val%></td></tr>
+%	}
+	</table>
+	</p>
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

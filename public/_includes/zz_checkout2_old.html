@@ -1,0 +1,57 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+</%init>
+% # XX <title><% $C->p('page_title') %> - <% $C->{CONFIG}->{'site_title'} %></title>
+
+<!-- datepicker-->
+% # <!-- XX Uebeltaeter: link type="text/css" href="http://jqueryui.com/themes/base/jquery.ui.all.css" rel="stylesheet" -->
+<link type="text/css" href="css/redmond/jquery-ui-1.8.10.custom.css" rel="stylesheet" />
+
+	<script src="js/jquery.tools.min.js"></script>
+	<script type="text/javascript" src="js/jquery.ui.core.js"></script>
+	<script type="text/javascript" src="js/jquery.ui.datepicker.js"></script>
+
+	<link rel="stylesheet" href="http://jqueryui.com/demos/demos.css">
+
+	<!-- datepicker #checkout_liefer_date -->
+	<script type="text/javascript">
+	$(function() {
+		$( "#checkout_liefer_date" ).datepicker({
+			showOn: "button",
+			buttonImage: "images/calendar.gif",
+			buttonImageOnly: true,
+			dateFormat:'dd.mm.yy',
+	monthNames: ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+			dayNamesMin: ['So', 'Mo', 'Die', 'Mi', 'Do', 'Fr', 'Sa']
+		}
+		);
+	});
+	</script>
+
+<h2><%$C->p('main_title')%></h2>
+<br>
+<img src="images/bestell_ablauf_pic_<%$lang%>.gif" alt="" width="476" height="40"><br><br>
+
+<TABLE border=0 cellSpacing=0 cellPadding=0 width="1000">
+  <TBODY>
+    <TR vAlign=top>
+      <TD width=233> </TD>
+      <TD width="100%"><div id="content_box">
+              <div class="text">
+                
+<&basket_data2_old.html, C => $C, A => $A&>
+
+% if ($C->is_devel()) {
+	<& debug.html, CORE => $C &>
+% }
+            </div>
+            </div>
+        
+        <!-- end content_box --></TD>
+    </TR>
+  </TBODY>
+</TABLE>

@@ -1,0 +1,180 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+
+	my $id  = $cgi->param('id') || $cgi->param('delid');
+	   $id *= 1;
+	my $val = $cgi->param('val');
+	my $key = $cgi->param('key');
+	my $area = $cgi->param('area');
+	my $bUpdate = $cgi->param('bUpdate');
+
+	$m->redirect('adm_pay_methods.html') if $cgi->param('bCancel') && $area =~ /^pay_cost_/;
+	$m->redirect('adm_special_keys.html?area=six') if $cgi->param('bCancel') && $area =~ /^six_.+/;
+
+	if ($cgi->param('bAdd')) {
+		my $key = $C->{CGI}->param('key');
+		$C->{dbh}->do("INSERT INTO config (`key`, val) VALUES ('$key', '-')");
+	}
+	elsif ($key) {
+		$id = $C->query("select id FROM config WHERE `key`='$key'")->[0];
+	}
+	elsif ($cgi->param('delid')) {
+		$C->{dbh}->do("delete FROM config WHERE id=$id");
+		$id = 0;
+	}
+
+	if ($id && length($val)) {
+		$val =~ s/'/''/g;
+		$C->{dbh}->do("UPDATE config SET val='$val' WHERE id=$id");
+	}
+
+	my $stmt = "SELECT id, `key`, val, SPLIT_STR(`key`, '_', 2)+0 FROM config WHERE `key` LIKE 'vat%' AND `key` NOT LIKE '%__explain' ORDER BY 4 LIMIT 99999";
+	   $stmt = "SELECT id, `key`, val FROM config WHERE id=$id" if $id;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	(my $area_disp = $area) =~ tr/a-z/A-Z/;
+
+	my $apply_vat_ch = $C->get_safe_property( 'apply_vat_ch', 'sys' ) + 0;
+	my $apply_vat_ch_id = $C->{id};
+	$C->set_safe_property( 'apply_vat_ch', 0, 'sys' ) unless $apply_vat_ch_id;
+</%init>
+<script type="text/javascript" src="lib/DataTables-1.9.4/media/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="lib/DataTables-1.9.4/media/js/jquery.dataTables.bootstrap.js"></script>
+
+<p class="pull-right" style='margin-top:20px'>
+VAT Config of <%$C->{CONFIG}->{site_title}%>
+</p>
+
+<h2><%$sth->rows()%> VAT positions <%$args{debug} ? ' - Debug' : ''%></h2>
+
+% if ($args{debug} > 1) {
+	<%$stmt%><br>
+	<%$C->html_debug('Rows: ' . $sth->rows())%>
+% }
+<form>
+<input type=hidden name=id value="<% $id %>">
+
+<table id="myTable" role="table" class='table table-hover table-striped table-first-column-number data-table sort display'>
+
+<thead>
+<tr>
+<th nowrap style="width:77px">VAT ID<span class="sort-icon"><span></th>
+<th>Value<span class="sort-icon"><span></th>
+<th>Item Count<span class="sort-icon"><span></th>
+</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+%	my $extra_info = $C->query("select val from config where `key`='$key\__explain'")->[0] || '';
+%	my $key_disp   = (split /\_/, $key)[1] || 'STD';
+%	my $prod_count = $C->query("SELECT COUNT(*) FROM products where prod_type=$key_disp")->[0];
+	<tr>
+	<td style="text-align:center" data-order="<%$key_disp%>">
+		<a href='adm_vat.html?area=<%$key%>&id=<%$id%>'><%$key_disp%></a>
+	</td>
+	<td style="text-align:right; padding-right:30px" data-order="<%$val%>">
+%	if ($key =~ /^pay_cost_/) {
+		<%sprintf('%.2f', $val)%> &middot; <b>(<%sprintf('%.2f', $val * (1 + $C->{CONFIG}->{vat} / 100))%>
+		<%$C->{CONFIG}->{default_curr}%>)</b>
+%	}
+%	else {
+		<span style="font-weight:bold"><% sprintf('%.2f', $val) %> %</span>
+		<div class="pull-right"><%$extra_info%></div>
+%	}
+%	if ($args{debug} > 1) {
+		&middot; <a style="color:red" href="config2.html?delid=<%$id%>">del</a>
+%	}
+	</td>
+	<td style="text-align:right; padding-right:30px" data-order="<%$prod_count%>"><% $prod_count %></td>
+	</tr>
+% }
+
+</table>
+</form>
+
+% if ($sth->rows() == 1) {
+  <br clear="all" />
+  <div class="pull-left">
+%	my ($id, $val) = @{$C->query("select id, val FROM config WHERE `key`='$area'")};
+%	my $explain = $C->query("select val from config where `key`='$area\__explain'")->[0];
+%	unless ($id) {
+%		# -- WARNING: No id found
+%		($id, $val) = @{$C->query("select id, val FROM config WHERE `key` LIKE '$area%'")};
+%	}
+%	if ($explain) {
+%	}
+	<form method=post>
+	<input type=hidden name=area value="<%$area%>">
+	<input type=hidden name=id value="<%$id%>">
+	<input type=hidden name=debug value="<%$args{debug}%>">
+	<input style='margin-top:10px; width:50px; text-align:right' value="<%$val%>" type=text name="val">
+	<input type=submit class="btn btn-primary" name=bUpdate value="Update">
+	<input type=button class="btn" onclick="JavaScript:history.go(-1)" value="&nbsp;&nbsp;Back&nbsp;&nbsp;">
+	</form>
+%	if ($bUpdate) {
+		<% $C->bootstrap_alert('Updated', 'success') %><br />
+%	}
+  </div>
+% }
+
+% if ($area eq '2co') {
+	<p>2co_mode: T(est) or P(productive)<br>
+	Required: 2co_p_priv_key, 2co_p_pub_key, 2co_t_priv_key, 2co_t_pub_key</p>
+% }
+
+<div class="pull-right">
+
+<form class="form-horizontal" method=post>
+<input type=hidden name=area value="<%$area%>">
+<fieldset>
+    <div class="control-group">
+
+          <label class="control-label" for="input01">Add new VAT-ID</label>
+          <div class="controls">
+            <input type="text" name="key" class="input-xlarge">
+<input type=submit class="btn btn-primary" value='Add' name=bAdd>
+            <p class="help-block">e.g. vat_47</p>
+          </div>
+        </div>
+
+    </div>
+</fieldset>
+</form>
+
+<br clear="all" />
+	Apply Swiss VAT: <b>[ <% $apply_vat_ch ? 'Yes' : 'No' %> ]</b>
+% if ($apply_vat_ch_id) {
+	<a href="adm_safe_property.html?id=<% $apply_vat_ch_id %>"><i class="icon-edit"></i></a>
+% }
+% else {
+	<a href="adm_safe_properties.html">(Sys Property)</a>
+% }
+
+% unless ($apply_vat_ch) {
+	&rarr; VAT is not added in this case
+% }
+<br>
+This setting takes precedence over the customer's target country.
+
+</div>
+
+<script type="text/javascript" charset="utf-8">
+	$(document).ready( function() {
+		$('#myTable').dataTable(
+		{
+			"bPaginate": false,
+			"sPaginationType": "full_numbers",
+			"iDisplayLength": 500
+		} );
+	} );
+</script>
+
+<%doc>
+	__METACLONING__
+</%doc>

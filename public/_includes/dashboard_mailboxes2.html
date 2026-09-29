@@ -1,0 +1,28 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $order_count = $C->query("select count(*) from orders where time_to_sec(timediff(now(), instime)) < 86400")->[0];
+	my $imp_count   = $C->query(q~select count(*)
+				from log where importance=1 and action NOT LIKE 'ERR%' and action NOT LIKE 'WARN%'~)->[0];
+	my $err_count   = $C->query(q~select count(*) from log where importance=1 and action LIKE 'ERR%'~)->[0];
+	my $warn_count  = $C->query(q~select count(*) from log where importance=1 and action LIKE 'WARN%'~)->[0];
+
+	# -- http://zikula.github.io/bootstrap-docs/icons/
+</%init>
+<h2>Shop Activity</h2>
+
+<ul class="cards widget list">
+	<li><i class="icon-shopping-cart"></i> <a href=adm_orders.html>New Orders</a><span
+		class="pull-right label"><%$order_count%></span></li>
+	<li><i class="icon-warning-sign"></i> <a href="adm_log.html?importance=2&filter=err">Errors</a><span
+		class="pull-right label<%$err_count ? ' label-important' : ''%>"><%$err_count%></span></li>
+	<li><i class="icon-flag"></i> <a href="adm_log.html?importance=2&filter=warn">Warnings</a><span
+		class="pull-right label<%$warn_count ? ' label-warning' : ''%>"><%$warn_count%></span></li>
+	<li><i class="icon-star"></i> <a href="adm_log.html?importance=2&filter=warn&filtertype=not">Important events</a><span
+		class="pull-right label<%$imp_count ? ' label-warning' : ''%>"><%$imp_count%></span></li>
+</ul>
+<%doc>
+	__METACLONING__
+</%doc>

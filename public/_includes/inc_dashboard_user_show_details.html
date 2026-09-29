@@ -1,0 +1,32 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id = $args{id} + 0;
+	my $C  = $args{C};
+	my $A  = $args{A};
+</%init>
+% my $wcl = q~xkey not like 'cb_%' and xkey not like 'perm_is_%' and xkey not like 'mail_sent_%' and xkey not like 'special_cond_%' and xkey !='ust_id'~;
+
+% my $st = $C->{dbh}->prepare("select id, xkey, xval from users_details where user_id=$id and $wcl order by 1");
+%    $st->execute();
+
+% if ($st->rows()) {
+    <div style="width:380px !important">
+
+	<table class="mytable table-hover">
+%	while(my $rr = $st->fetch()) {
+%		my ($detid, $xkey, $xval) = @{$rr};
+%		next unless length($xval);
+		<tr>
+		<td><b><% ucfirst $xkey %></b></td>
+		<td><%$xval%></td>
+		</tr>
+% 	}
+	</table>
+
+    </div><br />
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

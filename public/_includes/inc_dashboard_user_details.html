@@ -1,0 +1,45 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id       = $args{id} + 0;
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $openperm = $args{openperm};
+	my $opendet  = $args{opendet};
+</%init>
+<form style="margin-bottom:0px" method="post">
+	<input type="hidden" name="id" value="<% $id %>">
+	<input type="text" placeholder="Any key or ust_id or perm_is_smth" style="width:25%" name="user_detail_key">
+	<input type="text" placeholder="Value" name="user_detail_val">
+	<input class="btn btn-primary" type="submit" name="bAddDetail" value="Insert">
+</form>
+
+% my $wcl = ($openperm && !$args{debug}) ? " and xkey like 'perm\_%'" : '';
+% my $st = $C->{dbh}->prepare("select id, xkey, xval from users_details where user_id=$id $wcl order by 1");
+%    $st->execute();
+
+% if ($args{debug} > 1) {
+	wcl = "<% $wcl %>"<br>
+% }
+
+% if ($st->rows()) {
+    <div style="width:390px !important;">
+	<h2>User Details</h2>
+	<table class="table table-striped table-hover">
+%	while(my $rr = $st->fetch()) {
+%		my ($detid, $xkey, $xval) = @{$rr};
+		<tr>
+		<td><b><%$xkey%></b></td>
+		<td>"<%$xval%>"</td>
+		<td style="text-align:center"><a style="color:red"
+			href="adm_user.html?id=<%$id%>&deldet=<%$detid%>&openperm=<%$openperm%>&debug=<%$args{debug}%>">X</a>
+		</td>
+		</tr>
+% 	}
+	</table>
+
+    </div>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

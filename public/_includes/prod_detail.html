@@ -1,0 +1,137 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $lang = $args{'lang'} || 'de';
+	my $discount = $A->get_discount($id);
+	my $price_net = sprintf('%.2f', $d->{price} * (1 - $discount / 100) * (1 + $C->{CONFIG}->{vat} / 100));
+</%init>
+
+<table width="100%" border="0" cellpadding="8" cellspacing="0">
+	  <tr>
+	    <td width="21%" height="577" valign="top"><table width="158" border="0" cellpadding="1" bgcolor="#FFFFFF" >
+% if ($d->{brand}) {
+	      <tr>
+		<td width="150" height="28" align="center"><img src="images/brands/<% $d->{brand} %>.gif"></td>
+	      </tr> 
+          <tr><td width="150" height="20" align="center">&nbsp;</td></tr>
+% }
+% if ($d->{teaser}) {
+		<tr><td align=center><% $d->{teaser} %></td></tr>
+% }
+	      <tr>
+		<td align="center"><img src="produkte/p<% $id %>_thmb.jpg" width="170" height="170"></td>
+	      </tr>
+	      <tr>
+		<td height="15" align="center" class="smallText"><% $C->p('image_text') %></td>
+	      </tr>
+	      <tr>
+		<td height="28" align="center" >&nbsp;</td>
+	      </tr>
+	      <tr>
+		<td height="168" class="br" align="center" valign="top" bgcolor="#eeeeee">
+%			if ($discount) {
+				<img src="images/offer_small.png" width="170" height="30" alt="offer">
+%	}
+		<table width="110" border="0" cellpadding="1" cellspacing="1">
+		  <tr>
+		    <td height="10">&nbsp;</td>
+		    <td align="right">&nbsp;</td>
+	      </tr>
+		  <tr>
+		    <td  height="17"><% $C->p('article_nr') %></td>
+		    <td  align="right"><% $d->{'art_no'} %></td>
+		  </tr>
+		  <tr>
+		    <td height="17"><% $C->p('order_range') %></td>
+		    <td align="right">1787</td>
+		  </tr>
+		  <tr>
+		    <td height="17"><% $C->p('available') %></td>
+		    <td align="right"><% $d->{count} %></td>
+		  </tr>
+		  <tr>
+		    <td height="17"><% $C->p('condition') %></td>
+		    <td align="right"><% $d->{condition} %></td>
+		  </tr>
+		  <tr>
+		    <td height="17"><% $C->p('warranty') %></td>
+		    <td align="right">1 Monat</td>
+		  </tr>
+		  <tr><td height="17" colspan="2">&nbsp;</td></tr>
+
+		  <tr>
+		    <td height="17" colspan="2"><div align="center" class="preis_d">
+				
+%			if ($discount) {
+				<span style='color:#ff6400;'> CHF </span><span style='color:#ff6400;'
+					id=dynTotal><% sprintf('%.2f', $d->{price_incl_vat} + $d->{upsell_tot}) %></span><br />
+<br>
+				<span style='font-size:14px;'>anstatt<br /><s>CHF <% $d->{price_orig_incl_vat} %></s>
+				</span>
+%	}
+%	else {
+		CHF <span id=dynTotal><% sprintf('%.2f', $d->{price_incl_vat} + $d->{upsell_tot}) %></span>
+%	}
+				</div>
+				</td>
+		  </tr>
+		  <tr>
+		    <td height="17" colspan="2"><div align="center"><% $C->p('incl') %> <% $C->{CONFIG}->{vat} %> % <% $C->p('mwst') %></div></td>
+		  </tr>
+		  <tr><td colspan="2">&nbsp;</td></tr>
+		  <tr align="center">
+		    <td height="36" colspan="2"><table width="130" height="0" border="0" cellpadding="0" cellspacing="0">
+		      <tr>
+			<td width="173" valign="top" class="toppreis"><table width="128" height="20" border="0" cellpadding="2" cellspacing="0" bgcolor="#FFFFFF" class="br_orange">
+			  <tr>
+			    <td width="28" height="21"><a href="#"><img src="images/basket_orange.gif" alt="Produkt in den Warenkorb" width="27" height="17" border="0"></a></td>
+			    <td width="92" align="center"><a  class="small_link"
+				href="basket.html?id=<% $id %>"><% $C->p('to_basket') %></a></td>
+			  </tr>
+			</table></td>
+		      </tr>
+		    </table></td>
+		  </tr>
+		  <tr align="center">
+		    <td height="36" colspan="2"><iframe src="http://www.facebook.com/plugins/like.php?app_id=153765751326116&amp;href&amp;send=false&amp;layout=button_count&amp;width=80&amp;show_faces=false&amp;action=recommend&amp;colorscheme=light&amp;font=arial&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80px; height:21px;" allowTransparency="true"></iframe></td>
+		  </tr>
+		</table></td>
+	      </tr>
+	    </table></td>
+
+	    <td width="100%" align="right" valign="top">
+
+	<& prod_detail_textblock.html, CORE => $C, A => $A, d => $d, id => $id, lang => $lang &>
+
+	</td>
+	  </tr>
+	  <tr>
+
+	    <td colspan="2" valign="top">
+        <table border=0 cellpadding=4 cellspacing=0 width=100%>
+	    <tr>
+	      <td align="right" valign="middle"><table class="zubehoer" border=0 cellpadding=2 cellspacing=0 width=100%>
+	        <tr>
+	          <td background="images/zubehoer_titel_back.jpg" height=15 colspan="3"><b style="color:#FFF"><% $C->p('crossselling_txt') %></b></td>
+            </tr>
+	        <tr>
+	          <td valign="middle"><a href="#" class="small_link">IBM NetVista 6793 - Windows 2000 Deitalansicht</a></td>
+	          <td width=21 align="right" valign="top"><strong>CHF</strong></td>
+	          <td  height="18" align="right" valign="top"><strong>760.-</strong></td>
+            </tr>
+	        <tr>
+	          <td valign="middle"><a href="#" class="small_link">IBM ThinkPad T23 - Windows 2000</a></td>
+	          <td align="right" valign="middle"><strong>CHF</strong></td>
+	          <td height="18" align="right" valign="middle"><strong>890.-</strong></td>
+            </tr>
+	        <tr>
+	          <td valign="middle"><a href="#" class="small_link">Windows 2099 CD &amp; Handbuch</a></td>
+	          <td align="right" valign="middle"><strong>CHF</strong></td>
+	          <td height="18" align="right" valign="middle"><strong>129.-</strong></td>
+            </tr>
+          </table>	        <strong></strong></td>
+	      </tr>
+</table>

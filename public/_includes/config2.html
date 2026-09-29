@@ -1,0 +1,94 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+
+	my $id  = $cgi->param('id') || $cgi->param('delid');
+	my $val = $cgi->param('val');
+	my $key = $cgi->param('key');
+
+	if ($cgi->param('bAdd')) {
+		my $key = $C->{CGI}->param('key');
+		$C->{dbh}->do("INSERT INTO config (`key`, val) VALUES ('$key', '-')");
+	}
+	elsif ($key) {
+		$id = $C->query("select id FROM config WHERE `key`='$key'")->[0];
+	}
+	elsif ($cgi->param('delid')) {
+		$C->{dbh}->do("delete FROM config WHERE id=$id");
+		$id = 0;
+	}
+
+	if ($id && length($val)) {
+		$val =~ s/'/''/g;
+		$C->{dbh}->do("UPDATE config SET val='$val' WHERE id=$id");
+	}
+
+	my $sth = $C->{dbh}->prepare("SELECT id, `key`, val FROM config ORDER BY `key`");
+	   $sth->execute();
+</%init>
+<div class="pull-right" style="margin-top:5px">
+	<a href="adm_dump.html?action=dump&table=config">Dump</a> &middot; <a href="adm_dump.html?action=restore&table=config">Restore</a>
+</div>
+<p style='margin-top:10px'>
+Config of <%$C->{CONFIG}->{site_title}%> &middot; IP <% $args{debug} ? 'Debug' : $C->getOwnIP() %>
+</p>
+
+<form>
+<input type=hidden name=id value="<% $id %>">
+
+<table class='table'>
+
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+
+% if ($id && !$val) {
+%	my ($key, $val) = @{$C->query("SELECT `key`, val FROM config WHERE id=$id")};
+	<tr>
+	<td><b><% $key %></b></td>
+	<td><input type=text name=val value="<%$val%>" style='width:94%; font-weight:bold'>
+		<a style="color:red" href="config2.html?delid=<%$id%>">DEL</a>
+	</td>
+	</tr>
+	<tr><td colspan=2><hr noshade size=1></td></tr>
+% }
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+%	$val =~ s/</&lt;/g;
+%	$val =~ s/>/&gt;/g;
+%	$val = '********' if $key =~ /_pass$/;
+	<tr>
+	<td>
+%	if ($key =~ /__explain$/) {
+		<a href='config2.html?id=<%$id%>'>.</a>
+%	}
+%	else {
+		<a href='config2.html?id=<%$id%>'><%$key%></a>
+%	}
+	</td>
+	<td><% $val %></td>
+	</tr>
+% }
+
+</table>
+</form>
+
+<form method=post>Key: <input type=text style='margin-top:10px' name='key'> <input class="btn" type=submit value='Add' name=bAdd></form>
+
+<%perl>
+	unless ($C->is_logged_in()) {
+		$r->internal_redirect('/not_auth.html');
+		$m->auto_send_headers(0);
+		$m->clear_buffer;
+		$m->abort;
+	}
+</%perl>
+<%doc>
+	__METACLONING__
+</%doc>

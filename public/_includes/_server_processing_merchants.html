@@ -1,0 +1,78 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols    = qw(id uname uname tstamp);
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	my @json = ();
+	my $order = "$dbcols[$sortcol] $direction";
+	# -- (my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my @where_clause = ();
+	push(@where_clause, "uname LIKE '%$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	mermaid_vmerchant
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	if ($C->{CONFIG}->{debug_level} > 1) {
+		print STDERR "$stmt\n";
+	}
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM albani_vusers_verein $wcl")->[0];
+
+	my %status_hr = ( 1=>'New', 2=>'Ready', 3=>'Sending', 4=>'Sent' );
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $dummy, $subject, $last_mod, $sender_email, $status) = @{$r};
+		my $company = $C->query("select company from users_addr where user_id=$id limit 1")->[0];
+		$status_hr{$status} ||= "* $status *";
+		my @arr = ();
+		push(@arr, "<a href=user_v.html?id=$id>$id</a>");
+		push(@arr, "<b>$company</b>");
+		push(@arr, $subject);
+		push(@arr, '<nobr>' . $C->trans_date_short($last_mod) . '</nobr>');
+		push(@arr, $sender_email);
+		push(@arr, "<span class='label label-success'>$status_hr{$status}</span>");
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }

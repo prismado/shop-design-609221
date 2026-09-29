@@ -1,0 +1,111 @@
+<%init>
+	# -- Subject to be distributed 1:1 to every pGATE shop!!
+
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $q     = $cgi->param('q');
+	my $type  = $cgi->param('type');
+	my $debug = $cgi->param('debug');
+
+	if ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("DELETE FROM categories WHERE id=$id");
+	}
+
+	my $visible = $cgi->param('visible');
+	   $visible = 1 unless length($visible);
+
+	my $wcl = "art_no LIKE '%$q%' OR title LIKE '%$q%' OR f.description LIKE '%$q%'";
+
+	if ($type eq 'price') {
+		my ($from, $to) = split /,/, $q;
+		$wcl = "price BETWEEN $from AND $to";
+	}
+
+	my $stmt = qq~
+		select	DISTINCT p.id, art_no, price, title, p.description, count, p.instime, f.description
+		from	vproducts_1_02 p left outer join products_feat f on p.id=product_id
+		where	p.lang='de'
+			AND ($wcl)
+		order	BY p.id DESC
+		limit	9999
+	~;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $m->out("ERROR $DBI::errstr $wcl<br>");
+</%init>
+<h2>Search Products</h2>
+% if ($debug) {
+	<% $stmt %><hr />
+% }
+<form>
+% if ($type eq 'price') {
+  <div class="control-group">
+	<div class="pull-right">
+	<label class="checkbox">
+	<input type=checkbox name=type value="price" checked>
+	Price
+	</label>
+	</div>
+	<input name=q type=text style='width:288px' placeholder='Search' value="<%$q%>">
+  </div>
+% }
+% else {
+<input name=q type=text style='width:288px' placeholder='Search' value="<%$q%>">
+% }
+</form>
+
+<table class='mytable table-hover'>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Art No</th>
+<th>Time</th>
+<th>Title</th>
+<th>Description</th>
+<th>Count</th>
+<th>Price</th>
+<th style='text-align:right'>Feat.</th>
+</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $art_no, $price, $title, $desc1, $count, $instime, $feat) = @{$r};
+%	$instime = $C->trans_date_very_short($instime);
+%	my $ext_id = 0;
+%	if ($feat =~ /^Import from ID (\d+)$/) {
+%		$ext_id = $1;
+%	}
+	<tr valign="top">
+		<td><a href="adm_edit_product.html?id=<%$id%>"><% $id %></a></td>
+		<td><%$art_no%></td>
+		<td nowrap><%$instime%></td>
+		<td><b><%$title%></b></td>
+		<td><%$desc1%></td>
+		<td style='text-align:center'><%$count%></td>
+		<td style='text-align:center'><%sprintf('%.2f', $price)%></td>
+		<td style='text-align:right'>
+%		if ($ext_id) {
+			<a target=_blank href="http://www.auctionline.ch/alshop/adm2002/items.cgi?cat=e&id=<%$ext_id%>"><%$feat%></a>
+			&ndash;
+			<a target=_blank href="http://www.auctionline.ch/alshop/prod/?id=<%$ext_id%>">old</a>
+%		}
+%		else {
+			<%$feat%>
+%		}
+		</td>
+	</tr>
+% }
+
+% unless ($sth->rows()) {
+	<tr><td colspan=6 style='text-align:center'>No products found</td></tr>
+% }
+</table>
+<%doc>
+	__METACLONING__
+</%doc>

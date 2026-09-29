@@ -1,0 +1,56 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $id = $args{id};
+	my $d = $A->get_product($id);
+	my $lang = $C->getSessData('_current_lang') || 'de';
+# XXX     my $prod_info = $A->get_product($id);
+	my $aktionPreis = $d->{price_incl_vat} != $d->{price_orig_incl_vat} ? 1 : 0;
+</%init>
+<div class="aktionenBox frameBorder frameBorder--set" onclick="location.href='product.html?id=<%$id%>';" >
+<!--Rabatt Symbol Anzeige -->
+%	if ($d->{price_incl_vat} != $d->{price_orig_incl_vat}) {
+			<span class="aktionsOffer"></span>
+%	}
+<a class="iinfo" href="article-<%$id%>-<%$d->{title_enc}%>.html"><IMG title="" src="produkte/p<%$id%>_orig.jpg" alt=""></a>
+% # -- <a class="iinfo" href="product.html?id=<%$id%>"><IMG title="" src="produkte/p<%$id%>_thmb.jpg" alt=""></a>
+<div class="aktionsDetails">
+<span><%$d->{title}%></span>
+<div class="climb">
+<%$d->{description}%>
+<%doc>
+<table>
+% my $i = 0;
+% foreach (sort keys %{$d->{feat}}) {
+%	last if ++$i > 6; # -- Max. 6 features here
+%	my ($weight, $feat_name, $feat_key, $feat_id) = split /\t/;
+%	next if $feat_name eq '_new_' or $feat_name eq 'link';
+%	my $dat = $d->{feat}->{$_};
+
+	<tr valign=top><td><%$feat_name%></td><td><%$dat%></td></tr>
+% }
+</table>
+</%doc>
+</div>
+</div><!--end aktionsDetails -->
+% if ($d->{pfeat}->{"0000\t_redir_search\tREDIR"} or $d->{pfeat}->{"0000\t_redir_cat\tREDIR"}) {
+	<div class="aktionPreis groupTitle"><nobr>Artikel ab CHF <%$d->{price_incl_vat}%></nobr></div>			
+	<div class="aktionButtons"><a href="article-<%$id%>-<%$d->{title_enc}%>.html"><i class="fa fa-chevron-circle-right"></i>Gruppen Ansicht</a></div>
+% }
+% elsif ($d->{condition} eq 'IP') {
+<div class="aktionPreis sale">-</div>
+	<div class="buyButton">
+		<a class="green" href="article-<%$id%>-<%$d->{title_enc}%>.html"><i class="fa fa-info"></i>Infos</a>
+		</div>	
+	<div class="aktionButtons"><a class="green" href="article-<%$id%>-<%$d->{title_enc}%>.html"><i class="fa fa-chevron-circle-right"></i>Zur Seite</a></div>
+% }
+% else {
+	<div class="aktionPreis <%$aktionPreis ? ' sale' : ''%>">CHF <%$d->{price_incl_vat}%></div>
+	<div class="buyButton">
+		<a href="basket.html?id=<%$id%>"><i class="fa fa-shopping-cart"></i>kaufen</a>
+		</div>			
+	<div class="aktionButtons"><a href="express_checkout.html?id=<%$id%>"><i class="fa fa-cart-arrow-down"></i>Express Kauf</a></div>
+% } 
+
+</div> <!--end aktionenBox -->

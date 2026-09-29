@@ -1,0 +1,80 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $addr = $A->get_address(1); # -- Owner Data
+
+	my $msg = $C->{CGI}->param('msg');
+</%init>
+
+<form name="contact_form" id="contact_form" action="#" method="post">
+                            
+<ol><br />
+
+<%$C->prop('form_title')%><br /><br />
+
+% if ($msg) {
+	<b style='color:red'><%$msg%></b><br><br>
+% }
+                    
+                            <li class="row clearfix">
+                            <label class="input_tag" for="gender"><% $C->prop('form_gender') %></label>
+	  						<div class="inputOuter">
+      						<select name="contact_gender">
+	                     <option value="<% $C->prop('form_male') %>"  SELECTED><% $C->prop('form_male') %></option>
+                  <option value="<% $C->prop('form_female') %>" ><% $C->prop('form_female') %></option>
+	    					</select></div></li>
+                            
+								<li class="row clearfix">
+									<label class="input_tag" for="firstName"><% $C->prop('form_surname') %> <em>*</em></label>
+									<div class="inputOuter">
+									<input id="contact_surname" type="text" name="contact_surname" value="<% $addr->{firstname} %>" placeholder="Peter">
+									</div>
+								</li>
+								<li class="row clearfix">
+									<label class="input_tag" for="secondName"><% $C->prop('form_name') %> <em>*</em></label>
+									<div class="inputOuter">
+									<input id="contact_name" type="text" name="contact_name" value="<% $addr->{lastname} %>" placeholder="Muster">
+									</div>
+								</li>
+								<li class="row clearfix">
+									<label class="input_tag" for="email"><% $C->prop('form_emailadress') %> <em>*</em></label>
+									<div class="inputOuter">
+									<input id="contact_email" type="text" name="contact_email" value="<% $C->get_email($C->getUID()) %>" placeholder="example@example.com">
+									</div>
+								</li>
+								<li class="row clearfix">
+									<label class="input_tag" for="tele"><% $C->prop('form_tel') %></label>
+									<div class="inputOuter">
+									<input id="contact_tel" type="text" name="contact_tel" value="" placeholder="+41769669000">
+									</div>
+								</li>
+								</ol>
+
+							<ol>
+								<li class="row clearfix">
+                                <label class="input_tag"><% $C->prop('form_subject') %><em>*</em></label>
+                                <div class="inputOuter">
+              					 <input name="contact_subject" type="text" class="formfield" value="" >
+              </div>
+              </li>
+              
+              <li class="row clearfix">
+              <label class="input_tag"><% $C->prop('form_message') %><em>*</em></label>
+                <div class="inputOuter">
+							<textarea name="message" maxlength="500" placeholder="Your Message *"></textarea>
+                            <p>Verbleibende Zeichen: <span class="charleft">500</span></p>
+						</div><!--end six-->
+								</li>
+						</ol>
+							<ol>
+								<li class="row clearfix">
+									<label class="input_tag" for="firstName">&nbsp;</label>
+									<div class="inputOuter button">
+                                    <input id="contact_submit" class="blu_btn"
+			type="submit" name="bSubmit" value="<% $C->prop('btn_senden') %>">
+							
+									</div>
+								</li>
+							</ol>
+						</form>

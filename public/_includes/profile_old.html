@@ -1,0 +1,94 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my ($email, $newsletter) = @{$C->query("SELECT email, newsletter FROM users WHERE id=" . $C->getUID())};
+
+	$C->load_properties('account');
+	my $prop = $C->{property}->{'account'};
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my %addr_label = ( 1 => $prop->{"bill_addr$l"}, 2 => $prop->{"deliv_addr$l"} );
+</%init>
+%
+
+<!-- ######################################################################################################## -->
+<form method=post>
+<div id='account_link'>
+<table  width="97%" border="0" cellpadding="2" cellspacing="2">
+<tr><td width="97%" valign="middle" background="images/detail_titel_back.jpg"><b>Rechnungs und Lieferadresse anpassen</b></td></tr>
+</table><br>
+<table border=0>
+<tr valign=top>
+%	for (my $i = 2; $i > 0; $i--) {
+%		my $addr = $A->get_address($i);
+		<td>
+		<b><% $addr_label{$i} %></b><br><br>
+
+		<table>
+		<tr><td nowrap>Vor- / Nachname</td>
+		<td><input type=text value='<% $addr->{firstname} %>' name=firstname_<% $i %> size=10>
+		<input type=text value='<% $addr->{lastname} %>' name=lastname_<% $i %>>
+		</td></tr>
+		<tr><td>Firma</td> <td><input type=text value='<% $addr->{company} %>' name=company_<% $i %> size=34></td></tr>
+		<tr><td>Adresse</td> <td><input type=text value='<% $addr->{street} %>' name=street_<% $i %> size=34></td></tr>
+		<tr><td>PLZ / Ort</td>
+		<td nowrap><input type=text value='<% $addr->{zip} %>' name=zip_<% $i %> size=5>&nbsp;&nbsp;&nbsp;
+			<input type=text value='<% $addr->{city} %>' name=city_<% $i %> size=23>
+		</td></tr>
+		<tr><td>Tel.</td> <td><input type=text value="<% $addr->{phone} %>" name=phone_<% $i %> size=34></td></tr>
+		</table>
+		</td>
+%	}
+</tr>
+</table><br><br><table  width="97%" border="0" cellpadding="2" cellspacing="2">
+<tr>
+  <td width="97%" valign="middle" background="images/detail_titel_back.jpg"><b>Account Daten anpassen</b></td></tr>
+</table>
+<br />
+<table width="60%" border="0">
+  <tr>
+    <td width="36%"><b><% $prop->{"your_login_name$l"}%>:</b></td>
+    <td width="64%"> <input type=text 
+		value='<% $C->getSessData('uname') || $C->whoami() %>' name=uname size=42>
+
+%	if ($C->whoami() =~ /\@/) {
+		&mdash; Vorschlag: <b><% $C->propose_uname($C->whoami()) %></b>
+%	}
+
+</td>
+  </tr>
+  <tr>
+    <td><b>Passwort:</b></td>
+    <td><input type=text name=pass_old size=12> 
+      &nbsp;Altes Passwort eingeben</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><input type=text name=pass_new size=12> 
+       &nbsp;Neues Passwort eingeben</td>
+  </tr>
+  <tr>
+    <td><b>E-Mail:</b></td>
+    <td><input type=text name=email value="<% $email %>" size=42>
+		</td>
+  </tr>
+  <tr>
+    <td><b>Newsletter aboniert:</b></td>
+    <td><input type=checkbox name=newsletter<% $newsletter ? ' checked' : '' %>></td>
+  </tr>
+</table>
+<br>
+
+
+<input type=submit value='Speichern' name='bSaveProfile'>
+</form><br>
+
+
+</div>
+<!-- ######################################################################################################## -->

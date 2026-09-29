@@ -1,0 +1,61 @@
+
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $lang = $args{'lang'} || 'de';
+	my $discount = $A->get_discount($id);
+	# XXX my $price_net = sprintf('%.2f', $d->{price} * (1 - $discount / 100) * (1 + $C->{CONFIG}->{vat} / 100));
+</%init>
+% if ($C->is_devel()) {
+	<&page_info.html, "START &ndash; discount = $discount"&>
+% }
+% # ==================================================================================================
+% unless ($d->{condition} eq 'IP') {
+       
+%	if ($discount) {
+	<div id="detail_price_total">
+		<div class="detailPreisdiscount"> CHF <%$C->round_amount($d->{price_incl_vat} + $d->{upsell_tot})%></div>
+	</div>
+		<br /><br>
+		<div id="detailPreissmall"><div>anstatt <s>CHF <% $d->{price_orig_incl_vat} %></s></div></div>
+%	}
+%	else {
+		<div id="detail_price_total">
+		<div class="detailPreis"> CHF <%sprintf('%.2f', $d->{price_incl_vat} + $d->{upsell_tot})%></div>
+% # --		<div class="detailPreis"> CHF <%$C->round_amount($d->{price_incl_vat} + $d->{upsell_tot})%></div>
+		</div>
+%	}
+% if ($C->{CONFIG}->{vat} > 0) {
+<div id="productMWST"><%$C->p('incl')%> <%$C->{CONFIG}->{vat}%>% <%$C->p('mwst')%></div>
+% }
+
+%	if ($d->{count} < 1) {
+		<div class="deliveryNot"><a title=">hier klicken" href="/contact.html"><%$C->{CONFIG}->{product_over_stock} || 'Produkt Auf Anfrage'%></a></div>
+%	}
+%	else {
+		<div class="deliveryNow">Sofort lieferbar</div>
+%	}
+	<div id="artikel"><%$d->{art_no}%></div>
+	
+% #	<ul><li><span><%$C->p('article_nr')%></span><span><%$d->{art_no}%></span></li>
+% #	<li><span><%$C->p('available')%></span><span><%$d->{count}%></span></li>
+% #	<li><span><%$C->p('condition')%></span><span><%$d->{condition}%></span></li>
+% #	<li><span><%$C->p('warranty')%></span><span>1 Monat</span></li></ul>
+
+
+% }
+% # ==================================================================================================
+
+</div><!--end productLeft -->
+
+% #-- Moved to Prouct.html<div id="addtoCart"> <a class="blu_btn" href="basket.html?id=<%$id%>"><%$C->p('to_basket')%></a> </div>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'END'&>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

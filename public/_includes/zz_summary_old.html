@@ -1,0 +1,85 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $basket_h = $A->get_basket_items();
+	my $prod_options = $A->get_basket_options();
+
+	my $pay_meth = $C->{CGI}->param('checkout_zahlungsart_select') || '';
+	# -- One of: "cod", "cc", "paypal", "inv"
+	unless ($pay_meth) {
+		$m->out('XX missing pay meth<br>');
+	}
+
+	$C->saveSessData('pay_meth', $pay_meth);
+	$C->cgi2session();
+
+	my $basket_total = $A->get_basket_total($C->is_devel());
+</%init>
+%
+
+<!-- ######################################################################################################## -->
+% my $colspan = 8; # -- number of cells in a row
+	    <table width="94%" border="0" class="br" cellpadding="4" cellspacing="0">
+	      <tr class="con_title" style="background-color:#eee;">
+		<td align="center" class="header"><% $C->p('piece') %></td>
+		<td align="center" class="header"><% $C->p('artikelnr') %></td>
+		<td class="header"><% $C->p('prod_name') %></td>
+		<td colspan="2" align="center" class="header"><% $C->p('price_p_piece') %></td>
+		<td class="header">&nbsp;</td>
+		<td align="right" class="header" colspan=2><% $C->p('sub_total') %></td>
+	      </tr>
+
+% if ($basket_h->rows() < 1) {
+	<tr class='br1'><td colspan=<% $colspan %> align=center><a href='/categ.html?id=1'><% $C->p('no_items') %></a></td></tr>
+% }
+
+% my $ship_tot = 0; # XX -- Could be read from "get_basket_total.al"
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count) = @{$r};
+%	my $d = $A->get_product($prod_id);
+%	my $price_incl_vat = sprintf('%.2f', ($d->{price} + $A->{basket_options_hash}->{$prod_id}) * (1 + $C->{CONFIG}->{vat} / 100));
+%	# XXX $C->saveSessData("prod_id_$prod_id\_price_incl_vat", $price_incl_vat);
+%	my $total_line = $count * $price_incl_vat;
+%	$ship_tot += $A->get_shipping( pay_meth => $pay_meth eq 'cod' ? 3 : 4, count => $count );
+	<tr class="br1">
+		<td width="54" align="center"><% $count %></td>
+		<td width="62"><div align="center"><% $d->{art_no} %></div></td>
+		<td width="280"><a href="/product.html?id=<% $prod_id %>"><% $d->{'description'} %></a></td>
+		<td colspan="2" align="middle">CHF&nbsp;<% $price_incl_vat %></td> 
+		<td colspan="3" align="right">CHF&nbsp;<% $C->decimal_mark($total_line) %></td>
+	</tr>
+        <tr><td colspan="8"><img src="images/trennlinien_lang.gif" height="1" width="680"></td></tr>
+% }
+
+  <tr class="br1"><td colspan="8" class="bottom_line" align="center"><img src="images/spacer.gif" width="14" height="2"></td></tr>
+	      
+	<tr>
+	  <td colspan="6" width="540"><a href="#" class="small_link"><% $C->p('delivery_cost') %></a> <% $C->p('package') %></td>
+
+		<td colspan="2" align="right" nowrap>CHF&nbsp;<% sprintf('%.2f', $ship_tot * (1 + $C->{CONFIG}->{vat} / 100)) %></td>
+	</tr>
+ <tr><td colspan="8"><img src="images/trennlinien_lang.gif" height="1" width="680"></td></tr>
+% my $grand_tot = sprintf('%.2f', $basket_total + $ship_tot * (1 + $C->{CONFIG}->{vat} / 100));
+% # -- Gesamtsumme inkl.
+ <tr class="br">
+	<td colspan="7" align="left"><b><% $C->p('sum_total') %> <% $C->{CONFIG}->{vat} %> % MWST &nbsp;</b></td>
+	<td align="right"><b>CHF&nbsp;<% $C->decimal_mark($grand_tot) %></b></td>
+      </tr>
+	
+%	my $vat = sprintf('%.2f', $grand_tot / (100 + $C->{CONFIG}->{vat}) * $C->{CONFIG}->{vat});
+	 <tr><td colspan="8"><img src="images/trennlinien_lang.gif" height="1" width="680"></td>
+     <tr>
+		<td colspan="7" width="540"><% $C->p('include') %> <% $C->{CONFIG}->{vat} %> % MWST</td>
+	 <td align="right">CHF&nbsp;<% $vat %></td>
+	</tr>
+
+    </table>
+<!-- ######################################################################################################## -->
+
+<br><br>
+
+% if ($C->is_devel()) {
+	<& debug.html, CORE => $C &>
+% }

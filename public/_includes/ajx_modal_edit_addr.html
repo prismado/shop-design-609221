@@ -1,0 +1,50 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id');
+	my $type = $cgi->param('type');
+
+	my $d = $A->get_address_by_id($id, $type);
+	delete $d->{_addr_msg};
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=type value="<%$type%>">
+%
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Edit Address</h3>
+  </div>
+%
+  <div class="modal-body">
+	<p>
+	<table class="mytable table-hover">
+% foreach (keys %{$d}) {
+	<tr><th><%ucfirst $_%></th>
+	<td><input style='margin-top:5px' type=text name="<%$_%>" value="<%$d->{$_}%>"></td>
+	</tr>
+% }
+	</table>
+	</p>
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" name="bUpdateAddr" type=submit value="Update">
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

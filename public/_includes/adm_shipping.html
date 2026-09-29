@@ -1,0 +1,195 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $free_as_of = $cgi->param('free_as_of');
+	my $amount     = $cgi->param('amount');
+
+	my $vat = $C->{CONFIG}->{vat_1} || $C->{CONFIG}->{vat} || $C->{CONFIG}->{vat_ch};
+	   $vat += 0;
+
+	if ($cgi->param('bUpdate')) {
+		$C->{dbh}->do("UPDATE config SET val='$free_as_of' WHERE `key`='shipping_free_as_of'");
+		$C->{dbh}->do("UPDATE config SET val='$amount'     WHERE `key`='shipping_amount'");
+		my $shipping_model = $cgi->param('shipping_model') + 0;
+		$C->{dbh}->do("UPDATE config SET val='$shipping_model' WHERE `key`='shipping_model'");
+		$C->refresh_config();
+		$C->log(msg=>"WARN: Shipping Model has been changed to $shipping_model: Free as of $free_as_of", importance=>1,
+				service=>'adm_shipping');
+	}
+	elsif ($cgi->param('bUpdOpt')) {
+		foreach my $type (qw(box pic pi2 ins cc postpac_prio std exp)) {
+			if ($cgi->param("active_$type")) {
+				$C->{dbh}->do("delete FROM config WHERE `key`='shipping_inact_$type'") or $m->out("ERR $DBI::errstr<br>");
+			}
+			else {
+				$C->{dbh}->do("insert into config (`key`, val) VALUES ('shipping_inact_$type', '1')");
+			}
+		}
+		my $box = sprintf('%.2f', $cgi->param('ship_box'));
+		my $pic = sprintf('%.2f', $cgi->param('ship_pic'));
+		my $pi2 = sprintf('%.2f', $cgi->param('ship_pi2'));
+		my $ins = sprintf('%.2f', $cgi->param('ship_ins'));
+		my $inv = sprintf('%.2f', $cgi->param('ship_inv'));
+		my $cc  = sprintf('%.2f', $cgi->param('ship_cc'));
+		my $std = $cgi->param('ship_std') + 0;
+		my $exp = $cgi->param('ship_exp') + 0;
+		my $x1  = sprintf('%.2f', $cgi->param('ship_x1' ));
+		my $x2  = sprintf('%.2f', $cgi->param('ship_x2' ));
+		my $postpac_prio = $cgi->param('ship_postpac_prio') + 0;
+
+		$dbh->do("UPDATE config SET val='$box' WHERE `key`='ship_box'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$ins' WHERE `key`='ship_ins'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$inv' WHERE `key`='ship_inv'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$cc'  WHERE `key`='ship_cc'" ) or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$std' WHERE `key`='ship_std'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$exp' WHERE `key`='ship_exp'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$pic' WHERE `key`='ship_pic'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$pi2' WHERE `key`='ship_pi2'") or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$x1'  WHERE `key`='ship_x1'" ) or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$x2'  WHERE `key`='ship_x2'" ) or $m->out("ERR $DBI::errstr<br>");
+		$dbh->do("UPDATE config SET val='$postpac_prio' WHERE `key`='ship_postpac_prio'") or $m->out("ERR $DBI::errstr<br>");
+		$C->refresh_config();
+	}
+
+	my $shipping_amount     = sprintf('%.2f', ($amount || $C->{CONFIG}->{shipping_amount}));
+	my $shipping_free_as_of = $cgi->param('bUpdate') ? $free_as_of : $C->{CONFIG}->{shipping_free_as_of};
+
+	my %shipping_hr = (
+		cc  => '<span style="color:maroon">XX Credit Card (legacy)</span>',
+		ins => 'Insurance',
+		inv => 'XX Invoice / Rechnung',
+		pic => 'Self-pickup',
+		pi2 => '2nd Self-pickup',
+		exp => 'Express',
+		box => 'Special Box',
+		postpac_prio => 'PostPac Priority',
+		std => 'Standard (Default)'
+	);
+</%init>
+<% $C->bootstrap_alert(q~
+	<b>HINWEIS</b>&nbsp;&nbsp;
+	Einstellungsm&ouml;glichkeit der Versandpreise auch &uuml;ber <a href="adx/special_keys.html?area=ship">neue Oberfl&auml;che</a> m&ouml;glich
+~, 'success', 'margin-top:10px') %>
+<br><br>
+
+<div style='margin-top:10px' class="pull-right">
+	See also: <a href="adm_pay_methods.html">Minimum Amount</a> &middot; <a href="adm_pay_methods.html">Payment Methods</a>
+</div>
+<h2><span style='font-size:30px; margin-right:5px' class="icon-truck pull-left text-info"></span>Shipping Options</h2>
+
+% if ($args{debug}) {
+	(Debug) - See <a href="adm_special_keys.html?area=ship&debug=1">CONFIG</a> prefix "ship_..."<br><br>
+% }
+
+<form method=post>
+<table class="table table-hover">
+<thead>
+<tr>
+	<th>Active</th>
+% if ($args{debug}) {
+	<th style='text-align:center'>Edit</th>
+% }
+	<th>Method</th>
+	<th style="width:120px">Short Code</th>
+	<th style='text-align:right'>Price <%$C->{CONFIG}->{default_curr}%>&nbsp;</th>
+% if ($vat > 0) {
+	<th style='text-align:right'>Price incl. <% $vat %> % VAT&nbsp;</th>
+% }
+</tr>
+</thead>
+
+% my $opt_count = 0;
+% foreach my $key (sort keys %{$C->{CONFIG}}) {
+%	next unless $key =~ /^ship_(.+)/;
+%	$opt_count++;
+%	my $shipping_label = $shipping_hr{$1} || "*$1*";
+%	my $is_active = $C->{CONFIG}->{"shipping_inact_$1"} ? 0 : 1;
+%	my $style = $is_active ? 'font-weight:bold' : 'color:#b1b1b1';
+	<tr class="<% $is_active ? 'alert' : '' %>">
+	<td class="<% $is_active ? 'alert alert-success' : '' %>" style="width:22px; text-align:center"><input type=checkbox
+		name="active_<%$1%>"<%$C->{CONFIG}->{"shipping_inact_$1"} ? '' : ' checked'%>></td>
+% if ($args{debug}) {
+	<td style='text-align:center'>
+		<a href="adm_special_keys.html?area=ship_<%$1%>"><i class="icon-edit"></i></a>
+	</td>
+% }
+	<td style="<% $style %>"><%$shipping_label%></td>
+	<td style="<% $style %>" class="<% $is_active ? 'alert alert-success' : '' %>"><% uc $1 %></td>
+	<td style='text-align:right'>
+		<input type=text style='width:95px; text-align:right; margin-bottom:0px; <%$style%>'
+			name=ship_<%$1%> value="<%$C->{CONFIG}->{$key}%>">
+	</td>
+% if ($C->{CONFIG}->{vat} > 0) {
+	<td style='text-align:right; <%$style%>'><b><%sprintf('%.2f', $C->{CONFIG}->{$key} * (1 + $C->{CONFIG}->{vat} / 100))%></b></td>
+% }
+	</tr>
+% }
+% unless ($opt_count) {
+	<tr><td colspan="<%$C->{CONFIG}->{vat} > 0 ? 5 : 4%>" style="text-align:center">No special shipping configured</td></tr>
+% }
+</table>
+<input type=submit class='btn btn-primary' value="Update" name=bUpdOpt>
+<input type=button class="btn" onclick="document.location='__dashboard.html'" value="Back">
+</form>
+
+<h2 style="margin-bottom:0px">Shipping Amount &amp; Thresholds</h2>
+
+<form method=post>
+
+<h5 class="pull-left">Current Shipping Model:</h5>
+% unless ($C->{CONFIG}->{shipping_model}) {
+	<a href="config2.html">Create Key</a><br>
+% }
+<select style="margin-top:5px; margin-left:8px; font-weight:bold" name="shipping_model">
+<option value="1"<% $C->{CONFIG}->{shipping_model} == 1 ? ' selected' : ''%>>1 &ndash; Normal (Prices above)</option>
+<option value="2"<% $C->{CONFIG}->{shipping_model} == 2 ? ' selected' : ''%>>2 &ndash; Unused</option>
+<option value="3"<% $C->{CONFIG}->{shipping_model} == 3 ? ' selected' : ''%>>3 &ndash; Based on Weight, base price up to 10 kg</option>
+<option value="4"<% $C->{CONFIG}->{shipping_model} == 4 ? ' selected' : ''%>>4 &ndash; Shipping as product</option>
+<option value="5"<% $C->{CONFIG}->{shipping_model} == 5 ? ' selected' : ''%>>5 &ndash; Based on Weight</option>
+<option value="6"<% $C->{CONFIG}->{shipping_model} == 6 ? ' selected' : ''%>>6 &ndash; Multiplication of the number of pieces</option>
+</select>
+
+% if ($C->{CONFIG}->{shipping_model} == 3) {
+	<a href="adm_shipping_v3.html">Settings</a>
+% }
+% elsif ($C->{CONFIG}->{shipping_model} == 4) {
+	<a href="adm_shipping_v4.html">Settings</a>
+% }
+% elsif ($C->{CONFIG}->{shipping_model} == 5) {
+	<a href="adm_shipping_v5.html">Settings</a>
+% }
+
+<div style="margin-top:5px" class="well">
+Purchase as of CHF <input name=free_as_of type=text style='width:77px; margin-top:10px; text-align:right; font-weight:bold'
+	value="<%sprintf('%.2f', $shipping_free_as_of)%>"> (incl. VAT): <b>Free Shipping</b> &mdash;
+		<a href="/adx/special_keys.html?area=min_quant">Minimum Surcharge</a> <% sprintf('%.2f', $C->{CONFIG}->{min_quant_surcharge}) %><br>
+%	if ($shipping_free_as_of < 0.01) {
+		NOTICE: <a href="adm_shipping2.html">Default shipping model</a> is now <span
+			class="label label-success">active</span>! &ndash; Define a value above to switch it off
+%	}
+%	else {
+		(E.g. 100.00. Set to <b>0</b> for default shipping cost behaviour)
+%	}
+	<br><br>
+
+Shipping below purchase of <%$shipping_free_as_of%> <%$C->{CONFIG}->{default_curr}%> <input
+	name=amount type=text style='width:55px; margin-top:10px; text-align:right; font-weight:bold'
+	value="<%$shipping_amount%>"> (= <%$A->add_vat($shipping_amount)%> incl. VAT)<br>
+
+% if ($shipping_free_as_of > 0) {
+
+<i class="icon-info-sign" style='font-size:20px'></i>
+Ein <a href="adm_shipping2.html">alternatives Berechnungsmodell</a> basiert auf der Kombination Menge und Sale Type.
+% }
+</div>
+<input type=submit class='btn btn-primary' value="Update" name=bUpdate>
+<input type=button class='btn btn-info' onclick="document.location='adm_shipping_calculator.html'" value="Calculator">
+</form>
+
+<%doc>
+	__METACLONING__
+</%doc>

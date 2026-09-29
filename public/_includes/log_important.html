@@ -1,0 +1,30 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $users = $C->get_logged_in_users();
+</%init>
+<table class="mytable">
+<thead>
+<tr>
+	<th colspan="3" style='text-align:center'>Online</th>
+</tr>
+</thead>
+% foreach (sort @{$users}) {
+%	my ($age_m, $uid, $ts, $uname) = split /\t/;
+%	$age_m += 0;
+%	my $ago = "$age_m min ago";
+%	if ($age_m > 59) {
+%		# XXX my $age_h = int($age_m / 60) + 1;
+%		my $age_h = sprintf('%d', $age_m / 60);
+%		$ago = "$age_h hours ago";
+%	}
+	<tr><td nowrap><a href="user.html?id=<%$uid%>"><i style="margin-right:3px"
+		class="icon-user"></i><%(split /\@/, $uname)[0]%></a></td>
+	<td nowrap><%$C->trans_date_very_short($ts)%></td>
+	<td nowrap style='text-align:right'><%$ago%></td></tr>
+% }
+</table><br>
+
+<%doc>
+	__METACLONING__
+</%doc>

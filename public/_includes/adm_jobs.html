@@ -1,0 +1,151 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @queue = ();
+
+	my $wcl = $args{filter} ? "and featname like '%$args{filter}%'" : '';
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, substr(featkey, 10, 31), featname, weight
+		from 	config_prod_feat 
+		where 	lang='sys' and featkey like 'job\_path\_%' $wcl
+		order	by 2
+		limit 	9999
+	~);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	if ($sth->rows() == 1 && $args{filter}) {
+		my $r = $sth->fetch();
+		$m->redirect("adm_job.html?id=$r->[0]");
+	}
+</%init>
+<div style="margin-top:20px" class="pull-right">
+	<a href="adm_jobs.html?bAdd=1">Add Job</a>
+</div>
+<h2><i class="icon-cog"></i> <% $sth->rows() %> System Jobs &middot; (<% $C->{CONFIG}->{theme} %>)</h2>
+
+<script language="JavaScript">
+	function modal_run(id) {
+		$('#ajx_modal').load('_includes/ajx_modal_run_googlefeed.html?id=' + id);
+        }
+</script>
+
+<table class="mytable table-hover">
+<thead>
+	<tr style="line-height:35px">
+		<th style="width:9%">Job-ID</th>
+		<th style="width:20%">Name</th>
+		<th>Path</th>
+		<th>Active</th>
+		<th style="text-align:right">Runs every</th>
+		<th style="text-align:right">Last run</th>
+		<th style="text-align:right">Last RC</th>
+		<th style="text-align:right">Log&nbsp;</th>
+	</tr>
+</thead>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $featkey, $featname, $weight) = @{$r};
+%	my $is_active  = $C->get_safe_property("job_detail_$id\__is_active", 'sys') + 0;
+%	my $runs_every = $C->get_safe_property("job_detail_$id\__runs_every", 'sys') + 0;
+%	my $last_rc    = $C->get_safe_property("job_detail_$id\__rc", 'sys') + 0;
+%	my $last_run   = $C->get_workval("run_job_id_$id");
+	<tr style="line-height:35px" <% $is_active ? 'class="alert"' : '' %>>
+	<td><a href="adm_job.html?id=<%$id%>"><% $id %></a></td>
+	<td style="<% $is_active ? 'font-weight:bold' : 'color:#cccccc' %>"><% $featkey %></td>
+	<td style="<% $is_active ? '' : 'color:#cccccc' %>"><% $featname %></td>
+	<td><% $is_active ? '<span style="color:green">Yes</span>' : '<span style="color:red">No</span>' %></td>
+	<td style="text-align:right; <% !$is_active ? 'color:#cccccc' : ''%>"><% $runs_every %> min</td>
+	<td style="text-align:right"><% $C->trans_date_short($last_run) %></td>
+	<td style="text-align:right; <% !$is_active ? 'color:#cccccc' : ''%>">
+%		if ($is_active) {
+			<span style="color:<% $last_rc == 0 ? 'green' : 'red' %>"><% $last_rc %></span>
+%		}
+%		else {
+			<% $last_rc %>
+%		}
+	</td>
+	<td style="text-align:right"><a href="adm_log.html?importance=4&filter=<% $featkey %>&show_module=1">Log</a>&nbsp;</td>
+	</tr>
+% }
+</table>
+
+<br />
+<form>
+<input type=button class="btn" onclick="document.location='adm_config.html'" value="Back" />
+</form>
+
+<h3>Cronjob(s)</h3>
+
+<p>
+	<a href="zz_trash_autojobs.txt">Autojobs</a> &mdash; <a href="zz_trash_crontab.txt">Crontab</a> &mdash;
+	<a href="zz_trash_crontab_2.txt">Crontab (compact)</a>
+</p>
+
+<table class="mytable table-hover">
+<tr>
+	<th>Command</th>
+	<th>Min</th>
+	<th>Hour</th>
+	<th>Params</th>
+</tr>
+% foreach my $d (@{ $args{sysjobs}->{cache_lines_c} }) {
+%	next if $d->{CMD} =~ /\/tweet\_.+/ or $d->{CMD} =~ /\/twitter\_.+/ or $d->{CMD} =~ /\/twtimeline\_.+/ or $d->{CMD} =~ /\/mailcow\_.+/;
+%	next if $d->{CMD} =~ /inbox\_wizard/;
+	<tr style="line-height:210%">
+	<td><code><% $C->shorten_title($d->{CMD}, 105) %></code></td>
+	<td style="width:4%"><% $d->{MIN} %></td>
+	<td style="width:4%" nowrap><% $d->{H} %></td>
+	<td>
+		<% $d->{WD} %>
+%		foreach (sort keys %{$d}) {
+%			next if $_ eq 'CMD' or $_ eq 'H' or $_ eq 'MIN' or $_ eq 'WD';
+			&bull; "<% $_ %>"=<% $d->{$_} %>&nbsp;&nbsp;
+%		}
+	</td>
+	</tr>
+% }
+</table>
+
+% foreach (@{ $args{sysjobs}->{cache_lines_2} }) {
+%	next unless length($_) > 2;
+%	next if /^\#/;
+	[ DN114 ] &middot; <tt><% $_ %></tt><br>
+% }
+<hr />
+
+% foreach ( sort keys %{$args{sysjobs}} ) {
+%	next if $_ eq 'crontab' or $_ eq 'x_lines' or $_ eq 'cache_lines' or $_ eq 'cron_orig';
+	[ sysjobs ] &middot; <b><% $_ %></b> = <% $args{sysjobs}->{$_} %><br>
+% }
+
+% foreach (sort keys %{ $args{sysjobs}->{cron} }) {
+	[ sysjobs - cron ] &middot; <b><% $_ %></b> = <% $args{sysjobs}->{cron}->{$_} %><br>
+% }
+
+% if ($args{appmsg} or $args{debug}) {
+	<div class="well"><% $args{appmsg} %></div>
+% }
+
+<form name="actionForm" method="post" action="adm_auctionline.html">
+<input type="hidden" name="action" value="">
+</form>
+<script language="JavaScript">
+	function mydo (action) {
+		document.actionForm.action.value = action;
+		document.actionForm.submit();
+	}
+</script>
+
+<div class="pull-right">
+	<a href="adm_dump.html?action=dump&table=config_prod_feat">Dump Config</a>
+</div>
+
+<div id="ajx_modal"></div>
+<%doc>
+	__METACLONING__
+</%doc>

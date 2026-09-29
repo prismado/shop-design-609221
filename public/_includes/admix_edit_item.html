@@ -1,0 +1,16 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+
+	my $id = $C->{CGI}->param('id') + 0;
+
+	my $referer = $ENV{HTTP_REFERER} || $ENV{SCRIPT_URL};
+
+	$C->log(msg=>"WARN: Legacy call from $referer: ID $id", importance=>1, service=>'admix_edit_item');
+
+	$m->redirect("/adm_edit_product.html?id=$id");
+</%init>
+<%doc>
+	__METACLONING__
+</%doc>

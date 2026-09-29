@@ -1,0 +1,96 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A    = $args{A};
+	my $C    = $args{C};
+	my $UINF = $args{UINF};
+	# -- $args{id} is the UID
+
+	my $sth = $C->{dbh}->prepare('select id, subject from newsletter where newsletter_type=2');
+	   $sth->execute();
+
+	my $st = $C->{dbh}->prepare(
+		"select tstamp, xkey, xval from users_details where user_id=$args{id} and xkey like 'mail\_sent\_%' order by 1 desc limit 25");
+	$st->execute();
+</%init>
+% # -- CKEditor
+<script src="ckeditor.js"></script>
+<script src="assets/uilanguages/languages.js"></script>
+% # -- /CKEditor
+
+<div style="margin-top:-12px !important" class="pull-right">
+	<b>Template:</b>
+		<select style="margin-top:8px; margin-left:10px; width:290px" onchange="load_mail(this.value)" name="nlid">
+	<option value="0">- Please select -</option>
+%	while(my $r = $sth->fetch()) {
+%		my ($nlid, $subject) = @{$r};
+		<option value="<%$nlid%>"><%$subject%></option>
+%	}
+	<option value="-1">Send Password</option>
+	</select>
+</div>
+
+<div style="margin-top:30px">
+	<b>E-Mail to:</b>&nbsp;&nbsp;<%$UINF->{firstname}%> <%$UINF->{lastname}%> &lt;<%$UINF->{email}%>&gt;
+</div>
+
+% if ($args{debug}) {
+	<% $C->html_debug('Debug', 'inc_dashboard_user_mail') %>
+% }
+
+% if ($args{bSendMail}) {
+%	my $nlid = $C->{CGI}->param('nlid') + 0;
+%	my $subject = $C->query("select subject from newsletter where id=$nlid")->[0];
+	<% $C->bootstrap_alert("<b>OK</b>&nbsp;&nbsp;E-Mail &laquo;$subject&raquo; has been sent.", 'success', 'margin-top:20px') %>
+% }
+
+<span id="my_ckeditor_area">
+<br />
+<textarea name="mailtext" id="editor1"></textarea><br />
+</span>
+
+<div id="ajx_mail"></div>
+
+<&inc_ckeditor_js.html&>
+
+<span id="send_area_init">
+<br />
+	<table class="mytable table-hover">
+	<thead>
+		<tr>
+			<th>Send Time</th>
+			<th>Subject</th>
+			<th>Sent to</th>
+		</tr>
+	</thead>
+% while(my $rr = $st->fetch()) {
+%	my ($tstamp, $xkey, $xval) = @{$rr};
+%	my ($subject, $nlid, $to) = split /\t/, $xval;
+	<tr>
+		<td><%$C->trans_date_short($tstamp)%></td>
+		<td><%$subject%></td>
+		<td><%$to%></td>
+	</tr>
+% }
+%	unless ($st->rows()) {
+		<tr><td colspan="3">So far no e-mails have been sent to this user</td></tr>
+%	}
+	</table>
+</span>
+
+<script language="JavaScript">
+	$(document).ready(function(){
+		editor.destroy();
+		document.getElementById('my_ckeditor_area').style.display='none';
+	});
+
+	function load_mail(nlid) {
+		editor.destroy();
+  $('#ajx_mail').load('ajx_send_mail.html?pid=<%$$%>&nlid=' + nlid + '&uid=' + <%$args{id}%> + '&debug=' + <%$args{debug} || 0%>);
+		document.getElementById('send_area_init').style.display='none';
+	}
+</script>
+
+<%doc>
+	__METACLONING__
+</%doc>

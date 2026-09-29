@@ -1,0 +1,408 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $perm = $args{perm};
+
+	my $cgi = $C->{CGI};
+
+	my $show_help_sys_config = $cgi->param('show_help_sys_config');
+
+	my $cfg_show_sold_out_prods = $C->get_sys_config('show_sold_out_prods') + 0;
+	my $cfg_ssop_id = $C->{id};
+
+	my $cfg_upload_path_pic = $C->get_sys_config('upload_path_pic');
+	my $cfg_upload_path_pic_id = $C->{id};
+	unless ($cfg_upload_path_pic_id) {
+		$cfg_upload_path_pic_id = $C->set_property('_global', 'cfg_upload_path_pic_sys', 'produkte/docs');
+		$cfg_upload_path_pic = $C->get_sys_config('upload_path_pic');
+	}
+
+	my $cfg_upload_path_doc = $C->get_sys_config('upload_path_doc');
+	my $cfg_upload_path_doc_id = $C->{id};
+	unless ($cfg_upload_path_doc_id) {
+		$cfg_upload_path_doc_id = $C->set_property('_global', 'cfg_upload_path_doc_sys', 'produkte/docs');
+		$cfg_upload_path_doc = $C->get_sys_config('upload_path_doc');
+	}
+
+	my $cfg_ckeditor_css = $C->get_sys_config('ckeditor_css');
+	my $cfg_ckeditor_css_id = $C->{id};
+	unless ($cfg_ckeditor_css_id) {
+		$cfg_ckeditor_css_id = $C->set_property('_global', 'cfg_ckeditor_css_sys', 'lib/bootstrap/css/bootstrap.min.css');
+		$cfg_ckeditor_css = $C->get_sys_config('ckeditor_css');
+	}
+
+	my $cfg_greeting_card = $C->get_safe_property('greeting_card', 'sys');
+	my $cfg_greeting_card_id = $C->{id};
+	unless ($cfg_greeting_card_id) {
+		$cfg_greeting_card_id = $C->set_safe_property('greeting_card', 0, 'sys');
+		$cfg_greeting_card = $C->get_safe_property( 'greeting_card', 'sys');
+	}
+
+	my $cfg_greeting_card_art_no = $C->get_safe_property('greeting_card_art_no', 'sys');
+	my $cfg_greeting_card_art_no_id = $C->{id};
+	unless ($cfg_greeting_card_art_no_id) {
+		$cfg_greeting_card_art_no_id = $C->set_safe_property('greeting_card_art_no', 0, 'sys');
+		$cfg_greeting_card_art_no = $C->get_safe_property( 'greeting_card_art_no', 'sys');
+	}
+
+	my $cfg_b2b = $C->get_safe_property('b2b', 'sys')+0;
+	my $cfg_b2b_id = $C->{id};
+	unless ($cfg_b2b_id) {
+		$cfg_b2b_id = $C->set_safe_property('b2b', 0, 'sys');
+	}
+
+	my $cfg_order_detail = $C->get_safe_property('order_detail', 'sys')+0;
+	my $cfg_order_detail_id = $C->{id};
+	unless ($cfg_order_detail_id) {
+		$cfg_order_detail_id = $C->set_safe_property('order_detail', 0, 'sys');
+	}
+
+	my $cfg_show_vat = $C->get_safe_config('show_vat');
+	my $cfg_show_vat_id = $C->{id};
+	unless ($cfg_show_vat_id) {
+		$cfg_show_vat_id = $C->set_safe_property('show_vat', 1, 'sys'); # -- Initial value: "Yes"
+		$cfg_show_vat = 1;
+	}
+
+	my $shipping_cat_title = $C->query(
+		"select label from categories where id=$C->{CONFIG}->{shipping_cat_id} and lang='de'")->[0];
+
+	my $default_curr = $C->get_safe_property( 'currency_primary_currency', 'sys');
+	   $default_curr = $C->{CONFIG}->{default_curr} if $default_curr =~ /^\* .+/;
+
+	my $st = $C->{dbh}->prepare(q~	SELECT	UPPER(substr(featkey, 15, 3)), featname+0
+					FROM	config_prod_feat 
+					WHERE	lang='sys' and featkey like 'currency\_sign\_%'~);
+	$st->execute();
+	my @currencies = ();
+	while(my $rr = $st->fetch()) {
+		my ($curr, $active) = @{$rr};
+		my $xchange = $C->get_safe_property("currency_xchange_$curr", 'sys')+0;
+		if ($active) {
+			$curr = qq~$curr <span style='color:#b1b1b1'>(<a
+					href='adm_safe_properties.html?filter=currency_xchange\_&lang=sys'>$xchange</a>)</span>~
+				unless $curr eq $default_curr;
+		}
+		else {
+			$curr = "<s>$curr</s>";
+		}
+		push(@currencies, $curr);
+	}
+
+	my $md5_secret = $C->md5_secret('pdf_config');
+
+	my $st_pdfconf = $C->{dbh}->prepare('select xkey from pdf_config order by 1');
+	   $st_pdfconf->execute();
+</%init>
+<div style="margin-top:20px" class="pull-right">
+	<% $C->{CONFIG}->{site_title} %>
+	<a href="adm_special_keys.html?area=site_"><i class="icon-edit"></i></a>
+%	if ($args{appmsg}) {
+		<%  $C->bootstrap_alert( $args{appmsg}, 'success') %><hr />
+%	}
+%	if ($C->{CONFIG}->{debug_level} > 1) {
+		<%
+			$C->bootstrap_alert(qq~
+				<b>Note</b>&nbsp;&nbsp;<a href="adm_special_keys.html?area=debug_">Debug Level: $C->{CONFIG}->{debug_level}</a>
+			~, 'success')
+		%>
+%	}
+</div>
+<div class="pull-left"><span style='font-size:26px; color:#41414C; margin-top:20px; margin-right:5px; float:left'
+	class="icon-cog"></div>
+<h2>Shop Configuration</h2>
+
+<table style="width:100%">
+<tr valign="top"><td>
+
+<h3><span style="font-size:19px" class="icon-cogs"></span> General</h3>
+
+<table class="mytable table-hover">
+<tr><td colspan="2"><a href="adm_masterdata.html">Master and address data</a> &mdash;
+	<a href="adm_masterdata.html?pane=3&subselect=2">Google Analytics</a></td>
+</tr>
+
+<tr><td><a href="adm_special_keys.html?area=order_post_proc">Order Post-processcing</a></td>
+	<td style="text-align:right"><% $C->{CONFIG}->{order_post_proc} %></td></tr>
+<tr><td><a href="config2.html">System Variables</a> (CONFIG)</td>
+	<td style="text-align:right">
+%		if ($perm->{is_devel}) {
+			<a href="adm_safe_properties.html?lang=sys">Safe Properties</a>
+%		}
+	</td></tr>
+<tr><td><a href="adm_special_keys.html?area=multi_lang">Multi Language</a></td>
+	<td style="text-align:right"><% $C->{CONFIG}->{multi_lang} ? 'Yes' : 'No' %></td></tr>
+<tr><td><a href="adm_jobs.html">System Jobs</a><td></td></tr>
+% if ($args{is_devel}) {
+<tr><td><a href="adm_safe_properties.html?filter=grant_&lang=sys">System Grants</a> (Devel)<td></td></tr>
+% }
+</table><br />
+</td>
+
+	<td style="width:99px">&nbsp;</td>
+
+<td>
+<h3><span style="font-size:19px" class="icon-umbrella"></span> Product related</h3>
+
+<table class="mytable table-hover">
+<tr><td><a href="admix.html?func=options&style=1">Options / Features</a></td><td></td></tr>
+<tr>
+<td>Show sold out products: 
+%	if ($cfg_ssop_id) {
+	<a href="adm_property.html?id=<%$cfg_ssop_id%>"><% $cfg_show_sold_out_prods ? 'Yes' : 'No' %></a>
+%	}
+%	else {
+		<a href="adm_properties.html?debug=1">Create Property</a>: <tt>cfg_show_sold_out_prods_sys</tt>
+%	}
+</td>
+<td nowrap style="text-align:right">
+%	if ($show_help_sys_config) {
+		$C->get_sys_config('show_sold_out_prods')
+%	}
+%	else {
+		<a href="adm_config.html?show_help_sys_config=1"><i style="font-size:18px" class="icon-question-sign"></i></a>
+%	}
+</td>
+</tr>
+
+<tr><td>Show VAT: <a href="adm_safe_property.html?id=<% $cfg_show_vat_id %>"><% $cfg_show_vat ? 'Yes' : 'No' %></a></td>
+<td style="text-align:right">
+	<a href="#" onclick="this.style.display='none'; document.getElementById('show_vat_help').style.display=''"><i
+		style="font-size:18px" class="icon-question-sign"></i></a>
+	<span id="show_vat_help" style="display:none">$C->get_safe_config('show_vat')</span>
+</td></tr>
+
+<tr><td><a href="adm_properties.html?filter=stock">Stock Properties</a></td><td></td></tr>
+
+<tr><td><a href="/adx/special_keys.html?area=stock">Stock Count Behavior</a></td><td></td></tr>
+
+<tr><td><a href="adm_special_keys.html?area=default_imgsize">Default Image Size(s)</a></td>
+  <td style="text-align:right"><% $C->{CONFIG}->{default_imgsize_mini} %>px /
+		<% $C->{CONFIG}->{default_imgsize_thmb} %>px / <% $C->{CONFIG}->{default_imgsize_carousel} %>px
+</td></tr>
+
+</table><br />
+</td></tr>
+
+<tr><td colspan="3"></td></tr>
+
+<tr>
+
+<td>
+<h3><span style="font-size:19px" class="icon-money"></span> Sales (Orders), Payment &amp; Checkout</h3>
+
+<table class="mytable table-hover">
+
+% my $job_id     = $C->query("select id from config_prod_feat where featname='send_reminder.pl'")->[0];
+% my $job_is_act = $C->query("select featname+0 from config_prod_feat where featkey='job_detail_$job_id\__is_active'")->[0];
+% my $job_params = $C->get_job_params(id=>$job_id);
+% my $tpl_id     = $C->query(q~select id from newsletter where newsletter_type=2 and subject like '{{prop pending_order%'~)->[0];
+<tr>
+	<td>Send Reminder <a
+		href="adm_edit_newsletter.html?id=<% $tpl_id %>">&laquo;<% $C->prop('pending_order') %>&raquo;</a>
+	after <a href="adm_job.html?id=<% $job_id %>"><% $job_params->{wait_min} %> min</a>,
+		cancel order after <a href="adm_job.html?id=<% $job_id %>"><% $job_params->{wait_min_storno} %> min</a>
+	</td>
+	<td style="text-align:right">
+%		if ($job_id) {
+			<a href="adm_job.html?id=<% $job_id %>"><% $job_is_act ? 'Active' : 'Inactive' %></a>
+%		}
+%		else {
+			Not ready
+%		}
+	</td>
+</tr>
+
+<tr><td><a href="adm_safe_properties.html?filter=order\_&lang=sys">Order Detail</a> (Individual extension of the detail view)</td>
+	<td style="text-align:right">
+		<a href="adm_safe_property.html?id=<% $cfg_order_detail_id %>"><% $cfg_order_detail ? 'Yes' : 'No' %></a>
+	</td></tr>
+
+<tr><td><a href="adm_safe_properties.html?filter=b2b\_&lang=sys">Business-to-Business (B2B)</a></td>
+	<td style="text-align:right">
+		<a href="adm_safe_property.html?id=<%$cfg_b2b_id%>"><% $cfg_b2b ? 'Yes' : 'No' %></a>
+	</td></tr>
+
+<tr><td><a href="adm_upselling.html">Upselling</a></td><td></td></tr>
+
+<tr><td><a href="adm_special_keys.html?area=round5">Round 5</a> (Five-centime rounding)</td>
+	<td style="text-align:right"><% $C->{CONFIG}->{round5} ? 'Yes' : 'No' %></td></tr>
+
+<tr><td><a href="adm_vat.html">VAT / Tax Rates</a></td><td></td></tr>
+
+% if ($perm->{is_devel}) {
+	<tr><td><a href="adm_safe_properties.html?filter=hmac&lang=sys">HMAC Secret Key</a> (Devel)
+		&middot; for encrypting the payment data to the payment gateway</td>
+	<td style="text-align:right"><a href="https://docs.ch2.be/w/auctionline2019-tech/online-payment">?</a></td></tr>
+% }
+
+<tr><td><a href="adm_safe_properties.html?filter=currency\_&lang=sys">Currencies</a>:
+	<% join ', ', @currencies %>
+	</td>
+	<td style="text-align:right">Primary: 
+		<a href="adm_safe_properties.html?filter=currency\_primary\_&lang=sys"><% $default_curr %></a>
+	</td>
+</tr>
+
+<tr><td>Greeting Card(s) &middot; <a href="adm_safe_property.html?id=<%$cfg_greeting_card_art_no_id%>">Art No
+		<% $cfg_greeting_card_art_no || '* Not set *' %></a></td>
+	<td style="text-align:right">
+		<a href="adm_safe_property.html?id=<%$cfg_greeting_card_id%>"><% $cfg_greeting_card ? 'Yes' : 'No' %></a></td>
+</tr>
+
+</table><br />
+</td>
+
+<td></td>
+<td>
+<h3><span style="font-size:19px" class="icon-truck"></span> Shipping</h3>
+
+<table class="mytable table-hover">
+<tr><td><a href="adm_shipping.html">General Settings</a></td><td></td></tr>
+<tr><td><a href="adm_special_keys.html?area=shipping_free">Free shipping as of</a></td>
+	<td style="text-align:right"><% $C->{CONFIG}->{shipping_free_as_of} %></td></tr>
+<tr><td><a href="adm_special_keys.html?area=shipping_cat_id">Shipping Category ID</a>
+	(<% $C->{CONFIG}->{shipping_cat_id} %>) &mdash; <a
+		href="admix.html?func=items_expand&id=<% $C->{CONFIG}->{shipping_cat_id} %>">List Shipping Products</a>
+	(<% $shipping_cat_title %>)
+</td><td></td></tr>
+</table>
+</td>
+</tr>
+
+
+<tr><td colspan="3">&nbsp;</td></tr>
+
+
+<tr valign="top"><td>
+<h3><span style="font-size:19px" class="icon-envelope-alt"></span> Mail related</h3>
+
+<table class="mytable table-hover">
+<tr><td><a href="adm_special_keys.html?area=order_email">Order E-Mail</a></td>
+<td style="text-align:right">Right now: <% $C->{CONFIG}->{order_email} %></td></tr>
+
+<tr><td><a href="adm_mail_tpl.html">E-Mail Templates</a></td><td></td></tr>
+
+<tr><td><a href="adm_special_keys.html?area=smtp_">SMTP Settings</a></td>
+	<td style="text-align:right">Settings for outgoing e-mail traffic</td></tr>
+
+<tr><td><a href="adm_special_keys.html?area=mail_order_format_">Mail Format (Order)</a></td>
+	<td style="text-align:right"><% $C->{CONFIG}->{mail_order_format_cust} %></td></tr>
+
+<tr><td><a href="adm_properties.html?filter=pdf\\_">PDF Properties</a></td>
+	<td style="text-align:right">(Check all languages)</td></tr>
+</table>
+
+</td><td></td>
+<td>
+	<div style="margin-top:20px; color:#b1b1b1" class="pull-right">
+		Theme: <a href="adm_db_edit.html?table=config&wcl=%60key%60%3D%27theme%27"><% $C->{CONFIG}->{theme} %></a>
+		&ndash; <a href="adm_custom.html">Change</a>
+	</div>
+	<h3><span style="font-size:19px" class="icon-globe"></span> Content / Uploads</h3>
+	<table class="mytable table-hover">
+
+	<tr><td><a href="adm_properties.html">Properties</a></td>
+	<td style="text-align:right">
+		<i class="icon-chevron-left"></i>
+		<a href="adm_dump.html?action=restore&table=properties">Import</a>
+		&mdash;
+		<a href="adm_dump.html?action=dump&table=properties">Export</a> <i class="icon-chevron-right"></i>
+	</td></tr>
+	<tr><td><a href="adm_categs.html">Categories</a></td>
+	<td style="text-align:right">
+		<i class="icon-chevron-left"></i>
+		<a href="adm_dump.html?action=restore&table=categories">Import</a> &mdash; <a
+			href="adm_dump.html?action=dump&table=categories">Export</a>
+			<i class="icon-chevron-right"></i>
+	</td></tr>
+	<tr>
+	<td><a href="adm_masterdata.html?pane=2">Upload Documents</a></td>
+	<td></td>
+	</tr>
+
+	<tr>
+		<td>PDF / QR Invoice</td>
+		<td style="text-align:right">
+%			my @keys = ();
+%			while(my $r = $st_pdfconf->fetch()) {
+%				next if $r->[0] =~ /^address_pos_[xy]/ or $r->[0] =~ /^default_.+/ or $r->[0] eq 'company_iban_2';
+%				(my $label = $r->[0]) =~ s/^company\_//; $label = ucfirst $label;
+%				push(@keys, qq~<a href="adm_db_edit.html?table=pdf_config&wcl=xkey%3D%27$r->[0]%27&s_token=$md5_secret">$label</a>~);
+%			}
+			<table border="0" class="pull-right" cellspacing="0" cellpadding="0">
+			<tr><td style="width:558px; text-align:right; font-size:0.95rem">
+				<% join ', ', @keys %>
+			</td></tr>
+			</table>
+		</td>
+	</tr>
+
+	<tr><td>Picture Upload Path</td>
+	<td style="text-align:right"><a
+		href="adm_property.html?id=<% $cfg_upload_path_pic_id %>"><% $cfg_upload_path_pic %></a></td></tr>
+	<tr><td>Document Upload Path</td>
+	<td style="text-align:right"><a
+		href="adm_property.html?id=<% $cfg_upload_path_doc_id %>"><% $cfg_upload_path_doc %></a></td></tr>
+	<tr><td>CKEditor CSS (Comma-separated)</td>
+	<td style="text-align:right"><a href="adm_property.html?id=<% $cfg_ckeditor_css_id %>">
+%	foreach (split /,/, $cfg_ckeditor_css) {
+		<% $A->shorten_title($_, 40) %><br>
+%	}
+		</a></td></tr>
+	<tr>
+	<td>Auto Commit</td>
+	<td style="text-align:right"><a href="adm_jobs.html?filter=autocommit.pl">Change Auto Commit Settings</a></td>
+	</tr>
+	</table>
+</td></tr>
+
+</table><br />
+
+<form method="post">
+<input type=hidden name=action value="restore-now">
+<input type="button" class="btn" value="Back" onclick="JavaScript:history.go(-1)">
+</form>
+
+% if ($perm->{is_devel}) {
+	<h5>License V<% $args{license}->{VERSION} %> &mdash; <a href="https://docs.ch2.be/w/publigate-tech/license">?</a></h5>
+	<table class="mytable table-hover" style="width:60%">
+	<tr>
+		<td>Status</td><td><b><% $args{license}->{status} %></b> &middot;
+			<b style="color:<% $args{license}->{msg} =~ /NOTE/ ? 'green' : 'red' %>"><% $args{license}->{msg} %></b></td>
+		<td><a href="adm_license.html">Change?</a></td>
+	</tr>
+	<tr>
+		<td>License Time</td>
+		<td><b><% $C->trans_date_short($args{license}->{license_time}) %></b></td>
+		<td></td>
+	</tr>
+%	foreach my $key (keys %{ $args{license} }) {
+%		next if $key eq 'msg' or $key eq 'VERSION' or $key eq 'status' or $key eq 'license_time';
+%		my ($val, $ts) = split /\t/, $args{license}->{$key};
+%		my $ts_disp = $ts ? $C->trans_date_short($ts) : 'N/A';
+		<tr>
+		<td style="width:25%" nowrap>[License] &ndash; <b><% $key %></b></td><td><% $val %></td><td><% $ts_disp %></td>
+		</tr>
+%	}
+	</table><br />
+	<p><small>SELECT * FROM users_details where user_id=<% $perm->{uid} %> and xkey like 'perm_is_%';</small></p>
+
+	<h5>Devel: Extra Permissions &middot; <a href="adm_config.html?bAddXtraPerm=1">Add</a> | <a
+		href="<% $C->{CONFIG}->{phpMyAdminURL} %>?db=<% $ENV{db_name} %>&table=users_details">Edit</a> &mdash;
+			<a href="https://docs.ch2.be/w/publigate/get_user_perm">?</a></h5>
+%	foreach (sort keys %{$perm}) {
+%		next if $_ eq 'is_devel' or /^\_\_.+/;
+		&bull; <b><% $_ %></b> = <% $perm->{$_} %><br>
+%	}
+%	foreach (@{ $args{devel_uids} }) {
+		X -- Devel UID <% $_ %><br>
+%	}
+% }
+<%doc>
+	rc20s2506.dnh.net | Metanet #2
+
+	__METACLONING__
+</%doc>

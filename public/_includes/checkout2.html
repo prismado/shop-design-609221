@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	# my $lang = $C->getSessData('_current_lang') || 'de';
+	my $id = $cgi->param('id');
+	my $check = $cgi->param('check');
+
+	if (!$id && !$check) {
+		$A->adjust_basket_count($args{SID}); # -- Fix over-ordered products in basket
+	}
+
+	# XXX my $null_positions = $C->query("select id from basket where sid=$args{SID} and count=0 LIMIT 1")->[0];
+</%init>
+% # XX <title><% $C->p('page_title') %> - <% $C->{CONFIG}->{'site_title'} %></title>
+
+<!-- datepicker-->
+<%doc>
+<link type="text/css" href="css/redmond/jquery-ui-1.8.10.custom.css" rel="stylesheet" />
+<script src="js/jquery.tools.min.js"></script>
+<script type="text/javascript" src="js/jquery.ui.core.js"></script>
+<script type="text/javascript" src="js/jquery.ui.datepicker.js"></script>
+
+<link rel="stylesheet" href="http://jqueryui.com/demos/demos.css">
+
+	<!-- datepicker #checkout_liefer_date -->
+	<script type="text/javascript">
+	$(function() {
+		$( "#checkout_liefer_date" ).datepicker({
+			showOn: "button",
+			buttonImage: "images/calendar.gif",
+			buttonImageOnly: true,
+			dateFormat:'dd.mm.yy',
+	monthNames: ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+			dayNamesMin: ['So', 'Mo', 'Die', 'Mi', 'Do', 'Fr', 'Sa']
+		}
+		);
+	});
+	</script>
+</%doc>
+
+% if (!$args{item_count} && !$id) {
+	<br clear='all' />
+	<div style="background-color:#FDC3C3; text-align:center">
+	Zurzeit befinden sich keine Produkte in Ihrem Warenkorb.
+	</div><br>
+% }
+% else {
+<&basket_data2.html, msg=>$args{msg}, C=>$C, A=>$A&>
+% }
+
+% if ($C->is_devel()) {
+	<br clear='all' />
+	get_basket_total() = <%$A->get_basket_total()%>
+	<&debug.html, CORE=>$C, A=>$A&>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

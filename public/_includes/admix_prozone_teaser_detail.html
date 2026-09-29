@@ -1,0 +1,51 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $id = $C->{CGI}->param('id') + 0;
+
+	if ($C->{CGI}->param('bDel')) {
+		$C->{dbh}->do("DELETE FROM prozone_teaser WHERE id=$id");
+		$m->out("PZT: Deleted: ID $id<br>");
+	}
+	elsif ($C->{CGI}->param('bUpd')) {
+		my $description = $C->{CGI}->param('description') || '';
+		$C->{dbh}->do("UPDATE prozone_teaser SET description='$description', status=1 WHERE id=$id")
+			or $m->out("ERROR $DBI::errstr<br>");
+	}
+
+	my ($instime, $campaign_id, $description) = @{$C->query(
+		"SELECT instime, campaign_id, description FROM prozone_teaser WHERE id=$id")};
+
+	my ($company_id, $token) = @{$C->query("select company_id, token from campaign_data where id=$campaign_id")};
+	my $company_name = $C->query("select name from companies where id=$company_id")->[0];
+</%init>
+<script type="text/javascript">document.title='Admin: Teaser';</script>
+
+<h2>Teaser Text: <b><% $token %></b> &middot; <% $company_name %></h2>
+
+<form method=post>
+<input type=hidden name=func value='prozone_teaser'>
+<input type=hidden name=id value='<% $id %>'>
+
+<table cellspacing=0 cellpadding=4 border=0 width='95%'>
+
+<tr>
+<td style="width:10%">Created</td> <td><% $C->trans_date_short($instime) %></td></tr>
+
+<tr valign=top><td>Description</td> <td>
+	<textarea name=description style='width:95%' rows=5><% $description %></textarea>
+</td></tr>
+
+</table><br><br>
+
+<input type=submit class="btn btn-success" value='Update' name=bUpd>&nbsp;&nbsp;
+<input type=submit class="btn btn-danger"  value='Delete' name=bDel>&nbsp;&nbsp;
+<input type=button class="btn"             value='Cancel' onclick='document.location="admix.html?func=hiddenshop&edit=<% $campaign_id %>"'>
+</form>
+
+<%doc>
+	__METACLONING__
+</%doc>

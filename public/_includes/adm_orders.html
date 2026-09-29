@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $sth = $C->{dbh}->prepare(
+		"select id, sid, uid, pay_meth, instime, amount_incl_vat, status FROM orders ORDER BY id DESC LIMIT 1000");
+	   $sth->execute();
+
+	my %pay_meth_hr = ( 1=>'cc', 2=>'cod', 3=>'bill', 4=>'paypal', 5=>'postcard' );
+	my %status_hr = ( 1=>'new', 2=>'pending_cc', 3=>'cancelled', 4=>'okay' );
+</%init>
+
+<script type="text/javascript">document.title='Admin: Orders';</script>
+
+<h2><% $sth->rows() %> Bestellungen</h2>
+
+<table class='table'>
+
+<thead>
+<tr style='font-weight:bold; background-color:#e1e1e1'>
+<th>ID</th>
+<th>User</th>
+<th>Zeit</th>
+<th>Produkte</th>
+<th>Betrag</th>
+<th>Zahl-Meth</th>
+<th>Status</th>
+</tr>
+</thead>
+
+% my $id_before = 0;
+% while(my $r = $sth->fetch()) {
+%	my ($id, $sid, $uid, $pay_meth, $instime, $amount_incl_vat, $status) = @{$r};
+%	my $uname = $C->query("SELECT uname FROM users WHERE id=$uid")->[0];
+%	my $campaign = $C->query("select xval FROM orders_details WHERE order_id=$id AND xkey='campaign_count'")->[0];
+%	my $camp_comp_id = 0;
+%	if ($campaign) {
+%		my $d = $A->get_order($id);
+%		$camp_comp_id = $d->{campaign_company_id};
+%	}
+%	my $prods = $A->get_products($id);
+	<tr valign=top style='font-weight:<% $status == 4 ? 'bold' : 'normal' %>'>
+	<td><a href='admix.html?func=orders&id=<% $id %>'><%$id%></a></td>
+	<td><a href='adm_userdetail.html?id=<% $uid %>'><% $uname %></a></td>
+	<td nowrap><% $C->trans_date_short($instime) %> <% $campaign ? "<a href='admix.html?func=companies&edit=$camp_comp_id'><img border=0 src='images/icon_company.png'></a>" : '' %></td>
+	<td><% $prods %></td>
+	<td style='text-align:right'><% sprintf('%.2f', $amount_incl_vat) %></td>
+	<td><%$pay_meth_hr{$pay_meth} || "* $pay_meth *"%></td>
+	<td>
+%	if ($status == 2) {
+		<a href="sendmail.html?order_id=<% $id %>"><% $status_hr{$status} %></a>
+%	}
+%	else {
+		<span class="label<%$status == 4 ? ' label-success' : ''%>"><%$status_hr{$status}%></span>
+%	}
+	</td>
+	</tr>
+% }
+
+</table><br><br>

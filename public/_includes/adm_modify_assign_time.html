@@ -1,0 +1,58 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $id = $cgi->param('id');
+	my $bUpdate = $cgi->param('bUpdate');
+
+	if ($bUpdate) {
+		foreach ($cgi->all_parameters) {
+			next unless /^tstamp_(\d+)$/;
+			my $instime = $cgi->param($_);
+			my $stmt = "update products2categ SET instime='$instime' WHERE product_id=$id AND cat_id=$1";
+			$dbh->do($stmt) or $m->out("ERR $DBI::errstr $stmt<br>");
+			$dbh->do("update products set instime='$instime' WHERE id=$id");
+		}
+	}
+
+	my $d = $A->get_product($id);
+</%init>
+% # -- <div style='margin-top:10px' class="pull-right"> </div>
+<h2>Modify Assign Time</h2>
+
+<h4><%$d->{title}%></h4>
+
+Art. No. <%$d->{art_no}%> &middot; Product ID <%$id%><br><br>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+<table class="table table-hover table-striped">
+<thead>
+<th>Category</th>
+<th>Assign Time</th>
+</thead>
+<tbody>
+% foreach my $cat_id (split /,/, $d->{cat_ids}) {
+%	my $assign_time = $C->query("select instime FROM products2categ WHERE product_id=$id AND cat_id=$cat_id")->[0];
+	<tr>
+	<td><a target="_blank"
+		href="category-<%$cat_id%>-list.html"><%$C->query("select label FROM categories WHERE id=$cat_id AND lang='de'")->[0]%></a></td>
+	<td>
+	<input type=text style="text-align:center" name="tstamp_<%$cat_id%>" value="<%$assign_time%>">
+	</td></tr>
+% }
+</tbody>
+</table>
+<input type=submit class='btn btn-primary' value="Update" name=bUpdate>
+<input type=button class="btn" value="Back" onclick="document.location='admix.html?func=items_expand&id=<%$d->{cat_id}%>'">
+</form>
+% if ($bUpdate) {
+	** updated **<br>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

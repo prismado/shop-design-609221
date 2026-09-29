@@ -1,0 +1,73 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $id =$cgi->param('id');
+	my $bUpdate = $cgi->param('bUpdate');
+
+	if ($cgi->param('bDel')) {
+		$dbh->do("delete FROM shipping WHERE id=$id");
+		$m->redirect('adm_shipping2.html');
+	}
+
+	$m->redirect('adm_shipping2.html') if $cgi->param('bCancel');
+
+	if ($bUpdate) {
+		my $amount_net = $cgi->param('amount_net');
+		my $pay_meth   = $cgi->param('pay_meth');
+		my $threshold_from = $cgi->param('threshold_from') + 0;
+		$dbh->do("update shipping SET amount_net=$amount_net, pay_meth=$pay_meth, threshold_from=$threshold_from WHERE id=$id")
+				or $m->out("ERR $DBI::errstr<br>");
+	}
+
+	my ($amount_net, $threshold_from, $pay_meth, $begin_time) = @{$C->query(
+		"select amount_net, threshold_from, pay_meth, begin_time FROM shipping WHERE id=$id")};
+
+	my %pay_meth_hr = (
+		3 => 'COD',
+		4 => 'Creditcard',
+		8 => 'PostPac Priority'
+	);
+</%init>
+<div style='margin-top:10px' class="pull-right">
+	Begin: <%(split / /,$C->trans_date($begin_time))[0]%>
+</div>
+<h2>Shipping Detail ID <%$id%> &middot; <%$pay_meth_hr{$pay_meth} || "* $pay_meth *"%></h2>
+
+<hr style="border-top:1px dotted #b0b0b0;color:#b0b0b0;background-color:#fff;height:1px;width:100%;" />
+
+<form method="post">
+<input type=hidden name=id value="<%$id%>">
+
+<table class="table">
+<thead>
+<tr>
+	<th>Threshold</th>
+	<th>Amount (net)</th>
+	<th style="text-align:center">Amount (incl. VAT)</th>
+	<th>Method (3=COD, 4=CC, 8=Prio)</th>
+</tr>
+</thead>
+
+<tr>
+	<td><input type=text style="width:80px; font-weight:bold" name=threshold_from value="<% $threshold_from %>"> pcs</td>
+	<td><input type=text style="width:100px; font-weight:bold" name=amount_net value="<%sprintf('%.2f', $amount_net)%>"></td>
+	<td style="text-align:center"><%sprintf('%.2f', $amount_net * (1 + $C->{CONFIG}->{vat} / 100))%></td>
+	<td><input type=text style="width:100px; text-align:center" name=pay_meth value="<%$pay_meth%>"></td>
+</tr>
+</table>
+
+<input type=submit class="btn btn-primary" name=bUpdate value="Update">
+<input type=submit class="btn btn-danger" name=bDel value="Del.">
+<input type=submit class="btn" name=bCancel value="Back">
+</form>
+
+% if ($bUpdate) {
+	<b>Updated!</b><br>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

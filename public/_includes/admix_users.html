@@ -1,0 +1,51 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+
+	my $wcl = '';
+	my $q = $cgi->param('q');
+	if ($q) {
+		$wcl = "WHERE email LIKE '%$q%'";
+	}
+
+	my $sth = $C->{dbh}->prepare("SELECT id, status, tstamp, uname, email, is_admin FROM users $wcl ORDER BY uname LIMIT 9999");
+	   $sth->execute();
+</%init>
+
+<form name=search>
+<input type=hidden name=func value='users'>
+Suchen: <input type=text name=q size=33 value="<% $q %>">
+</form><br><br>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+
+<tr style='font-weight:bold'>
+<td>ID</td>
+<td>Name</td>
+<td>Erfasst</td>
+<td>Loginname</td>
+<td>E-Mail</td>
+<td align=center>Status</td>
+</tr>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $status, $tstamp, $uname, $email, $is_admin) = @{$r};
+%	my $ts = substr($C->trans_date($tstamp), 0, 16);
+%	$A->{uid} = $id;
+%	my $addr = $A->get_address(1);
+%	$id = sprintf('%06d', $id);
+	<tr>
+	<td align=center><% $id %></td>
+	<td><% $addr->{firstname} %> <% $addr->{lastname} || '&nbsp;' %></td>
+	<td width='100' align=center><% $ts %></td>
+	<td><a href='adm_userdetail.html?id=<% $id %>'><% $uname %></a><% $is_admin ? ' (Adm)' : '' %></td>
+	<td><% $email %></td>
+	<td align=center><% $status %></td>
+	</td></tr>
+% }
+
+</table>
+
+<script language='JavaScript'>document.search.q.focus();</script>

@@ -1,0 +1,110 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols    = qw(id uname tstamp is_admin is_devel email getUserType(users.id));
+	   $dbcols[3] = '(select firstname from users_addr where user_id=users.id limit 1)';
+	   $dbcols[4] = '(select lastname  from users_addr where user_id=users.id limit 1)';
+
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+	my $company_from = $cgi->param('company_from');
+
+	my @uids = ();
+	if ($company_from) {
+		my $uid = $C->query("select id FROM users WHERE uname='$company_from'")->[0];
+		my $company = $C->query("select company FROM users_addr WHERE user_id=$uid")->[0];
+		my $st = $dbh->prepare("select distinct u.id from users u, users_addr a where u.id=user_id and company='$company'");
+		   $st->execute();
+		while(my $r = $st->fetch()) {
+			push(@uids, $r->[0]);
+		}
+	}
+
+	my @json = ();
+	my $order = "$dbcols[$sortcol] $direction";
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+	my $status         = $cgi->param('status');
+	my $filterv        = $cgi->param('filterv');
+
+	my @where_clause = ();
+	push(@where_clause, q~uname NOT LIKE 'anonymous%'~) unless $cgi->param('showAnon');
+	push(@where_clause, "id IN (select id FROM $filterv)") if $filterv;
+	push(@where_clause, "id IN (" . (join ',', @uids) . ')') if $company_from;
+	push(@where_clause, "status=$status") if $status;
+	push(@where_clause,
+	"email LIKE '%$sSearch%' OR id IN (select user_id FROM users_addr WHERE lastname LIKE '%$sSearch%' OR firstname LIKE '%$sSearch%')") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	users
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	# -- print STDERR "XX $stmt\n";
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM users $wcl")->[0];
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $uname, $tstamp, $firstname, $lastname, $email, $usertype) = @{$r};
+		my $level = '';
+		my $color = '';
+		if ($usertype == 2) {
+			$level = q~admin <i class='icon-star'></i>~;
+			$color = '#9c6c16';
+		}
+		else {
+			$level = q~user <i class='icon-user'></i>~;
+			$color = '#999999';
+		}
+		my @arr = ();
+
+		push(@arr, "<div style='text-align:center'><a href='adm_user.html?id=$id'>$id</a></div>");
+		push(@arr, $uname);
+		push(@arr, '<nobr>' . $C->trans_date_short($tstamp) . '</nobr>');
+		push(@arr, $C->web_enc_v2($firstname));
+		push(@arr, $C->web_enc_v2($lastname));
+		push(@arr, "<nobr>$email</nobr>");
+		push(@arr, "<div style='text-align:right; padding-right:10px; color:$color'>$level</div>");
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	__METACLONING__
+</%doc>

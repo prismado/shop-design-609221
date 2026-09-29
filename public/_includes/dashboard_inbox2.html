@@ -1,0 +1,28 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	my ($message_id, $subject, $sender, $instime) = @{$C->query(
+		"select message_id, subject, sender, instime FROM inbox ORDER BY id DESC LIMIT 1")};
+</%init>
+<h2>Inbox</h2>
+
+<table class="table table-first-column-check table-hover">
+	<thead>
+	    <tr>
+	      <th class="span1"><i class="icon-star-empty"></i></th>
+	      <th class="span2">From</th>
+	      <th class="span9">Subject</th>
+	      <th class="span2">Date</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    <tr>
+	      <td><a href="#"><i class="icon-star-empty"></i></a></td>
+	      <td><strong><%$sender%></strong></td>
+	      <td><strong><%$subject%></strong> <span
+		class="label label-success pull-right" style="margin-left: .5em;">Follow Up </span> <span class="label label-info pull-right">Work</span></td>
+	      <td><strong><%$C->trans_date_very_short($instime)%></strong></td>
+	    </tr>
+	</tbody>
+</table>

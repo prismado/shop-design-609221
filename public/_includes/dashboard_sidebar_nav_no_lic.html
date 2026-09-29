@@ -1,0 +1,14 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+<ul id="dashboard-menu" class="nav nav-list"> 
+    <li class="<%$args{func} eq '' ? 'active' : ''%>"><a href="dashboard.html"><i class="icon-home"></i> <span>Dashboard</span></a></li>    
+% # XXX    <li class="<%$args{func} eq 'reports' ? 'active' : ''%>"><a href="adm_reports.html"><i class="icon-bar-chart"></i> <span>Reports</span></a></li>
+    <li class="<%$args{func} eq 'help' ? 'active' : ''%>"><a href="adm_help3.html"><i class="icon-question-sign"></i> <span>Help</span></a></li>
+% # XXX    <li class="<%$args{func} eq 'promo' ? 'active' : ''%>"><a href="admix.html?func=promo"><i class="icon-star"></i> <span>Promos</span></a></li>
+% # XXX    <li class="<%$args{func} eq 'hiddenshop' ? 'active' : ''%>"><a href="admix.html?func=hiddenshop"><i class="icon-key"></i> <span>Pro-Zone</span></a></li>
+</ul>
+<%doc>
+	__METACLONING__
+</%doc>

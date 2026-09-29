@@ -1,0 +1,28 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+
+<h2>Upcoming Events</h2>
+
+<ul class="cards widget">                        
+                        
+         <li>
+                           <button class="btn pull-right btn-mini">Open</button>
+                            <i class="pull-left muted icon-bar-chart"></i>
+                            <div>
+                                <p class="title"> Campaign Ends</p>
+                                <p class="info"><%$C->now(2)%></p>
+                            </div>
+         </li>
+                        
+             <li>
+                  <button class="btn pull-right btn-mini">Open</button>
+                            <i class="pull-left muted icon-time"></i>
+                            <div>
+                                <p class="title"> Time driven event(s)</p>
+                                <p class="info">None at this time</p>
+                            </div>
+             </li>
+                        
+</ul>

@@ -1,0 +1,120 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $perm = $args{perm};
+
+	unless ($C->is_logged_in()) {
+		$C->redir('/signin.html');
+	}
+
+	my $UID = $C->getUID();
+	my $dbh = $C->{dbh};
+
+	my $id         = $C->{CGI}->param('id') || 0;
+	my $bResend    = $C->{CGI}->param('bResend');
+	my $bResendAdm = $C->{CGI}->param('bResendAdm');
+
+	my @msgs = ();
+
+	my $order_dat = $A->get_order($id);
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html') unless $UID == $order_dat->{uid};
+	}
+
+	if ($bResend) {
+		my $version = $C->{CGI}->param('version') + 0;
+		if ($version == 2) {
+			$A->mail_order2cust_v2(id => $id);
+			push(@msgs, "Re-sent to customer (version $version)");
+		}
+		elsif ($version == 3) {
+			$A->mail_order2cust_v3(id => $id);
+			push(@msgs, "Re-sent to customer (version $version)");
+		}
+		elsif ($version == 4) {
+			my $res = $A->finalize_order( id=>$id, suppr_merch=>1, force_email=>1 );
+			push(@msgs, "Re-sent to customer (version $version)");
+		}
+		else {
+			push(@msgs, 'Re-sent to customer (No version)');
+			$A->mail_order2cust(id=>$id);
+		}
+	}
+	elsif ($bResendAdm) {
+		my $version = $C->{CGI}->param('version') + 0;
+		if ($version == 4) {
+			my $res = $A->finalize_order( id=>$id, suppr_merch=>1, to=>$perm->{email}, force_email=>1 );
+			push(@msgs, "Re-sent to Admin (version $version)");
+		}
+		else {
+			$A->mail_order2cust(id=>$id, to=>$perm->{email});
+			push(@msgs, "Re-sent to <b>$perm->{email}</b>");
+		}
+	}
+
+	my $custom = $C->{CONFIG}->{custom};
+	my $cur_theme = $C->{CONFIG}->{theme};
+</%init>
+% if ($bResend or $bResendAdm) {
+	<% $C->bootstrap_alert((join ', ', @msgs), 'success', 'margin-top:10px') %>
+% }
+% if ($args{debug}) {
+	<% $C->html_debug("Top &mdash; custom: $custom, cur_theme: \"$cur_theme\"", '_includes/adm_order_detail_cust.html') %>
+% }
+% unless ($custom) {
+<&../_mail_templates/confirm_cust_inc_de.html, order_id => $id&>
+% }
+% else {
+%	if ($args{debug}) {
+		<% $C->html_debug("Using mail template from theme $cur_theme") %>
+%	}
+
+%	if ($cur_theme eq 'algonetic') {
+		<center><h6>Standard Customer Template</h6></center>
+		<& ../_mail_templates/confirm_cust_inc_de.html, order_id => $id &>
+%	}
+%	elsif ($cur_theme eq 'auctionline') {
+		<&../custom/auctionline/mail_templates/confirm_cust_inc_de.html, order_id => $id&>
+%	}
+%	elsif ($cur_theme eq 'default') {
+		<&../custom/default/mail_templates/confirm_cust_inc_de.html, order_id => $id&>
+%	}
+%	else {
+		ERR: Please contact your system administrator (<%$cur_theme%>).<br>
+%	}
+% }
+
+<small>Liefer-Datum: <%$order_dat->{delivery_date}%><br><br></small>
+
+<form>
+<input type=hidden name=id value="<%$id%>">
+% if ($args{debug}) {
+	<b>[Debug]</b> &ndash; Re-send Version (4 = with PDF receipt): <input style="width:55px; margin-top:10px; text-align:center"
+		type=text name=version placeholder="Version" value="1"><br>
+% }
+<input type=submit class='btn btn-primary' name=bResend value='Re-send to customer'>
+<input rel="tooltip" data-placement="top" data-original-title="<% $perm->{email} %>" type=submit class='btn btn-info'
+	name="bResendAdm" value='Send to you' style="margin-left:10px; margin-right:10px;">
+<input type=button class="btn" onclick='document.location="admix.html?func=orders&id=<%$id%>"' value='Back to Order'>
+</form>
+
+<p>
+	[ <a href="adm_order_detail_cust.html?bResend=1&id=<% $id %>&version=4"><big><b>Resend to the Customer with PDF Receipt</b></big></a> ]
+		&ndash; (<% $args{cust_email} %>)
+</p>
+
+% if ($C->is_devel()) {
+	<br>
+	[ <a href="adm_order_detail_cust.html?id=<% $id %>&debug=1">Send with version</a> ]
+	&mdash; amount_incl_vat = <%$order_dat->{amount_incl_vat}%><br><br>
+
+	<a style='color:maroon; font-weight:bold' href='admix.html?func=orders&id=<% $id %>'>Del</a> ...
+% }
+<%doc>
+	Algo-23
+
+	__METACLONING__
+</%doc>

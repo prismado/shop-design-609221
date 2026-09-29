@@ -1,0 +1,39 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C      = $args{C};
+	my $dummy  = $C->{M}->callers(1);
+	my $parent = $dummy->{path};
+
+	my $func   = $C->{CGI}->param('func');
+</%init>
+%
+<div id="main-menu">
+%
+	<div id="phone-navigation"><&dashboard_phone_nav.html&></div>
+%
+<ul class="nav nav-tabs">
+<li<%$parent eq '/__dashboard.html' ? ' class="active"' : ''%>><a href="__dashboard.html"><i class="icon-dashboard"></i> <span>Dashboard</span></a></li>
+% if ($C->is_devel()) {
+<li class="dropdown">
+<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> Settings <b class="caret"></b></a>
+	<ul class="dropdown-menu">
+	    <li><a href="adm_categs.html"><span>Categories</span></a></li>
+	    <li><a href="config2.html"><span>Configuration</span></a></li>
+	    <li><a href="signin.html"><span>Sign-in Page</span></a></li>
+	    <li><a href="users2.html"><span>Forgot Password Page</span></a></li>
+	    <li><a href="adm_shipping.html"><span>Shipping</span></a></li>
+	    <li><a href="adm_mail_tpl.html"><span>Mail Templates</span></a></li>
+	    <li><a href="adm_log.html"><span>Log</span></a></li>
+	    <li><a target=_blank
+		href="<%$C->{CONFIG}->{phpMyAdminURL}%>/index.php?db=<%$ENV{db_name}%>"><span>phpMyAdmin</span></a></li>
+	</ul>
+</li>
+% }
+<li class="pull-right" style='margin-right:15px'><b stylx="color:red">Urgent action required!</b> &middot; <%$C->now(3)%></li>
+</ul>
+%
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

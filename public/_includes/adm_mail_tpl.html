@@ -1,0 +1,97 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my @refs = my @msgs = ();
+	my $cgi = $C->{CGI};
+
+	my $dir = '/_mail_templates';
+	if ($C->{CONFIG}->{custom}) {
+		my $theme = $C->{CONFIG}->{theme};
+		$dir = "/custom/$theme/mail_templates";
+	}
+
+	opendir(D, "$ENV{DOCUMENT_ROOT}$dir") or $m->out("ERR $! $ENV{DOCUMENT_ROOT}$dir<br>");
+	while(my $f = readdir(D)) {
+		next unless $f =~ /\.(html|txt)$/;
+		push(@refs, $f);
+	}
+	closedir(D);
+
+	my %desc = (
+		'confirm_cust_de.txt'	=> 'Wrapper',
+		'confirm_cust_inc_de.html' => 'Content Customer E-Mail',
+		'confirm_merchant_inc_de.html' => 'Content Merchant E-Mail',
+		'resend_password.html'	=> '<a href="send_pwd.html">Passwort vergessen</a>'
+	);
+
+	(my $logo_src = $C->grep_2nd_level_dom( $C->{CONFIG}->{HTTP_HOST} )) =~ tr/\./\_/;
+
+	if ($args{bUploadLogo}) {
+		use File::Copy;
+		my $file = $cgi->param('file');
+		my $extradir = '';
+                if ($C->{CONFIG}->{custom}) {
+			my $theme = $C->{CONFIG}->{theme};
+			push(@msgs, "Upload Logo, Theme: $theme");
+			$extradir = "/custom/$theme/html";
+                }
+		if ($file) {
+			push(@msgs, "File: $file");
+			my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+			my $errstr = '';
+			my $copyto = "$ENV{DOCUMENT_ROOT}$extradir/images/logo_mailtemplate_$logo_src\.png";
+			# XXX my $copyto = "$ENV{DOCUMENT_ROOT}$extradir/images/logo_mailtemplate.png";
+			my $rc = copy $upload_tempfilename, $copyto or $errstr = $!;
+			push(@msgs, "<b style='color:red'>ERROR $errstr</b>") if $errstr;
+			push(@msgs, "Copy To: $copyto") if $args{debug};
+		}
+        }
+</%init>
+<div style="margin-top:10px" class="pull-right">
+%	if ($args{debug}) {
+		(Debug)
+%	}
+	<a href="adm_custom.html">Customize</a>
+</div>
+<h2>E-Mail Templates &middot; (<%$dir%>)</h2>
+
+<table class='mytable table-striped table-hover'>
+
+<thead>
+<tr>
+<th>Template</th>
+<th>Description</th>
+<th>Preview</th>
+</tr>
+</thead>
+
+% foreach my $f (sort @refs) {
+<tr>
+<td><a href="_mail_templates/<%$f%>"><%$f%></a></td>
+<td><%$desc{$f}%></td>
+<td><a href="adm_open_mail_tpl.html?tpl=<%$f%>">Preview</a></td>
+</tr>
+% }
+
+</table><br />
+
+<p><b>E-Mail Logo</b> (<% $logo_src %>):</p>
+<a href="images/logo_mailtemplate_<% $logo_src %>.png"><img style="width:220px" src="images/logo_mailtemplate_<% $logo_src %>.png"></a><br /><br />
+
+<form method='post' enctype="multipart/form-data">
+% if ($args{debug}) {
+<input type="hidden" name="debug" value="1">
+% }
+<input style='font-size:10px' type="file" name="file" />
+<input type=submit class="btn btn-primary" name=bUploadLogo value="Upload">
+</form>
+
+<%join "<br>\n", @msgs%>
+
+<%doc>
+	Algo-23
+
+	__METACLONING__
+</%doc>

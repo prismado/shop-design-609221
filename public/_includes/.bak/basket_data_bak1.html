@@ -1,0 +1,160 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $basket_h = $A->get_basket_items();
+</%init>
+%
+
+<form name="checkout" action="#" method="post">
+
+
+
+<!-- ######################################################################################################## -->
+	    <table width="94%" border="0" class="br1" cellpadding="4" cellspacing="0">
+	      <tr class="con_title" style="background-color:#eee;">
+		<td align="center" class="header">L&ouml;schen</td>
+		<td align="center" class="header">Stk.</td>
+		<td align="center"  class="header">Nr.</td>
+		<td  class="header">Produktname</td>
+		<td colspan="2" align="center" class="header">St&uuml;ckpreis</td>
+		<td  class="header">&nbsp;</td>
+		<td colspan="2" align="right" class="header">Zwischensumme</td>
+	      </tr>
+
+% if ($basket_h->rows() < 1) {
+	<tr class='br1'>
+		<td colspan=9 align=center><a href='/categ.html?id=1'>No items at this time</a></td>
+	</tr>
+% }
+
+% my $total = 0;    	   
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count) = @{$r};
+%	my $d = $A->get_product($prod_id);
+%	my $total_line = $count * $d->{'price'};
+%	$total += $total_line;
+	<tr class="br1">
+		<td width="41" height="25" align="center"><a href="basket.html?action=del&id=<% $prod_id %>"><img 
+			src="images/button_loeschen_orange.gif" alt="l&ouml;schen" width="27" height="17" border="0"></a></td>
+		<td width="54" align="center"><table border="0" cellpadding="0" cellspacing="0">
+		    <tr>
+		      <td  rowspan="2"><input name="anzahl2" type="text" class="anzahl_form" value="<% $count %>" maxlength="3"></td>
+		      <td width="14" valign="bottom"><img src="images/warenkorb_pfeil_up.gif" alt="up" width="14" height="7"></td>
+		    </tr>
+		    <tr>
+		      <td valign="top"><img src="images/warenkorb_pfeil_down.gif" alt="down" width="14" height="7"></td>
+		    </tr>
+		  </table></td>
+		<td width="62"><div align="center">XX-9999</div></td>
+		<td width="260"><a href="/product.html?id=<% $prod_id %>"><% $d->{'description'} %></a></td>
+		<td align="left">CHF</td>
+		<td align="right"><% $d->{'price'} %></td>
+		<td>&nbsp;</td>
+		<td align="right">CHF</td>
+		<td align="right"><% sprintf('%.2f', $total_line) %></td>
+	</tr>
+% }
+	      
+	      
+	      <tr class="br1">
+		<td  colspan="9" class="bottom_line" align="center"><img src="images/spacer.gif" width="5" height="5"></td>
+	      </tr>
+	      <tr class="br1">
+		<td height="22" colspan="4" align="left"><strong>Gesammtsumme inkl. 7.6% MWST &nbsp;</strong></td>
+		<td colspan="5" align="right"><strong>CHF <% sprintf('%.2f', $total) %></strong></td>
+	      </tr>
+	    </table>
+<!-- ######################################################################################################## -->
+
+		  <!-- XXX br -->
+		  <br>
+		  <span class="titel_small">Bitte w&auml;hlen Sie Ihre Zahlungs- Lieferart</span>
+		  <table width="94%" border="0" class="br1" cellpadding="4" cellspacing="0">
+		    <tr class="con_title" style="background-color:#CCC;">
+		      <td colspan="2" align="left" class="header">Zahlungsart</td>
+		      <td align="center"  class="header">Lieferart</td>
+		      <td width="132" align="center"  class="header"><strong>Lieferkosten 
+			inkl. MWST</strong></td>
+		      <td colspan="2" align="right"  class="header"><strong>Total 
+			inkl. MWST und Lieferkosten</strong></td>
+		    </tr>
+		    <tr class="bottom_line">
+		      <td  width="20" align="center" ><input type="radio" name="checkout_zahlungsart_select" value="radiobutton"></td>
+		      <td width="246" align="center" ><div align="left">
+			<table width="246" border="0" cellspacing="0" cellpadding="0">
+			  <tr>
+			    <td width="111" height="27">Kreditkarte </td>
+			    <td width="135"><img src="images/kreditkarten_logo.jpg" alt="" width="135" height="27"></td>
+			  </tr>
+			</table>
+		      </div></td>
+		      <td width="49"><div align="center">Post</div></td>
+		      <td align="center">CHF 30.00</td>
+		      <td width="112" align="right">CHF</td>
+		      <td width="51" align="right">1460.00</td>
+		    </tr>
+		    <tr class="bottom_line">
+		      <td align="center" ><input type="radio" name="checkout_zahlungsart_select" value="radiobutton"></td>
+		      <td align="center" ><div align="left">Nachnahme</div></td>
+		      <td><div align="center">Post</div></td>
+		      <td align="center">CHF 45.00</td>
+		      <td width="112" align="right">CHF</td>
+		      <td align="right">1490.00</td>
+		    </tr>
+		    <tr class="bottom_line">
+		      <td align="center" ><input type="radio" name="checkout_zahlungsart_select" value="radiobutton"></td>
+		      <td align="center" ><div align="left">
+			<table width="246" border="0" cellspacing="0" cellpadding="0">
+			  <tr>
+			    <td width="228" height="30">Paypal</td>
+			    <td width="30" align="right"><img src="images/paypal_logo.jpg" alt="" width="70" height="20"></td>
+			  </tr>
+			</table>
+		      </div></td>
+		      <td><div align="center">Post</div></td>
+		      <td align="center">CHF 30.00</td>
+		      <td  width="112" align="right">CHF</td>
+		      <td align="right">1460.00</td>
+		    </tr>
+		  </table>
+		 <br>
+		    <span class="titel_small">Ihre Referenz (max. 30 Zeichen) </span></strong><br>
+		 
+		    <input name="checkout_referenz" type="text" class="inputform" style="width:300px;" maxlength="30">
+		    <br>
+		    <br>
+		    Die von Ihnen erfasste Referenz wird in Mein 
+		  Konto unter der Bestell-History abgespeichert. Nachtr&auml;glich 
+		  kann nach dieser gesucht werden.<br>
+		    <br>
+		    <br>
+		    <span class="titel_small">Liefertermin:</span> (Wann soll die Bestellung ausgeliefert 
+		  werden?)
+		<table width="660" border="0" cellspacing="0" cellpadding="0">
+		  <tr>
+		    <td width="95" height="24"><input name="checkout_liefertermin_select" type="radio" value="radiobutton">
+		      sofort </td>
+		    <td width="145" valign="middle"><input name="checkout_liefertermin_select" type="radio" value="radiobutton" >
+		      Datum ausw&auml;hlen</td>
+		    <td width="420" valign="middle"><input type="text" value="" name="checkout_liefer_date" 
+			id="checkout_liefer_date" style="padding-left:12px;width:96px" class="inputform"></td>
+		  </tr>
+		</table>
+		  <br>
+		<br>
+		<span class="titel_small">Bemerkungen:</span><br>
+		  <table cellspacing="0" cellpadding="0">
+		  <tr valign="top">
+		      <td><textarea name="checkout_bemerkungen"   cols="100" rows="5" class="checkout_bemerkungen"></textarea></td>
+		    </tr>
+		</table>
+		  <br>
+		  <br>
+		  <table width="702" border="0" cellpadding="0" cellspacing="0">
+		  <tr>
+		      <td width="188" height="23"><input id="submit_checkout" class="submit_orange" type="button" name="submit_checkout" value="weiter"></td>
+		    </tr>
+		</table>
+</form>

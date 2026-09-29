@@ -1,0 +1,174 @@
+<%init>
+	# -- Subject to be distributed 1:1 to every pGATE shop!!
+
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $lang = $args{lang};
+
+	my $cgi = $C->{CGI};
+	my $msg = $cgi->param('msg');
+	my $act_lang = "style='color:black; font-weight:bold'";
+
+	if ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("DELETE FROM categories WHERE id=$id");
+	}
+	elsif ($cgi->param('bAddProduct')) {
+		my $catID = $cgi->param('catID') + 0;
+		my $id = $A->add_item(cat_id => $catID, art_no=>"A$catID".$C->now(10).'-'.substr($C->now(9), -5));
+		if ($id > 0) {
+			$C->log(msg=>"N408151-23: Product added into Cat-ID $catID", service=>'adm_items2');
+			$m->redirect("adm_edit_product.html?id=$id");
+		}
+		else {
+			$C->create_toast_note(body=>"Error E408151-25: Could not add product into $catID", type=>'error');
+			$C->log(msg=>"Error E408151-25: Could not add product into $catID", importance=>1, service=>'adm_items2');
+			$m->redirect("/adx/products.html");
+		}
+	}
+
+	my $visible = $cgi->param('visible');
+	   $visible = 1 unless length($visible);
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select 	id, parent_id, visible, lang, label, extra_label, weight
+		FROM 	categories
+		WHERE 	lang='$lang' AND parent_id=0 AND visible=$visible ORDER BY weight~);
+
+	$sth->execute();
+</%init>
+% if ($C->{CONFIG}->{multi_lang}) {
+<div style="margin-top:10px; text-align:right" class="pull-right">
+	<a <% $lang eq 'de' ? $act_lang : '' %> href="_change_lang.html?lang=de">de</a> &middot; 
+	<a <% $lang eq 'en' ? $act_lang : '' %> href="_change_lang.html?lang=en">en</a> &middot; 
+	<a <% $lang eq 'fr' ? $act_lang : '' %> href="_change_lang.html?lang=fr">fr</a>
+
+%	if ($C->{CONFIG}->{debug_level}) {
+		<br />
+		<a href="admix.html?func=items_expand&id=500">Testcategory</a>
+%	}
+</div>
+% }
+% elsif ($C->{CONFIG}->{debug_level}) {
+	<div style="margin-top:40px" class="pull-right">
+		<a href="admix.html?func=items_expand&id=500">Testcategory</a>
+	</div>
+% }
+<script language=JavaScript>
+	function del_categ(id) {
+		if (confirm('OK to delete Category ID ' + id)) {
+			document.location="adm_categs.html?delid="+id;
+		}
+	}
+</script>
+
+<br>
+% if ($msg) {
+	<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<b><%$msg%></b></div>
+% }
+
+<form method=get action="adm_search_product.html">
+<input name=q type=text style='width:288px; margin-top:10px' placeholder='Search products'> &middot; <a href="adm_search_product.html?q=1,11&type=price">Price between 1 and 11</a>
+</form>
+
+<% $C->bootstrap_alert(q~<b>HINWEIS</b> &middot; <a href="/adx/show.html?macro=products">Funktions-Update</a>~, 'danger') %>
+<br />
+
+<table class='table table-hover'>
+
+<thead>
+	<tr>
+		<th style="text-align:right">Cat ID</th>
+		<th colspan="2">Label</th>
+		<th style="text-align:right">List Products</th>
+		<th style="text-align:center">Add</th>
+	</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $parent_id, $visible, $lang, $label, $extra_label, $weight) = @{$r};
+%	my $count = $C->query("select COUNT(*) FROM products2categ WHERE cat_id=$id")->[0];
+	<tr<%!$parent_id ? ' style="background-color:#e2e4ff"' : ''%>>
+	<td style='width:64px; font-weight:bold; text-align:right; font-size:16px'><a style='color:#333333' href="admix.html?func=items_expand&id=<%$id%>"><%$id%></a></td>
+%	if ($parent_id) {
+		(<%$C->query("SELECT label FROM categories WHERE id=$parent_id")->[0]%>)
+%	}
+	</td>
+	<td style='font-size:16px; font-weight:bold<%$label =~ /^\* New/ ? '; color:red' : ''%>'><%$label%></td>
+	<td><%$extra_label%></td>
+	<td style='text-align:right'>
+%		if ($count) {
+			<a href="admix.html?func=items_expand&id=<%$id%>"><%$count%> products</a>
+%		}
+	</td>
+	<td style="text-align:center"><a href="adm_items.html?bAddProduct=1&catID=<%$id%>"><i class='icon-plus'></i></a></td>
+	</tr>
+%	foreach my $sub_id (@{$A->get_sub_categs($id)}) {
+%		my ($label, $visible) = @{$C->query("select label, visible FROM categories WHERE id=$sub_id and lang='$lang'")};
+%		my $count = $C->query("select COUNT(*) FROM products2categ WHERE cat_id=$sub_id")->[0];
+%		my $show_vis = $visible ? '' : '<img src="images/eye_blue_sma_strike.png" style="width:19px; height:10px">';
+		<tr><td colspan=4 style='padding-left:45px; color:#55555'><a style='margin-right:15px'
+			href="admix.html?func=items_expand&id=<%$sub_id%>"><%$sub_id%></a> <b><%$label%></b> <%$show_vis%>
+			<div style='float:right'>
+%				if ($count) {
+%					if ($count == 1) {
+%						my $product_id = $C->query("SELECT product_id FROM products2categ where cat_id=$sub_id")->[0];
+						<a href="adm_edit_product.html?id=<% $product_id %>">1 product</a>
+%					}
+%					else {
+						<a href="admix.html?func=items_expand&id=<%$sub_id%>"><%$count%> products</a>
+%					}
+%				}
+			</div>
+		</td>
+		<td style="text-align:center"><a href="adm_items.html?bAddProduct=1&catID=<%$sub_id%>"><i class='icon-plus'></i></a></td>
+		</tr>
+%		foreach my $sub_sub_id (@{$A->get_sub_categs($sub_id)}) {
+%			my ($label, $weight, $visible) = @{$C->query("select label, weight, visible FROM categories WHERE id=$sub_sub_id and lang='$lang'")};
+%			my $count = $C->query("select COUNT(*) FROM products2categ WHERE cat_id=$sub_sub_id")->[0];
+%			my $child_id = $C->query("select id FROM categories WHERE parent_id=$sub_sub_id")->[0];
+%			next if (!$count && !$child_id);
+%			my $show_vis = $visible ? '' : '<img src="images/eye_blue_sma_strike.png" style="width:19px; height:10px">';
+			<tr><td colspan=3 style='padding-left:90px'><a style='margin-right:15px'
+				href="admix.html?func=items_expand&id=<%$sub_sub_id%>"><%$sub_sub_id%></a> <%$label || 'N/A'%> <%$show_vis%>
+%				if ($child_id) {
+%					my $count = $C->query("select COUNT(*) FROM products2categ WHERE cat_id=$child_id")->[0];
+%					if ($count) {
+						&nbsp;&nbsp;&rsaquo;&nbsp;&nbsp;
+%						my $label = $C->query("select label FROM categories WHERE id=$child_id AND lang='$lang'")->[0];
+						<%$count%> x <a href="admix.html?func=items_expand&id=<%$child_id%>"><%$label%></a>
+%					}
+%				}
+			</td>
+			<td style='text-align:right'>
+%			if ($count) {
+%				if ($count == 1) {
+%					my $product_id = $C->query("SELECT product_id FROM products2categ where cat_id=$sub_sub_id")->[0];
+					<a href="admix.html?func=edit_item&id=<%$product_id%>">1 product</a>
+%				}
+%				else {
+				<a href="admix.html?func=items_expand&id=<%$sub_sub_id%>"><%$count%> products</a>
+%				}
+%			}
+			</td>
+			<td style="text-align:center"><a href="adm_items.html?bAddProduct=1&catID=<%$sub_sub_id%>"><i class='icon-plus'></i></a></td>
+			</tr>
+%		}
+%	}
+% }
+
+</table>
+
+<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<strong>Notice</strong> 
+	Click on products or plus sign to add products in the related category
+</div>
+
+<%doc>
+	__METACLONING__
+</%doc>

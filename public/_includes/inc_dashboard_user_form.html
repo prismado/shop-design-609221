@@ -1,0 +1,277 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id   = $args{id} + 0;
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $UINF = $args{UINF};
+
+	my $cgi = $C->{CGI};
+
+	my $bAddDetail   = $cgi->param('bAddDetail');
+	my $bAddDiscount = $cgi->param('bAddDiscount') + 0;
+
+	my %status_hr = ( 1=>'New User', 2=>'Released', 3=>'Blocked', 4=>'Anon Reg', 5=>'Bounce' );
+	my %pay_meth_hr = ( pic => 'Self-pickup', inv => 'Invoice' );
+	my %gender_array = ( 1 => 'Male', 2 => 'Female', 3 => 'Company' );
+
+	my $user_docs = $C->get_user_docs($id);
+	my $user_docs_count = $#{$user_docs} + 1;
+
+	my $tab_special_cond = $cgi->param('tab_special_cond') + $bAddDiscount;
+
+	my $LABEL_ADMIN = '<span class="label label-info">Admin</span>';
+	my $LABEL_DEVEL = '<span class="label label-important">Devel</span>';
+
+	my ($name, $is_admin, $is_devel, $tstamp, $pass, $rel_token, $newsletter, $user_remarks) = @{$C->query(qq~
+		SELECT	uname, is_admin, is_devel, tstamp, pass, rel_token, newsletter,
+			(select xval from users_details where user_id=$id and xkey='user_remarks' limit 1)
+		FROM 	users WHERE id=$id~)};
+	$user_remarks ||= '';
+
+	my $user_perm = $C->get_user_perm($id);
+</%init>
+<style>
+.borderless {
+	border: none !important;
+	line-height:10px !important;
+}
+</style>
+<form method="post" enctype="multipart/form-data" name="user_form">
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name="tab_special_cond" value="0">
+<input type=hidden name=street_1  value="<%$UINF->{street}%>">
+<input type=hidden name=zip_1     value="<%$UINF->{zip}%>">
+<input type=hidden name=city_1    value="<%$UINF->{city}%>">
+<input type=hidden name=phone_1    value="<%$UINF->{phone}%>">
+
+<table class='table'>
+<thead>
+    <tr>
+      <th style='width:205px; text-align:left'>User Name</th>
+	<th style='text-align:center'>Gender</th>
+      <th style='text-align:center'>Status</th>
+      <th style='text-align:center'><a href="user.html?id=<%$id%>&openperm=1">Permission</a></th>
+      <th style="text-align:center">Update</th>
+    </tr>
+</thead>
+	<tr>
+	<td style='text-align:left'>
+	<input type=text name=uname value="<%$name%>" style='width:290px; font-weight:bold'>
+	</td>
+	<td style='text-align:center'>
+		<select style='width:90px' name="gender">
+		<option value="0">Select</option>
+%		for (my $i=1; $i<4; $i++) {
+%			my $selected = $UINF->{gender} == $i ? ' selected' : '';
+			<option value="<%$i%>"<%$selected%>><%$gender_array{$i}%></option>
+%		}
+		</select>
+	</td>
+	<td style='text-align:center'>
+		<select style='width:110px' name="status">
+		<option value="<%$UINF->{status}%>"><%$status_hr{$UINF->{status}} || "* $UINF->{status} *"%></option>
+		<option value="1"><% $status_hr{1} %></option>
+		<option value="2"><% $status_hr{2} %></option>
+		<option value="3"><% $status_hr{3} %></option>
+		<option value="4"><% $status_hr{4} %></option>
+		<option value="5"><% $status_hr{5} %></option>
+		</select>
+	</td>
+	<td style='text-align:center'>
+%	# XXX if ($is_admin) {
+%	# XXX }
+	<span class="label label-success">User</span>
+
+%	foreach (sort keys %{$user_perm}) {
+%		next unless /^is\_(.+)/; my $role = $1;
+%		next unless $user_perm->{$_};
+%		my $type = 'success'; $type = 'important' if $role eq 'devel';
+%		   $type = 'info' if $role eq 'admin';
+		<span class="label label-<% $type %>"><% ucfirst $role %></span>
+%	}
+
+%    if ($args{debug}) {
+	<br />
+%	foreach (sort keys %{$user_perm}) {
+%		next unless $user_perm->{$_};
+		<b><% $_ %></b> = <code><% $user_perm->{$_} %></code><br>
+%	}
+%    }
+	</td>
+	<td nowrap style="text-align:center"><%$C->trans_date_short($tstamp)%></td>
+	</tr>
+</table>
+
+<table cellspacing=0 cellpadding=0 border=0 style='width:100%'>
+<tr valign=top>
+<td>
+% # ================================================================================================
+<div class="widget">
+        <ul class="nav nav-tabs two-tabs fancy">
+          <li class="<% $args{bSendMail} or $tab_special_cond ? '' : 'active' %>" style='width:180px'><a href="#tab-addr" data-toggle="tab">Addresses</a></li>
+          <li style='width:180px'><a href="#tab-ee" data-toggle="tab">Customer Data</a></li>
+          <li class="<% $tab_special_cond ? 'active' : '' %>" style='width:180px'><a href="#tab-xx" data-toggle="tab">Special Conditions</a></li>
+          <li style='width:180px'><a href="#tab-docs" 
+		data-toggle="tab">Documents <%$user_docs_count ? "($user_docs_count)" : ''%></a></li>
+          <li class="<% $args{bSendMail} ? 'active' : '' %>" style='width:180px'><a href="#tab-mail" data-toggle="tab">Send Mail</a></li>
+        </ul>
+
+   <div class="tab-content">
+	<div class="tab-pane fade <% $args{bSendMail} or $tab_special_cond ? '' : 'in active' %>" id="tab-addr">
+		<&inc_dashboard_user_addr.html, id=>$id, A=>$A, C=>$C, UINF=>$UINF&>
+	</div>
+
+	<div class="tab-pane fade" id="tab-ee">
+		<&inc_dashboard_user_data.html, UINF=>$UINF, newsletter=>$newsletter&>
+        </div>
+
+	<div class="tab-pane fade <%$tab_special_cond ? 'in active' : ''%>" id="tab-xx">
+		<div class="pull-right">
+			<a href="user.html?id=<%$id%>&bAddDiscount=1">Add Discount</a>
+		</div>
+		<h3 style="margin-top:0px !important; margin-bottox:-15px !important">Discount</h3>
+%		my $st_ud = $C->{dbh}->prepare(qq~
+%			select	id, substr(xkey, 14, 31) * 1, xval * 1
+%			from 	users_details 
+%			where 	user_id=$id and xkey like 'special\_cond\_%' order by 3
+%		~);
+%	   	   $st_ud->execute();
+		<table style="width:390px !important" class="mytable table-hover">
+		<thead>
+		<tr>
+			<th style="text-align:right; width:122px">from the amount of</th>
+			<th style="text-align:right">Discount&nbsp;</th>
+			<th></th>
+		</tr>
+		</thead>
+%		while(my $rr = $st_ud->fetch()) {
+%			my ($d_id, $amount, $xval) = @{$rr};
+			<tr>
+			<td style="text-align:right">
+				<span style="display:none" id="disc_<%$d_id%>_left"><input
+					style="width:66px; margin-top:1px; margin-bottom:0px; text-align:right; font-weight:bold"
+						value="<%$amount%>" type=text name="disc_<%$d_id%>_amount"></span>
+				<span id="disc_<%$d_id%>_left_ro"><%$C->decimal_mark($amount)%></span>
+				<%$C->{CONFIG}->{default_curr}%>
+			</td>
+			<td style="text-align:right">
+				<span style="display:none" id="disc_<%$d_id%>_right"><input type="text"
+					style="width:42px; margin-top:1px; margin-bottom:0px; text-align:right; font-weight:bold"
+						name="disc_<%$d_id%>_perc" value="<%$xval%>">
+				</span>
+				<span id="disc_<%$d_id%>_right_ro"><%$xval%></span> %
+			</td>
+			<td style="text-align:right; padding-right:4px">
+				<i style="cursor:pointer"
+					onclick="this.style.display='none'; document.getElementById('disc_<%$d_id%>_left').style.display=''; document.getElementById('disc_<%$d_id%>_right').style.display=''; document.getElementById('disc_<%$d_id%>_left_ro').style.display='none'; document.getElementById('disc_<%$d_id%>_right_ro').style.display='none'; document.getElementById('remove_<%$d_id%>').style.display=''; document.user_form.tab_special_cond.value=1"
+				class="icon-pencil"></i>
+				<a href="user.html?id=<%$id%>&bDelDisc=<%$d_id%>"><i id="remove_<%$d_id%>" style="color:red; display:none" class="icon-remove"></i></a>
+			</td>
+			</tr>
+%		}
+		</table>
+	</div>
+
+	<div class="tab-pane fade" id="tab-docs">
+		<div id="ajx_docs"></div>
+	</div>
+
+	<div class="tab-pane fade <% $args{bSendMail} ? 'in active' : '' %>" id="tab-mail">
+	  <& inc_dashboard_user_mail.html, id=>$id, bSendMail=>$args{bSendMail}, A=>$A, C=>$C, UINF=>$UINF, debug=>$args{debug} &>
+	</div>
+
+	</div>
+
+  </div>
+</div>
+% # ================================================================================================
+</td>
+<td>
+%	my $st_all_ud = $C->{dbh}->prepare(qq~
+%		select	xkey, xval 
+%		from 	users_details 
+%		where 	user_id=$id and xkey not like 'cb_%' and xkey not like 'special_cond_%' and xkey not like 'mail_sent_%'
+%			and xkey not like 'perm_is_%' and xkey not like '\\_%' and xkey != 'user_remarks'
+%		order 	by xkey
+%	~);
+%	   $st_all_ud->execute();
+	<div class="well pull-right" style="margin-left:10px; padding-top:10px; padding-bottom:0px; padding-left:5px; padding-right:5px">
+		<table class="table borderless" stylx="margin-top:0px">
+%		while(my $rr = $st_all_ud->fetch()) {
+%			my ($xkey, $xval) = @{$rr};
+%			(my $xkey_disp = $xkey) =~ tr/_/ /;
+			<tr><td class="borderless"><% ucfirst $xkey_disp %></td>
+			<td class="borderless">
+				<span id="detail_read_<% $xkey %>"><b><nobr><% $A->shorten_title($xval, 11) %></nobr></b></span>
+				<input id="detail_<% $xkey %>" style="display:none; width:88px"
+					type=text name="udet_<% $xkey %>" value="<% $xval %>">
+			</td>
+			<td class="borderless"><i style="cursor:pointer" class="icon-edit"
+		onclick="this.style.display='none'; document.getElementById('detail_read_<% $xkey %>').style.display='none'; document.getElementById('detail_<%$xkey%>').style.display=''"></i>
+			</td>
+			</tr>
+%		}
+		</table>
+	</div>
+
+	<div class="well pull-right" style="margin-left:10px">
+% if ($args{debug}) {
+	<% $C->html_debug("User Details / <a href='adm_special_keys.html?area=pay_meth_special'>Pay Meth Special</a>") %>
+% }
+% foreach my $pay_type (qw(pic inv special1 special2 special3)) {
+% $pay_meth_hr{$pay_type} ||= $C->{CONFIG}->{"pay_meth_$pay_type"};
+% next unless $pay_meth_hr{$pay_type};
+<label class="checkbox">
+<input type=checkbox
+	name=_ud_cb_pay_<%$pay_type%> <%$UINF->{"cb_pay_$pay_type"} ? 'checked' : ''%>> <%$pay_meth_hr{$pay_type} || "* $pay_type *"%>
+%	if ($args{debug}) {
+		<% $C->html_debug($pay_type) %>
+%	}
+%	else {
+	<br>
+%	}
+</label>
+% }
+	</div>
+
+	<br />
+	<div class="well pull-right" style="margin-left:10px; widtx:60%; displax:none">
+		<p><a
+		href="#" onclick="JavaScript:document.getElementById('urem241').style.display='none'; document.getElementById('urem239').style.display=''">Benutzer-Kommentar</a></p>
+		<p id="urem241" style="max-width:20vw"><% $user_remarks %></p>
+		<span style="display:none" id="urem239">
+			<textarea name="user_remarks" placeholder="User Remarks" rows="6"><% $user_remarks %></textarea>
+		</span>
+	</div>
+</td></tr>
+</table><br>
+
+<input type=checkbox name=is_admin value=1 style='margin-top:-3px'<%$is_admin ? ' checked' : ''%>>&nbsp;&nbsp;Admin<br>
+% if ($args{debug}>1 or $is_devel) {
+<input type=checkbox name=is_devel value=1 style='margin-top:-3px'<%$is_devel ? ' checked' : ''%>>&nbsp;&nbsp;Developer<br>
+% }
+<input type=checkbox name=newsletter value=1 style='margin-top:-3px'<%$newsletter ? ' checked' : ''%>>&nbsp;&nbsp;Newsletter<br>
+<br clear='all' />
+
+<input type=submit class="btn btn-primary" name=bUpd value="Update">&nbsp;&nbsp;&nbsp;
+<input type=submit class="btn" value="Cancel" name=bCan>&nbsp;&nbsp;&nbsp;
+<input type=button class="btn btn-danger" onclick="modal(<%$id%>)" value="Delete">
+% if ($UINF->{status} == 4) {
+	&nbsp;&nbsp;&nbsp;
+	<input type=submit class="btn btn-info" name=bInvitation value="Registration invitation"> &ndash;
+		<a href="adm_properties.html?filter=invitation">Edit Text</a>
+%	if ($args{debug}) {
+%		my $UID = $C->getUID();
+%		my $csum = $C->md5_secret($id);
+%		my $csum_you = $C->md5_secret($UID);
+		&mdash; <a href="_do.html?action=send_reg_invitation&uid=<% $id %>&csum=<% $csum %>">Try</a>
+		&mdash; <a href="_do.html?action=send_reg_invitation&uid=<% $UID %>&csum=<% $csum_you %>">Try 2 You</a>
+		&mdash; <a href="adm_open_mail_tpl.html?tpl=register_invitation.html">Mail-Tpl</a>
+%	}
+% }
+</form>
+
+<%doc>
+	__METACLONING__
+</%doc>

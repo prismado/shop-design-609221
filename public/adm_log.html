@@ -1,0 +1,54 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $UID = $C->getUID();
+	my $license = $C->get_license();
+	my $perm    = $C->get_user_perm();
+
+	$C->redir('/signin.html') unless $perm->{is_admin};
+
+	my $filter     = $C->{CGI}->param('filter');
+	my $filtertype = $C->{CGI}->param('filtertype');
+	my $order_id   = $C->{CGI}->param('order_id') + 0;
+	my $debug      = $C->{CGI}->param('debug') + 0;
+	my $showmodule = $C->{CGI}->param('showmodule');
+	my $delid      = $C->{CGI}->param('delid') + 0;
+
+	if ($delid) {
+		$C->{dbh}->do("delete from log where id=$delid");
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Adm Log &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme_wide.html&>
+<link rel="stylesheet" type="text/css" href="/adx/assets/css/datatable-ellipsis.css">
+</head>
+<&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, func=>'log', license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+		<&_includes/adm_log.html, filter=>$filter, filtertype=>$filtertype, order_id=>$order_id,
+			showmodule=>$showmodule, debug=>$debug, delid=>$delid, C=>$C&>
+
+		<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+<&_includes/meta_bootstrap_bottom2.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

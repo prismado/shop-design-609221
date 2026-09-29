@@ -1,0 +1,58 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $sth = $C->{dbh}->prepare("SELECT order_id FROM orders_products where prod_id=$id order by id desc limit 3");
+	   $sth->execute();
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id   value="<%$id%>">
+<input type=hidden name=func value="edit_item">
+<input type=hidden name=stay value="1">
+
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Please confirm</h3>
+  </div>
+
+  <div class="modal-body" style="padding-top:0px">
+	<h4>Are you sure you want to delete Product-ID <%$id%>?</h4>
+
+%	if ($sth->rows()) {
+		<br />
+		<% $C->bootstrap_alert(qq~<b><i class="icon-bullhorn"></i> Warning:</b> There are orders for this product.~, 'warning') %>
+		<br />
+
+%		while(my $r = $sth->fetch()) {
+			&bull; <a href="admix.html?func=orders&id=<% $r->[0] %>">Order-ID <% $r->[0] %></a><br>
+%		}
+		<br />
+
+		<p>
+			Set the product to invisible instead.
+		</p>
+%	}
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-danger" name=bDel type=submit value="Delete">
+  </div>
+
+</div>
+
+</form>
+<%doc>
+	Created: 28Sep2019
+	__METACLONING__
+</%doc>

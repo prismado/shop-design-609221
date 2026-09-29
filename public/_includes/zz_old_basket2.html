@@ -1,0 +1,176 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $vat_factor = 1 + $C->{CONFIG}->{vat} / 100;
+
+	my $id = $C->{CGI}->param('id') || 0;
+	my $action = $C->{CGI}->param('action') || '';
+	my $count = $C->{CGI}->param('count') || 1;
+
+	my $rc = 0;
+	my $msg = ''; # -- empty
+	if ($action eq 'del') {
+		($rc, $msg) = $A->delfrombasket( id => $id );
+	}
+	elsif ($id) {
+		($rc, $msg) = $A->add2basket( id => $id, count => $count );
+		unless ($rc) {
+			$msg = "Produkt ID $id hinzugefügt";
+		}
+	}
+
+	my $basket_h = $A->get_basket_items(); # -- $basket_h->rows() items
+</%init>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<TABLE style="PADDING-TOP: 8px" border=0 cellSpacing=0 cellPadding=0 width="100%">
+  <TR><TD>&nbsp;</TD></TR>
+</TABLE>
+<TABLE border=0 cellSpacing=0 cellPadding=0 width="1000">
+  <TBODY>
+    <TR vAlign=top>
+      <TD width=233><TABLE id="menuleft" border=0 cellSpacing=0 cellPadding=0 width=233>
+	    <TR>
+	      <TD vAlign=top><& left_nav.html, CORE => $C &></TD>
+	    </TR>
+	</TABLE></TD>
+      <TD width="100%">
+
+<div id="content_box">
+	  <div class="con_title"><% $C->p('main_title') %></div>
+	  <div class="text"><% $C->p('basket_text') %> <% $C->p('mwst_text') %><br><br>
+
+
+% if ($msg) {
+%	if ($rc) {
+		<div style='color:red;'><% $msg %></div>
+%	}
+%	else {
+		<div><% $msg %></div>
+%	}
+% }	    
+
+<br>
+	<form name="basket" id="basket" action="checkout.html" method="post">
+	<input type=hidden name=src value='basket'>
+	    <table width="94%" border="0" class="br1" cellpadding="4" cellspacing="0">
+	      <tr class="con_title" style="background-color:#eee;">
+		<td align="center" class="header"><% $C->p('delete') %></td>
+		<td align="center" class="header"><% $C->p('piece') %></td>
+		<td align="center"  class="header"><% $C->p('artikelnr') %></td>
+		<td  class="header"><% $C->p('prod_name') %></td>
+		<td align="center" class="header"><% $C->p('price_p_piece') %></td>
+		<td align="right" class="header"><% $C->p('sub_total') %></td>
+	      </tr>
+
+% if ($basket_h->rows() < 1) {
+	<tr class='br1'>
+		<td colspan=6 align=center><a href='/categ.html?id=<% $C->{CONFIG}->{default_cat_id} %>'><% $C->p('no_items') %></a></td>
+	</tr>
+% }
+
+% my $total = 0;    	   
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count) = @{$r};
+%	my $d = $A->get_product($prod_id);
+%	my $opts_upsell = $A->get_upsell_opts($prod_id);
+%	my $ups_price_tot = $A->{total};
+%	my $opts_prod = $A->get_basket_options_by_prod($prod_id);
+%	my $price = sprintf('%.2f', sprintf('%.2f', ($d->{price} + $A->{basket_options_sum}) * $vat_factor) + sprintf('%.2f', $ups_price_tot * $vat_factor));
+%	my $total_line = $count * $price;
+%	$total += $total_line;
+	<tr class="br1" valign=top>
+		<td width="41" height="25" align="center"><a href="basket.html?action=del&id=<% $prod_id %>"><img
+			src="images/button_loeschen_orange.gif" 
+			alt="l&ouml;schen" width="27" height="17" border="0"></a></td>
+		<td width="54" align="center"><table border="0" cellpadding="0" cellspacing="0">
+		    <tr>
+		      <td rowspan="2"><input name="count_<% $prod_id %>" type="text" class="anzahl_form"
+				value="<% $count %>" maxlength="3" id='count_<% $prod_id %>'></td>
+		      <td width="14" valign="bottom"><img style='cursor:pointer' onclick='icount_add(<% $prod_id %>)'
+			src="images/warenkorb_pfeil_up.gif" alt="up" width="14" height="7"></td>
+		    </tr>
+		    <tr>
+		      <td valign="top"><img style='cursor:pointer' onclick='icount_sub(<% $prod_id %>)'
+				src="images/warenkorb_pfeil_down.gif" alt="down" width="14" height="7"></td>
+		    </tr>
+		  </table></td>
+		<td width="62"><div align="center"><% $d->{art_no} %></div></td>
+		<td width="260"><a href="/product.html?id=<% $prod_id %>"><% $d->{title} %></a><br>
+		<% $d->{description} %>
+%		if (@{$opts_upsell}) {
+			<br>
+%		}
+%		foreach (@{$opts_upsell}) {
+%			my ($id, $foo, $title, $desc, $price) = split /\t/;
+			<nobr><small>&bull; <% $title %> <% $desc %>, CHF <% $price %><br></small></nobr>
+%		}
+
+%		foreach (@{$opts_prod}) {
+%			my ($id, $ref, $price) = split /\t/;
+			<nobr><small>&bull; Option <% $ref %>, <% sprintf('%.2f', $price * $vat_factor) %><br></small></nobr>
+%		}
+
+		<nobr><small>
+		&rarr; Optionen: CHF <% sprintf('%.2f', $A->{basket_options_sum_vat}) %><br>
+		</small></nobr>
+		</td>
+		<td align="center">CHF&nbsp;<% $price %></td>
+		<td align="right">CHF&nbsp;<% $C->decimal_mark($total_line) %></td>
+	</tr>
+% }
+	      
+	<tr class="br1"><td  colspan="6" class="bottom_line" align="center"><img src="images/spacer.gif" width="5" height="5"></td></tr>
+	      <tr class="br1">
+		<td height="22" colspan="4" align="left"><b><% $C->p('sum_total') %> <% $C->{CONFIG}->{vat} %> % <% $C->p('mwst') %>&nbsp;</b></td>
+		<td colspan="2" align="right"><strong>CHF <% $C->decimal_mark($total) %></strong></td>
+	      </tr>
+	    </table>
+	    <br>
+	    <table width="702" border="0" cellpadding="0" cellspacing="0">
+	      <tr><br>
+
+		<td width="126" height="23"><input id="zur_kasse" class="submit_orange" type="submit" 
+			name="zur_kasse" value="<% $C->p('to_payment') %>"></td>
+		<td width="110"><input id="weiter_einkaufen" class="submit" type="button" 
+			name="weiter_einkaufen" value="<% $C->p('cont_shopping') %>" 
+			onclick='JavaScript:document.location="/categ.html?id=101"'></td>
+		<td width="466">&nbsp;</td>
+	      </tr>
+	    </table>
+	    
+	   </form>
+       <br>
+<br>
+
+% if ($C->is_devel()) {
+	<br>
+% }
+	  </div>
+	</div>
+	<!-- end content_box -->
+
+	</TD>
+    </TR>
+  </TBODY>
+</TABLE>
+<TABLE style="footerback" border=0 cellSpacing=0 cellPadding=0 width=980>
+    <TR><TD vAlign=top align=left><& footer_links.html, CORE => $C &></TD></TR>
+</TABLE>
+
+<script language=JavaScript>
+	function icount_add(prod_id) {
+		c = document.getElementById('count_' + prod_id).value;
+		document.getElementById('count_' + prod_id).value = parseInt(c) + 1;
+	}
+	function icount_sub(prod_id) {
+		c = document.getElementById('count_' + prod_id).value;
+		if (c < 1) { return; }
+		document.getElementById('count_' + prod_id).value = parseInt(c) - 1;
+	}
+</script>
+

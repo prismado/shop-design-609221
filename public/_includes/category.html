@@ -1,0 +1,82 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	(my $search = $args{q}) =~ s/'/''/g;
+	    $search =~ s/ /%/g;
+	$args{id} = 0 if $search;
+
+	my @wclause = ();
+	push(@wclause, "lang='$args{lang}'");
+	push(@wclause, "(count>0 OR `condition`='OR')");
+	push(@wclause, "(desc_long LIKE '%$search%' OR title LIKE '%$search%' OR description LIKE '%$search%')") if $search;
+	push(@wclause, "cat_id=$args{id}") if $args{id};
+	my $wcl = join ' AND ', @wclause;
+
+	my $sth = $C->{dbh}->prepare(
+		qq~
+			SELECT 	DISTINCT id, price, title, description, count, campaign_id, extra, `condition` 
+			FROM 	vproducts_long
+			where	$wcl
+		~);
+
+	   $sth->execute() or $m->out("ERR $DBI::errstr<br>");
+	my $rows = $sth->rows();
+	my $prod_count = 0;
+	my $row_cursor = 0;
+
+	my $label = $C->query("select label FROM categories WHERE id=$args{id} AND lang='de'")->[0];
+
+	my $breadcrumb = $A->get_breadcrumb($args{id});
+
+	my $search_disp = my $search_enc = '';
+	if ($search) {
+		($search_disp = $args{q}) =~ s/</&lt;/g;
+		$search_enc = $C->uri_esc($args{q});
+	}
+</%init>
+<div id="products_outer">
+<div class="filter_content">
+<p class="view-mode"><a href="categ.html?id=<%$args{id}%>&q=<%$search_enc%>" title="<%$rows%> Produkte anzeigen als Liste" class="list">Gitter</a>&nbsp</p>
+<p class="view-info">
+% foreach (@{$breadcrumb}) {
+%	my ($id, $label) = split /\t/;
+	<a href="category.html?id=<%$id%>"><%$label%></a> &nbsp;&rsaquo;&nbsp;
+% }
+	<b><%$label || $search_disp%></b>
+</p>
+
+</div>
+</div>
+
+<div id="infoBox">
+% if ($C->is_devel()) {
+	<&page_info.html, "START &middot; render_category_15j is \"$C->{CONFIG}->{render_category_15j}\""&>
+	wcl: <tt><%$wcl%></tt><br>
+% }
+
+% if ($C->{CONFIG}->{render_category_15j}) {
+%	while(my $r = $sth->fetch()) {
+%		$prod_count++; $row_cursor++;
+%		my $product_id = $r->[0];
+		<&render_category_15j.html, id => $product_id, A => $A, CORE => $C&>
+%	}
+% }
+% else {
+%	while(my $r = $sth->fetch()) {
+%		$prod_count++; $row_cursor++;
+%		my $product_id = $r->[0];
+		<&render_category.html, id=>$product_id, lang=>$args{lang}, A=>$A, CORE=>$C&>
+%	}
+% }
+
+% unless ($rows) {
+	<p style='text-align:center; margin-top:88px'>
+	Zurzeit keine Artikel in dieser Kategorie.
+	</p>
+% }
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

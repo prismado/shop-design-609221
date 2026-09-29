@@ -1,0 +1,82 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+</%init>
+<h2>Navision / Rahmenauftr&auml;ge</h2>
+
+<script language="JavaScript">
+	function modal_run_navision(id) {
+                $('#ajx_modal').load('_includes/ajx_modal_navision.html?id=' + id);
+        }
+</script>
+
+<table class="table table-hover table-striped">
+<thead>
+	<tr>
+		<th>Auftrag Nr.</th>
+		<th style="text-align:center">Auftragszeit</th>
+		<th style="text-align:right">Dateigr&ouml;sse</th>
+		<th style="text-align:right">Positionen</th>
+		<th></th>
+	</tr>
+</thead>
+% while( my $data = $A->auctionl_get_navision_orders() ) {
+%	my $fileinf = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/data/import/datacopy/RA-$data->{nr}-utf.xml");
+%	my ($imp_time, $uid, $info) = @{$C->query(
+%		"select tstamp, uid, info from auctionl_import where source='RA $data->{nr}' order by id desc limit 1")};
+	<tr>
+	<td style="font-weight:bold">RA <% $data->{nr} %></td>
+	<td style="text-align:center"><% $C->trans_date_short($fileinf->{mod}) %></td>
+	<td style="text-align:right"><% $fileinf->{size} %></td>
+	<td style="text-align:right">
+%		if ($imp_time) {
+			<a href="auctionl_items.html?func=items_expand&ix=1059&ra=<% $data->{nr} %>">Anzeigen: <% $data->{count} %></a>
+%		}
+%		else {
+			<% $data->{count} %>
+%		}
+	</td>
+	<td style="text-align:right">
+%	    if ($imp_time) {
+		<span rel="tooltip" data-original-title="Durchgef&uuml;hrt von UID <%$uid%>" data-placement="top">
+			<span class="label label-info"><% $C->trans_date_short($imp_time) %></span> &middot;
+		</span>
+		<a href="#" onclick="modal_run_navision(<%$data->{nr}%>)">Neu-Import</a>
+%	    }
+%	    else {
+		<a href="#" onclick="modal_run_navision(<%$data->{nr}%>)">Verarbeiten</a>
+%	    }
+	</td>
+	</tr>
+% }
+</table>
+
+
+% if ($args{appmsg} or $args{debug}) {
+	<div class="well"><% $args{appmsg} %></div>
+% }
+
+<form name="actionForm" method="post" action="adm_auctionline.html">
+<input type="hidden" name="action" value="">
+</form>
+
+<script language="JavaScript">
+	function mydo (action) {
+		document.actionForm.action.value = action;
+		document.actionForm.submit();
+	}
+</script>
+<br />
+
+<div id="ajx_modal"></div>
+
+% if ($args{action}) {
+	<br><br>
+	<div class="well">
+	Called: <% $args{action} %>
+	</div>
+% }

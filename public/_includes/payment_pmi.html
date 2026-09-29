@@ -1,0 +1,91 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	# -- my $ship_meth = $C->getSessData('ship_meth');
+	# -- my $ship_meth_amount = sprintf('%.2f', $C->{CONFIG}->{"ship_$ship_meth"} * (1 + $C->{CONFIG}->{vat} / 100));
+
+	my $order_id = $C->getSessData('order_id');
+
+	$C->del_sess_key('order_id'); # -- Last chance to cleanup order_id in this session
+
+	my $total = 0;
+
+	if ($order_id) {
+		my $order_inf = $A->get_order($order_id);
+		$total = $order_inf->{amount_incl_vat};
+
+		$C->{dbh}->do("UPDATE orders SET pay_meth=8 WHERE id=$order_id"); # -- Override if started with other pay_meth
+
+		$C->del_sess_key('order_id');
+		$A->empty_basket();
+
+		$C->saveSessData('order_id_for_pmi', $order_id);
+	}
+	else {
+		$order_id = $C->getSessData('order_id_for_pmi');
+		my $order_inf = $A->get_order($order_id);
+		$total = $order_inf->{amount_incl_vat};
+	}
+
+	$total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+	(my $total_no_dot = $total) =~ tr/\.//d;
+</%init>
+<h2>Order ID <%$order_id || 'N/A'%></h2><br>
+
+% foreach (@{$A->get_order_products($order_id)}) {
+%	my ($count, $prod_id, $title) = split /\t/;
+	<%$count%> x <%$title%><br>
+% }
+<br>
+% # -- 3D Secure Test: 4012888888881881
+
+<h3>Total: CHF <%$total%></h3><br>
+
+<div class="payment-errors"></div>
+
+% # <&_paymill_example_form.html&>
+
+<form id="payment-form" action="pmi-req.html" method="POST">
+<input class="card-amount" type="hidden" value="1.00" />
+<input class="card-currency" type="hidden" value="CHF" /><!-- EUR -->
+
+<table style='width:70%' class="checkoutTable">
+
+<tr>
+  <th>Card number</th>
+  <td style='text-align:left'><input class="card-number" type="text" value="" style='width:188px' /></td>
+</tr>
+
+<tr>
+  <th>CVC</th>
+  <td style='text-align:left'><input class="card-cvc" type="text" value="" style='width:44px' /></td>
+</tr>
+
+<tr>
+  <th>Expiry date (MM/YYYY)</th>
+  <td style='text-align:left'>
+    <input class="card-expiry-month" type="text" value="12" style='width:33px' />
+    <input class="card-expiry-year" type="text" value="2015" style='width:66px' />
+  </td>
+</tr>
+
+</table><br clear='all' />
+
+  <div class="form-row"><label><%$C->prop('cardholder_text')%>:</label>
+    <input class="card-holdername" type="text" value="" placeholder="Name auf Karte" style='width:244px' /></div>
+<br><br>
+
+% # XXX <button class="submit-button" type="submit">Submit</button>
+<button class="submit-button" style='font-size:15px; background-color:lightgreen' type="submit">Zahlen</button>
+
+</form>
+% if ($args{app_msg}) {
+	<b><%$args{app_msg}%></b><br>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

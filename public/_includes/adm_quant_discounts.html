@@ -1,0 +1,55 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	# XXX my $sth = $args{sth};
+</%init>
+<p class="pull-right" style='margin-top:20px'>
+Config of <%$C->{CONFIG}->{site_title}%> 
+% # XXX &middot; IP <%$C->getOwnIP()%>
+</p>
+
+<h2>Quantity Discounts</h2>
+
+<table class='table table-hover'>
+
+<thead>
+<tr>
+<th style="width:15%; text-align:center">Threshold / Count</th>
+<th style="width:15%; text-align:center">Discount</th>
+<th style="width:15%; text-align:center">Cumulative</th>
+<th>Permitted Categories</th>
+</tr>
+</thead>
+
+% while(my $r = $args{sth2}->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+%	$val ||= 0;
+%	my $cum     = $C->get_property("quant_discount_$key", 'cum', 'sys');
+%	my $cat_ids = $C->get_property("quant_discount_$key", 'cat_ids', 'sys');
+	<tr>
+	<td style="text-align:center"><a href="adm_quant_discount.html?id=<%$id%>"><%$key%> pcs</a></td>
+	<td style="text-align:center; font-weight:bold"><%$val%> %</td>
+	<td style="text-align:center"><% $cum ? 'Yes' : 'No' %></td>
+	<td>
+%		foreach (split /,/, $cat_ids) {
+%			my $label = $C->query("select label from categories where id=$_")->[0];
+			&bull; <%$label%><br>
+%		}
+	</td>
+	</tr>
+% }
+
+</table>
+
+<form method="post">
+	<input type=submit class="btn btn-primary" name=bAdd value="Add Quantity Discount" />
+	<input type="button" class="btn" value="Back" onclick="JavaScript:history.go(-1)" />
+</form>
+
+% # XXX <a href="adm_special_keys.html?area=quant_discount_">old</a>
+
+<%doc>
+	__METACLONING__
+</%doc>

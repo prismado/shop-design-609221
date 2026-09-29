@@ -1,0 +1,59 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	if ($C->{CGI}->param('bAdd')) {
+		my $rc = $A->add_prozone_teaser();
+		$m->out("XX $rc / $A->{errstr}<br>");
+		$m->out('Added.<br>') unless $rc;
+	}
+
+	my $sth = $C->{dbh}->prepare(
+		"SELECT id, instime, campaign_id, status FROM prozone_teaser ORDER BY id DESC LIMIT 100");
+	   $sth->execute() or $m->out('Err<br>');
+</%init>
+
+<script type="text/javascript">document.title='Admin: ProZone Teaser';</script>
+
+<h3>ProZone Teaser</h3>
+
+Erfassen von Initial- / Willkommens-Texten für Firmen-Shops<br><br>
+
+<form method=post>
+<input type=hidden name=func value='prozone_teaser'>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+
+<tr style='font-weight:bold; background-color:#ddd'>
+	<td align=center>ID</td>
+	<td align=right>Campaign ID</td>
+	<td>Ins.Time</td>
+	<td align=center>Status</td>
+	<td>Company</td>
+</tr>
+
+% my $id_before = 0;
+% while(my $r = $sth->fetch()) {
+%	my ($id, $instime, $campaign_id, $status) = @{$r};
+%	my $company = $C->query("SELECT NAME FROM companies WHERE id=(SELECT company_id FROM campaign_data WHERE id=$campaign_id)")->[0];
+%	my $id_disp = sprintf('%08d', $id);
+	<tr>
+	<td align=center><a href='admix.html?func=prozone_teaser&id=<% $id %>'><% $id_disp %></a></td>
+	<td align=right><a href='admix.html?func=hiddenshop&edit=<% $campaign_id %>'><% $campaign_id %></a></td>
+	<td><% $instime %></td>
+	<td align=center><% $status %></td>
+	<td><% $company %></td>
+	</tr>
+% }
+
+</table><br><br>
+
+<input type=submit value='Add' name=bAdd>
+</form>
+
+% if ($C->is_devel()) {
+	<br><br>
+	<& debug.html, CORE => $C &>
+% }

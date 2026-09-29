@@ -1,0 +1,212 @@
+<%init>
+	# -- Used by checkout.html
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id'); # -- Order ID
+
+	if ($id) {
+		$A->{check} = $cgi->param('check');
+		$A->refill_basket($id); # -- Order ID
+		$m->out("$A->{msg}<br>") if $C->is_devel();
+	}
+
+	if ($cgi->param('src') eq 'basket') {
+		$A->update_basket();
+	}
+
+	my $basket_h = $A->get_basket_items();
+	my $total = $A->get_basket_total();
+	my $total_1 = $C->decimal_mark($total + $A->{ship_tot_cc});
+	my $total_2 = $C->decimal_mark($total + $A->{ship_tot_cod});
+
+	my $uinfo = $A->get_user_info();
+	my $vat_factor = 1 + $C->{CONFIG}->{vat} / 100;
+</%init>
+%
+
+% if ($C->is_devel) {
+	XX Basket Total <% $total %> + <% $A->{ship_tot_cc} %> = <% $total_1 %><br>
+% }
+
+<form name="checkout" action="summary.html" method="post">
+
+% # -- Bitte w&auml;hlen Sie Ihre Zahlungs- Lieferart
+<span class="titel_small"><% $C->p('instruction') %></span> <% $A->{msg} %><br />
+
+<!-- ######################################################################################################## -->
+
+<table width="94%" border="0" class="br" cellpadding="4" cellspacing="0">
+
+<tr class="con_title" style="background-color:#eee;">
+	<td width="29" align="center" class="header"><% $C->p('delete') %></td>
+	<td width="18" align="center" class="header"><% $C->p('piece') %></td>
+	<td width="119" align="center"  class="header"><% $C->p('artikelnr') %></td>
+	<td width="237"  class="header"><% $C->p('prod_name') %></td>
+	<td align="center" class="header"><% $C->p('price_p_piece') %></td>
+	<td align="right" class="header"><% $C->p('sub_total') %></td>
+</tr>
+
+% if ($basket_h->rows() < 1) {
+	<tr class='br1'><td colspan=6 align=center><a href='/categ.html?id=1'><% $C->p('no_items') %></a></td></tr>
+% }
+
+% while(my $r = $basket_h->fetch()) {
+%	my ($prod_id, $count) = @{$r};
+%	my $d = $A->get_product($prod_id);
+%	my $opts_upsell = $A->get_upsell_opts($prod_id);
+%	my $ups_price_tot = $A->{total};
+%	my $opts_prod = $A->get_basket_options_by_prod($prod_id);
+%	my $price = sprintf('%.2f', sprintf('%.2f', ($d->{price} + $A->{basket_options_sum}) * $vat_factor) + sprintf('%.2f', $ups_price_tot * $vat_factor));
+
+%	my $price_options = $A->{basket_options_hash}->{$prod_id};
+%	$price_options = $A->add_vat($price_options);
+%	my $total_line = $count * $price;
+	<input type=hidden name="count_<% $prod_id %>" value="<% $count %>">
+
+	<tr class="br1">
+		<td height="25" align="center"><a href="basket.html?action=del&id=<% $prod_id %>"><img 
+			src="images/button_loeschen_orange.gif" alt="l&ouml;schen" width="27" height="17" border="0"></a></td>
+		<td align="center"><% $count %></td>
+		<td><div align="center"><% $d->{art_no} %></div></td>
+		<td ><a href="/product.html?id=<% $prod_id %>"><% $d->{description} %></a>
+			<% $price_options %><br>
+%	foreach (@{$opts_upsell}) {
+%		my ($id, $foo, $title, $desc, $price) = split /\t/;
+		<small>&bull; <% $title %> <% $desc %>, CHF <% $price %><br></small>
+%	}
+</td>
+	  <td width="82"  align="center">CHF&nbsp;<% $price %></td>
+		<td width="155"  align="right">CHF&nbsp;<% $C->decimal_mark($total_line) %></td>
+	</tr>
+    <tr><td colspan="6"><img src="images/trennlinien_lang.gif" height="1" width="680"></td></tr>
+% }
+    
+</table><br />
+<!-- ######################################################################################################## -->
+
+<table width="94%" border="0" class="br" cellpadding="4" cellspacing="0">
+  <tr class="con_title" style="background-color:#eee;">
+% # -- Zahlungsart
+    <td colspan="2" align="left" class="header"><% $C->p('pay_method') %></td>
+    <td width="130" align="center"  class="header"><% $C->p('delivery_type') %></td>
+    <td width="155" align="right" class="header"><b><% $C->p('delivery_cost') %></b></td>
+  </tr>
+  <tr class="bottom_line">
+    <td width="64" align="center"><input type="radio" name="checkout_zahlungsart_select" value="cc" checked="checked" onclick="updateTot(1)" /></td>
+    <td width="375" align="center"><div align="left">
+      <table width="246" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td width="111" height="27"><% $C->p('creditcard') %></td>
+          <td width="135"><img src="images/kreditkarten_logo.jpg" alt="" width="135" height="27" /></td>
+        </tr>
+      </table>
+    </div></td>
+    <td><div align="center">
+      <% $C->p('post') %>
+    </div></td>
+    <td width="155" align="right">CHF&nbsp;<% $A->{'ship_tot_cc'} %></td>
+  </tr>
+  <tr><td colspan="4"><img src="../images/trennlinien_lang.gif" alt="" width="680" height="1" /></td></tr>
+  <tr class="bottom_line">
+    <td align="center" ><input type="radio" name="checkout_zahlungsart_select" value="cod" onclick="updateTot(2)" /></td>
+    <td align="center" ><div align="left">
+      <% $C->p('cod') %>
+    </div></td>
+    <td><div align="center">
+      <% $C->p('post') %>
+    </div></td>
+    <td width="155" align="right">CHF&nbsp;
+      <% $A->{ship_tot_cod} %></td>
+  </tr>
+
+% # ==================================================================================================================
+  <tr><td colspan="4"><img src="images/trennlinien_lang.gif" alt="" width="680" height="1" /></td></tr>
+  <tr class="bottom_line">
+    <td align="center" ><input type="radio" name="checkout_zahlungsart_select" value="paypal" onclick="updateTot(3)" /></td>
+    <td align="center" ><div align="left">
+      <table width="256" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td width="228" height="30"><% $C->p('paypal') %></td>
+          <td width="30" align="right"><img src="images/paypal_logo.jpg" alt="" width="70" height="20" /></td>
+        </tr>
+      </table>
+    </div></td>
+    <td><div align="center"><% $C->p('post') %></div></td>
+    <td  width="155" align="right">CHF&nbsp;<% $A->{'ship_tot_cc'} %></td>
+  </tr>
+% # ==================================================================================================================
+% if ($uinfo->{cb_pay_inv}) {
+  <tr><td colspan="4"><img src="images/trennlinien_lang.gif" alt="" width="680" height="1" /></td></tr>
+  <tr class="bottom_line">
+    <td align="center" ><input type="radio" name="checkout_zahlungsart_select" value="inv" onclick="updateTot(3)" /></td>
+    <td align="center" ><div align="left">
+      <table width="256" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td width="228" height="30">Rechnung</td>
+          <td width="30" align="right"><!-- img src="images/paypal_logo.jpg" alt="" width="70" height="20" / --></td>
+        </tr>
+      </table>
+    </div></td>
+    <td><div align="center"><% $C->p('post') %></div></td>
+    <td  width="155" align="right">CHF&nbsp;<% $A->{ship_tot_cc} %></td>
+  </tr>
+% }
+% # ==================================================================================================================
+ 
+ <tr class="br1"><td  colspan="4" class="bottom_line" align="center"><img src="images/spacer.gif" width="5" height="5"></td></tr>
+ <tr class="br1">
+	<td height="22" colspan="2" align="left" nowrap><b><% $C->p('sum_total') %> <% $C->{CONFIG}->{vat} %> % MWST &nbsp;</b></td>
+	<td colspan="1" align="right">&nbsp;</td>
+	<td  align=right width="155"><b>CHF&nbsp;<span id=dynTot><% $total_1 %></span></b></td>
+      </tr> 
+</table><br>
+<% $C->p('ship_text') %><br />
+<% $C->p('ship_cod_text') %><br /><br />
+
+<span class="titel_small"><% $C->p('referenz_title') %></span><br>
+		 
+		    <input name="checkout_referenz" type="text" class="inputform" style="width:300px;" 
+			maxlength="30" value="<% $C->getSessData('checkout_referenz') %>"><br>
+				<% $C->p('referenz_text') %><br><br><br>
+
+		    <span class="titel_small"><% $C->p('delivery_date_txt') %></span>
+		    <table width="660" border="0" cellspacing="0" cellpadding="0">
+		  <tr>
+		    <td width="120" valign="middle">
+	        <% $C->p('choose_date') %></td>
+		    <td width="568" valign="middle"><input type="text" name="checkout_liefer_date" 
+			id="checkout_liefer_date" style="padding-left:12px;width:96px" class="inputform"
+				value="<% $C->getSessData('checkout_liefer_date') || $C->now(4) %>"></td>
+		  </tr>
+		</table><br><br>
+
+		<span class="titel_small"><% $C->p('comment') %></span><br>
+		  <table cellspacing="0" cellpadding="0">
+		  <tr valign="top">
+		      <td><textarea name="checkout_bemerkungen" cols="100" rows="5"
+			class="checkout_bemerkungen"><% $C->getSessData('checkout_bemerkungen') %></textarea></td>
+		    </tr>
+		</table><br><br>
+
+		  <table width="702" border="0" cellpadding="0" cellspacing="0">
+		  <tr>
+		      <td width="138" height="23"><input id="submit_checkout" class="submit_orange" type="submit" name="bCheckout" value="<% $C->p('button_continue') %>"></td>
+            <td width="564" height="23"><input id="return" class="submit" type="button" name="return"  onclick="javascript:history.back()" value="<% $C->p('btn_return') %>"></td> 
+		    </tr>
+		</table>
+ 
+        
+</form>
+
+<script language=JavaScript>
+	function updateTot(type) {
+		if (type == 2) {
+			dynTot.innerHTML = "<% $total_2 %>";
+		}
+		else {
+			dynTot.innerHTML = "<% $total_1 %>";
+		}
+	}
+</script>

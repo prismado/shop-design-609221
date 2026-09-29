@@ -1,0 +1,164 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $lang = $args{'lang'} || 'de';
+	my $discount = $A->get_discount($id);
+	my $price_net = sprintf('%.2f', $d->{price} * (1 - $discount / 100) * (1 + $C->{CONFIG}->{vat} / 100));
+
+	my $msg = $C->getSessData('msg');
+	$C->del_sess_key('msg');
+</%init>
+% # <!-- Faccbook Tags -->
+<meta property="og:type" content="product" />
+<meta property="og:title" content="<% $d->{'title'} %>" />
+<meta property="og:description" content="<% $d->{'title'} %>" />
+<meta property="og:image" content="http://<%$ENV{HTTP_HOST}%>/produkte/p<%$id%>_orig.jpg" />
+<meta property="og:url" content="http://<%$ENV{HTTP_HOST}%>/product.html?id=<%$id%>" />
+<meta property="og:site_name" content="<%$ENV{HTTP_HOST}%>" />
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+
+<div class="box_head">
+</div>
+<!--end box_head -->
+
+
+ <div id="productLeft">
+ <div class="imageCarusel">
+	<&product_carousel15j.html, id=>$id, d=>$d, C=>$C&>
+</div><!--end imageCarusel -->
+
+<div id="productFacebook">
+<div class="fb-like" data-href="http://<%$ENV{HTTP_HOST}%>/article-<%$id%>-mrgadget.html" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true">
+</div>
+
+</div>
+</div>  <!--end productLeft -->
+        
+<div class="productDescription">
+ <div class="productTitel"><h2><% $d->{'title'} %></h2>	</div> 
+
+<form id="basketForm" name="basketForm" action="basket.html">
+% unless ($d->{condition} eq 'IP') {
+<div id="productPrice">
+<div id="productCountWrap">    	
+
+	<input type=hidden name=id value="<%$id%>">
+	<nobr>
+	Anzahl
+	<select name=count style='margin-left:10px' onchange='updateTotal(this.value)'>
+	<option>1</option>
+	<option>2</option>
+	<option>3</option>
+	<option>4</option>
+	<option>5</option>
+	<option>6</option>
+	<option>7</option>
+	<option>8</option>
+	<option>9</option>
+	</select>
+	</nobr>
+</div><!--end productCountWrap -->  
+<div id="productPriceWrap">     
+
+ <&prod_summary15j.html, C => $C, A => $A, d => $d, id => $id&>
+ 
+ </div><!--end productPriceWrap -->
+ 
+<div class="addcartWrapper" onclick="javascript: submitform();">
+<div id="addtoCart">	
+% if ($d->{count}  < 1 && $d->{condition} eq 'SO') {
+	<a href="contact.html" class="gray_btn">Bitte kontaktieren Sie uns!</a>
+    <br>
+% }
+% else {
+	<input type=submit class="blu_btn" value="In den Warenkorb">
+% }
+	</form>
+
+</div><!--end addtoCart -->
+<script type="text/javascript">
+function submitform()
+{
+  document.basketForm.submit();
+}
+</script> 
+<script language=JavaScript>
+	var packPrice = new Array();
+%	for (my $i=1; $i<11; $i++) {
+		packPrice[<%$i%>] = "<%sprintf('%.2f', $i * $d->{price_incl_vat})%>";
+%	}
+
+	function updateTotal(count) {
+% # --		new_total = count * <%$d->{price_incl_vat}%>;
+		new_total = packPrice[count];
+
+		rabatt_total = count * <%$d->{price_orig_incl_vat}%>;
+
+		document.getElementById('detail_price_total').innerHTML =
+			'<div class="detailPreis">CHF ' + new_total + '</div>';
+
+		document.getElementById('detailPreissmall').innerHTML =
+			'<div>anstatt<br /><s>CHF ' + rabatt_total + '.00' + '</s></div>';
+	}
+</script>
+</div><!-- addcartWrapper -->
+% }	 
+% if ($C->is_smartphone()) {
+	<%$d->{desc_long_mobile}%>
+% }
+% else {
+	<%$d->{desc_long_work} || '* No long description *'%>
+% }
+
+</div><!--end productDescription -->        
+
+<&prod_detail_textblock.html, CORE=>$C, A=>$A, d=>$d, id=>$id, lang=>$lang, msg=>$msg, debug=>$args{debug}&>
+
+
+% if ($args{debug} or $C->is_devel()) {
+	<br clear='all' />
+%	my $mandatory_feat = $A->get_mandatory_feat($id);
+%	foreach my $feat_id (keys %{$mandatory_feat}) {
+%		my $description = $C->query("SELECT description FROM voptions WHERE id=$feat_id AND lang='de'")->[0];
+		Mandatory Feature ID: <b><%$feat_id%></b> <%$description%><br>
+%	}
+%	if ($C->{CGI}->param('dump')) {
+		<table style='background-color:#f0f0f0'>
+%		foreach (sort keys %$d) {
+%			next if $_ eq 'feat' or $_ eq '_rc';
+			<tr><td nowrap><b><%$_%></b></td><td style='padding-left:22px'>"<%$d->{$_}%>"</td></tr>
+%		}
+		</table>
+		<table style='background-color:#f0f0f0'>
+%		foreach (sort keys %{$d->{feat}}) {
+%			my ($weight, $key, $ident, $fid) = split /\t/;
+			<tr><td nowrap>[<%$weight%>] &ndash; <b><%$key%></b></td><td>&nbsp;&nbsp;<%$ident%></td>
+				<td style='padding-left:22px'>"<%$d->{feat}->{$_}%>"</td><td><%$fid%></td></tr>
+%		}
+		</table>
+%	}
+	&rarr; <a href="product.html?id=<%$id%>&dump=1">Dump Product Data</a>
+	<&page_info.html, 'END'&>
+% }
+
+<%doc>
+% if ($d->{brand}) {
+	<% $d->{brand} %>.gif"><br>
+% }
+
+% if ($d->{teaser}) {
+	<% $d->{teaser} %><br>
+% }
+
+% if ($discount) {
+	<img src="images/offer_small.png" width="170" height="30" alt="offer">
+% }
+</%doc>
+<%doc>
+	__METACLONING__
+</%doc>

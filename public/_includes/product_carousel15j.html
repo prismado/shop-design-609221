@@ -1,0 +1,36 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $d = $args{d};
+
+	my $sth = $C->{dbh}->prepare("SELECT featkey FROM products_feat WHERE product_id=$args{id} AND featname='_image'");
+	   $sth->execute();
+</%init>
+
+<div id="prodImage">	
+% if ($d->{price_incl_vat} != $d->{price_orig_incl_vat}) {
+	<span class="aktionsOffer"></span>
+% }
+
+	<div class="fancyButton">	
+</div>	
+<img id="zoom_03" src="produkte/p<%$args{id}%>_large.jpg" 
+data-zoom-image="produkte/p<%$args{id}%>_orig.jpg" title="<% $d->{'title'} %>" alt="<% $d->{'title'} %>"/>
+<div id="gallery_01">
+ 
+ <a  href="#" class="elevatezoom-gallery active" data-update="" data-image="produkte/p<%$args{id}%>_orig.jpg" 
+data-zoom-image="produkte/p<%$args{id}%>_orig.jpg">
+<img src="produkte/p<%$args{id}%>_thmb.jpg" ></a> 
+ 
+% while(my $r = $sth->fetch()) {
+<a  href="#" class="elevatezoom-gallery active" data-update="" data-image="produkte/p<%$args{id}%>_<%$r->[0]%>_orig.jpg" 
+data-zoom-image="produkte/p<%$args{id}%>_<%$r->[0]%>_orig.jpg">
+<img src="produkte/p<%$args{id}%>_<%$r->[0]%>_thmb.jpg" ></a>
+% } 
+</div>
+
+</div><!-- end prodImage -->
+
+
+% # -- <li><a href="#"><img src="layout/demo_produkts/image3_250x250.jpg" data-largeimg="layout/demo_produkts/image3_1024x1024.jpg" /></a></li>

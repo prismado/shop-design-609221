@@ -1,0 +1,82 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C     = $args{CORE};
+	my $A     = $args{A};
+	my $mason = $args{mason};
+	my $perm  = $args{perm};
+
+	my $dbh = $C->{dbh};
+	my $id      = $C->{CGI}->param('id') || 0;
+	my $subject = $C->{CGI}->param('subject');
+
+	my $order_dat = $A->get_order($id);
+
+	if ($C->{CGI}->param('bResend')) {
+		$A->mail_order2merchant(id=>$id, subject=>$subject);
+		$m->out("<br>Sent to $C->{CONFIG}->{order_email}! &ndash; $subject<br>");
+	}
+
+	my $custom = $C->{CONFIG}->{custom};
+	my $cur_theme = $C->{CONFIG}->{theme};
+
+	my $cart_symb = $C->get_safe_property('unicode_cart_128722', 'sys');
+</%init>
+<div style='float:right; margin-top:10px'>
+	<span class='label label-success'>Merchant Copy</span>
+</div>
+
+<p style="margin-top:20px">
+	<small>
+	Template: <% $mason->{arg_comp_file} %><br>
+	Theme: <% $mason->{arg_theme} %><br>
+	Dir: <% $mason->{dir_short} %>
+	</small>
+</p>
+
+<hr />
+
+<form method=post>
+
+<div class="pull-right">
+	<input type="text" placeholder="tbd" name="subject" value="<% $cart_symb %> Bestellung [Auftrag Nr. <% $id %>]"
+		style="width:35vw; padding:8px; font-weight:bold">
+</div>
+
+<% $mason->{out} %>
+<hr />
+
+Delivery Date: <b><%$order_dat->{delivery_date}%></b> &rarr; To: <b><% $C->{CONFIG}->{order_email} %></b>
+% if ($perm->{is_devel}) {
+	<a href="/adx/special_keys.html?area=order">Edit: {CONFIG}-&gt;{order_email}</a>
+% }
+<br><br>
+
+% if ($order_dat->{ref}) {
+Order Ref: <%$order_dat->{ref}%><br><br>
+% }
+
+% # -- Total: <b>CHF <% $order_dat->{amount_incl_vat} %></b><br><br>
+
+<input type=hidden name=id value="<%$id%>">
+<input type=submit class='btn btn-success' name=bResend value='Re-send to Merchant'>
+<input type=button class='btn' onclick='document.location="admix.html?func=orders&id=<%$id%>"' value='Back to Order # <% $id %>'>
+</form>
+
+% if ($args{debug}) {
+	<br>
+	<a style='color:maroon; font-weight:bold' href='admix.html?func=orders&id=<% $id %>'>Del</a> ...
+	<h4>Available Variables</h4>
+	<table class="mytable table-hover table-striped">
+%	foreach (sort keys %{$order_dat}) {
+%		next if /^XX / or /^\_/;
+%		next unless $C->trim($order_dat->{$_});
+		<tr><td style='font-weight:bold'><%$_%></td><td><%$order_dat->{$_}%></td></tr>
+%	}
+	</table>
+% }
+<%doc>
+	Algo-2
+
+	__METACLONING__
+</%doc>

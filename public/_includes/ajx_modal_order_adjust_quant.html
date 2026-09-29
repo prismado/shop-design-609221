@@ -1,0 +1,91 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+
+	my $cgi = $C->{CGI};
+
+	my $id          = $cgi->param('id') + 0;
+	my $quant       = $cgi->param('quant') + 0;
+	my $req_prod_id = $cgi->param('req_prod_id') + 0;
+
+	my $prd = $A->get_product_v2(id=>$req_prod_id);
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form name="f409041_14" method=post>
+<input type=hidden name=id   value="<%$id%>">
+<input type=hidden name=req_prod_id value="<% $req_prod_id %>">
+<input type=hidden name=func value="orders">
+
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">St&uuml;ckzahlen korrigieren &ndash; Order-ID <% $id %></h3>
+  </div>
+
+  <div class="modal-body" style="padding-top:0px">
+	<br>
+	<b>Angefordert:</b><br><br>
+
+	<p>
+		<b><% $quant %> &times;</b> ID <% $req_prod_id %> &middot; <a target="_blank"
+			href="/adx/edit-product.html?id=<% $req_prod_id %>"><% $C->shorten_title($prd->{title}, 42) %></a><br>
+		<% $C->shorten_title($prd->{description}, 60) %><br>
+		CHF <% $prd->{price_incl_vat_fmt} %>
+	</p><br>
+
+	<p>Auf Lager: <span style="color:red;"><% $prd->{count_product} %></span></p>
+
+	<div class="controls" style="margin-top:20px;">
+		Korrektur: <input type="text" style="margin-top:5px; margin-left:10px;" class="form-control" name="quant" value="<% $quant %>">
+	</div>
+
+	<br>
+	<select class="pull-right" onchange="document.f409041_14.text.value=this.value">
+		<option>- Bitte w&auml;hlen -</option>
+		<option>Auf Lager noch verf&uuml;gbar</option>
+		<option>Zu niedriger Bestand erfasst</option>
+	</select>
+
+	<p stylx="margin-left:-5px;">Notiz f&uuml;r Bestell-Verlauf hinzuf&uuml;gen</p>
+
+	<input type=text name="text" id="in_409041" autocomplete="off"
+		style="font-size:18px; padding:10px; margin-top:10px; width:95%;" placeholder="Individueller Text">
+
+<%doc>
+	<label class="checkbox">
+		<input type="checkbox" name="cb_cust_info" value="1">
+		F&uuml;r Kunde einsehbar
+	</label>
+</%doc>
+
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Abbrechen</button>
+	<input class="btn btn-primary" name="bAdjQuant" type=submit value="Speichern">
+  </div>
+
+</div>
+
+</form>
+
+<script language="JavaScript">
+    setTimeout(function() {
+        document.getElementById('in_409041').focus();
+    }, 500); // 500 Millisekunden Verzögerung
+</script>
+
+
+<%doc>
+	Created: 16Mar2025
+	__METACLONING__
+</%doc>

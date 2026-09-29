@@ -1,0 +1,116 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols    = qw(id uid instime sid amount_incl_vat pay_meth pay_meth status uname); # -- pay_meth twice!!
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	$dbcols[6] = q~(select xval from orders_details where order_id=vorders_custname.id and xkey='ship_meth' limit 1)~;
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my @where_clause = ();
+	push(@where_clause, "lastname LIKE '$sSearch%' OR firstname LIKE '$sSearch%' OR company LIKE '$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	vorders_custname
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	if ($C->{CONFIG}->{debug_level} > 1) {
+		print STDERR "$stmt\n";
+	}
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM vorders_custname $wcl")->[0];
+
+	my %pay_meth_hr = ( 1=>'CC', 2=>'COD', 3=>'Invoice', 4=>'PayPal', 5=>'Postcard', 6=>'Prepay', 7=>'pcd', 8=>'paymill', 9=>'2co',
+				10=>'PCI3', 11=>'TWI', 12=>'2ci', 14=>'SIX', 15=>'SIXTwi', 16=>'Payrexx' );
+	my %status_hr = ( 1=>'new', 2=>'pending_cc', 3=>'cancelled', 4=>'okay' );
+	my %ship_meth_hr = ( box=>'Box', exp=>'Express', pic=>'Pickup', pi2=>'Pickup2', std=>'Std', postpac_prio=>'PacPrio' );
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $uid, $instime, $sid, $amount, $pay_meth, $ship_meth, $status, $uname) = @{$r};
+		my $label_type   = $status == 4 ? ' label-success' : '';
+
+		my $paid_label = my $label_type_p = '';
+		if ($status > 3) {
+			my $o_status  = $A->get_order_status(id=>$id);
+			if (!$o_status->{paid} && !$o_status->{invoice_issued}) {
+				$paid_label = 'Invoice!';
+				$label_type_p = ' label-warning';
+			}
+		}
+
+		my $status_disp = qq~<span class='label$label_type_p'>$paid_label</span>
+			<span class='label$label_type pull-right'>$status_hr{$status}</span>~;
+		$amount = sprintf('%.2f', $amount);
+		$ship_meth ||= 'std';
+		my $uinf = $C->get_user_info($uid);
+		my $fullname = '';
+		if ($uinf->{gender} < 3) {
+			$fullname = '<b>' . $C->web_enc_v2("$uinf->{firstname} $uinf->{lastname}") . '</b>';
+		}
+		else {
+			$fullname = '<b>' . $C->web_enc_v2($uinf->{company}) . '</b>';
+		}
+		my $remarks = $C->query("select xval FROM orders_details WHERE order_id=$id AND xkey='remarks'")->[0] ?
+			'&nbsp;REM' : '';
+		my $voucher_id = $C->query("select xval+0 from orders_details where order_id=$id and xkey='voucher_id'")->[0];
+		my @arr = ();
+		$remarks = "&nbsp;&#127873;&nbsp;$remarks" if $voucher_id;
+		my $guest_ord = $uname =~ /^anonymous\d+$/ ? '<span style="float:right; padding-right:3px">&#128694;</span>' : '';
+
+		push(@arr, "<a href='admix.html?func=orders&id=$id'>$id</a>$remarks");
+		push(@arr, "<nobr>$fullname$guest_ord</nobr>");
+		push(@arr, '<nobr>' . $C->trans_date_short($instime) . '</nobr>');
+		push(@arr, $C->utf2iso($A->get_products_html_compact($id, 40)));
+		push(@arr, "<span class='pull-right' style='margin-right:11px'>$amount</span>");
+		push(@arr, "<b>$pay_meth_hr{$r->[5]}</b>" || "* $r->[5] *");
+		push(@arr, $ship_meth_hr{$ship_meth} || "* $ship_meth *");
+		push(@arr, $status_disp);
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	 __METACLONING__
+</%doc>

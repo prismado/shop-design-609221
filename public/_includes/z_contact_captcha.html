@@ -1,0 +1,106 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $addr = $A->get_address(1); # -- Owner Data
+	my $cgi = $C->{CGI};
+
+	my $msg = $C->{CGI}->param('msg');
+
+	$C->gen_captcha( pointsize => 35.5, fill => '#353535', background => '#f5f5f5' );
+</%init>
+<form name="contact_form" id="contact_form" action="#" method="post">
+<ol><br />
+
+<%$C->p('form_title')%><br /><br />
+
+% if ($msg) {
+	<b style='color:red'><%$msg%></b><br><br>
+% }
+                    
+<li class="row clearfix">
+	<label class="input_tag" for="gender"><% $C->p('form_gender') %></label>
+	<div class="inputOuter">
+      		<select name="contact_gender">
+                     <option value="<% $C->p('form_male') %>"  SELECTED><% $C->p('form_male') %></option>
+                  <option value="<% $C->p('form_female') %>" ><% $C->p('form_female') %></option>
+		</select></div></li>
+                            
+<li class="row clearfix">
+		<label class="input_tag" for="firstName"><% $C->p('form_surname') %> <em>*</em></label>
+		<div class="inputOuter">
+		<input id="contact_surname" type="text" name="contact_surname" value="<% $addr->{firstname} %>" placeholder="Peter">
+		</div>
+		</li>
+
+<li class="row clearfix">
+		<label class="input_tag" for="secondName"><% $C->p('form_name') %> <em>*</em></label>
+		<div class="inputOuter">
+		<input id="contact_name" type="text" name="contact_name" value="<% $addr->{lastname} %>" placeholder="Muster">
+		</div>
+		</li>
+
+<li class="row clearfix">
+		<label class="input_tag" for="email"><% $C->p('form_emailadress') %> <em>*</em></label>
+		<div class="inputOuter">
+	<input id="contact_email" type="text" name="contact_email"
+		value="<% $C->get_email($C->getUID()) %>" placeholder="example@example.com">
+			</div>
+			</li>
+
+<li class="row clearfix">
+		<label class="input_tag" for="tele"><% $C->p('form_tel') %></label>
+		<div class="inputOuter">
+		<input id="contact_tel" type="text" name="contact_tel" value="<%$cgi->param('contact_tel')%>" placeholder="+41769669000">
+		</div>
+		</li>
+		</ol>
+
+		<ol>
+<li class="row clearfix">
+                         <label class="input_tag"><% $C->p('form_subject') %><em>*</em></label>
+                               <div class="inputOuter">
+       		 <input name="contact_subject" type="text" class="formfield" value="<%$cgi->param('contact_subject')%>">
+              </div>
+              </li>
+              
+<li class="row clearfix">
+              <label class="input_tag"><% $C->p('form_message') %><em>*</em></label>
+                <div class="inputOuter">
+		<textarea name="message" maxlength="500" placeholder="Your Message *"><%$cgi->param('message')%></textarea>
+                            <p>Verbleibende Zeichen: <span class="charleft">500</span></p>
+				</div><!--end six-->
+			</li>
+
+<li class="row clearfix">
+	<label class="input_tag">Captcha<em>*</em></label>
+	<div class="inputOuter">
+
+	<table style='background-color:#F5F5F5; margin-top:5px'>
+	<tr><td>
+	<img style='height:61px' title='Bildwort'
+		src="http://<%$C->{CONFIG}->{captcha_domain}%>/tmp/iword/iw<%$C->getSessData('captcha_ref')%>.gif">
+	</td></tr>
+	</table>
+
+% if ($cgi->param('bSubmit')) {
+	<span style='color:red'>Bitte nochmals probieren:</span>
+% }
+
+	<input type=text placeholder="Captcha"
+		style='margin-top:5px; font-weight:bold; width:102px; margin-righx:29px' name=captcha><br><br>
+			</div>
+		</li>
+
+		</ol>
+
+		<ol>
+		<li class="row clearfix">
+		<label class="input_tag" for="firstName">&nbsp;</label>
+		<div class="inputOuter button">
+                       <input id="contact_submit" class="blu_btn"
+		type="submit" name="bSubmit" value="<% $C->p('btn_senden') %>">
+			</div>
+		</li>
+		</ol>
+</form>

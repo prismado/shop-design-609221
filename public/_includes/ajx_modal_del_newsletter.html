@@ -1,0 +1,39 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id');
+	my $subject = $C->query("select subject FROM newsletter WHERE id=$id")->[0];
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+%
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Please confirm</h3>
+  </div>
+%
+  <div class="modal-body">
+	<p>
+		Are you sure you want to delete Newsletter ID <%$id%> &middot; <%$subject%>?
+	</p>
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-danger" name="bDelete" type=submit value="Delete">
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

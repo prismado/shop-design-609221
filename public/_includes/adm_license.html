@@ -1,0 +1,78 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $cgi = $C->{CGI};
+
+	my $empty = '';
+	my $err = \$empty;
+
+	my $cur_status = (split /\t/, $args{license}->{status})[0];
+
+	my $bcst_id = $C->query("select id from properties where `key` LIKE 'content_lic_bcst\_%' limit 1")->[0];
+
+	my $sth = $C->{dbh}->prepare('select id, uname, is_devel from users where is_admin=1 order by 2');
+	   $sth->execute();
+</%init>
+<div style="margin-top:20px" class="pull-right">
+	Host: <b><% $C->getOwnHostname() %></b>
+</div>
+
+<h2><i class="icon-save"></i> License</h2>
+
+<h5>License V<% $args{license}->{VERSION} %> &ndash; <a href="https://docs.ch2.be/w/publigate-tech/license">?</a></h5>
+<p>Result: <b style="color:<% $args{license}->{msg} =~ /NOTE/ ?	'green'	: 'red'	%>"><% $args{license}->{msg} %></b></p>
+
+<table class="mytable table-hover">
+% foreach my $key (sort keys %{ $args{license} }) {
+%	next if	$key eq	'msg' or $key eq 'VERSION';
+%	my ($val, $ts) = split /\t/, $args{license}->{$key};
+%	my $ts_disp = $ts ? $C->trans_date_short($ts) :	'N/A';
+	<tr>
+	<td>&bull; <b><% $key %></b></td>
+	<td><% $val %></td>
+	<td><% $ts_disp %></td>
+	</tr>
+% }
+</table>
+<br />
+
+<form method="post">
+
+<input type=text clasx="form-control" name="status" value="<% $cur_status %>">
+<small>1=valid, 2=invalid</small><br />
+
+<input type=submit class="btn btn-primary" value="Update" name="bUpdate">
+<input type="button" class="btn" value="Back" onclick="document.location='adm_config.html'">
+</form>
+
+% if ($args{appmsg}) {
+	<% $C->bootstrap_alert($args{appmsg}, 'success') %><br />
+% }
+
+[ <a href="adm_property.html?id=<% $bcst_id %>">Edit Content-ID <% $bcst_id %></a> ]<br>
+<% $C->get_property('content_lic_bcst', '_global') %>
+
+<h4>Admins</h4>
+<table class="mytable table-hover" style="width:50%">
+% while(my $r = $sth->fetch()) {
+%	my $p = $C->get_user_perm($r->[0]);
+	<tr><td>
+	&bull; <a href="user.html?id=<% $r->[0] %>"><% $r->[1] %></a> <% $r->[2] ? ' &ndash; (Dev)' : '' %>
+	</td>
+	<td>
+%		foreach (sort keys %{$p}) {
+%			next unless /^is\_(.+)/;
+%			next unless $p->{$_};
+%			next if $_ eq 'is_admin' or $_ eq 'is_devel';
+			&middot; <% $1 %><br>
+%		}
+	</td>
+	</tr>
+% }
+</table>
+
+<%doc>
+	__METACLONING__
+</%doc>

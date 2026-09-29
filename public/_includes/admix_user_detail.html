@@ -1,0 +1,66 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $id = $args{id} || 0;
+
+	if ($C->{CGI}->param('bUpdate')) {
+		$A->update_user();
+		$m->out('<b>Updated</b><br>');
+	}
+
+	my $info = $A->get_user_info($id);
+
+	my $sth = $C->{dbh}->prepare(
+		"SELECT id, instime, amount_incl_vat, status FROM orders WHERE uid=$id ORDER BY id DESC LIMIT 9999");
+	   $sth->execute();
+
+	$A->{uid} = $id;
+	my $addr_bill = $A->get_address(1);
+</%init>
+
+<h2>User ID <% $id %>, <% $addr_bill->{firstname} %> <% $addr_bill->{lastname} %></h2>
+
+<form method=post>
+<input type=hidden name=id value="<% $id %>">
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+<tr style='background-color:#f0f0f0'><td style='width:140'>Username</td> <td><b><% $info->{uname} %></b></td></tr>
+<tr><td>Reg-Zeit</td> <td><% $C->trans_date_short($info->{tstamp}) %></td></tr>
+<tr><td>E-Mail</td> <td><input type=text name=email value="<% $info->{email} %>" size=33></td></tr>
+<tr><td>Geburtsdatum</td> <td><% $info->{dob} %></td></tr>
+<tr valign=top><td>Zahlungsmethoden</td> <td>
+<input type=checkbox name=_ud_cb_pay_cc   <% $info->{cb_pay_cc}   ? 'checked' : '' %>> Kreditkarte<br>
+<input type=checkbox name=_ud_cb_pay_cod  <% $info->{cb_pay_cod}  ? 'checked' : '' %>> Nachname<br>
+<input type=checkbox name=_ud_cb_pay_pp   <% $info->{cb_pay_pp}   ? 'checked' : '' %>> PayPal<br>
+<input type=checkbox name=_ud_cb_pay_inv  <% $info->{cb_pay_inv}  ? 'checked' : '' %>> Rechnungsversand<br>
+<input type=checkbox name=_ud_cb_pay_cash <% $info->{cb_pay_cash} ? 'checked' : '' %>> Barzahlung / Abholung<br>
+</td></tr>
+</table><br>
+
+<input type=submit value=Update name='bUpdate' class=saveButton>&nbsp;&nbsp;
+<input type=button onclick='JavaScript:history.go(-1)' value='Zur&uuml;ck' class=canButton><br><br>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $instime, $amount, $status) = @{$r};
+	&bull; <a href='admix.html?func=orders&id=<% $id %>'>ORDER ID <% $id %></a>, <% $C->trans_date_short($instime) %>, <% sprintf('%.2f', $amount) %>, Status <% $status %><br>
+% }
+
+% if ($sth->rows()) {
+	<br>
+% }
+
+</form>
+
+% if ($C->is_devel()) {
+	<br>
+% 	foreach (sort keys %{$info}) {
+		<% $_ %> = <% $info->{$_} %><br>
+%	}
+% 	foreach (sort keys %{$addr_bill}) {
+		&bull; [bill] <b><% $_ %></b> = <% $addr_bill->{$_} %><br>
+% 	}
+
+	&bull; <span style='color:maroon'>Passwort: <% $info->{pass} %></span>
+% }

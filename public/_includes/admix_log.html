@@ -1,0 +1,38 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $cgi = $C->{CGI};
+
+	my $importance = $cgi->param('imp');
+	my $filter = $cgi->param('filter');
+	$C->{wcl} = "action LIKE '%$filter%'" if $filter;
+
+	my $sth = $C->adm_log($importance);
+</%init>
+
+<script type="text/javascript">document.title='Admin: Log';</script>
+
+<form name=filterForm>
+<input type=hidden name=func value='log'>
+Filter: <input type=text name=filter value=''>
+</form>
+<br><br>
+
+<script language=JavaScript>document.filterForm.filter.focus();</script>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $src, $imp, $sid, $uid, $mod, $ser, $act, $ts, $rc) = @{$r};
+%	my $user = $uid > 0 ? $C->query("SELECT uname FROM users WHERE id=$uid")->[0] : '&nbsp;';
+	<tr>
+	<td nowrap><% $C->trans_date_short($ts) %></td>
+	<td><% $user %></td>
+	<td nowrap>[<% $mod %>]</td>
+	<td><% $ser %></td>
+	<td><% $act %></td>
+	<td align=right><a href='_debug.html?sid=<% $sid %>'><% $sid %></a></td>
+	</td></tr>
+% }
+
+</table>

@@ -1,0 +1,26 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $status = $args{'status'};
+	my $active = $args{'active'};
+
+	my $style_ads_active = '';
+	my $active_style = 'color:maroon; background-color:lightblue; text-decoration:none';
+</%init>
+%
+<span style='font-family:Arial; font-size:12px'>Ads:&nbsp;&nbsp;</span>
+
+<a class="admin_text" style='<% $status == 1 ? $active_style : '' %>' href='admix.html?status=1'>Active</a> &ndash;
+<a class="admin_text" style='<% $status == 0 && $active eq 'ads' ? $active_style : '' %>' href='admix.html'>Unrel.</a> &ndash;
+<a class="admin_text" style='<% $status == 2 ? $active_style : '' %>' href='admix.html?status=2'>Declined</a>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<a class="admin_text" style='<% $active eq 'export' ? $active_style : '' %>' href='admix-export.html'>Export</a>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<a class="admin_text" style='<% $active eq 'special' ? $active_style : '' %>' href='admix-special.html'>Special</a>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<a class="admin_text" href='authen.html?action=logout'>Logout</a><br><br>

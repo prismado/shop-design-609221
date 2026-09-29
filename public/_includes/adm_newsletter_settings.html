@@ -1,0 +1,119 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $this = $C->this();
+	my $cgi = $C->{CGI};
+	if ($cgi->param('bAdd')) {
+		my $errstr = '';
+		$C->{dbh}->do("insert into newsletter_settings (xkey, val) values ('foo$$', 'bar')")
+			or ($errstr=$DBI::errstr);
+		if ($errstr) {
+			# -- ERROR Table '<db_name>.newsletter_settings' doesn't exist ?
+			$m->out(qq~ERROR $errstr<br>
+			<pre>
+			CREATE TABLE IF NOT EXISTS `newsletter_settings` (
+			`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+			  `tstamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			  `xkey` char(63) NOT NULL,
+			  `val` char(255) NOT NULL,
+			  `xdesc` char(255) NULL,
+			  PRIMARY KEY (`id`),
+			  UNIQUE KEY `key` (`xkey`)
+			) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;</pre>
+			~);
+		}
+		else {
+			my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+			$m->redirect("adm_edit_newsletter_setting.html?id=$last_id");
+		}
+	}
+
+	my $nl_id = $C->query("select id from newsletter order by id desc limit 1")->[0];
+</%init>
+<div class="pull-right">
+	<button style='margin-top:10px; margin-right:5px' onclick='document.location="adm_newsletter.html"'
+		class="btn btn-primary btn-mini"><i class="icon-chevron-left"></i> Newsletter</button>
+
+	<input type=button style='margin-top:10px; margin-right:5px'
+		onclick='document.location="adm_edit_newsletter.html?id=<%$nl_id%>&bSendPreview=1"'
+			class="btn btn-info btn-mini" value="Send Test">
+
+	<button style='margin-top:10px; margin-right:5px' onclick='document.location="adm_newsletter_settings.html?bAdd=1"'
+		class="btn btn-success btn-mini"><i class="icon-plus"></i></button>
+</div>
+<h2><span style='font-size:30px; margin-right:5px' class="icon-cog pull-left text-info"></span>Newsletter Settings</h2>
+
+<div id="<% $this %>">
+
+	<style type="text/css" media="screen">
+		@import "DataTables-1.9.1/media/css/demo_table_jui.css";
+		@import "DataTables-1.9.1/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+		/*
+		 * Override styles needed due to the mix of three different CSS sources! For proper examples
+		 * please see the themes example in the 'Examples' section of this site
+		 */
+		.dataTables_info { padding-top: 0; }
+		.dataTables_paginate { padding-top: 0; }
+		.css_right { float: right; }
+		#example_wrapper .fg-toolbar { font-size: 0.8em }
+		#theme_links span { float: left; padding: 2px 10px; }
+		table.dataTable tr.odd  { background-color: #eeeef0; line-height:2.5em; }
+		table.dataTable tr.even { background-color: #d4d4d8; line-height:2.5em; }
+		table.dataTable td.sorting_1 { background-color: #d4d4d8; }
+	</style>
+		
+	<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#example').dataTable( {
+				"bJQueryUI": true,
+%				# -- full_numbers
+				"sPaginationType": "two_button",
+				"iDisplayLength": 50,
+				"bProcessing": true,
+				"bFilter": false,
+				"bServerSide": true,
+				"sAjaxSource": "_includes/_server_processing_newsletter_settings.html"
+			} );
+
+			var oTable = $('#example').dataTable();
+			oTable.fnSort( [ [0,'asc'] ] );
+		} );
+	</script>
+
+<div id="fw_container">
+
+% unless ($args{ready}) {
+	<% $C->bootstrap_alert('Not ready. <a href="adm_newsletter_settings.html?bCreateSett=1">Create default settings</a>', 'danger') %>
+% }
+
+<table class='mytable table-hover' id='example'>
+<thead>
+<tr style='line-height:2.2em'>
+	<th style="width:166px">Key</th>
+	<th style="width:277px">Value</th>
+	<th stylx="width:82px">Description</th>
+	<th style="width:133px">Modified</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+% if ($args{bCreateSett}) {
+	<% $C->bootstrap_alert('Default Settings created.', 'success') %><br>
+% }
+
+</div>
+
+</div>
+
+<div style="margin-top:20px; font-size:11px" class="pull-right">
+	<a href="adm_dump.html?action=restore&table=newsletter_settings"><i class="icon-chevron-left"></i> Import Settings</a>
+	&mdash;
+	<a href="adm_dump.html?action=dump&table=newsletter_settings">Export Settings <i class="icon-chevron-right"></i></a>&nbsp;
+</div>
+<br>
+
+<%doc>
+	__METACLONING__
+</%doc>

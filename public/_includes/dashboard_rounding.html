@@ -1,0 +1,14 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+<h3>Rounding Amounts</h3>
+
+<p>
+5 Cent Rounding:
+% # XXX <a href="config2.html?key=round5"><%$C->{CONFIG}->{round5} || 'N/A'%></a>
+<a href="adm_special_keys.html?area=round5"><%$C->{CONFIG}->{round5} || 'N/A'%></a>
+</p>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,124 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $cgi = $C->{CGI};
+
+	my $importance = $cgi->param('importance');
+	my $sid        = $cgi->param('sid');
+
+	my $debug = $args{delid} ? 1 : $args{debug};
+	my $this  = $C->this();
+
+	my $sid_example = $C->query("select MAX(sid) from session")->[0];
+</%init>
+<span style='float:right; margin-top:10px; margin-right:5px'>
+	<a href="/adm_log.html?importance=5&sid=<% $sid_example %>&debug=1">SID</a> &mdash;
+%  if ($args{showmodule}) {
+	<a href="adm_log.html?importance=<%$importance%>&filter=<%$args{filter}%>&filtertype=<%$args{filtertype}%>">Hide Module</a>
+%  }
+%  else {
+  <a href="adm_log.html?importance=<%$importance%>&showmodule=1&filter=<%$args{filter}%>&filtertype=<%$args{filtertype}%>">Show Module</a>
+%  }
+	&middot; <a href="adm_log.html?importance=4">Show All</a>
+</span>
+% if ($args{debug}) {
+	<small>Dev: <a target=_blank href="http://hermes.pgate.net/_foo2.html">DataTables</a><br></small>
+% }
+% if ($sid) {
+%	my $work = $C->query("select xval FROM work where k='sid_$sid' order by id desc limit 1")->[0];
+	Filter: SID <%$sid%> <%$C->shorten_user_agent($work)%> &ndash; <a href="adm_log.html">Reset</a><br>
+% }
+
+<div id="<% $this %>">
+
+	<style type="text/css" media="screen">
+		@import "DataTables-1.9.1/media/css/demo_table_jui.css";
+		@import "DataTables-1.9.1/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+<%doc>
+		 * Override styles needed due to the mix of three different CSS sources! For proper examples
+		 * please see the themes example in the 'Examples' section of this site
+</%doc>
+		.dataTables_info { padding-top: 0; }
+		.dataTables_paginate { padding-top: 0; }
+		.css_right { float: right; }
+		#example_wrapper .fg-toolbar { font-size: 0.8em; color: black }
+		#theme_links span { float: left; padding: 2px 10px; }
+
+		table.dataTable tr.odd       { background-color: #ffffff; }
+		table.dataTable tr.even      { background-color: #ebebeb; }
+		table.dataTable td.sorting_1 { background-color: #e1e1e1; color: black }
+		table.dataTable td           { color: black; font-size:0.9rem }
+	</style>
+		
+	<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#example').dataTable( {
+%	unless ($args{showmodule}) {
+				"aoColumns": [
+					{ "sWidth": "6%" },
+					{ "bVisible": false },
+					{ "bVisible": false },
+					{ "sWidth": "10%" },
+					{ "sWidth": "52%" },
+					{ "sWidth": "6%" },
+					{ "sWidth": "9%" }
+				],
+%	}
+%	else {
+				"aoColumns": [
+					{ "sWidth": "8%" },
+					{ "sWidth": "8%" },
+					{ "sWidth": "8%" },
+					{ "sWidth": "8%" },
+					{ "sWidth": "50%" },
+					{ "sWidth": "8%" },
+					{ "sWidth": "9%" }
+				],
+%	}
+				"bJQueryUI": true,
+				"sPaginationType": "full_numbers",
+				"iDisplayLength": 50,
+				"bProcessing": true,
+				"bServerSide": true,
+	"sAjaxSource": "_includes/adm_server_processing_log.html?importance=<%$importance%>&sid=<%$sid%>&filter=<%$args{filter}%>&order_id=<%$args{order_id}%>&filtertype=<%$args{filtertype}%>&debug=<%$debug%>"
+			} );
+
+			var oTable = $('#example').dataTable();
+			oTable.fnSort( [ [0,'desc'] ] );
+		} );
+	</script>
+
+<div id="fw_container">
+<div id="fw_content">
+
+<div style="width:100%; margin-top: 1em; margin-left:auto; margin-right:auto;">
+	
+<div id="theme_links" class="fg-toolbar ui-widget-header ui-corner-all fg-buttonset fg-buttonset-multi">
+	<div class="css_clear"></div>
+</div>
+
+<table class='mytable ZZtable-hover' id="example">
+<thead>
+<tr>
+	<th>Time</th>
+	<th style="padding-right:10px">User</th>
+	<th>Module</th>
+	<th>Service</th>
+	<th>Action</th>
+	<th>SID</th>
+	<th>Source</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

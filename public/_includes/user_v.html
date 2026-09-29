@@ -1,0 +1,327 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+
+	$m->redirect('adm_reseller.html') if $cgi->param('bCan');
+	# $m->redirect('adm_vereine.html') if $cgi->param('bCan');
+
+	my @app_msgs = ();
+
+	my $id = $cgi->param('id');
+	my $UINF = $A->get_user_info($id);
+	my ($name, $is_admin, $is_devel, $tstamp, $pass, $rel_token, $newsletter) = @{$C->query(
+		"select uname, is_admin, is_devel, tstamp, pass, rel_token, newsletter FROM users WHERE id=$id")};
+
+	if ($cgi->param('bUpd')) {
+		$is_devel = $cgi->param('is_devel') || 0;
+		$is_admin = $cgi->param('is_admin') || 0;
+		my $uname = $cgi->param('uname');
+		my $email = $cgi->param('email');
+		my $dob   = $cgi->param('dob');
+		my $file  = $cgi->param('file');
+		$newsletter = $cgi->param('newsletter') || 0;
+		my $gender = $cgi->param('gender') || 0;
+		   $gender = 0 unless $gender =~ /^\d+$/;
+	$C->{dbh}->do("UPDATE users SET uname='$uname', dob='$dob', gender=$gender, is_admin=$is_admin, is_devel=$is_devel, newsletter=$newsletter WHERE id=$id")
+			or $m->out("ERROR $DBI::errstr<br>");
+
+		my $rc_email = $C->set_email_by_id($id, $email);
+		push(@app_msgs, "Updated ($email). rc=$rc_email <span style='font-size:10px; color:#bbb'>(3=Invalid E-Mail)</span>");
+		$A->set_user_detail($id, 'discount', $cgi->param('XXX_discount'));
+
+		for (qw(pic inv special1)) {
+			if ($cgi->param("_ud_cb_pay_$_")) {
+				$C->set_user_detail($id, "cb_pay_$_", 'on');
+			}
+			else {
+				$C->set_user_detail($id, "cb_pay_$_", '');
+			}
+		}
+
+		my %d = ();
+		$d{firstname} = $cgi->param('firstname');
+		$d{lastname}  = $cgi->param('lastname');
+		$d{company}   = $cgi->param('company_1');
+		$d{street}    = $cgi->param('street_1');
+		$d{zip}       = $cgi->param('zip_1');
+		$d{city}      = $cgi->param('city_1');
+
+		my $rc = $A->set_address_by_id($id, 1, \%d);
+		if ($rc) {
+			$m->out("ERROR<br>");
+		}
+		else {
+			$UINF = $A->get_user_info($id); # -- refresh
+			$name = $uname;
+		}
+
+		if ($file) {
+			use File::Copy;
+			my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+			my $short_filename = $C->transform_to_short_file_name($file);
+			my $copyto = "$ENV{DOCUMENT_ROOT}/produkte/docs/uid_$id\_$short_filename";
+			my $rc = copy $upload_tempfilename, $copyto or $C->log(msg=>"ERR $!", importance=>1);
+			$C->log(msg=>"Document uploaded to UID $id ($file): $copyto");
+		}
+	}
+	elsif ($cgi->param('bUpdateAddr')) {
+		my $type = $cgi->param('type');
+		$m->out("Address updated<br>");
+		my %d = ();
+		foreach ($cgi->all_parameters()) {
+			$d{$_} = $C->trim($cgi->param($_));
+		}
+		delete $d{type};
+		$A->set_address_by_id($id, $type, \%d);
+	}
+	elsif ($cgi->param('bAdd')) {
+		my $uname     = $cgi->param('uname');
+		my $firstname = $cgi->param('firstname');
+		my $lastname  = $cgi->param('lastname');
+		if ($uname && $firstname && $lastname) {
+			$C->{dbh}->do(qq~INSERT users (uname, pass)
+						VALUES ('$uname', 'test')~)
+				or $m->out("ERROR $DBI::errstr<br>");
+			my $uid = $C->query('SELECT MAX(id) FROM users')->[0];
+			$C->{dbh}->do(qq~INSERT INTO users_addr (user_id, firstname, lastname)
+						VALUES ($uid, '$firstname', '$lastname')~)
+				or $m->out("ERROR $DBI::errstr<br>");
+		}
+	}
+	elsif ($cgi->param('bSendPW')) {
+		$C->mail_generic(  to => $UINF->{email},
+			from_realname => $C->{CONFIG}->{HTTP_HOST},
+			sender        => $C->{CONFIG}->{order_email} || 'hostmaster@screenpoint.net',
+			to_realname   => "$UINF->{firstname} $UINF->{lastname}",
+			subject       => "Your Shop Login",
+			title         => 'dashboard_user',
+			data => qq~<b><u>Your Shop Login</u></b><br><br>
+
+				Hello $UINF->{firstname},<br><br>
+
+				Please keep this e-mail for future reference.<br><br>
+
+				System: $C->{CONFIG}->{site_title}<br><br>
+
+				<table cellspacing=0 cellpadding=0>
+				<tr><td>URL:</td><td style='padding-left:20px'><a
+					href="http://$C->{CONFIG}->{HTTP_HOST}">http://$C->{CONFIG}->{HTTP_HOST}</a></td></tr>
+
+				<tr><td>Username:</td><td style='padding-left:20px; height:25px'>$name</td></tr>
+
+				<tr><td>Password:</td><td style='padding-left:20px'>$pass</td></tr></table><br><br>
+
+				You may change your password at any time after login via menu "My Account".<hr noshade size=1>~
+		);
+		$C->set_workval("sent_pw_$id", $C->now(2));
+	}
+	elsif ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("delete FROM users WHERE id=$id");
+		$C->redir('/adm_vereine.html');
+	}
+
+	my $LABEL_ADMIN = '<span class="label label-info">Admin</span>';
+	my $LABEL_USER  = '<span class="label label-success">User</span>';
+	my $LABEL_DEVEL = '<span class="label label-important">Devel</span>';
+
+	my %status_hr = ( 1=>'New User', 2=>'Released', 3=>'Blocked', 4=>'Anon Reg', 5=>'Bounce' );
+	my %pay_meth_hr = ( pic => 'Self-pickup', inv => 'Invoice' );
+
+	my $order_count = $C->query("SELECT count(*) FROM orders WHERE uid=$id")->[0];
+	my $user_docs = $C->get_user_docs($id);
+	my $user_docs_count = $#{$user_docs} + 1;
+
+	my %gender_array = ( 1 => 'Male', 2 => 'Female', 3 => 'Company' );
+
+	my $discount = $C->query("select xval FROM users_details WHERE user_id=$id AND xkey='discount'")->[0];
+</%init>
+<script language=JavaScript>
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_user_v.html?id=' + id);
+	}
+	function edit_addr(id, type) {
+		$('#ajx_3').load('_includes/ajx_modal_edit_addr.html?id=' + id + '&type=' + type);
+	}
+</script>
+
+% if ($args{debug}) {
+	(Debug)<br>
+% }
+% if (@app_msgs) {
+	<%join '<br>', @app_msgs%><br>
+% }
+
+% if ($cgi->param('bAddDept')) {
+<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<strong>Holy guacamole!</strong> This is an alert for your awesome web application.
+</div>
+% }
+
+<table cellspacing=0 cellpadding=0>
+<tr>
+<td>
+<span class="cards">
+<h2><span style='font-size:30px; margin-right:5px' 
+	class="icon-group pull-left text-info"></span>Vereinskonto: <%$UINF->{company} || '* NEU *'%>
+		<%$UINF->{firstname}%> <%$UINF->{lastname}%></h2>
+</span>
+</td>
+<td style='padding-left:33px'><p style='margin-top:11px'><a href="customers.html">Up</a></p></td>
+</tr>
+</table>
+
+<div id='ajx_1'></div>
+
+<form method="post" enctype="multipart/form-data">
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=street_1  value="<%$UINF->{street}%>">
+<input type=hidden name=zip_1     value="<%$UINF->{zip}%>">
+<input type=hidden name=city_1    value="<%$UINF->{city}%>">
+<input type=hidden name="gender"  value="<%$UINF->{gender}%>">
+<input type=hidden name="_ud_cb_pay_special1" value="on">
+
+<table class='table'>
+<thead>
+    <tr>
+      <th style='width:205px; text-align:left'>User Name</th>
+% # XXX      <th style='text-align:center'>Status</th>
+      <th>Update</th>
+	<th>Action</th>
+    </tr>
+</thead>
+	<tr>
+	<td style='text-align:left'>
+	<input type=text name=uname value="<%$name%>" style='width:212px; font-weight:bold'>
+	</td>
+% # XXX	<td style='text-align:center'><%$status_hr{$UINF->{status}} || "* $UINF->{status} *"%></td>
+	<td nowrap><%$C->trans_date_short($tstamp)%></td>
+	<td>
+% if ($cgi->param('bSendPW')) {
+		Password sent!
+% }
+% else {
+		<a href="user_v.html?id=<%$id%>&bSendPW=1">Passwort an Kunde mailen</a>
+		<%$C->get_workval("sent_pw_$id")%><br>
+		<a href="http<%$ENV{HTTPS} ? 's' : ''%>://<%$ENV{HTTP_HOST}%>/account.html?token=<%$rel_token%>"><abbr
+			title="Release Link. User Should login and open account.html?func=verify_email">Release Token</abbr></a>
+% }
+	</td>
+	</tr>
+</table>
+
+<table cellspacing=0 cellpadding=0 border=0 style='width:100%'>
+<tr valign=top>
+<td>
+% # ================================================================================================
+<div class="widget">
+        <ul class="nav nav-tabs two-tabs fancy">
+          <li class="active" style='width:185px'><a href="#tab-ee" data-toggle="tab">Customer Data</a></li>
+          <li style='width:185px'><a href="#tab-addr" data-toggle="tab">Adressen</a></li>
+          <li style='width:185px'><a href="#tab-xx" data-toggle="tab">Konditionen</a></li>
+          <li style='width:185px'><a href="#tab-docs" 
+		data-toggle="tab">Dokumente <%$user_docs_count ? "($user_docs_count)" : ''%></a></li>
+        </ul>
+
+   <div class="tab-content">
+
+	<div class="tab-pane fade in active" id="tab-ee">
+		<&inc_dashboard_user_data_v.html, UINF=>$UINF, newsletter=>$newsletter&>
+        </div>
+
+	<div class="tab-pane fade" id="tab-addr">
+		<&inc_dashboard_user_addr.html, id=>$id, A=>$A, UINF=>$UINF&>
+	</div>
+
+	<div class="tab-pane fade" id="tab-xx">
+		Discount: <input style='margin-top:5px; width:88px; text-align:center' type=text
+			name="XXX_discount" value="<%sprintf('%.2f', $discount)%>"> %
+	</div>
+
+	<div class="tab-pane fade" id="tab-docs">
+		<div id="ajx_docs"></div>
+	</div>
+
+	</div>
+
+  </div>
+</div>
+% # ================================================================================================
+</td>
+<td>
+	<div style='margin-left:20px' class="well">
+	<%$UINF->{firstname}%> <%$UINF->{lastname}%><br>
+	<%$UINF->{street}%><br>
+	<%$UINF->{zip}%> <%$UINF->{city}%><br>
+% if ($UINF->{phone}) {
+	Phone <%$UINF->{phone}%>
+% }
+	</div>
+	<br>
+
+	<div class="well pull-right">
+% foreach my $pay_type (qw(pic inv)) {
+% $pay_meth_hr{$pay_type} ||= $C->{CONFIG}->{pay_meth_special1};
+% next unless $pay_meth_hr{$pay_type};
+<label class="checkbox">
+<input type=checkbox
+	name=_ud_cb_pay_<%$pay_type%> <%$UINF->{"cb_pay_$pay_type"} ? 'checked' : ''%>> <%$pay_meth_hr{$pay_type} || "* $pay_type *"%><br>
+</label>
+% }
+	</div>
+</td></tr>
+</table><br>
+
+% if ($is_admin) {
+	<input type="hidden" name="is_admin" value="1">
+% }
+% # XXX <input type=checkbox name=is_admin value=1 style='margin-top:-3px'<%$is_admin ? ' checked' : ''%>>&nbsp;&nbsp;Admin<br>
+% if ($C->is_devel()) {
+<input type=checkbox name=is_devel value=1 style='margin-top:-3px'<%$is_devel ? ' checked' : ''%>>&nbsp;&nbsp;Developer<br>
+% }
+<input type=checkbox name=newsletter value=1 style='margin-top:-3px'<%$newsletter ? ' checked' : ''%>>&nbsp;&nbsp;Newsletter<br>
+<br clear='all' />
+
+<input type=submit class="btn btn-primary" name=bUpd value="Update">&nbsp;&nbsp;&nbsp;
+<input type=submit class="btn" value="Cancel" name=bCan>&nbsp;&nbsp;&nbsp;
+<input type=button class="btn btn-danger" onclick="modal(<%$id%>)" value="Delete...">
+</form>
+
+<div id='ajx_2'></div>
+<div id='ajx_3'></div>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary">Save changes</button>
+  </div>
+</div>
+
+% if ($order_count) {
+%	my $last_order_id = $C->query("select id FROM orders WHERE uid=$id ORDER BY id DESC LIMIT 1")->[0];
+	<a href="admix.html?func=orders&id=<%$last_order_id%>"><%$order_count%> order(s)</a>
+% }
+% else {
+	No orders
+% }
+
+% if ($C->is_devel()) {
+<br>
+% foreach (sort keys %$UINF) {
+	<b><%$_%></b> = "<%$UINF->{$_}%>"<br>
+% }
+% }
+<%doc>
+	__METACLONINX__
+</%doc>

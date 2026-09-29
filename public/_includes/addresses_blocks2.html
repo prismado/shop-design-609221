@@ -1,0 +1,40 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $H = $args{H};
+
+	my $addr_bill = $H->get_address(1);
+
+	my ($uname, $email, $status, $pass) = @{$C->query("SELECT uname, email, status, pass FROM users WHERE id=" . $C->getUID())};
+	$email = '' unless $email =~ /\@/;
+
+	my $action = $args{action} ? " action=\"$args{action}\"" : '';
+</%init>
+<form method=post<% $action %>>
+
+<table class='table-hover mytable'>
+
+<tr><td>Username</td> <td><input type=text name=uname value="<% $uname %>" size=22></td></tr>
+<tr><td>Password</td> <td><input type=password name=pass size=22 value="<% $pass %>"></td></tr>
+<tr><td>E-Mail</td> <td><input type=text name=email value="<% $email %>" style="width:62%" sizx=33> <b>[<% $status %>]</b></td></tr>
+
+<tr><td colspan=2><h2><% $C->p('address') %>:</h2></td></tr>
+
+<tr><td>Firstname</td> <td><input type=text name=firstname size=28 value="<% $addr_bill->{firstname} %>"></td></tr>
+<tr><td>Lastname</td> <td><input type=text name=lastname size=33 value="<% $addr_bill->{lastname} %>"></td></tr>
+<tr><td>Company</td> <td><input type=text name=company size=36 value="<%$addr_bill->{company}%>"></td></tr>
+<tr><td>Address</td> <td><input type=text name=street size=33 value="<% $addr_bill->{street} %>"></td></tr>
+<tr><td>ZIP City</td> <td><input type=text name=zip value="<%$addr_bill->{zip}%>" style='width:77px'> 
+	<input type=text name=city value="<% $addr_bill->{city} %>" size=23></td></tr>
+
+</table><br />
+
+<input name=bSave type=submit class='btn btn-primary' value='Update'>
+</form>
+
+<a href="adm_custom.html">Themes</a>
+
+<%doc>
+	__METACLONING__
+</%doc>

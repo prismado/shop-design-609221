@@ -1,0 +1,88 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $id       = $C->{CGI}->param('id') + 0;
+	my $show_all = $C->{CGI}->param('show_all');
+
+	my $res_opt = $A->get_opt_from_product($id, $lang);
+
+	my $sth_opt = $C->{dbh}->prepare("SELECT option_id, label FROM options_desc WHERE lang='$lang' ORDER BY id DESC");
+	   $sth_opt->execute();
+</%init>
+<a href="admix.html?func=options"><h4>Product Options</h4></a>
+
+% if ($show_all) {
+<table class="mytable table-hover">
+% while(my $r =	$sth_opt->fetch()) {
+%	my ($id, $label) = @{$r};
+%	my $sth	= $C->{dbh}->prepare("select description from options_feat where option_id=$id and lang='$lang'	limit 5");
+%	$sth->execute();
+%	my @desc = ();
+%	while(my $rr = $sth->fetch()) {
+%		push(@desc, $rr->[0]);
+%	}
+%	$label =~ s/</&lt;/;
+%	$label =~ s/>/&gt;/;
+	<tr><td nowrap>
+	<input type=checkbox style="transform: scale(1.3); margin-right:5px; margin-top:-1px"
+		name='cb_opt_<%$id%>' <%$res_opt->{$id} ? 'checked' : ''%>>
+			<a href='adm_options.html?id=<%$id%>'><% $id %></a> &ndash; <abbr
+				title="<%join('; ', @desc)%>"><b><%$label%></b></abbr>
+		</td><td>
+%		my $st = $C->{dbh}->prepare("select style, mandatory, ref, description, amount from voptions where id=$id and lang='de'");
+%		   $st->execute() or $m->out("ERR $DBI::errstr");
+%		while(my $rr = $st->fetch()) {
+% 			my ($style, $mandatory, $ref, $description, $amount) = @{$rr};
+ 			<b><% $description %></b>=<% $ref %>&nbsp;&nbsp;
+%		}
+		</td></tr>
+% }
+</table>
+% }
+% else {
+	<table class="mytable table-hover">
+% while(my $r =	$sth_opt->fetch()) {
+%	my ($id, $label) = @{$r};
+%	next unless $res_opt->{$id}; # -- Skip unselected feature
+%	my $inc_art_no = $C->query("select inc_art_no from options where id=$id")->[0];
+%	my $sth	= $C->{dbh}->prepare("select description from options_feat where option_id=$id and lang='$lang'	limit 5");
+%	$sth->execute();
+%	my @desc = ();
+%	while(my $rr = $sth->fetch()) {
+%		push(@desc, $rr->[0]);
+%	}
+%	$label =~ s/</&lt;/;
+%	$label =~ s/>/&gt;/;
+%	my $style_id = $C->query("select style from options where id=$id")->[0];
+	<tr><td nowrap>
+	<input type=checkbox style="transform: scale(1.3); margin-right:5px; margin-top:-1px"
+		name='cb_opt_<%$id%>' <%$res_opt->{$id} ? 'checked' : ''%>>
+			<a href='adm_options.html?id=<% $id %>'><% $id %></a> &ndash; S<% $style_id %> &ndash;
+				<abbr title="<% join('; ', @desc) %>"><b style="font-size:0.95rem"><% $label %></b></abbr>
+		</td>
+		<td><%$inc_art_no ? '<span style="color:#a8a8a8"><sup>AN</sup></span>&nbsp;&nbsp;' : ''%></td>
+		<td>
+%		my $st = $C->{dbh}->prepare("select style, mandatory, ref, description, amount, stock from voptions where id=$id and lang='de'");
+%		   $st->execute() or $m->out("ERR $DBI::errstr");
+%		while(my $rr = $st->fetch()) {
+% 			my ($style, $mandatory, $ref, $description, $amount, $stock) = @{$rr};
+%			$stock = '&infin;' if $stock == -1;
+ 			<b><% $description %></b>=<% $ref %>
+%			if ($style == 1) {
+				(<b><%$stock%></b> pcs)
+%			}
+				&nbsp;&nbsp;
+%		}
+		</td></tr>
+% }
+	</table>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

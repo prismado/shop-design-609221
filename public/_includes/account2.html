@@ -1,0 +1,94 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $H = $args{H};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $rc  = 0; my $msg = '';
+
+	if ($cgi->param('token')) {
+		my ($r, $m) = $C->verify_token_anyway($C->{CGI}->param('token'));
+		if ($r) {
+			$msg .= $m; $rc++;
+		}
+	}
+	elsif ($cgi->param('bSave')) {
+		$C->saveSessData('suppress_devel', $cgi->param('suppress_devel'));
+		$C->set_uname($cgi->param('uname'));
+		$C->set_password($cgi->param('pass'));
+		$C->set_email($cgi->param('email'), 1);
+		my %d = ();
+		$d{firstname} = $cgi->param("firstname");
+		$d{lastname}  = $cgi->param("lastname");
+		$d{company}  = $cgi->param("company");
+		$d{street}    = $cgi->param('street');
+		$d{zip} = $C->{CGI}->param('zip');
+		$d{city} = $C->{CGI}->param('city');
+		my $rc = $H->set_address(1, \%d);
+		if ($rc) {
+			$m->out('Could not update address<br>');
+		}
+	}
+	elsif ($cgi->param('bUpdTheme')) {
+		my $theme     = $cgi->param('theme');
+		my $permanent = $cgi->param('permanent') || 0;
+		if ($theme) {
+		$C->saveSessData('cur_theme', $theme);
+		}
+		else {
+			$C->del_sess_key('cur_theme');
+		}
+		if ($permanent) {
+			$C->{dbh}->do("update config SET val='$theme' WHERE `key`='theme'") or $m->out("$DBI::errstr<br>");
+			$C->refresh_config();
+		}
+		$m->out(qq~<div class="alert alert-warning fade in">Updated theme to \"$theme\" (permanent: $permanent)</div>~);
+	}
+</%init>
+% if ($C->{CONFIG}->{custom} && $args{is_devel}) {
+	<div class="pull-right">
+<form method="post">
+	<div class="control-group">
+	<label class="control-label">Theme <%$C->getSessData('cur_theme')%></label>
+	<div class="controls">
+		<div class="input-append">
+	<select name="theme">
+	<option value="">&middot; Themes</option>
+%	opendir(D, "$ENV{DOCUMENT_ROOT}/custom") or $m->out("ERR<br>");
+%		while(my $f = readdir(D)) {
+%			next if	$f =~ /^\./ or !(-d "$ENV{DOCUMENT_ROOT}/custom/$f");
+%			my $sel = $f eq $C->{CONFIG}->{theme} ? ' selected' : '';
+			<option<%$sel%>><%$f%></option>
+%		}
+%	closedir(D);
+	</select>
+			<span rel="tooltip" data-placement="top"
+				data-original-title="Check to activate for all users"
+			<span class="add-on">
+				<label class="checkbox">
+				<input name=permanent value="1" type="checkbox">
+	                	</label>
+			</span>
+			</span>
+			<input name=bUpdTheme type=submit class="btn" value="Activate">
+		</div>
+	</div>
+	</div>
+</form>
+
+	</div>
+% }
+
+<h2>Your Admin Account</h2>
+
+<& addresses_blocks2.html, H=>$H, C=>$C &>
+
+% if ($C->{CGI}->param('bSend') && $rc) {
+	<span style='color:red'>ERR <% $rc %> - <% $msg %><br><br></span>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,75 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+
+	my $id = $args{id} || 0;
+	my $token = $C->query("select token FROM campaign_data WHERE id=$id")->[0];
+	my $sale_type = $cgi->param('sale_type');
+
+	my $company_id = $C->query("select company_id FROM campaign_data WHERE id=$id")->[0];
+	my $company_name = $C->query("select name FROM companies WHERE id=$company_id")->[0];
+
+	if ($cgi->param('bUpdate')) {
+		foreach ($cgi->all_parameters) {
+			next unless /^cb_(\d+)$/;
+			my $prod_id = $1;
+			# XXX $C->{dbh}->do("UPDATE products SET campaign_id=0, sale_type=$sale_type WHERE id=$prod_id") or $m->out("$DBI::errstr<br>");
+			# XXX $A->add_feature($prod_id, '_new_', "rem$$", 'de', "Ex Campaign ID $id ($token) " . $C->now(3), 0);
+			$m->out("XX prod ID $prod_id<br>");
+		}
+		$m->out('<b>Updated</b><br>');
+	}
+
+	my $sth = $C->{dbh}->prepare(
+		"SELECT id, instime, count, price, description FROM vproducts WHERE campaign_id=$id AND lang='de' LIMIT 9999");
+	   $sth->execute();
+</%init>
+
+<h2>Shipping</h2>
+
+XX constr<br>
+
+<h2>Campaign <a href='admix.html?func=hiddenshop&edit=<% $id %>'><% $token %></a> &ndash; <% $company_name %></h2>
+
+<p>
+Campaign ID <% $id %><br><br>
+
+Durch Klicken auf <b>&laquo;Artikel freigeben&raquo;</b> werden die nachfolgenden Mitarbeiter-Aktions-Produkte in den öffentlichen Shop überführt.
+</p>
+
+<form method=post>
+<input type=hidden name=id value="<% $id %>">
+
+Neuer Sale Type: <input type=text size=3 value="2" name=sale_type style='font-weight:bold'> &larr; wirkt sich auf die Versandspesen aus
+	(2=common prods, 5=small items, 8=free)<br><br>
+
+<input type=submit value='Artikel freigeben' class=saveButton name='bUpdate'>&nbsp;&nbsp;
+<input type=button onclick='JavaScript:history.go(-1)' value='Zur&uuml;ck' class=canButton><br><br>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+
+<tr style='font-weight:bold; background-color:#e0e0e0'>
+<td>&nbsp;</td>
+<td align=right style='padding-right:15px;'>Prod ID</td>
+<td>Beschreibung</td>
+</tr>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $instime, $amount, $price, $desc) = @{$r};
+	<tr>
+	<td width=33 align=center><input type=checkbox name="cb_<% $id %>" checked></td>
+	<td style="text-align:right; padding-right:15px;" width=77><a
+		href='admix.html?func=edit_item&id=<% $id %>'><% $id %></a></td> <td><% $desc %></td>
+	</tr>
+% }
+
+</table><br>
+
+</form>
+
+% if ($C->is_devel()) {
+	<br>
+	DEVEL!<br>
+% }

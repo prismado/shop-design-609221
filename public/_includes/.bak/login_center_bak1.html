@@ -1,0 +1,32 @@
+<%init>
+	# my %args = $m->caller_args(0);
+	# my $C = $args{CORE};
+</%init>
+%
+% # -- Loginform (mitte)
+%
+	Falls Sie schon Kunde bei uns sind, melden Sie sich bitte hier mit
+		Ihrer E-Mail-Adresse und Ihrem Passwort an: <br><br>
+
+<form action="account.html" method="post" name="form1sub" id="form1">
+<table>
+	<tr>
+	  <td ><label><strong>Username:</strong></label></td>
+	  <td ><label><strong>Passwort:</strong></label></td>
+	  <td ></td>
+	</tr>
+	<tr>
+	  <td><input id="LoginEmail" type="text"   name="user" value="" size="35">&nbsp;&nbsp;</td>
+	  <td><input id="LoginPwd" type="password" name="pass" value="" size="35">&nbsp;&nbsp;</td>
+	  <td><input id="Login" class="submit" type="submit" name="bSend" value="Anmelden"></td>
+	</tr>
+	<tr>
+	  <td colspan="2"><input id="LoginKeepLoggedIn" class="chbox" type="checkbox" name="stay_logged_in" value="1">
+	    Eingeloggt bleiben </td>
+	  <td><a href="registration.html" class="CR" rel="nofollow">Konto er&ouml;ffnen</a><br />
+	    <a href="send_pwd.html" class="CR"   rel="nofollow">Passwort vergessen</a></td>
+	</tr>
+</table>
+</form>
+
+<script language='JavaScript'>document.form1sub.user.focus();</script>

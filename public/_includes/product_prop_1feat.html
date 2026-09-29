@@ -1,0 +1,77 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $C = $A->{C};
+
+	my $min = $A->get_feature_by_key($args{id}, "$args{feature} rangeMin");
+	my $max = $A->get_feature_by_key($args{id}, "$args{feature} rangeMax");
+
+	my $id = $C->{CGI}->param('id'); # -- Product ID
+
+	my %option_id = (
+		'Sphere'          => 100,
+		'AxisCylinder'    => 200,
+		'RadiusBasecurve' => 300,
+		'Cylinder'        => 400,
+		'Diameter'        => 500
+	);
+
+	my $opt_id_l = $option_id{$args{feature}};
+	my $opt_id_r = $opt_id_l + 1;
+
+	unless ($option_id{$args{feature}}) {
+		$m->out("<b>WARN:</b> Could not map \"$args{feature}\" to an ID!<br>");
+	}
+
+	my $cur_val_l = $C->getSessData("prod_id_$id\_$opt_id_l");
+	my $cur_val_r = $C->getSessData("prod_id_$id\_$opt_id_r");
+
+	if ($args{step} =~ /^\*\*\*.+\*\*\*$/) {
+		$args{rc} = 2;
+	}
+
+	my $warn_style_l = my $warn_style_r = '';
+	if ($args{rc}) {
+		$warn_style_l = ' id="rundrum"' if !$cur_val_l or $cur_val_l eq '-';
+		$warn_style_r = ' id="rundrum"' if !$cur_val_r or $cur_val_r eq '-';
+	}
+
+	my %exclude = ();
+	$exclude{$_} = 1 foreach @{$A->get_exclude_vals($id, "$args{feature} rangeStep")};
+</%init>
+<style type="text/css">#rundrum {border:1px solid #f00;}</style>
+
+% if ($C->is_devel()) {
+	<&page_info.html, "Start $args{feature}"&>
+% }
+
+% # -- XX <nobr>rc=<%$args{rc}%> / <%$args{feature}%></nobr><br>
+% if ($args{rc} == 2) {
+	<%$args{step}%><br>
+% }
+	<select<%$warn_style_r%> name="opt_<%$opt_id_r%>"
+		onchange="$('#ajx_1').load('_ajx_set_opt.html?opt=' + this.value + '&id=<%$args{id}%>&opt_id=<%$opt_id_r%>&rnd=<%$$%>');">
+	<option value=0>Bitte w&auml;hlen [<%$args{feature}%>]</option>
+%  	for (my $i = $min; $i < $max + $args{step}; $i += $args{step}) {
+%		next if $exclude{$i};
+%		my $sel = "$args{feature}_R$i" eq $cur_val_r ? ' selected' : '';
+		<option value="<%$args{feature}%>_R<%$i%>"<%$sel%>><%sprintf('%.2f', $i)%></option>
+%	}
+	</select><br>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'END'&>
+% }
+
+<%doc>
+root@spag1 Auctionline]# /var/www/html/_vhosts/extern/optik.aur.cc/_systex/t/_generic.pl optik "\$A->get_mandatory_idents(1)"
+
+[optik] $A->get_mandatory_idents(1) ...
+
+(debug) -- 100 = Sphere rangeStep
+(debug) -- 101 = Sphere rangeStep
+(debug) -- 200 = AxisCylinder rangeStep
+(debug) -- 201 = AxisCylinder rangeStep
+(debug) -- 300 = RadiusBasecurve rangeStep
+(debug) -- 301 = RadiusBasecurve rangeStep
+</%doc>

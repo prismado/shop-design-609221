@@ -1,0 +1,80 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my %d = ();
+	my $bUpdate = $cgi->param('bUpdate');
+
+	foreach (qw(username password message)) {
+		$d{$_} = $C->{CONFIG}->{"sms_$_"};
+	}
+
+	if ($bUpdate) {
+		foreach (qw(username password message)) {
+			(my $val = $cgi->param($_) || '') =~ s/'/''/g;
+			$dbh->do("UPDATE config SET val='$val' WHERE `key`='sms_$_'") or $m->out("ERROR $DBI::errstr<br>");
+			$d{$_} = $val;
+			$C->log(msg=>"SMS $_: $val", importance=>1);
+		}
+	}
+	elsif ($cgi->param('bTestit')) {
+		my $smsto = $cgi->param('smsto');
+		$A->invoice_send_sms(recipient => $smsto);
+		# XXX $m->out("XX constr $smsto<br>");
+	}
+</%init>
+<div style='margin-top:10px' class="pull-right">
+	<a target="_blank" href="https://www.sms-club.ch/">Register</a>
+</div>
+
+<div class="pull-left"><span style='font-size:26px; color:#41414C; margin-top:20px; margin-right:5px; float:left'
+	class="icon-money"></div>
+<h2 class="pull-left">Invoice &middot; Special Settings</h2>
+<br clear='all' />
+
+<form method=post>
+
+<table class='table table-striped table-hover'>
+<thead>
+	<th>SMS Username (leave empty to inactivate)</th>
+	<th style='text-align:center'>SMS Password</th>
+</thead>
+
+<tr>
+	<td><input type=text style='width:90%' placeholder="e.g. 0797654321" name="username" value="<%$d{username}%>"></td>
+	<td style='text-align:center'><input type="password" name="password" value="<%$d{password}%>"></td>
+</tr>
+
+<tr>
+	<td colspan="2">
+	<h3>SMS Text</h3>
+	<textarea rows="2" placeholder="Your sms message" style='width:90%' name="message"><%$d{message}%></textarea>
+	</td>
+</tr>
+
+</table>
+
+<input type=submit class='btn btn-primary' value="Update" name=bUpdate>
+<input type=button onclick="document.getElementById('sms_test_recip').style.display=''; this.disabled='disabled'"
+	class='btn btn-info' value="Test it ...">
+<div style='display:none' id="sms_test_recip">
+	<br>
+	<div class="controls">
+		<div class="input-prepend">
+		<span class="add-on">Mobile Number</span>
+		<input type=text name=smsto placeholder="e.g. 0794441188">
+		<input type=submit style='margin-left:5px' class='btn btn-danger' value="Send" name=bTestit>
+		</div>
+	</div>
+
+</div>
+</form>
+% if ($bUpdate) {
+	<b>Updated</b>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

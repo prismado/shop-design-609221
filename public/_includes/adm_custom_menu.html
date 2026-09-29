@@ -1,0 +1,12 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+
+<& _mini_main_func2.html, label => 'Auctionline Rahmenauftr&auml;ge (Navision)', icon => 'icon-reorder',
+	link => 'auctionl_navision_orders.html',
+		desc => q~Rahmenauftr&auml;ge (Navision)~ &>
+
+<& _mini_main_func2.html, label => 'Auctionline Custom Functions', icon => 'icon-dashboard',
+	link => 'adm_auctionline.html',
+		desc => q~Google Shopping Feed etc.~ &>

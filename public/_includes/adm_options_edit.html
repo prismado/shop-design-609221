@@ -1,0 +1,289 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{CORE};
+	my $A    = $args{A};
+	my $lang = $args{lang};
+	my $perm = $args{perm};
+
+	my $cgi = $C->{CGI};
+
+	my $id    = $cgi->param('id') + 0;
+	my $debug = $cgi->param('debug');
+	my $msg   = $cgi->param('msg');
+	my $order = $cgi->param('order') || 'det_id';
+	my $bAdd  = $cgi->param('bAdd');
+	my $bCopy = $cgi->param('bCopy');
+	my $bSave = $cgi->param('bSave') || $cgi->param('hiddenSave');
+
+	my @appmsgs = ();
+	push(@appmsgs, $msg) if $msg;
+
+	if ($bSave) {
+		(my $label = $C->{CGI}->param('label')) =~ s/'/''/g;
+		    $label = $C->trim($label);
+		my $rc = $A->set_option($lang);
+		$C->{dbh}->do("UPDATE options_desc SET label='$label' WHERE option_id=$id AND lang='$lang'");
+		my $ident_by = $cgi->param('ident_by_feat');
+		$A->add_option_leaf($id, $ident_by, "_IDENT_$id") if $ident_by;
+		if ($rc) {
+			$m->out("ERROR $A->{msgs}");
+		}
+		else {
+			push(@appmsgs, 'Option Updated');
+		}
+		my $inc_art_no = $C->{CGI}->param('inc_art_no') || 0;
+		$C->{dbh}->do("UPDATE options SET inc_art_no=$inc_art_no WHERE id=$id");
+	}
+	elsif ($bAdd) {
+		my ($rc, $msg) = $A->add_option_leaf($id);
+		$m->out("$rc / $msg") if $rc;
+		push(@appmsgs, 'Child added.');
+	}
+	elsif ($bCopy) {
+		my ($rc, $msg, $new_opt_id) = $A->copy_option($id);
+		$msg ||= 'Copied';
+		$m->redirect("admix.html?func=options&id=$new_opt_id&msg=$msg");
+	}
+	elsif ($cgi->param('bDel')) {
+		$A->del_option($id);
+		$m->redirect('admix.html?func=options');
+	}
+	elsif ($cgi->param('delrefid')) {
+		my $det_id = $C->{CGI}->param('delrefid');
+		$id = $C->query("SELECT option_id FROM options_feat WHERE details_id=$det_id")->[0];;
+		$A->del_option_leaf($det_id);
+		$m->out("Option $det_id deleted<br>");
+	}
+	elsif ($cgi->param('bIns')) {
+		my $pref = $cgi->param('ins_pref');
+		my $from = $cgi->param('ins_from');
+		my $to   = $cgi->param('ins_to');
+		my $step = $cgi->param('ins_step') || 1;
+		for (my $i=$from; $i<$to + $step; $i+=$step) {
+			my ($rc, $msg) = $A->add_option_leaf($id, $i, "$pref$i");
+		}
+	}
+
+	my ($style, $weight, $mandatory) = @{$C->query("SELECT style, weight, mandatory FROM options WHERE id=$id")};
+	my $label = $C->query("SELECT label FROM options_desc WHERE option_id=$id AND lang='$lang'")->[0];
+
+	my $sth = $C->{dbh}->prepare(
+	"SELECT description, ref, amount, det_id, feat_id, stock FROM voptions WHERE lang='$lang' AND id=$id ORDER BY $order");
+	   $sth->execute();
+
+	my %style_hr = ( 1=>'Dropdown with Price', 2=>'Checkbox', 3=>'Dropdown, neither price nor quantity', 4=>'Special 2', 6=>'Input (Text)' );
+
+	my $ident_by_feat = $C->query("SELECT description FROM voptions WHERE ref='_IDENT_$id' AND lang='de'")->[0];
+
+	my $inc_art_no = $C->query("select inc_art_no FROM options WHERE id=$id")->[0];
+	   $inc_art_no = -1 if $C->{query_rows} < 0; # -- Not altered in db schema yet
+
+	my $stx = $C->{dbh}->prepare(
+		"SELECT product_id FROM products_feat where featkey='_o$id' AND lang='de' ORDER BY id DESC LIMIT 9999");
+	$stx->execute();
+	push(@appmsgs, 'Not yet assigned to a product.') unless $stx->rows();
+
+	my $exact_match_id = 0;
+	my $product_title = my $product_desc = '';
+	if ($stx->rows() == 1) {
+		$exact_match_id = $C->query(
+			"select product_id FROM products_feat where featkey='_o$id' AND lang='de' ORDER BY id DESC LIMIT 1")->[0];
+		($product_title, $product_desc) = @{$C->query(
+			"select title, `description` from products_desc WHERE product_id=$exact_match_id AND lang='de'")};
+	}
+</%init>
+<script type="text/javascript">
+	document.title='Adm Option ID <%$id%>';
+	function is_mandatory() {
+		document.getElementById('mandatory_extra').style.display='';
+	}
+	function changeStyle(style) {
+		document.optionForm.style.value = style;
+		document.optionForm.hiddenSave.value = 1;
+		document.optionForm.msg.value="Style changed from <%$style%> to 1";
+		document.optionForm.submit();
+	}
+</script>
+<style type='text/css'>
+	th { text-align:left; font-size:13px }
+</style>
+
+% if ($inc_art_no < 0) {
+	<b style='color:red'>WARNING: New db structure required (<%$ENV{db_name}%>)!</b><br>
+	ALTER TABLE `options` ADD `inc_art_no` SMALLINT NULL COMMENT 'Includes article number';<br>
+% }
+
+% if ($exact_match_id) {
+  <div class="well" style='margin-top:10px; margin-bottom:0px; background-color:#f0f0f0'>
+	<div stylx="margin-right:111px" class="pull-right">
+		<a style="<%$lang eq 'de' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=de">de</a> |
+		<a style="<%$lang eq 'en' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=en">en</a> |
+		<a style="<%$lang eq 'fr' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=fr">fr</a>
+	</div><br clear="all" />
+
+	<div class="pull-right" style='margin-top:10px'>
+		<a href="admix.html?func=edit_item&id=<%$exact_match_id%>"><img title="Product"
+			style='box-shadow: 10px 10px 5px #888888;'
+			src="produkte/p<%$exact_match_id%>_thmb.jpg" width="80"></a>
+	</div>
+	<h2 style='margin-bottom:0px'><a
+	href="admix.html?func=edit_item&id=<%$exact_match_id%>"><%$product_title%> &middot;
+			<span style="font-size:13px">ID <%$exact_match_id%></span></a></h2>
+		<%$product_desc%>
+  </div>
+% }
+% else {
+	<div style='margin-top:10px; margin-bottom:-2px'><a href='admix.html?func=options'>Up</a></div>
+% }
+
+<br />
+<div style='font-size:16px; margin-bottom:10px'>Option ID <b><%$id%></b> &middot; &lsaquo;<%$label%>&rsaquo; &middot;
+	Style <b>&lsaquo;<%$style%>&rsaquo;</b> &rarr; <b><%$style_hr{$style} || 'UNDEF'%></b></div>
+
+<form name="optionForm" method=post>
+<input type=hidden name=func value='options'>
+<input type=hidden name=hiddenSave value="0">
+<input type=hidden name=msg value="">
+<input type=hidden name=id value='<% $id %>'>
+% if ($debug) {
+<input type="hidden" name="debug" value="<%$debug%>">
+% }
+
+<b>Label:</b>&nbsp;&nbsp;&nbsp;<input type=text name=label 
+	value="<% $label %>" style='width:311px; font-weight:bold; font-size:13px; margin-top:5px'> &mdash;
+		Weight: <abbr title='Ganze Option inaktiv, wenn 0 (Null)'><input type=text name=weight
+			value='<% $weight %>' style='width:37px; text-align:right; margin-top:5px'></abbr>
+		<%!$weight ? ' &middot; <span class="label label-important">inactive</span>' : ''%><br><br>
+
+Style: <input type=text name=style value="<%$style%>" style='width:35px; text-align:center; margin-top:5px'> &middot;
+Mandatory:
+<input type=radio style='vertical-align:top; margin-top:14px' name=mandatory onclick='is_mandatory()'
+	value=1<%$mandatory ? ' checked' : ''%>> Yes &middot;
+<input type=radio style='vertical-align:top; margin-top:14px' name=mandatory value=0<%!$mandatory ? ' checked' : ''%>> No
+<br><br>
+
+<div id=mandatory_extra style='display:none'>
+	Identfied by <input type=text name=ident_by_feat style='width:211px; margin-top:10px' value="<%$ident_by_feat%>"><br>
+</div>
+
+<table class='table table-hover'>
+<thead>
+<tr>
+<th>Delete</th>
+<th>Label &middot; <small>Style 1 - 3, this label is printed on the order</small></th>
+<th>
+	<span class="pull-right"><a href="adm_options.html?id=<% $id %>&order=ref">^</a></span>
+	Ident&nbsp;&nbsp;
+	<input style='margin-top:0px' type=checkbox name=inc_art_no
+%	if ($inc_art_no > 0) {
+		checked value="1"> <b>is Article No</b>
+%		if ($debug) {
+			<br>select inc_art_no FROM options WHERE id=<%$id%>
+%		}
+% }
+% else {
+		value="1"> is Article No
+% }
+</th>
+% if ($style != 3 && $style != 6) {
+<th></th>
+<th align=right>Amount</th>
+<th style='text-align:right'><abbr title='&gt;0: Anz, 0: ausverkauft/inaktiv, -1: immer verf&uuml;gbar'>Count</abbr>
+% if ($debug) {
+	<br><nobr>(style != 3 && != 6)</nobr>
+% }
+</th>
+% }
+</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($desc, $ref, $amount, $det_id, $feat_id, $stock) = @{$r};
+%	my $instime = $C->query("select instime from options_details where id=$det_id")->[0];
+	<tr>
+	<td><a style='color:red; font-size:20px; color:#b14444' href='admix.html?func=options&delrefid=<%$det_id%>'>&#128465;</a></td>
+	<td>
+%		if ($debug or $perm->{is_devel}) {
+			<a href="adm_db_edit.html?table=options_details&wcl=id%3D<% $det_id %>">D<%$det_id%></a> &middot; F<%$feat_id%><br>
+			<small><% $C->trans_date_short($instime) %></small>
+%		}
+		<input name='desc_<%$feat_id%>' type=text
+			style='font-weight:bold; width:295px; font-sizx:11px' value="<%$desc%>">
+	</td>
+	<td><input name='ref_<%$feat_id%>' type=text style='width:190px; font-sizx:11px; margin-tox:5px' value='<%$ref%>'>
+%	if ($amount > 0.01) {
+		<div class="pull-right">
+			<% sprintf('%.2f', $amount) %>
+		</div>
+%	}
+	</td>
+% if ($style != 3 && $style != 6) {
+	<td align=right>&nbsp;<% $C->{CONFIG}->{default_curr} %></td>
+	<td style='width:70px'><input type=text style='width:65px; text-align:right; font-weight:bold; margin-top:5px' 
+		name=amount_<% $feat_id %> value='<% $amount %>'></td>
+	<td style='text-align:right'><input type=text style='width:42px; text-align:right; margin-top:5px' 
+		name=stock_<% $feat_id %> value='<% $stock %>'></td>
+% }
+	</tr>
+% }
+
+</table>
+
+<input type=submit value='Update' name=bSave class='btn btn-primary'>&nbsp;&nbsp;
+<input type=submit value='Delete' name=bDel class='btn btn-danger'>&nbsp;&nbsp;
+<input type=submit value='Add Child' name=bAdd class="btn btn-info">&nbsp;&nbsp;
+<input type=submit value='Copy Option' name=bCopy class="btn btn-info">&nbsp;&nbsp;
+<input type=button value='Back' class=btn onclick="document.location='admix.html?func=options'">
+<br>
+
+% if ($style == 3) {
+%	(my $label_enc = $label) =~ tr/ /+/;
+	<br />
+	<% $C->bootstrap_alert(qq~<b>Note</b>&nbsp;&nbsp;
+		Would you like to <a href='#' onclick="changeStyle(1)">add prices or quantities</a>?~,
+			'success') %>
+% }
+
+% if ($bAdd) {
+%	if ($debug) {
+		(Debug) $A->add_option_leaf(<%$id%>);<br><br>
+%	}
+% }
+
+% unless ($exact_match_id) {
+   <% $stx->rows() ? '<br>' : '' %>
+	<h5>Assigned for the following products</h5>
+	<table class="mytable table-hover table-striped">
+%   while(my $r = $stx->fetch()) {
+%	my $prod_title = $C->query("select title from products_desc where product_id=$r->[0] and lang='de'")->[0];
+%	my ($campaign_id, $company_id) = @{$C->query("select campaign_id, company_id from products p, campaign_data c where campaign_id=c.id and p.id=$r->[0]")};
+%	my $company = $C->query("select name from companies where id=$company_id")->[0];
+%	my $count   = $C->query("select `count` from products where id=$r->[0]")->[0];
+	<tr>
+		<td>&bull; Product ID <a href="adm_edit_product.html?id=<% $r->[0] %>"><% $r->[0] %></a></td>
+		<td><% $prod_title %></a></td>
+		<td>
+%		if ($campaign_id) {
+			Pro-Zone: <a href="admix.html?func=hiddenshop&edit=<% $campaign_id %>"><% $company %></a>
+%		}
+		</td>
+		<td><% $count %></td>
+	</tr>
+%   }
+	</table>
+% }
+
+</form>
+
+% if (@appmsgs) {
+	<div class="alert fade in">
+		<button type="button" class="close" data-dismiss="alert">×</button>
+		<b>Notice</b>&nbsp;&nbsp;<% join '<br>', @appmsgs %>
+	</div>
+% }
+
+<%doc>
+	Algo-23
+	__METACLONING__
+</%doc>

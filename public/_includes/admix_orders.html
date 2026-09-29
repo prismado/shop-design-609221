@@ -1,0 +1,61 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $sth = $C->{dbh}->prepare(
+		"select id, sid, uid, pay_meth, instime, amount_incl_vat, status FROM orders ORDER BY id DESC LIMIT 1000");
+	   $sth->execute();
+
+	my %pay_meth_hr = ( 1=>'cc', 2=>'cod', 3=>'bill' );
+	my %status_hr = ( 1=>'new', 2=>'pending_cc', 3=>'cancelled', 4=>'okay' );
+</%init>
+
+<script type="text/javascript">document.title='Admin: Orders';</script>
+
+<h2><% $sth->rows() %> Bestellungen</h2>
+
+<table cellspacing=0 cellpadding=3 border=1 width='100%'>
+
+<tr style='font-weight:bold; background-color:#e1e1e1'>
+<td>ID</td>
+<td>User</td>
+<td>Zeit</td>
+<td>Produkte</td>
+<td>Betrag</td>
+<td>Zahl-Meth</td>
+<td>Status</td>
+</tr>
+
+% my $id_before = 0;
+% while(my $r = $sth->fetch()) {
+%	my ($id, $sid, $uid, $pay_meth, $instime, $amount_incl_vat, $status) = @{$r};
+%	my $id_disp = sprintf('%05d', $id);
+%	my $uname = $C->query("SELECT uname FROM users WHERE id=$uid")->[0];
+%	my $campaign = $C->query("select xval FROM orders_details WHERE order_id=$id AND xkey='campaign_count'")->[0];
+%	my $camp_comp_id = 0;
+%	if ($campaign) {
+%		my $d = $A->get_order($id);
+%		$camp_comp_id = $d->{campaign_company_id};
+%	}
+%	my $prods = $A->get_products($id);
+	<tr valign=top style='font-weight:<% $status == 4 ? 'bold' : 'normal' %>'>
+	<td><a href='admix.html?func=orders&id=<% $id %>'><% $id_disp %></a></td>
+	<td><a href='adm_userdetail.html?id=<% $uid %>'><% $uname %></a></td>
+	<td nowrap><% $C->trans_date_short($instime) %> <% $campaign ? "<a href='admix.html?func=companies&edit=$camp_comp_id'><img border=0 src='images/icon_company.png'></a>" : '' %></td>
+	<td><% $prods %></td>
+	<td align=right><% sprintf('%.2f', $amount_incl_vat) %></td>
+	<td><% $pay_meth_hr{$pay_meth} %></td>
+	<td>
+%	if ($status == 2) {
+		<a href="sendmail.html?order_id=<% $id %>"><% $status_hr{$status} %></a>
+%	}
+%	else {
+		<% $status_hr{$status} %>
+%	}
+	</td>
+	</tr>
+% }
+
+</table><br><br>

@@ -1,0 +1,54 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $sth = $C->{dbh}->prepare(q~
+		select 	id, label 
+		from 	categories 
+		where 	visible>0 and parent_id=0 and lang='de'
+		order	by weight
+	~);
+	   $sth->execute();   
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post action="_run_tool.html">
+<input type=hidden name=action value="googlefeed">
+<input type=hidden name=func value="edit_item">
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+    <h3 id="myModalLabel">Generate Google Feed...</h3>
+
+  </div>
+  <div class="modal-body" style="padding-top:10px">
+
+	<h3 style="margin-top:0px !important">Please choose your categories for the Google shopping feed</h3>
+
+	<table class="mytable table-hover">
+%	while(my $r = $sth->fetch()) {
+%		my ($cat_id, $label) = @{$r};
+%		next if $label eq 'Passt zu...';
+%		my $rows = $A->get_categ_count_3($cat_id);
+		<tr>
+		<td style="width:3%"><input style="margin-top:0px" type=checkbox name="cb_<%$cat_id%>" value="1"></td>
+		<td><% $cat_id %> &ndash; <b><% $label %></b></td>
+		<td style="text-align:right"><%$rows%> products</td>
+		</tr>
+%	}
+	</table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" namx=bXX type=submit value="Run!">
+  </div>
+</div>
+</form>

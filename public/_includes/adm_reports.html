@@ -1,0 +1,124 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	if ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("DELETE FROM categories WHERE id=$id");
+	}
+	elsif ($cgi->param('bAdd')) {
+		my $parid = $cgi->param('parent_id') || 0;
+		my $next_id = $C->query("select MAX(id) + 1 FROM categories")->[0];
+		$C->{dbh}->do("INSERT INTO categories (id, parent_id, lang, label) VALUES ($next_id, $parid, '$lang', '* New Categ *')")
+			or $m->out("ERROR $DBI::errstr<br>");;
+		my $cat_id = $C->query('select MAX(id) FROM categories')->[0];
+		$m->out("New Categ ID $cat_id added<br>");
+	}
+
+	my $visible = $cgi->param('visible');
+	   $visible = 1 unless length($visible);
+
+	my %pay_meth_hr = ( 1=>'cc', 2=>'cod', 3=>'bill', 4=>'paypal', 5=>'postcard', 6=>'prepay',
+		7=>'pcd', 8=>'paymill', 9=>'2co', 10=>'pci3', 11=>'twi', 14=>'six', 15=>'twint', 16=>'payrexx' );
+
+	my $count_users = $C->query('select count(*) from users')->[0];
+	my $count_users_anon = $C->query(q~select count(*) from users where uname like 'anonymous%'~)->[0];
+
+	my ($now_y, $now_m) = split /\-/, $C->now(7);
+	my $sum_cur_year  = $C->query("select sum(amount_incl_vat) from orders where status != 3 AND instime like '$now_y\-%'")->[0];
+</%init>
+<%doc>
+<span style='float:right; margin-top:9px'>
+<a style="<%$lang eq 'de' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=de">de</a> &middot;
+<a style="<%$lang eq 'en' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=en">en</a> &middot;
+<a style="<%$lang eq 'fr' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=fr">fr</a>
+</span>
+</%doc>
+
+<div class="pull-right" style="margin-top:10px">
+	<a href="adm_sales_report.html">Sales Report [2]</a>
+</div>
+
+<h2>Sales Report</h2>
+
+<div class="row-fluid">
+  <div class="span5">
+	<& adm_top_sellers.html, A=>$A, C=>$C &>
+  </div>
+% unless ($args{hide_chart}) {
+  <div class="span7">
+	<div id="visits-chart" class="chart"
+		style="width:90%; max-width:600px;height:300px;margin:0px auto 1em auto;">
+	</div>
+  </div>
+% }
+</div>
+
+<div class="row-fluid pull-right span10">
+</div>
+
+<div class="container-fluid">
+  <div class="row-fluid pull-left">
+  </div>
+
+</div>
+
+
+<div class="span2"></div>
+<div class="stats">
+                <div class="stat">
+                    <p class="main-detail text-warning"><%$count_users%></p>
+                    <p class="info">Customer Count</p>
+                </div>
+                <div class="stat">
+                    <p class="main-detail text-warning"><%$count_users_anon%></p>
+                    <p class="info">Unregistered Customers</p>
+                </div>
+	<div class="stat">
+		<p class="main-detail text-warning"><%$C->{CONFIG}->{default_curr}%> <%$C->decimal_mark($sum_cur_year)%></p>
+		<p class="info">Revenue Current Year</p>
+	</div>
+                <div class="clearfix"></div>
+</div>
+
+
+<table class="mytable table-striped table-hover">
+<thead>
+	<th stylx='width:70px'>Month</th>
+	<th style='text-align:center; width:188px'>Sales</th>
+	<th>Payment Methods</th>
+	<th style='text-align:right'>Products</th>
+	<th style='text-align:right'>Revenue</th>
+</thead>
+<tbody>
+% foreach (sort {$b cmp $a} @{$A->get_sales()}) {
+%	my ($month, $count, $pay_meths) = split /\t/;
+%	my $sum = $C->query("select sum(amount_incl_vat) from orders where status !=3 AND instime like '$month\-%'")->[0];
+%	my $sum_prod = $C->query("SELECT sum(xval+0) FROM orders o, orders_details d where o.id=order_id and status != 3 and xkey='basket_total_net' and instime LIKE '$month\-%'")->[0];
+	<tr><td style="font-weight:bold"><%$month%></td>
+	<td style='text-align:center'><%$count%></td>
+	<td>
+%		my @pms = ();
+%		foreach my $pm (split /,/, $pay_meths) {
+%			my ($pay_meth, $count) = split /\:/, $pm;
+%			$pay_meth_hr{$pay_meth} ||= "* $pay_meth *";
+%			$pay_meth_hr{$pay_meth} = uc $pay_meth_hr{$pay_meth};
+%			push(@pms, "$count x $pay_meth_hr{$pay_meth}");
+%		}
+		<%join '&nbsp;&nbsp;&nbsp; ', @pms%>
+	</td>
+	<td style="text-align:right"><% $C->decimal_mark($sum_prod) %></td>
+	<td style='text-align:right; font-weight:bold'><%$C->decimal_mark($sum)%> <%$C->{CONFIG}->{default_curr}%></td>
+	</tr>
+% }
+</tbody>
+</table>
+
+<%doc>
+	__METACLONING__
+</%doc>

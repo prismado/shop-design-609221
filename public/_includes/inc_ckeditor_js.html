@@ -1,0 +1,24 @@
+<%doc>
+	Source: Prismado E-Commerce / Algo-23
+</%doc>
+<script>
+			var editor;
+
+			function createEditor( languageCode ) {
+				if ( editor )
+					editor.destroy();
+
+				editor = CKEDITOR.replace( 'editor1', {
+					filebrowserBrowseUrl: '_browser_browse.html',
+					filebrowserUploadUrl: '_uploader_upload.html',
+					language: 'de',
+					extraAllowedContent: 'h1[*]{*}(*); ul li[*]{*}(*)',
+					on: {
+						instanceReady: function() { }
+					}
+				});
+			}
+
+			// At page startup, load the default language:
+			createEditor( '' );
+</script>

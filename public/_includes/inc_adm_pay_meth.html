@@ -1,0 +1,25 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	(my $code_lower = $args{code}) =~ tr/A-Z/a-z/;
+	(my $code_upper = $args{code}) =~ tr/a-z/A-Z/;
+</%init>
+<tr <%$args{active} ? 'class="alert"' : ''%> style="<%$args{active} ? 'font-weight:bold' : 'color:#cccccc'%>">
+	<td<%$args{active} ? ' class="alert alert-success"' : ''%>><input value=1 name="pm_<%$args{code}%>" <%$args{active}  ? 'checked' : ''%>
+		type=checkbox style='margin-top:-8px'></td>
+	<td><i style='font-size:22px; margin-right:10px' class="muted icon-<%$args{icon} || 'credit-card'%>"></i> <%$args{txt}%></td>
+	<td<%$args{active} ? ' class="alert alert-success"' : ''%>><%$code_upper%></td>
+	<td style='text-align:center'><a
+	href="adm_special_keys.html?area=pay_cost_<%$code_lower%>"><%sprintf('%.2f', $C->{CONFIG}->{"pay_cost_$code_lower"} * (1 + $C->{CONFIG}->{vat} / 100))%></a></td>
+	<td<%$args{active} ? ' class="alert alert-success"' : ''%> style='text-align:center'>
+%	if ($args{setting}) {
+		<a href="<%$args{setting}%>"><i class="icon-cog"></i></a>
+%	}
+%	else {
+		N/A
+%	}
+	</td>
+</tr>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,184 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $res = $args{res};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $key_id = $C->query("select id, val from config where `key`='custom'")->[0];
+	my $logo_name = 'logo_pub.png';
+	   $logo_name = 'logo_pub.svg' if $C->{CONFIG}->{theme} eq 'algonetic';
+
+	if ($cgi->param('off') && $key_id) {
+		my ($rc, $msg) = $A->deactivate_theme();
+		$m->out("Deactivated. rc=$rc $msg<br>");
+	}
+	elsif ($cgi->param('on') && $key_id) {
+		$dbh->do("update config SET val='1' WHERE id=$key_id");
+		$C->refresh_config();
+	}
+	elsif ($cgi->param('act_theme')) {
+		my $theme = $cgi->param('act_theme');
+		my ($rc, $msg) = $A->activate_theme($theme);
+		$m->out("Activated: $theme\. rc=$rc $msg<br>");
+	}
+	elsif ($cgi->param('bUploadLogo')) {
+		use File::Copy;
+		my $extradir = my $copy_to = '';
+		if ($C->{CONFIG}->{custom}) {
+			my $theme = $C->{CONFIG}->{theme};
+			$extradir = "/custom/$theme/html";
+			$copy_to  = "$ENV{DOCUMENT_ROOT}$extradir/images/$logo_name";
+			if ($theme eq 'algonetic') {
+				$extradir = "/custom/$theme/html/assets/images/logo";
+				$copy_to  = "$ENV{DOCUMENT_ROOT}$extradir/$logo_name";
+			}
+		}
+		my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+		my $rc = copy $upload_tempfilename, $copy_to or $m->out("ERR $copy_to $!<br>");
+		$m->out("X -- $upload_tempfilename ($extradir) rc=$rc<br>");
+	}
+
+	my $myconf;
+	my $theme_conf;
+	my $errstr = '';
+	if ($C->{CONFIG}->{custom}) {
+		my $theme = $C->{CONFIG}->{theme};
+		my $mod_path = "$ENV{DOCUMENT_ROOT}/custom/$theme/config";
+		eval "use lib '$mod_path'; use MyConfig; \$myconf = MyConfig->new(\$C);";
+		eval "\$theme_conf = \$myconf->config__$theme();";
+		$errstr = $@;
+		if ($errstr) {
+			if ($args{debug}) {
+				$m->out("use lib '$mod_path'; use MyConfig; \$myconf = MyConfig->new(\$C);<br>");
+				$m->out("\$theme_conf = \$myconf->config__$theme();<br>");
+			}
+			$errstr =~ s/"/&quot;/g;
+			$m->out(qq~<span rel="tooltip" data-original-title="$errstr"
+				data-placement="bottom"><b style='color:maroon'>Warning:</b>
+					Could not load theme configuration for current theme &laquo;$theme&raquo;!</span><br>
+					<tt>$mod_path</tt>
+			~);
+		}
+		eval ("\$myconf->foo();")
+	}
+
+	my $logos = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/custom/algonetic/html/assets/images/logo", '^logo\_');
+</%init>
+<span style='margin-top:5px' class="pull-right">
+See also <a href="adm_mail_tpl.html">Mail Templates</a>
+</span>
+
+<h2>Customization</h2>
+
+% if ($args{debug}) {
+	(Debug)<br>
+% }
+
+% if ($cgi->param('help')) {
+%	my $txt = $C->slurp_file("$C->{CONFIG}->{DOCUMENT_ROOT}/custom/readme.txt");
+	<pre><%${$txt}%></pre><br>
+% }
+
+% unless ($key_id) {
+	<a href="config2.html?key=custom">CREATE KEY!</a><br>
+% }
+
+% if ($C->{CONFIG}->{custom}) {
+	<div class="alert alert-success fade in">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<b>Currently Activated</b>
+	</div>
+
+	Current Theme: <a href="config2.html?key=theme"><b><%$C->{CONFIG}->{theme} || 'N/A'%></b></a> &middot;
+		<a target="_blank" href="index_theme.html">Preview</a><br><br>
+
+	Switch <a href="adm_custom.html?off=1">off</a>?<br>
+
+	<h3>Theme Functions</h3>
+% unless ($errstr) {
+%	$myconf->theme_info();
+% }
+
+
+
+
+%	if ($args{theme}) {
+%		foreach (split /, /, $res->{msg}) {
+			[ msg ] &middot; <% $_ %><br>
+%		}
+%		foreach (sort keys %{$res}) {
+%			next if $_ eq 'msg';
+			X -- <b><% $_ %></b> = <% $res->{$_} %><br>
+%		}
+%	}
+
+
+
+	<h3>Available Themes</h3>
+
+%	opendir(D, "$ENV{DOCUMENT_ROOT}/custom") or $m->out("ERR<br>");
+		<table class="mytable table-hover">
+%		while(my $f = readdir(D)) {
+%			next if $f =~ /^\./ or !(-d "$ENV{DOCUMENT_ROOT}/custom/$f");
+%			my $current = '';
+%			if ($f eq $C->{CONFIG}->{theme}) {
+%				$current = '&#9889; CURRENT';
+%			}
+			<tr>
+			<td style="width:25%">&bull; <a href="adm_custom.html?act_theme=<%$f%>"><%$f%></a></td>
+			<td><a href="adm_custom.html?theme=<% $f %>">Activate</a> <% $current %></td>
+			</tr>
+%		}
+		</table>
+%	closedir(D);
+% }
+% else {
+	<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	Not activated
+	</div>
+
+	Switch <a href="adm_custom.html?on=1">on</a>?
+% }
+
+<br />
+% # XXX <hr>
+<h2>Upload Public Logo</h2>
+<p>Recommended size: 380 x 120 pixel &mdash; New: Prismado: SVG</p>
+<form method='post' enctype="multipart/form-data">
+<input style='font-size:10px' type="file" name="file" />
+<input type=submit class="btn" name=bUploadLogo value="Upload">
+</form>
+% my $extradir = '';
+% if ($C->{CONFIG}->{custom}) {
+%	my $theme = $C->{CONFIG}->{theme};
+%	$extradir = "custom/$theme/html/";
+% }
+% if ($C->{CONFIG}->{theme} eq 'algonetic') {
+	<img style='width:140px' src="<% $extradir %>/assets/images/logo/<% $logo_name %>?r=<%rand() %>" title="<% $logo_name %>">
+% }
+% else {
+	<img style='width:140px' src="<% $extradir%>images/<% $logo_name %>?r=<%rand() %>" title="<% $logo_name %>">
+% }
+<br /><br />
+
+<table class="mytable table-hover">
+% foreach (sort @{$logos}) {
+%	my $inf = $C->get_file_info("$C->{CONFIG}->{DOCUMENT_ROOT}/custom/algonetic/html/assets/images/logo/$_");
+	<tr>
+	<td style="width:20%" nowrap>&bull; <a href="custom/algonetic/html/assets/images/logo/<% $_ %>"><% $_ %></a></td>
+	<td style="text-align:right"><% $inf->{size_kb} %> KB</td>
+	<td style="text-align:right"><% $C->trans_date_short($inf->{mod}) %></td>
+	</tr>
+% }
+</table>
+
+<hr>
+<a href="adm_custom.html?help=1">Help</a>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,21 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+%
+% # -- Main Navigation
+%
+<UL class="menu">
+  <LI><A href="account.html"><% $C->p('account') %></A></LI>
+% if ($C->is_logged_in()) {
+  <LI><A href='#logout' onclick='JavaScript:document.logoutForm.submit()'>Logout <% $C->whoami() %></A></LI>
+% }
+  <LI>
+    <div id="sprachen">
+	<A href="_change_lang.html?lang=de">DE</A>
+	<A href="_change_lang.html?lang=fr">FR</A>
+	<A href="_change_lang.html?lang=en">EN</A></div>
+  </LI>
+</UL>
+
+<form method=post action="/account.html" name="logoutForm"><input type="hidden" name="action" value="logout"></form>

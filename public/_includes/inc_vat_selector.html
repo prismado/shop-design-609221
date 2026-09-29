@@ -1,0 +1,26 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	my $stmt = "SELECT id, `key`, val+0, SPLIT_STR(`key`, '_', 2)+0 FROM config WHERE `key` LIKE 'vat%' AND `key` NOT LIKE '%__explain' ORDER BY 3";
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute();
+</%init>
+<style>
+	select { text-indent: 3px; }
+</style>
+
+&nbsp;&nbsp;<b><abbr title="Product Type <%$args{prod_type}%>">VAT</abbr></b>&nbsp;&nbsp;
+
+<select style="margin-top:4px; width:88px" name="prod_type">
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val, $vat_id) = @{$r};
+%	next unless $vat_id;
+	<option <% $vat_id == $args{prod_type} ? 'selected' : '' %> value="<%$vat_id%>"><%$val%> %</option>
+% }
+</select>&nbsp;&nbsp;&nbsp;&nbsp;
+
+<%doc>
+	__METACLONING__
+</%doc>

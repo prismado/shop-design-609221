@@ -1,0 +1,68 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $UID      = $C->getUID();
+	my $email    = $C->query("select email from users where id=$UID")->[0];
+	my $subject  = $C->query("select subject FROM newsletter WHERE id=$id")->[0];
+	my $settings = $A->get_newsletter_settings();
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+%
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Please confirm</h3>
+  </div>
+%
+  <div class="modal-body" style="padding-top:10px">
+	<h2 style="margin-top:0px; font-weight:bold">Send Newsletter - [ Preview ]</h2>
+	<p>
+		Newsletter ID <%$id%> &middot; <b><%$subject%></b><br><br>
+
+		<big><b>Recipient</b></big> (optional):<br><br>
+
+		(<b><% $email %></b> is assumed if blank)<br><br>
+
+		<input type=text name="email" id="email411240" style="width:97%; padding:10px; font-size:1.0rem;" placeholder="E-Mail">
+	</p>
+
+%	foreach (sort keys %{ $settings }) {
+%		next if /pass/i or /^preview_email$/;
+		&bull; <% $_ %> = <b><% $settings->{$_} %></b><br>
+%	}
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-success" name="bSendPreview" type=submit value="Send">
+  </div>
+%
+</div>
+%
+</form>
+
+<script language="JavaScript">
+	document.querySelector('[data-dismiss="modal"]').blur();
+	setTimeout(function() {
+		document.getElementById('email411240').focus();
+	}, 600);
+</script>
+
+<%doc>
+	__METACLONING__
+</%doc>

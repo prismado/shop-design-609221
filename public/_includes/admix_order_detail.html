@@ -1,0 +1,596 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+
+	# ===============================================================================================================
+	# ===============================================================================================================
+	# End of life -- 15Oct2024
+	# ===============================================================================================================
+	# ===============================================================================================================
+
+
+	my $dbh     = $C->{dbh};
+	my $id      = $C->{CGI}->param('id') || 0;
+	my $action  = $C->{CGI}->param('action') || '';
+	my $debug   = $C->{CGI}->param('debug') + 0;
+	my $add_vat = $C->{CGI}->param('add_vat');
+	   $add_vat = 1; # -- ZZ -- 09Feb2024
+	my $bGenPDF = $C->{CGI}->param('bGenPDF');
+	my $bGenDN  = $C->{CGI}->param('bGenDN');
+	my $bMailBill = $C->{CGI}->param('bMailBill');
+
+	$m->redirect("adm_order.html?id=$id"); # -- 15Oct2024
+
+	my $is_devel  = $C->is_devel();
+	my $UID       = $C->getUID();
+	my $grant_pdf = $C->get_safe_config('GRANT_PDF');
+	my $odat      = $A->get_order($id);
+	my $perma_debug = $C->getSessData('debug');
+
+	my @appmsgs = ();
+	my $order_id = $id;
+	my $order_stmt = $A->get_order_statement(order_id=>$order_id, link_products=>1, add_vat=>$add_vat, debug=>$debug);
+	my $cfg_order_detail = $C->get_safe_property('order_detail', 'sys')+0;
+	(my $merchant_notes_enc = $odat->{merchant_notes}) =~ s/</&lt;/g;
+
+	if ($action eq 'del') {
+		$dbh->do("DELETE FROM orders WHERE id=$id");
+		$dbh->do("DELETE FROM orders_details WHERE order_id=$id");
+		$dbh->do("DELETE FROM orders_products WHERE order_id=$id");
+		$dbh->do("DELETE FROM orders_status   WHERE order_id=$id");
+		$m->redirect('adm_orders.html');
+	}
+	elsif ($action eq 'update_notes') {
+		my $merchant_notes = $C->{CGI}->param('merchant_notes');
+		$dbh->do("delete from orders_details WHERE order_id=$id AND xkey='merchant_notes'");
+		my $res = $A->put_order_detail($id, 'merchant_notes', $merchant_notes);
+		($merchant_notes_enc = $merchant_notes) =~ s/</&lt;/g;
+		if ($res->{rc}) {
+			$m->out("<p>$res->{rc} $res->{errstr}</p>");
+		}
+		else {
+		$m->out(qq~<div class="alert fade in">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+			<strong>Notice</strong> &middot; Merchant notes has been updated
+			</div>~);
+		}
+	}
+	elsif ($action eq 'pdf') {
+		$m->redirect("_create_pdf_order_cust.html?id=$id");
+	}
+	elsif ($action eq 'action') {
+		my $status_id   = $C->{CGI}->param('status_id')   + 0;
+		my $status_dbid = $C->{CGI}->param('status_dbid') + 0;
+		my $res         = $A->order_action(id=>$id, status_id=>$status_id, status_dbid=>$status_dbid, ZZtext=>"N408291-56: Ok");
+		push(@appmsgs, "RC $res->{rc} $res->{msg}");
+	}
+	elsif ($bGenPDF) {
+		foreach ($C->{CGI}->all_parameters) {
+			next unless /^pdf\_.+/;
+			my $val = $C->{CGI}->param($_);
+			$C->saveSessData($_, $val) if length($val);
+		}
+		my $date    = $C->{CGI}->param('otime');
+		my $paid    = $C->{CGI}->param('paid');
+		my $save_as = $C->{CGI}->param('pdf_save_as');
+		my $as_bill = $C->{CGI}->param('generate_as_bill');
+		$paid = 0 if $as_bill;
+		my @b_arr = ();
+		my $ord_items = $A->get_order_items(order_id=>$order_id, show_options=>1);
+		foreach my $row (@{ $ord_items->{item_rows} }) {
+			my %d = ( date=>$date, text=>$row->{title}, quant=>$row->{count}, price=>$row->{unit_price_inc_vat} );
+			# ZZ my %d = ( date=>$date, text=>$row->{title}, quant=>$row->{count}, price=>$row->{unit_price} );
+			push(@b_arr, \%d);
+		}
+		my $bill = $C->create_pdf_bill(
+			cid	      => $ord_items->{x_uid},
+			inv_no	      => $order_id,
+			subject	      => $paid ? "Beleg Auftrag Nr. $order_id / Zahlung erhalten" : "Rechnung Nr. $order_id",
+			subtitle      => "Betrifft	(142)Online-Einkauf auf Auctionline.ch",
+			subtitle_2    => "Ihre Kunden-Nr.	(142)$ord_items->{x_uid}",
+			add_info      => "Rechnung Nr. $id\-" . $C->now(10),
+			bill_data     => \@b_arr,
+			vat_rate      => $odat->{vat_rate} * 0,
+			vat_inc       => 1, # -- 09Feb2024
+			vat_amount    => $order_stmt->{vat_amount}, # -- 09Feb2024
+			special_vat   => 0,
+			# special_vat   => $C->{CGI}->param('recalc_vat') ? 0 : $ord_items->{vat_amount},
+			term_days     => 10,
+			alt_col	      => $#b_arr < 2 ? 0 : 1,
+			valid_as      => $paid ? 'receipt' : 'invoice',
+			save_as       => $save_as,
+			debug	      => $C->{CGI}->param('debug')
+		);
+		my $bill_line_count = $#b_arr + 1;
+		$C->log(msg=>"Gen PDF Order-ID $id by UID $UID: $bill->{bill_tab}->{gtot}, $bill_line_count lines, rc=$bill->{rc}", importance=>2,
+			service=>'admix_order_detail');
+		(my $save_as_short = $save_as) =~ s/^upload\///;
+		$A->set_order_status($order_id, 100,
+			"QR Bill created: $save_as_short / $C->{CONFIG}->{default_curr} $bill->{bill_tab}->{gtot}", 'Admin UI');
+	}
+	elsif ($bGenDN) {
+		foreach ($C->{CGI}->all_parameters) {
+			next unless /^pdf\_.+/;
+			my $val = $C->{CGI}->param($_);
+			$C->saveSessData($_, $val) if length($val);
+		}
+		my $date    = $C->{CGI}->param('otime');
+		my $save_as = $C->{CGI}->param('pdf_save_as');
+		my @b_arr = ();
+		my $ord_items = $A->get_order_items(order_id=>$order_id, show_options=>1);
+		foreach my $row (@{ $ord_items->{item_rows} }) {
+			# -- $row->{prod_id}
+			my $art_no = $A->get_product_art_no(id=>$row->{prod_id})->{art_no};
+			my %d = ( date=>$row->{art_no}, art_no=>$art_no, text=>$row->{title}, quant=>$row->{count}, price=>$row->{unit_price_inc_vat} );
+			# XXX my %d = ( date=>$row->{art_no}, art_no=>substr($row->{art_no}, 0, 11), text=>$row->{title}, quant=>$row->{count}, price=>$row->{unit_price_inc_vat} );
+			push(@b_arr, \%d);
+		}
+		my $date_ch_short = $C->trans_date_short_nt($date);
+		my $x_subj   = "Auftrag $order_id vom $date_ch_short";
+		   $x_subj   = "Auftrag $odat->{x_cust_order_ref} vom $date_ch_short" if $odat->{x_order_id};
+		my $sub_info = $odat->{x_order_id} ? "SSG Nr. $order_id" : '';
+		my $legal_note = $odat->{x_order_id} ? $C->txt('delivery_legal_note_edi', 'de') : $C->txt('delivery_legal_note', 'de');
+
+		my $bill = $C->create_pdf_delivery_note(
+			cid	      => $ord_items->{x_uid},
+			inv_no	      => $order_id,
+			subject	      => "Lieferschein $x_subj",
+			subtitle      => "Betrifft	(142)Online-Einkauf $sub_info",
+			subtitle_2    => "Ihre Kunden-Nr.	(142)$ord_items->{x_uid}",
+			legal_note    => $legal_note,
+			add_info      => "LS Nr. $id\-" . $C->now(10),
+			bill_data     => \@b_arr,
+			vat_rate      => $odat->{vat_rate} * 0,
+			vat_inc       => 1, # -- 09Feb2024
+			vat_amount    => $order_stmt->{vat_amount}, # -- 09Feb2024
+			alt_col	      => $#b_arr < 2 ? 0 : 1,
+			save_as       => $save_as,
+			debug	      => $C->{CGI}->param('debug')
+		);
+		(my $save_as_short = $save_as) =~ s/^upload\///;
+		$A->set_order_status($order_id, 104, "Delivery Note created: $save_as_short", 'Admin UI');
+	}
+	elsif ($bMailBill) {
+		my $doc     = $C->{CGI}->param('doc');
+		my $mailto  = $C->{CGI}->param('mailto') || 'admin@eshop.pub';
+		my $pdfconf = $C->load_config(table=>'pdf_config');
+
+		my $inv_no = $doc =~ /qr\_bill\_\d+\_(\d+)\.pdf$/ ? "$order_id\-$1" : $order_id;
+
+		# my $res = $A->mail_invoice(
+		# 	id=>$order_id, inv_no=>$inv_no, to=>$mailto, att=>$doc, lang=>$odat->{lang},
+		# 	subject => "Rechnung Nr. $inv_no - $pdfconf->{company}"
+		# );
+
+		my $res = $C->call_batch(call=>
+			qq~\\\$A->mail_invoice(to=>'$mailto', subject=>'Rechnung Nr. $inv_no - $pdfconf->{company}', id=>$order_id, att=>'$doc', lang=>'$odat->{lang}');~
+		);
+
+		push(@appmsgs, "Mail ($odat->{lang}) sent: rc=$res->{rc}");
+	}
+	elsif ($action eq 'storno') {
+		$A->cancel_order(id=>$id);
+	}
+	elsif ($C->{CGI}->param('del_order_item')) {
+		my $det_id = $C->{CGI}->param('del_order_item');
+		$dbh->do("DELETE FROM orders_products WHERE id=$det_id");
+		$m->out("X Deleted: ID $det_id<br>");
+	}
+
+
+	# ================================================================================================
+	my $odat2 = $A->get_order_prepare(order_id=>$order_id);
+	# ================================================================================================
+
+	my $vat_list = $A->get_vat_list(order_id=>$order_id, check_env=>1);
+	my $currency = $C->{CONFIG}->{default_curr};
+
+	my ($sid, $uid, $pay_meth, $instime, $amount_incl_vat, $status) = @{$C->query(qq~
+		SELECT 	sid, uid, pay_meth, instime, amount_incl_vat, status 
+		FROM 	orders 
+		WHERE 	id=$id~)};
+
+	my $camp_comp_name = $odat->{campaign_company_id} ?
+		$C->query("select name FROM companies WHERE id=$odat->{campaign_company_id}")->[0] : '';
+
+	my %pay_meth_hr = (
+		1=>'cc', 2=>'cod', 3=>'bill', 4=>'paypal', 5=>'postcard', 6=>'prepay', 7=>'postcard direct', 9=>'2Checkout',
+		10=>'PCI 3', 11=>'TWINT', 14=>'Saferpay', 15=>'TWINT (SIX)', 16=>'Payrexx AG'
+	);
+	$pay_meth_hr{$pay_meth} ||= "* $pay_meth *";
+	my %status_hr = ( 1=>'New', 3=>'STORNO', 4=>'Okay' );
+
+	my %ship_meth_hr_map = (
+		std => 'Standard Shipping',
+		box => 'Special / Gift Box',
+		pic => 'Pickup',
+		pi2 => 'Pickup #2',
+		postpac_prio => 'PostPac Priority',
+		exp => 'Express'
+	);
+
+	my %pay_meth_hr_map = (
+		inv => $C->prop('invoice'),
+		pre => $C->prop('prepay'),
+		pp  => 'PayPal',
+		six => $C->prop('creditcard')
+	);
+
+	my $exe;
+	if ($cfg_order_detail) {
+		$exe = $C->exec(comp_file => '__exec_foo.html', id=>$id, uid=>$uid, pay_meth=>$pay_meth, C=>$C);
+	}
+	else {
+		my %empty = ();
+		$exe = \%empty;
+	}
+
+	my $o_stat = $A->get_order_status(id=>$id);
+</%init>
+<% $C->bootstrap_alert(qq~<b>HINWEIS</b> &middot; <a href="/adm_order.html?id=$id">Neue Version</a>~, 'warning', 'margin-top:25px;') %><br><br>
+
+<script type="text/javascript">document.title="Order-ID <%$id%> <% $C->{CONFIG}->{site_title} %>";
+function modal(id) {
+	$('#ajx_order_detail').load('_includes/ajx_modal_del_order.html?id=' + id);
+}
+function payment_info(id) {
+	$('#ajx_order_detail').load('_includes/ajx_modal_payment_info.html?id=' + id);
+}
+function qr_invoice(id) {
+%	if ($o_stat->{paid}) {
+		if (confirm('Diese Bestellung ist bereits bezahlt!\n\nWirklich eine QR-Rechnung erstellen?\n\nEmpfehlung: Abbrechen und Lieferschein erstellen\nOder: [ Ok ] klicken für QR-Rechnung')) {
+			$('#ajx_order_detail').load('_includes/ajx_modal_qr_invoice.html?id=' + id);
+		}
+%	}
+%	else {
+	$('#ajx_order_detail').load('_includes/ajx_modal_qr_invoice.html?id=' + id);
+%	}
+}
+function delivery_note(id) {
+% #	alert('In Bearbeitung');
+	$('#ajx_order_detail').load('_includes/ajx_modal_delivery_note.html?id=' + id);
+}
+function show_pdf(id) {
+	$('#ajx_order_detail').load('_includes/ajx_modal_show_pdf.html?id=' + id);
+}
+function order_fix(id) {
+	$('#ajx_order_detail').load('_includes/ajx_modal_order_fix.html?id=' + id);
+}
+function add_history(id) {
+	$('#ajx_order_detail').load('_includes/ajx_modal_order_add_hist.html?id=' + id);
+}
+function confirm_remove_order() {
+	if (confirm('+++ Okay to remove Order-ID <% $id %>? +++')) {
+		document.location='admix.html?func=orders&id=<% $id %>&action=del';
+	}
+}
+% if ($bGenPDF) {
+	$(document).ready(function() {
+		show_pdf(<% $id %>);
+	});
+% }
+% if ($bGenDN) {
+	$(document).ready(function() {
+		show_pdf(<% $id %>);
+	});
+% }
+</script>
+<div style='margin-top:10px' class='pull-right'>
+% if ($is_devel) {
+%	if ($debug) {
+		<a href="admix.html?func=orders&id=<% $order_id %>">Debug Off</a>
+%	}
+%	else {
+		<a href="/adx/dev-get-order-items.html?order-id=<% $id %>">Dump Order</a>
+		&bull; <a href="admix.html?func=orders&id=<% $order_id %>&debug=1">Debug O.</a>
+%	}
+	&ndash;
+% }
+Pay Method <b><%$pay_meth%> &middot; <% ucfirst $pay_meth_hr{$pay_meth} %></b> &middot; <b><%$C->trans_date_short($instime)%></b>
+&middot; <%$status_hr{$status} || "* $status *"%>
+</div>
+
+<h2>Order-ID <%$id%>
+% if ($odat2->{bx_document_nr}) {
+	/ <a target="_blank"
+		href="https://office.bexio.com/index.php/kb_order/show/id/<% $odat2->{bx_id} %>"><% $odat2->{bx_document_nr} %>
+			<i class="icon-external-link"></i></a>
+% }
+% if ($debug) {
+	&ndash; <a href="_debug_order.html?id=<%$id%>&debug=<%$debug%>">Debug Order</a>
+% }
+</h2>
+
+% if ($odat->{_rc}) {
+	*** Return Code <%$odat->{_rc}%> &ndash; <%$odat->{_msg}%> ***<br><br>
+% }
+
+% if ($odat->{campaign_company_id}) {
+	<a href='admix.html?func=companies&edit=<% $odat->{campaign_company_id} %>'>Pro Zone (<% $camp_comp_name %>)</a><br><br>
+% }
+
+<div style="background-color:#f8f8f8" class="well">
+	<div class="pull-right">
+		<form name="notes_form" method="post">
+		<input type=hidden name="func" value="orders">
+		<input type=hidden name="id" value="<%$id%>">
+		<input type=hidden name="action" value="update_notes">
+		<textarea name="merchant_notes" type=text style="width:510px" rows="5"
+			placeholder="Merchant Notes"><% $merchant_notes_enc %></textarea>
+		</form>
+	</div>
+
+  <table>
+  <tr>
+	<th style="text-align:left; padding-bottom:10px">Invoice</th>
+	<th style="text-align:left; padding-bottom:10px; padding-left:111px">Delivery</th>
+  </tr>
+  <tr valign="top"><td>
+%	if ($C->trim($odat->{company})) {
+		<% $odat->{company} %><br>
+%	}
+%	if ($odat->{gender} < 3) {
+		<% $C->prop($odat->{gender} == 2 ? 'female' : 'male') %><br>
+%	}
+	<a href="user.html?id=<%$odat->{uid}%>"><%$odat->{firstname}%> <%$C->trim($odat->{lastname}) || 'n.a.'%></a><br>
+	<% $odat->{street} || 'N/A' %><br>
+	<% $odat->{country} %>-<% $odat->{zip} %> <% $odat->{city} || 'N/A' %><br><br>
+
+	<% $odat->{email} %>
+  </td>
+  <td style="padding-left:111px">
+%	if ($C->trim($odat->{deliv_company})) {
+		<% $odat->{deliv_company} %><br>
+		<% $odat->{dept_d} ? "$odat->{dept_d}<br>" : '' %>
+%	}
+%	else {
+		<% $C->prop($odat->{deliv_gender} == 2 ? 'female' : 'male') %><br>
+%	}
+	<a href="user.html?id=<%$odat->{uid}%>"><%$odat->{deliv_firstname}%> <%$C->trim($odat->{deliv_lastname}) || 'n.a.'%></a><br>
+	<% $odat->{deliv_street} || 'N/A' %><br>
+	<% $odat->{deliv_country} %>-<% $odat->{deliv_zip} %> <% $odat->{deliv_city} || 'N/A' %>
+  </td></tr></table>
+
+</div>
+
+<style>
+	.row_small {
+		line-height:180% !important;
+	}
+	.td_410051 {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width:280px;
+	}
+	.btn-purple {
+		color: white !important;
+		background-color: #573999 !important;
+		background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#919191), to(#573999));
+	}
+</style>
+
+<table class='mytable table-hover'>
+<% ${$order_stmt->{out}} %>
+</table>
+
+<table class='table table-hover'>
+% if ($odat2->{discount_amount_v2}+0) {
+	<tr>
+	<td>Discount</td>
+	<td style="text-align:right">-<% $odat2->{discount_amount_v2} %> <% $currency %></td>
+	</tr>
+% }
+
+% my $shipping_tot = $odat->{'XX shipping'};
+
+% if ($odat->{surcharge} > 0.0) {
+	<tr><td>Minimum Quantity <a href="adm_pay_methods.html">Surcharge</a></td><td style="text-align:right"><%$odat->{surcharge}%> CHF</td></tr>
+% }
+</table>
+
+
+% if ($odat->{remarks}) {
+<div class="alert  fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+		
+	<b>Customer Remarks</b> <% $odat->{remarks} %>
+</div>
+% }
+
+
+<form>
+% unless ($status == 3 or $odat->{_rc} == 2) {
+	<input type=button onclick="JavaScript:document.notes_form.submit()" class="btn btn-primary" value="Update">
+	<input type=button onclick="payment_info(<%$id%>)" class="btn btn-success" value="Payment Info">
+%	unless ($status == 1) {
+		<input type=button onclick="qr_invoice(<% $id %>)" class="btn btn-inverse" value="QR Invoice">
+		<input type=button onclick="delivery_note(<% $id %>)" class="btn btn-purple" value="Delivery N.">
+%	}
+	<input type=button onclick="modal(<%$id%>)" class="btn btn-warning" value="Storno">
+%     if ($grant_pdf) {
+	<div class="pull-right" style="margin-left:10px">
+	<ul class="nav">
+		<li style='font-size:18px'><a
+		href="_create_pdf_order.html?id=<%$id%>&key=<%$C->{CONFIG}->{md5_secret}%>"><i class="icon-print"></i> <span>PDF</span></a></li>
+	</ul>
+	</div>
+%     }
+	<div class="pull-right">
+%		if ($add_vat) {
+			<a href="admix.html?func=orders&id=<% $id %>">Hide VAT</a>
+%		}
+%		else {
+			<a href="admix.html?func=orders&id=<% $id %>&add_vat=1">Add VAT</a>
+%		}
+	</div>
+% }
+
+<input type=button onclick='document.location="adm_orders.html"' class="btn btn-info" value='Back'>
+
+% if ($is_devel or $debug) {
+	<input class='btn btn-danger' type=button onclick="confirm_remove_order()" value='Delete...'>
+% }
+</form>
+
+% if ($status == 3) {
+%	my $by_uid  = $odat->{cancel_uid} + 0;
+%	my $by_user = $C->query("select uname from users where id=$odat->{cancel_uid}")->[0] || '';
+%	my $time    = $odat->{cancel_time};
+%	   $time    = 'at ' . $C->trans_date_short($time) if $time;
+	<% $C->bootstrap_alert("&#128473; Storno by UID $by_uid $by_user $time", 'warning') %><br />
+% }
+
+<a href='sendmail.html?order_id=<% $id %>'>Send E-Mail</a> ... &mdash;
+	<a href='adm_order_detail.html?id=<%$id%>'>Merchant E-Mail</a> &mdash;
+	<a href='adm_order_detail_cust.html?id=<% $id %><% $debug ? '&debug=1' : ''%>'>Customer View</a>
+
+% if (@appmsgs) {
+	<% $C->bootstrap_alert((join "<br>\n", @appmsgs), 'success') %>
+% }
+<br />
+<& adm_inc_order_status.html, id=>$id, o_stat=>$o_stat, odat=>$odat, C=>$C, A=>$A, is_devel=>$is_devel, perma_debug=>$perma_debug &>
+
+% if ($cfg_order_detail) {
+	<br />
+	<% $exe->{out} %><br />
+%	if ($debug) {
+%	    foreach (keys %{$exe}) {
+%		next if $_ eq 'out';
+		X -- <b><% $_ %></b> = <% $exe->{$_} %><br>
+%	    }
+%	}
+% }
+
+<div class="pull-right">
+%  if ($is_devel) {
+	Perma Debug: <a href="_debug.html">Switch <% $perma_debug ? 'Off' : 'On' %></a>
+%	if ($perma_debug) {
+		&rarr; <a href="adm_db_edit.html?table=orders&wcl=id%3D<% $id %>">DB Edit</a>
+%	}
+	<input type=button onclick="show_pdf(<% $id %>)" class="btn btn-inverse" value="XX QR Invoice">
+	<a href='#' onclick="order_fix(<%$id%>)">Correction</a> (Dev) &mdash;
+	[ <a href="adm_log.html?importance=5&sid=<% $odat->{sid} %>&order_id=<% $id %>&debug=1">Order Log</a> ] &mdash;
+%  }
+	<a href="admix.html?func=orders&show_details=1&id=<%$id%>">Details</a>
+</div>
+
+% if ($debug) {
+	<br>
+	<% $C->html_debug("\$odat2 = \$A->get_order_prepare(order_id=>$order_id);") %>
+%	foreach (sort keys %{$odat2}) {
+%		next unless ($_ =~ /tax/ or $_ =~ /ship/ or $_ =~ /total/i or $_ =~ /version/i);
+		&bull; [odat2] &ndash; <b><% $_ %></b> = <% $odat2->{$_} %><br>
+%	}
+	<br />
+	<form method="post" action="_update_order.html">
+	<input type="hidden" name="id"     value="<% $id %>">
+	<input type="hidden" name="action" value="update_vat">
+	New VAT Rate: <input type=text name="new_vat_rate" value="<% $odat->{vat_rate} %>">
+	<input type="submit" value="Update">
+	</form>
+
+	Dev <a href="_callback/?payment_host=<%$C->{CONFIG}->{HTTP_HOST}%>&refno=<%$id%>&x=success">Complete Order</a><br>
+
+<script type="text/javascript">
+	function confirm_del(id) {
+		if (confirm('OK to remove ID ' + id)) {
+			document.location="admix.html?func=orders&id=<%$id%>&del_order_item=" + id;
+		}
+	}
+</script>
+	<table class="mytable table-hover">
+%	foreach (@{$odat->{_products}}) {
+%		my ($prod_id, $count, $price, $id) = split /\t/;
+%		my $d    = $A->get_product($prod_id);
+%		my $dopt = $A->get_opt_from_product($prod_id);
+%		my $description = substr($d->{description}, 0, 55) . '...';
+		<tr valign="top"><td>&bull; [Ref <%$id%>]</td><td style='text-align:right; font-weight:bold'><%$count%> x</td>
+		<td><b><%$description%></b><br>
+		<small>
+%		foreach (keys %{$odat}) {
+%			next unless /^prod_id_$prod_id\_(.+)/;
+			&bull; <%$1%> = <%$odat->{$_}%><br>
+%		}
+%		foreach (keys %{$dopt}) {
+%			my $opt_desc = $C->query("select label from options_desc where option_id=$_ and lang='de'")->[0];
+			&bull; Option <a href="admix.html?func=options&id=<%$_%>">ID <%$_%></a> <%$opt_desc%><br>
+%		}
+%		foreach (keys %{$d}) {
+% 			next unless ($_ eq 'cat_ids' or $_ eq 'instime' or $_ eq 'feat' or $_ eq 'condition');
+%			if ($_ eq 'feat') {
+%				my $f = $d->{$_};
+%				foreach (keys %{$f}) {
+					&bull; <%$_%><br>
+%				}
+%			}
+%			else {
+				&bull; <%$_%> = <%$d->{$_}%><br>
+%			}
+%		}
+		</small>
+		</td>
+		<td style='text-align:right'><%sprintf('%.2f', $price)%> CHF</td>
+		<td style='text-align:right'><a href="JavaScript:confirm_del(<%$id%>)"><i style='color:red'
+			class="icon-remove"></i></a></td>
+		<tr>
+%	}
+	</table><br>
+% 	foreach (sort @{$odat->{_products}}) {
+%		my ($prod_id, $count, $price, $id) = split /\t/;
+		-- <%$count%> x Product ID <%$prod_id%>: <%sprintf('%.2f', $price)%> / Orders Product ID <%$id%><br>
+%	}
+	<br>
+% }
+% # =====================================================================================================================
+
+% if ($C->{CGI}->param('show_details')) {
+	<table class="mytable table-hover">
+% 	foreach (sort keys %{$odat}) {
+%		next if $_ =~ /^rpc / or $_ eq '_prod_feature' or $_ eq '_products';
+%		next if /^XX/ or /^\_/ or /^deliv\_/ or /^cb\_/ or $_ eq 'city' or $_ eq 'country';
+%		if ($C->trim($odat->{$_})) {
+		<tr><td>
+%			if ($debug) {
+				<a href="adm_edit_order_detail.html?id=<%$id%>&k=<%$_%>">E</a> -
+%			}
+			<%$_%>
+		</td><td><b><%$odat->{$_}%></b>
+%		if (/^prod_id_\d+_(\d+)$/) {
+			&rarr; Option <a href="admix.html?func=options&id=<%$1%>"><%$1%></a>
+%		}
+		</td></tr>
+%		}
+% 	}
+	</table><br>
+	<table class=mytable>
+% 	foreach (sort keys %{$odat->{_prod_feature}}) {
+		<tr><td>ID <%$_%></td><td><%$odat->{_prod_feature}->{$_}%></td></tr>
+%	}
+	</table><br>
+% 	foreach (sort keys %{$odat}) {
+%		next unless /^rpc /;
+		&bull; [rpc] <b><% $_ %></b> = <% $odat->{$_} %><br>
+% 	}
+% }
+
+<div id='ajx_order_detail'></div>
+
+% # -- <!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3 id="myModalLabel">Modal header</h3>
+	</div>
+	<div class="modal-body"><p>One fine body…</p></div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		<button class="btn btn-primary">Save changes</button>
+	</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

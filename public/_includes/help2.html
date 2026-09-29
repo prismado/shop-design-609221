@@ -1,0 +1,52 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+<h2>Help</h2>
+
+<a href="doc/Doku_Produkte_Erfassung.pdf"><span style='font-size:18px; color:#458EB2'
+	class='icon-file'></span> Produkte-Erfassung <small>(PDF)</small></a><br>
+
+% # XXX <a href="doc/color_lenses.html"><span style='font-size:18px; color:#458EB2'
+% # XXX	class='icon-file'></span> Farblinsen-Erfassung <small>(HTML)</small></a><br>
+
+<hr style="border-top:1px dotted #b0b0b0;color:#b0b0b0;background-color:#fff;height:1px;width:100%;" />
+
+<table cellspacing=0 cellpadding=0 border=0 align=center style='width:100%'>
+<tr valign=top><td>
+	<table align=center id='table_list' border=0 cellspacing=10 style='width:100%'>
+
+	<& _mini_main_func2.html, label => 'Orders', icon => 'icon-shopping-cart',
+		link => 'adm_orders.html', desc => 'List orders' &>
+
+	<& _mini_main_func2.html, label => 'Customers', icon => 'icon-user',
+		link => 'customers.html', desc => 'List and search customers' &>
+
+	<& _mini_main_func2.html, label => 'Shipping', icon => 'icon-truck',
+		link => 'adm_shipping.html', desc => 'Configure shipping costs' &>
+	</table>
+	</td>
+
+<td>&nbsp;</td>
+
+	<td>
+	<table align=center id='table_list' border=0 cellspacing=10 style='width:100%'>
+
+	<& _mini_main_func2.html, label => 'Special Functions', icon => 'icon-cogs',
+		link => 'adm_special.html', desc =>
+			'Special functions and system settings.<br><a href="admix.html?func=options">Options / Features</a>' &>
+
+	<& _mini_main_func2.html, label => 'Kategorien', icon => 'icon-sitemap',
+		link => 'adm_categs.html', desc => 'Create, update, delete categories' &>
+
+	<& _mini_main_func2.html, label => 'Payment', icon => 'icon-money',
+		link => 'adm_pay_methods.html', desc => 'Define payment options' &>
+
+	</table>
+	</td>
+
+</table>
+
+% unless ($C->is_admin()) {
+	<table id='table_list2'></table>
+% }

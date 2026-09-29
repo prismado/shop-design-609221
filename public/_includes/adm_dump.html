@@ -1,0 +1,70 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $empty = '';
+	my $data;
+	my $err = \$empty;
+
+	if ($args{action} eq 'dump') {
+		$err  = $C->slurp_file("/tmp/zz_trash_$args{table}.err", "unlink=1");
+		$data = $C->slurp_file("/tmp/zz_trash_$args{table}.sql", "encode_amp=1");
+	}
+	elsif ($args{action} eq 'restore-now') {
+		$err = $C->slurp_file("/tmp/zz_trash_$args{table}.err", "unlink=1");
+	}
+</%init>
+<div style="margin-top:20px" class="pull-right">
+	Host: <% $C->getOwnHostname() %>
+</div>
+% if ($args{action} =~ /^restore/) {
+	<h2>Restore Table</h2>
+% }
+% else {
+	<h2><i class="icon-save"></i> Dump Table</h2>
+% }
+
+% if (${$err}) {
+	<% $C->bootstrap_alert("<b>ERR</b> ${$err}", 'danger') %>
+% }
+<table class='table'>
+
+<tr>
+	<td><% $args{action} %></td>
+	<td><% $args{table} %></td>
+</tr>
+
+</table>
+
+<form method="post">
+<input type=hidden name=action value="restore-now">
+<input type=hidden name=table  value="<% $args{table} %>">
+
+% unless ($args{action} eq 'restore-now') {
+<textarea name="data" rows="25" style="width:100%"><% ${$data} %></textarea>
+% # <textarea name="data" rows="25" style="width:100%"><% $C->utf2iso(${$data}) %></textarea>
+
+%	if ($args{action} eq 'restore') {
+		<input type="submit" class="btn btn-primary" value="Import">
+%	}
+% }
+
+<input type="button" class="btn" value="Back" onclick="JavaScript:history.go(-1)">
+
+</form>
+
+% if ($args{action} eq 'restore') {
+	Maybe you want to <a href="adm_dump.html?action=dump&table=<%$args{table}%>">save the current data</a> before importing?<br>
+% }
+
+% if ($args{action} eq 'restore-now' && !${$err}) {
+	<% $C->bootstrap_alert("<b>Success!</b> Data of &laquo;$args{table}&raquo; restored", 'success') %>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,95 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $this = $C->this();
+	my $cgi = $C->{CGI};
+	if ($cgi->param('bAdd')) {
+		my $errstr = '';
+		$C->{dbh}->do("insert into newsletter (status, sender_email, sender_name) values (1, '$C->{CONFIG}->{order_email}', 'Sender')")
+			or ($errstr=$DBI::errstr);
+		if ($errstr) {
+			$m->out("ERROR $errstr<br>");
+		}
+		else {
+			my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+			$m->redirect("adm_edit_newsletter.html?id=$last_id");
+		}
+	}
+</%init>
+<div class="pull-right">
+
+	<button style="margin-top:10px; margin-right:5px" onclick='document.location="adm_newsletter_settings.html"'
+		class="btn btn-warning btn-mini"><i class="icon-cog"></i> Settings</button>
+
+	<button style='margin-top:10px; margin-right:5px' class="btn btn-success btn-mini"
+		onclick='document.location="adm_newsletter.html?bAdd=1"'><i class="icon-plus"></i></button>
+</div>
+<h2><span style='font-size:30px; margin-right:5px' class="icon-envelope-alt pull-left text-info"></span>Newsletter</h2>
+
+<div id="<% $this %>">
+
+	<style type="text/css" media="screen">
+		@import "DataTables-1.9.1/media/css/demo_table_jui.css";
+		@import "DataTables-1.9.1/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+		/*
+		 * Override styles needed due to the mix of three different CSS sources! For proper examples
+		 * please see the themes example in the 'Examples' section of this site
+		 */
+		.dataTables_info { padding-top: 0; }
+		.dataTables_paginate { padding-top: 0; }
+		.css_right { float: right; }
+		#example_wrapper .fg-toolbar { font-size: 0.8em }
+		#theme_links span { float: left; padding: 2px 10px; }
+		table.dataTable tr.odd  { background-color: #e8edf5; line-height:2.2em }
+		table.dataTable tr.even { background-color: #d3dcec; line-height:2.2em }
+		table.dataTable td.sorting_1 { background-color: #c2d2eb; }
+	</style>
+		
+	<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#example').dataTable( {
+				"bJQueryUI": true,
+				"sPaginationType": "full_numbers",
+				"iDisplayLength": 25,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "_includes/_server_processing_newsletter.html"
+			} );
+
+			var oTable = $('#example').dataTable();
+			oTable.fnSort( [ [0,'desc'] ] );
+		} );
+	</script>
+
+<div id="fw_container">
+<div id="fw_content">
+
+<div style="width:100%; margin-top: 1em; margin-left:auto; margin-right:auto;">
+	
+<div id="theme_links" class="fg-toolbar ui-widget-header ui-corner-all fg-buttonset fg-buttonset-multi">
+	<div class="css_clear"></div>
+</div>
+
+<table class='mytable table-hover' id='example'>
+<thead>
+<tr style='line-height:2.2em'>
+	<th style="width:75px">ID</th>
+	<th style="width:430px">Subject</th>
+	<th style="width:125px">Last Mod.</th>
+	<th style="width:145px">by User</th>
+	<th stylx="width:82px">Sender</th>
+	<th style="width:80px">Status</th>
+	<th style="width:235px">Info</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

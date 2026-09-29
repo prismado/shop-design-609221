@@ -1,0 +1,87 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cat_id = $args{cat_id};
+	my $col    = $args{col};
+
+	if ($col) {
+		my $status = $C->getSessData("print_items_$col") == 2 ? 1 : 2;
+		$C->saveSessData("print_items_$col", $status);
+	}
+
+	my $sth = $C->{dbh}->prepare(qq~
+			select	id, art_no, price, title, `description`, count, `condition`, instime
+			from	vproducts_1_02
+			where	cat_id=$cat_id and lang='de'
+	~);
+	$sth->execute();
+
+	my $settings = $C->get_sess_array_hash('print_items', 'ASC');
+</%init>
+<div style="margin-top:10px" class="pull-right">
+<form method="post" target="_blank" action="adm_print_items_pr.html">
+	<input type=hidden name=cat_id value="<% $cat_id %>">
+	<input type=submit class="btn btn-primary" name=bPrint value="Print">
+	<input class="btn" type=button onclick="document.location='admix.html?func=items_expand&id=<%$cat_id%>'" value="Back">
+</form>
+</div>
+
+<h2>Items: <%$args{cat_name}%></h2>
+
+<table class="table">
+<thead>
+	<tr>
+	<th>Product</th>
+	<th style="text-align:right; padding-right:10px">ID</th>
+	<th>Art No</th>
+	<th style="text-align:right; padding-right:10px">Count</th>
+	<th style="text-align:center">Created</th>
+	<th>Description</th>
+	<th style="text-align:right">Price</th>
+	</tr>
+
+	<tr style="font-size:20px">
+	<td><a href="adm_print_items.html?col=title&cat_id=<%$cat_id%>"><i 
+		class="icon-eye-<% $settings->{print_items_title} == 2 ? 'close' : 'open'%>"></i></a></td>
+	<td style="text-align:right; padding-right:10px"><a href="adm_print_items.html?col=id&cat_id=<%$cat_id%>"><i
+		class="icon-eye-<% $settings->{print_items_id} == 2 ? 'close' : 'open'%>"></i></a></td>
+	<td><a href="adm_print_items.html?col=art_no&cat_id=<%$cat_id%>"><i
+		class="icon-eye-<% $settings->{print_items_art_no} == 2 ? 'close' : 'open'%>"></i></a></td>
+	<td style="text-align:right; padding-right:10px"><a href="adm_print_items.html?col=count&cat_id=<%$cat_id%>"><i 
+		class="icon-eye-<% $settings->{print_items_count} == 2 ? 'close' : 'open'%>"></i></a></td>
+	<td style="text-align:center"><a href="adm_print_items.html?col=instime&cat_id=<%$cat_id%>"><i
+		class="icon-eye-<% $settings->{print_items_instime} == 2 ? 'close' : 'open'%>"></i></a></td>
+	<td><a href="adm_print_items.html?col=description&cat_id=<%$cat_id%>"><i
+		class="icon-eye-<% $settings->{print_items_description} == 2 ? 'close' : 'open'%>"></i></a></td>
+	<td style="text-align:right; padding-right:10px"><a href="adm_print_items.html?col=price&cat_id=<%$cat_id%>"><i 
+		class="icon-eye-<% $settings->{print_items_price} == 2 ? 'close' : 'open'%>"></i></a></td>
+	</tr>
+</thead>
+<tbody>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $art_no, $price, $title, $desc, $count, $cont, $instime) = @{$r};
+	<tr>
+	<td style="font-weight:bold"><%$title%></td>
+	<td style="text-align:right; padding-right:10px"><%$id%></td>
+	<td><%$art_no%></td>
+	<td style="text-align:right; padding-right:10px"><%$count%></td>
+	<td style="text-align:center"><% (split / /, $C->trans_date_short($instime))[0] %></td>
+	<td><%$desc%></td>
+	<td nowrap style="text-align:right"><% sprintf('%.2f', $price) %> <% $C->{CONFIG}->{default_curr} %></td>
+	</tr>
+% }
+</tbody>
+</table>
+
+<form method="post" target="_blank" action="adm_print_items_pr.html">
+	<input type=hidden name=cat_id value="<% $cat_id %>">
+	<input type=submit class="btn btn-primary" name=bPrint value="Print">
+	<input class="btn" type=button onclick="document.location='admix.html?func=items_expand&id=<%$cat_id%>'" value="Back">
+</form>
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,110 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+
+	$C->redir('/signin.html') unless $C->is_logged_in();
+
+	if ($cgi->param('bAdd')) {
+		my $uname     = $cgi->param('uname');
+		my $firstname = $cgi->param('firstname');
+		my $lastname  = $cgi->param('lastname');
+		if ($uname && $firstname && $lastname) {
+			$C->{dbh}->do(qq~INSERT users (uname, pass)
+						VALUES ('$uname', 'test')~)
+				or $m->out("ERROR $DBI::errstr<br>");
+			my $uid = $C->query('SELECT MAX(id) FROM users')->[0];
+			$C->{dbh}->do(qq~INSERT INTO users_addr (user_id, firstname, lastname, type)
+						VALUES ($uid, '$firstname', '$lastname', 1)~)
+				or $m->out("ERROR $DBI::errstr<br>");
+		}
+	}
+	elsif ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("delete FROM users WHERE id=$id");
+	}
+
+	my $sth = $C->{dbh}->prepare("select id, uname, is_admin, is_devel, tstamp FROM users ORDER BY uname");
+	   $sth->execute();
+
+	my $LABEL_ADMIN = '<span class="label label-info">Admin</span>';
+	my $LABEL_USER  = '<span class="label label-success">User</span>';
+	my $LABEL_DEVEL = '<span class="label label-important">Devel</span>';
+</%init>
+<script language=JavaScript>
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_user.html?id=' + id);
+	}
+</script>
+
+% if ($C->is_devel()) {
+	X <a href="customers.html">New</a><br>
+% }
+
+% if ($cgi->param('bAddDept')) {
+<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<strong>Holy guacamole!</strong> This is an alert for your awesome web application.
+</div>
+% }
+
+<span class="cards">
+<h2><span style='font-size:30px; margin-right:5px' class="icon-group pull-left text-info"></span>Users</h2>
+</span>
+
+<div id='ajx_1'></div>
+% if ($cgi->param('bAdd')) {
+	Initial user password of <%$cgi->param('uname')%> is &laquo;test&raquo;.
+	<br><br>
+% }
+<table class='table'>
+<thead>
+    <tr>
+      <th><button class="btn" type="button" onclick="add_dept()">+</button></th>
+      <th>User Name</th>
+      <th>Update</th>
+	<th nowrap>First Name</th>
+	<th>Last Name</th>
+	<th>E-Mail</th>
+      <th style='text-align:center'>Level</th>
+    </tr>
+</thead>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $name, $is_admin, $is_devel, $tstamp) = @{$r};
+%	my $uinf = $C->get_user_info($id);
+	<tr><td><a href="user.html?id=<%$id%>"><i class="icon-share"></i></a></td> 
+	<td nowrap><input type=button class="btn" onclick="modal(<%$id%>)" value="×"> <b><%$name%></b></td>
+	<td nowrap><%$C->trans_date_short($tstamp)%></td>
+	<td><%$uinf->{firstname}%></td>
+	<td><%$uinf->{lastname}%></td>
+	<td><%$uinf->{email}%></td>
+	<td style='text-align:center'>
+%	if ($is_devel) {
+		<%$LABEL_DEVEL%>
+%	}
+%	elsif ($is_admin) {
+		<%$LABEL_ADMIN%>
+%	}
+%	else {
+		<%$LABEL_USER%>
+%	}
+	</td>
+	</tr>
+% }
+</table>
+<div id='ajx_2'></div>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary">Save changes</button>
+  </div>
+</div>

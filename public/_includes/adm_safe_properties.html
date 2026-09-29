@@ -1,0 +1,105 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+
+	my $lang = $cgi->param('lang') || $C->getSessData('_current_lang') || 'de';
+	my $filter = $cgi->param('filter');
+
+	if ($cgi->param('action') eq 'add') {
+		my $ts = $C->now(5);
+		$C->{dbh}->do("insert into config_prod_feat (featkey, featname, lang) VALUES ('new_$ts', 'new', '$lang')")
+			or $m->out("ERR $DBI::errstr<hr>");
+		my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+		$m->redirect("adm_safe_property.html?id=$last_id");
+	}
+
+	my $this = $C->this();
+</%init>
+<span style='float:right; margin-top:9px'>
+% if ($C->{CONFIG}->{multi_lang}) {
+Language:
+<a style="<%$lang eq 'de' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=de">de</a> |
+<a style="<%$lang eq 'en' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=en">en</a> |
+<a style="<%$lang eq 'fr' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=fr">fr</a>
+% }
+% else {
+	No multi language
+% }
+&mdash; <a href="adm_safe_properties.html?debug=1">More</a>
+% if ($args{debug}) {
+%	unless  ($C->{CONFIG}->{multi_lang}) {
+	| <a style="<%$lang eq 'de'  ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=de">de</a>
+%	}
+	| <a style="<%$lang eq 'sys' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=sys">sys</a>
+% }
+</span>
+
+<h2><span style='font-size:30px; margin-right:5px' class="icon-briefcase pull-left text-info"></span>Safe Properties &middot; Custom Site Values</h2>
+<div id="<% $this %>">
+
+	<style type="text/css" media="screen">
+		@import "DataTables-1.9.1/media/css/demo_table_jui.css";
+		@import "DataTables-1.9.1/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+		/*
+		 * Override styles needed due to the mix of three different CSS sources! For proper examples
+		 * please see the themes example in the 'Examples' section of this site
+		 */
+		.dataTables_info { padding-top: 0; }
+		.dataTables_paginate { padding-top: 20px; }
+		.css_right { float: right; }
+		table.dataTable tr.odd  { background-color: #ffffff; }
+		table.dataTable tr.even { background-color: #DCE6F1; }
+		table.dataTable td.sorting_1 { background-color: #C2D9F0; }
+	</style>
+		
+	<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#example').dataTable( {
+				"bJQueryUI": true,
+				"sPaginationType": "full_numbers",
+				"iDisplayLength": 25,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "_includes/_server_processing_safe_properties.html?lang=<%$lang%>&filter=<%$filter%>"
+			} );
+
+			var oTable = $('#example').dataTable();
+			oTable.fnSort( [ [1,'asc'] ] );
+		} );
+	</script>
+
+<div id="fw_container">
+<div id="fw_content">
+
+<div style="width:100%; margin-top: 1em; margin-left:auto; margin-right:auto;">
+	
+<div id="theme_links" class="fg-toolbar ui-widget-header ui-corner-all fg-buttonset fg-buttonset-multi">
+	<div class="css_clear"></div>
+</div>
+
+<table class='mytable table-hover' id='example'>
+<thead>
+<tr>
+	<th style="width:100px; text-align:center">ID</th>
+	<th style='width:248px'>Key</th>
+	<th>Value</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div><br clear="all" /><br />
+
+<div class="pull-right">
+	See also: <a href="adm_properties.html">Properties</a> | <a href="adm_special_keys.html?area=debug_level">Debug Level</a>
+</div>
+
+&rsaquo; <a href="adm_safe_properties.html?action=add">Add Safe Property</a>
+</div>
+</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

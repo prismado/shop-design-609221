@@ -1,0 +1,88 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $sth = $args{sth};
+	my $id = $args{id};
+
+	my $st = $C->{dbh}->prepare(q~select id, label from categories where lang='de' and parent_id=0 and visible>0 order by weight~);
+	   $st->execute();
+
+	my $count = $C->query("select SPLIT_STR(`key`, '_', 3) * 1  from properties where id=$id")->[0];
+
+	my @cat_ids = split /,/, $C->get_property("quant_discount_$count", 'cat_ids', 'sys');
+	my $is_cum = $C->get_property("quant_discount_$count", 'cum', 'sys');
+</%init>
+<p class="pull-right" style='margin-top:20px'>
+	Config of <%$C->{CONFIG}->{site_title}%> 
+</p>
+
+<h2>Quantity Discount &middot; ID <% $args{id} %></h2>
+
+<form method="post">
+<input type="hidden" name="id" value="<%$id%>">
+
+<div class="pull-right">
+	<table class='mytable table-hover'>
+	<thead><tr><th colspan="2">Area</th></tr></thead>
+%	while(my $rr = $st->fetch()) {
+%		my ($cat_id, $label) = @{$rr};
+%		my $checked = '';
+%		foreach (@cat_ids) {
+%			if ($cat_id == $_) {
+%				$checked = 'checked'; last;
+%			}
+%		}
+			<tr>
+			<td><input type="checkbox" <%$checked%> name="cat_id_<%$cat_id%>"></td>
+			<td style="font-weight:bold; padding-top:5px">
+				<%$cat_id%> <% $label %>
+			</td>
+			</tr>
+%	}
+	</table>
+</div>
+
+
+<div class="pull-left">
+<table class='table'>
+
+<thead>
+<tr>
+<th>Threshold / Count</th>
+<th style="text-align:center">Discount</th>
+<th>Cumulative</th>
+</tr>
+</thead>
+
+<tr>
+	<td><input type="text" style="text-align:center; width:99px" name="count" placeholder="count, e.g. 24" value="<% $args{count} %>"></td>
+	<td><input type="text" style="text-align:center; width:70px" name="perc" value="<% $args{perc} %>"> %</td>
+	<td style="text-align:center"><input type=checkbox name="cum" <% $is_cum ? 'checked' : ''%> value="1"></td>
+</tr>
+
+</table>
+
+<input type=submit class="btn btn-primary" name="bUpdate" value="Update">
+<input type=submit class="btn btn-danger" name="bDelete" value="Delete">
+<input type=button class="btn" namx=bAdd onclick="document.location='adm_quant_discounts.html'" value="Back" />
+
+</div>
+
+</form>
+
+% if ($args{bUpdate}) {
+	<br clear="all" />
+	<div class="alert alert-warning fade in">
+		Updated.
+	</div>
+%	foreach ($C->{CGI}->all_parameters) {
+% # XXX		XX <%$_%> = "<%$C->{CGI}->param($_)%>"<br>
+%	}
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

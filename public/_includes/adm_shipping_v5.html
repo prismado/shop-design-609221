@@ -1,0 +1,131 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $hide_inact = $C->{CGI}->param('hide_inact');
+	my ($deliv_country, $ship_check) = split /\|/, $C->{CGI}->param('deliv_country');
+
+	my $ship_info;
+	my $art_no_check = '';
+	if ($deliv_country) {
+		$C->{dbh}->do("update users_addr set country='$deliv_country' where user_id=$args{UID} and type=2");
+		$ship_info = $A->get_shipping_v4(ship_meth=>$ship_check);
+		$art_no_check = $ship_info->{art_no};
+	}
+
+	my %shipping_hr = (
+		cc           => 'Credit Card',
+		ins          => 'Insurance',
+		inv          => 'Invoice / Rechnung',
+		pic          => 'Self-pickup',
+		exp          => 'Express',
+		box          => 'Special Box',
+		postpac_prio => 'PostPac Priority',
+		std          => 'PostPac Economy'
+	);
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, substr(featkey, 9, 63), featname, weight
+		from	config_prod_feat
+		where	featkey like 'ship\\_v5\\_%'
+		order	by 3 DESC, 4
+	~);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my $minimum_threshold = $C->query("select MIN(weight) from config_prod_feat where featkey like 'ship\_v5\_%'")->[0] || 1;
+	my $active_ship_meth  = $A->get_active_shipping_methods();
+</%init>
+<script language="JavaScript">
+	function modal_run(id) {
+		$('#ajx_modal').load('ajx_modal_generic.html?msg=Do+you+want+to+delete+this+entry%3F&title=Confirm+Delete&id=' + id);
+	}
+</script>
+
+<div style="margin-top:10px" class="pull-right">
+	<a href="https://docs.ch2.be/w/publigate/shipping">Shipping Help</a>
+</div>
+
+<h2><span style='font-size:30px; margin-right:5px'
+	class="icon-truck pull-left text-info"></span> Shipping Items &middot;
+		<small>(Shipping Model 5)</small></h2>
+
+<form method="post">
+
+<table class="mytable table-hover table-striped">
+<thead>
+	<tr>
+		<th>Delivery Method</th>
+		<th style="text-align:right">Weight</th>
+		<th style="text-align:right">Art No (Remote)</th>
+		<th style="text-align:right">Charge</th>
+		<th></th>
+	</tr>
+</thead>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $featkey, $featname, $weight) = @{$r};
+%	my $amount = $C->get_safe_property("ship_v5x_$id\_amount_$featname", 'sys') + 0;
+	<tr id="ro_row_<% $id %>">
+	<td style="font-weight:bold"><% $shipping_hr{$featname} %></td>
+	<td style="text-align:right"><% $weight %> kg</td>
+	<td style="text-align:right"><% $featkey %></td>
+	<td style="text-align:right; font-weight:bold">
+		<% sprintf('%.2f', $amount) %> CHF
+	</td>
+	<td style="text-align:right"><a onclick="this.style.display='none'; document.getElementById('ro_row_<% $id %>').style.display='none'; document.getElementById('row_<% $id %>').style.display=''; document.getElementById('cancelBut').style.display=''; document.getElementById('updateBut').style.display=''"
+		href="#"><i class="icon-edit"></i></a></td>
+	</tr>
+
+	<tr id="row_<% $id %>" style="display:none">
+	<td style="padding-top:5px">
+		<select name="featname_<% $id %>">
+%		foreach my $shipmeth (sort keys %{$active_ship_meth}) {
+%			next if $shipmeth eq 'pic';
+			<option <% $featname eq $shipmeth ? 'selected' : '' %> value="<% $shipmeth %>"><% $shipping_hr{$shipmeth} %></option>
+%		}
+		</select>
+	</td>
+	<td style="padding-top:5px; text-align:right">
+		<input type=text style="width:40px; text-align:right" name="weight_<% $id %>" value="<% $weight %>"> kg
+	</td>
+	<td style="padding-top:5px; text-align:right">
+		<input type=text name="featkey_<% $id %>" style="width:145px; text-align:right" value="<% $featkey %>">
+	</td>
+	<td style="text-align:right">
+		<input type=text style="width:60px; text-align:right" name="amount_<% $id %>" value="<% $amount %>"> CHF
+	</td>
+	<td valign="top" style="text-align:right; padding-top:5px">
+		<a href="#" onclick="modal_run(<% $id %>)"><i style="color:red" class="icon-remove"></i></a>
+	</td>
+	</tr>
+
+	<tr style="display:none"><td colspan="5"></td></tr>
+% }
+</table><br />
+
+<input name="bUpdate" type="submit" class="btn btn-primary" value="Update" id="updateBut" style="display:none">
+<input name="bAdd"    type="submit" class="btn btn-success" value="Add">
+<input name="bCan"    type="submit" class="btn"             value="Cancel" id="cancelBut" style="display:none">
+<input type="button" class="btn" value="Back" onclick="document.location='adm_shipping.html'">
+
+</form>
+
+% if ($args{bUpdate} ) {
+	Updated.<br>
+% }
+
+<table class="mytable">
+	<tr>
+		<td style="font-weight:bold; width:70%">Free as of</td>
+		<td style="text-align:right; font-weight:bold"> <% $C->{CONFIG}->{shipping_free_as_of} %> CHF</td>
+		<td style="text-align:right"><a href="adm_special_keys.html?area=shipping_free_as_of"><i class="icon-pencil"></i></a></td>
+	</tr>
+</table><br />
+
+% # <img src="https://docs.ch2.be/upload/iihdjccobjgoocnc.png"><br>
+
+<div id="ajx_modal"></div>
+<%doc>
+	__METACLONING__
+</%doc>

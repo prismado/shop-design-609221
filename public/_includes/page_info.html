@@ -1,0 +1,12 @@
+<%init>
+	my $dummy = $m->callers(1);
+	my $info = shift;
+	(my $path = $dummy->{path}) =~ s/^\///;
+
+	my @elems = split /\//, $path;
+	my $file = $elems[$#elems];
+</%init>
+<div style='color:maroon; font-family:Arial; font-size:10px;'>
+<span style='background-color:#f0f0f0'>
+<abbr title="<%$path%>"><%$file%></abbr> &middot; <%$info%></span>
+</div><br clear='all' />

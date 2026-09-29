@@ -1,0 +1,99 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $lang = $args{'lang'} || 'de';
+	my $id = $args{id};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $link = '';
+
+	my $prop = $C->{property}->{product}; # -- Property file of product is loaded!
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my $opts = $A->get_product_options($id);
+
+	my $price_total = $d->{price_incl_vat} + $d->{upsell_tot};
+</%init>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+	Upsell Total: <% $d->{upsell_tot} %> / Price Total: <% $price_total %><br>
+% }
+
+<div id="productDetails">
+<table>
+
+% foreach (sort keys %{$d->{'feat'}}) {
+%	my ($weight, $key, $id) = split /\t/;
+%	next if $weight < 0 or $key eq '_new_'; # -- Skip teaser text (weight < 0) here
+%	if ($key eq 'link') { $link = $d->{feat}->{$_}; next; }
+	<tr><td><%$key%></td> <td><%$d->{feat}->{$_}%></td></tr>
+% }
+</table>
+ </div> <!-- end productDetails-->	
+<div id="productOptions">
+%	if (@{$opts}) {
+		<table width='100%'><tr><td><b><% $prop->{"options$l"} %></b></td></tr></table>
+		<form>
+		<table border=0 cellspacing=0 cellpadding=0>
+%		foreach (@{$opts}) {
+%			my ($oid, $price, $title, $description) = @{$C->query("SELECT id, price, title, description FROM vproducts WHERE id=$_")};
+%			my $checked = $C->getSessData("upprod_id_$id\_$oid") ? ' checked' : '';
+%			$price = sprintf('%.2f', $price * (1 + $C->{CONFIG}->{vat} / 100));
+			<tr><td><input type=checkbox id="cb_o<% $oid %>" value='1'<% $checked %>
+			onclick="$('#ajx_1').load('_ajx_set_opt2.html?opt=' + this.value + '&oid=<% $oid %>&prod_id=<% $id %>&rnd=<% rand() %>'); updateTot(<% $oid %>, <% $price %>)"> 
+				<% $title %>, <% $description %></td> <td align=right>&nbsp;<b><% $price %> CHF</b></td></tr>
+%		}
+		</table>
+		</form>
+%	}
+</div><!-- end productOptions-->	
+
+	<table>
+	<tr>
+	<td>
+	<h3>Radius <em>*</em></h3>
+	<&product_options_specialtype.html, type => 3, id => $id, lang => $lang, A => $A&>
+	</td>
+	<td style='padding-left:7px'>
+	<h3>Durchmesser <em>*</em></h3>
+	<&product_options_specialtype.html, type => 4, id => $id, lang => $lang, A => $A&>
+	</td>
+	<td style='padding-left:7px'>
+	<h3>St&auml;rke <em>*</em></h3>
+	<&product_options_specialtype.html, type => 5, id => $id, lang => $lang, A => $A&>
+	</td>
+	</tr>
+	</table>
+%
+        <&product_options.html, type => 1, id => $id, lang => $lang, A => $A&>
+        <br />
+
+ <div class="productDescription">
+          <p> <% $prop->{"desc$l"} %></p>
+</div><!--end productDescription -->   
+
+
+	
+%	# -- Zusatz-Informationen:
+<% $prop->{"additional_info$l"} %><
+	</tr>
+	
+<% ${$C->include("_includes/prod_detail_txt_$lang\.html")} %>
+<br /><br />
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'END'&>
+% }
+
+<script language=JavaScript>
+	var dTotal = <% $price_total %>;
+	function updateTot(oid, price) {
+		c = document.getElementById('cb_o' + oid).checked;
+		if (c) { dTotal += price; }
+		else { dTotal -= price; }
+		dTotal = Math.round(dTotal*100)/100;
+		dynTotal.innerHTML = dTotal;
+	}
+</script>

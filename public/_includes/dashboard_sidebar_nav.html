@@ -1,0 +1,27 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $license = $args{license};
+
+	unless (defined $license) {
+		my $this = $C->this();
+		$C->log(msg=>"ERROR (E8): No license defined at $this", importance=>1, service=>'(inc) dashboard_sidebar_nav');
+		$license = $C->get_license();
+	}
+</%init>
+<ul id="dashboard-menu" class="nav nav-list"> 
+    <li class="<%$args{func} eq '' ? 'active' : ''%>"><a href="dashboard.html"><i class="icon-home"></i> <span>Dashboard</span></a></li>    
+    <li class="<%$args{func} eq 'reports' ? 'active' : ''%>"><a href="adm_reports.html"><i class="icon-bar-chart"></i> <span>Reports</span></a></li>
+    <li class="<%$args{func} eq 'help' ? 'active' : ''%>"><a href="adm_help3.html"><i class="icon-question-sign"></i> <span>Help</span></a></li>
+    <li class="<%$args{func} eq 'promo' ? 'active' : ''%>"><a href="admix.html?func=promo"><i class="icon-star"></i> <span>Promos</span></a></li>
+    <li class="<%$args{func} eq 'hiddenshop' ? 'active' : ''%>"><a href="adm_hiddenshop.html"><i class="icon-key"></i> <span>Pro-Zone</span></a></li>
+% # XXX    <li class="<%$args{func} eq 'hiddenshop' ? 'active' : ''%>"><a href="admix.html?func=hiddenshop"><i class="icon-key"></i> <span>Pro-Zone</span></a></li>
+% unless ($C->{CONFIG}->{admin_hide_newsletter}) {
+    <li class="<%$args{func} eq 'newsletter' ? 'active' : ''%>"><a href="adm_newsletter.html"><i class="icon-envelope-alt"></i> <span>Newsletter</span></a></li>
+% }
+    <li class="<%$args{func} eq 'shop_locator' ? 'active' : ''%>"><a href="adm_shop_locator.html"><i class="icon-globe"></i> <span>Shop Locator</span></a></li>
+</ul>
+<%doc>
+	__METACLONING__
+</%doc>

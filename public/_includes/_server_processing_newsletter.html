@@ -1,0 +1,103 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols    = qw(id subject last_mod last_user sender_email status status newsletter_type);
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my @where_clause = ();
+	push(@where_clause, "subject LIKE '%$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	$dbcols[1] = 'SUBSTR(subject, 1, 58)'   if $dbcols[1] eq 'subject';
+	$dbcols[3] = 'SUBSTR(last_user, 1, 13)' if $dbcols[3] eq 'last_user';
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	newsletter
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	if ($C->{CONFIG}->{debug_level} > 1) {
+		print STDERR "$stmt\n";
+	}
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM newsletter $wcl")->[0];
+
+	my %status_hr = ( 1=>'New', 2=>'Ready', 3=>'Sending', 4=>'Sent' );
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $subject, $last_mod, $last_user, $sender_email, $status, $foo, $newsletter_type) = @{$r};
+		my $info = $C->get_safe_property("nl_sent_$id", 'sys');
+		if ($info =~ /^\* /) {
+			$info = '';
+		}
+		else {
+			$info = '<nobr>Launch: ' . $C->trans_date_short($info) . '</nobr>';
+		}
+		if ($status > 2) {
+			my $send_counter = $C->get_safe_property("nl_$id\_sendcounter", 'sys') + 0;
+			$info = "$info ($send_counter)";
+		}
+		$id = sprintf('%04d', $id) if $id < 1000;
+		$status_hr{$status} ||= "* $status *";
+		my $infoclass = $status == 4 ? 'success' : 'info';
+
+		$subject = '<b>' . $C->web_enc($subject) . '</b>';
+		$subject = "$subject (T)" if $newsletter_type == 2;
+		if (length($sender_email) > 18) {
+			$sender_email = $C->shorten_title($sender_email, 18);
+		}
+
+		my @arr = ();
+		push(@arr, "<a href=adm_edit_newsletter.html?id=$id>$id</a>");
+		push(@arr, $subject);
+		push(@arr, '<nobr>' . $C->trans_date_very_short($last_mod) . '</nobr>');
+		push(@arr, $last_user);
+		push(@arr, "<nobr>$sender_email</nobr>");
+		push(@arr, "<span class='label label-$infoclass'>$status_hr{$status}</span>");
+		push(@arr, $info);
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	 __METACLONING__
+</%doc>

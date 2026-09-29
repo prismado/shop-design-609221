@@ -1,0 +1,68 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	prod_id, title, count(*)
+		from	orders_products o, products_desc p 
+		where 	prod_id=product_id and lang='de' 
+		group 	by 1 
+		order 	by 3 desc 
+		limit 	6
+	~);
+	$sth->execute();
+
+	my %condition_hr = (SO=>'Stock', OR=>'Many', IN=>'Invisible');
+</%init>
+<style>
+	.custom-list { column-count: 2; column-gap: 3rem; }
+	li { break-inside: avoid; }
+</style>
+
+<h2>Top Sellers</h2>
+
+<ul class="item-summary custom-list">
+
+% while(my $r = $sth->fetch()) {
+%	my ($prod_id, $title, $count) = @{$r};
+%	my ($cat_id, $price, $description, $condition) =
+%		@{$C->query("select cat_id, price, description, `condition`
+%			from vproducts_1_02 where id=$prod_id order by 1 desc limit 1")};
+%	my ($label, $visible) = @{$C->query("select label, visible from categories where id=$cat_id AND lang='de'")};
+%	(my $title_disp = $C->shorten_title($title, 33)) =~ s/</&lt;/g;
+%	    $title_disp =~ s/>/&gt;/g;
+%	$description =~ s/<br>//gi;
+%	$description =~ s/</&lt;/g;
+%	$description =~ s/>/&gt;/g;
+<li>
+	<div style='width:55px; z-index:9999; background-color:#f2f8fe;' class="overview">
+		<nobr>
+		<p class="main-detail"><%$count%> x</p>
+		<p class="sub-detail"><a href="admix.html?func=edit_item&id=<%$prod_id%>">ID <%$prod_id%></a><br>
+		<span class="label label-success"><%$condition_hr{$condition} || "* $condition *"%></span>
+		</p>
+		</nobr>
+	</div>
+
+	<div stylx='width:340px' class="info">
+		<p><span class="label label-info"><%$label%></span></p>
+		<p><b><% $title_disp %></b><br>
+		<% $C->shorten_title($description, 38) %><br>
+		<%sprintf('%.2f', $price)%> <%$C->{CONFIG}->{default_curr}%>
+		</p>
+	</div>
+
+	<div class="clearfix"></div>
+</li>
+% }
+
+</ul>
+
+<%doc>
+	__METACLONING__
+</%doc>

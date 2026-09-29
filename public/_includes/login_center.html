@@ -1,0 +1,52 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $stay_logged = $C->getPermaSessData('_stay_logged_in');
+	my $uname = $C->get_previous_loginname() if $stay_logged;
+</%init>
+%
+% # -- Loginform (mitte)
+%
+<div id="user_log" class="clearfix">
+ <div class="accountBox_headtop"><h5>Anmelden</h5></div>  
+   <div style="margin-bottom:10px;">Login</div> 
+
+  <form action="account.html" method="post" name="form1sub" id="form1">
+    <ol>
+      <li class="row clearfix">
+        <label class="input_tag" for="user">
+	Username
+          <em>*</em></label>
+        <div class="inputOuter">
+          <input id="LoginEmail" type="text" name="user" value="<% $uname %>" placeholder="example@example.com">
+        </div>
+      </li>
+      <li class="row clearfix">
+        <label class="input_tag" for="pass">Password <em>*</em></label>
+        <div class="inputOuter">
+          <input id="LoginPwd" type="password" name="pass" value="" placeholder="**********">
+        </div>
+      </li>
+      <li class="row clearfix">
+        <label class="input_tag" for="firstName">&nbsp;</label>
+        <small><a href="registration.html" rel="nofollow"><img src="images/arrow_right.png">
+	Konto er&ouml;ffnen
+        </a></small> <small><a href="send_pwd.html" rel="nofollow"><img src="images/arrow_right.png">
+	Passwort vergessen
+        </a></small> </li>
+      <li class="row clearfix">
+        <label class="input_tag" for="firstName">&nbsp;</label>
+        <div class="inputOuter button">
+          <input id="Login" class="blu_btn" type="submit" name="bSend" value="Login">
+          <input id="LoginKeepLoggedIn" type="checkbox" name="stay_logged_in" value="1" <% $stay_logged ? 'checked' : '' %>>
+          <label for="LoginKeepLoggedIn">
+		<small>Angemeldet bleiben</small>
+          </label>
+          <br>
+          <br>
+        </div>
+      </li>
+    </ol>
+  </form>
+</div>
+<script language='JavaScript'>document.form1sub.user.focus();</script> 

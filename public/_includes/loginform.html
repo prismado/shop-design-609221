@@ -1,0 +1,62 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+%
+% # -- Loginform (links)
+%
+
+% if ($C->is_logged_in()) {
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="infoBoxContents">
+  <tbody>
+    <tr>
+      <td colspan="2" height="5"></td>
+    </tr>
+    <tr>
+      <td height="13" colspan="2" class="categor"><% $C->p('loginas') %> <% $C->whoami() %></td>
+    </tr>
+      <tr>
+      <td height="13" class="infoBox"><A class="categor" href='#logout' onclick='JavaScript:document.logoutForm.submit()'>Logout</A></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="2" height="5"></td>
+    </tr>
+  </tbody>
+</table>
+
+% }
+% else {
+<form action="account.html" method="post" name="form1" id="form1">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="infoBoxContents">
+  <tbody>
+    <tr>
+      <td colspan="2" height="5"></td>
+    </tr>
+    <tr>
+      <td height="13" colspan="2" class="infoBox"><label><% $C->p('username') %></label></td>
+    </tr>
+    <tr>
+      <td width="70%" height="19"><A class="categor" href="#">
+	<input id="LoginEmail" name="user" type="password"  class="inputform"></A></td>
+      <td width="30%">&nbsp;</td>
+    </tr>
+    <tr>
+      <td height="13" class="infoBox"><label><% $C->p('password') %></label></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><input id="LoginPwd" type="password" name="pass" value="" class="inputform"/></td>
+     
+      <td><input name="bSend" type="image" id="Login" src="images/ok_orange.gif" alt="ok" /></a></td>
+    </tr> 
+    <tr><td colspan="2"><input id="LoginKeepLoggedIn" class="chbox" type="checkbox" name="stay_logged_in" value="1" >
+	    <span style="color:#666;"><% $C->p('keeplogin') %></span></td>
+        </tr>
+    <tr>
+      <td colspan="2"><a href="registration.html" class="categor"><% $C->p('registration') %>?</a></td>
+    </tr>
+  </tbody>
+</table>
+</form>
+% }

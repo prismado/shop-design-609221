@@ -1,0 +1,146 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $lang = $args{lang};
+	my $sth = $args{sth};
+	my $vat_fac = 1 + ($C->{CONFIG}->{vat} || 0.0) / 100;
+	my $cat_id = $C->{CGI}->param('id') || 1;
+	my $pkg = $C->{CGI}->param('pkg');
+	my $extra_label = $C->query("SELECT extra_label FROM categories WHERE id=$cat_id AND lang='$lang'")->[0];
+	my $sc_url = $ENV{SCRIPT_URL} || 'categ.html';
+
+	$C->load_properties('categ');
+        my $prop = $C->{property}->{categ};
+        my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my $min_pack = $C->query("SELECT MIN(getPieces(product_id)) FROM products2categ WHERE cat_id=$cat_id")->[0];
+	my $max_pack = $C->query("SELECT MAX(getPieces(product_id)) FROM products2categ WHERE cat_id=$cat_id")->[0];
+	   $max_pack = 0 if $min_pack == $max_pack;
+
+	my $selected_lo = $C->{CGI}->param('order') eq '4,a' ? 'selected ' : '';
+	my $selected_hi = $C->{CGI}->param('order') eq '4,d' ? 'selected ' : '';
+    
+	my $search_enc = $C->uri_esc($args{search_orig});   
+</%init>
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+<%doc>  <!-- Banner ausgeblendet -->	   
+<div id="aktionsBanner">    
+</div><!-- aktionsBanner -->
+
+</%doc>
+  <!-- Produkt List -->	       
+<div id="products_outer">
+  <!-- Produkt Filter -->	
+<div class="filter_content">
+<p class="view-info">
+% if ($min_pack) {
+	Packungen:&nbsp;&nbsp;
+%	if ($pkg == $min_pack) {
+		<b><%$min_pack%>er</b>
+%	}
+%	else {
+		<a href="categ.html?id=<%$cat_id%>&pkg=<%$min_pack%>"><%$min_pack%>er</a>
+%	}
+% }
+% if ($max_pack) {
+%	if ($pkg == $max_pack) {
+		&middot; <b><%$max_pack%>er</b>
+%	}
+%	else {
+		&middot; <a href="categ.html?id=<%$cat_id%>&pkg=<%$max_pack%>"><%$max_pack%>er</a>
+%	}
+% }
+</p>
+<p class="view-mode">
+ <a href="category.html?id=<%$cat_id%>&q=<%$search_enc%>" title="Anzeigen als Gitter" class="grid">Gitter</a>&nbsp;
+</p>
+
+<div class="pro_sort">Sortieren: 
+ <select id="sort" name="sort" onchange="location = this.options[this.selectedIndex].value;">
+<option value="#">Wählen</option>
+<option <%$selected_lo%>value='<%$sc_url%>?id=<%$cat_id%>&order=4,a&q=<%$search_enc%>&pkg=<%$pkg%>'>Preis (Niedrig)</option>
+<option <%$selected_hi%>value='<%$sc_url%>?id=<%$cat_id%>&order=4,d&q=<%$search_enc%>&pkg=<%$pkg%>'>Preis (Hoch)</option>
+</select>
+</div><!--end pro_sort-->
+
+<%doc>  
+  <!-- Produkt Filter -->	
+<div class="filter_content">
+<div class="sortText"><a href="<% $sc_url %>?id=<% $cat_id %>&order=2,a"><% $prop->{"config$l"} %></a></div>			
+<div class="pro_sort">
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=1,a'>"><img border="0" src="images/arrow_up.png"  title='Up'></a>
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=2,a"><img border="0" src="images/arrow_down.png"  alt="Down"></a>
+</div><!--end pro_sort-->
+<div class="sortText"><a href="<% $sc_url %>?id=<% $cat_id %>&order=4,a"><% $prop->{"price$l"} %></a></div>
+<div class="pro_sort">
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=4,a"><img border="0" src="images/arrow_up.png"  title='Up'></a>
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=4,d"><img border="0" src="images/arrow_down.png"  alt="Down"></a>
+</div><!--end pro_sort-->
+<div class="sortText"><a  href="<% $sc_url %>?id=<% $cat_id %>&order=3,a"><% $prop->{"avail$l"} %></a></div>
+<div class="pro_sort">
+ <a href='<% $sc_url %>?id=<% $cat_id %>&order=3,a'><img border="0" src="images/arrow_up.png"  title='Up'></a>
+ <a href="<% $sc_url %>?id=<% $cat_id %>&order=3,d"><img border="0" src="images/arrow_down.png" alt="Down"></a>
+</div><!--end pro_sort-->
+</%doc>
+</div><!--end filter_content-->
+
+% while(my $r = $sth->fetch()) {
+%       my ($id, $price, $title, $desc, $count, $campaign_id, $extra, $condition) = @{$r};
+%	# -- my $teaser = $A->get_teaser($id);
+%	# -- $teaser = "<br>$teaser" if $teaser;
+%	$price = sprintf('%.2f', $price * $vat_fac);
+%	my $prod_info = $A->get_product($id);
+ <!-- Produkt Show -->	  
+			<ul class="product_show clearfix" onclick="location.href='product.html?id=<% $id %>';">
+				<li class="clearfix">
+ <!-- SALE Symbol anzeigen wenn Rabaat -->
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+<span class="aktionsOffer"></span>
+%	}
+
+					<div class="img"><a href="#" class="image"><img src="/produkte/p<% $id %>_thmb.jpg"></a></div>
+<div class="product_desc"><h6><a href="product.html?id=<% $id %>"><% $title %></a></h6></div>
+<div class="product_desc1"><% $desc %>
+<%doc> 
+%		if ($condition) {
+%				<span class="smallText"> (<% $condition %>)</span>
+%		}
+
+		<% $teaser %> 
+</%doc>
+<%doc> 
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<br>
+		<span style='color:#199de8'>Preis Reduktion: CHF <% $prod_info->{price_incl_vat} %></span> anstatt
+			(<s><% $C->{CONFIG}->{default_curr} %> <% $prod_info->{price_orig_incl_vat} %></s>)
+%	}
+</%doc>
+</div>
+
+<div class="product_price"><h5>
+%	if ($prod_info->{price_incl_vat} != $prod_info->{price_orig_incl_vat}) {
+		<% $C->{CONFIG}->{default_curr} %> <% $prod_info->{price_incl_vat} %>
+%	}
+%	else {
+%		unless ($condition eq 'IP') {
+	<% $C->{CONFIG}->{default_curr} %> <% $price %>
+%		}
+%	}
+</h5>
+</div>
+%	unless ($condition eq 'IP') {
+	<div class="pro_buttons"><div class="buyButton"><a href="basket.html?id=<%$id%>"><i
+		class="fa fa-shopping-cart"></i>Kaufen</a></div>
+	</div>
+%	}
+			</li>
+            </ul><!--end product_show -->	
+% }            
+         
+            </div><!--end products_outer -->
+<%doc>
+	__METACLONING__
+</%doc>

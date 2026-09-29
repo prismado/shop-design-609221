@@ -1,0 +1,129 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	if ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("DELETE FROM categories WHERE id=$id");
+	}
+	elsif ($cgi->param('bAdd')) {
+		my $parid = $cgi->param('parent_id') || 0;
+		my $next_id = $C->query("select MAX(id) + 1 FROM categories")->[0];
+		$C->{dbh}->do("INSERT INTO categories (id, parent_id, lang, label) VALUES ($next_id, $parid, '$lang', '* New Categ *')")
+			or $m->out("ERROR $DBI::errstr<br>");;
+		my $cat_id = $C->query('select MAX(id) FROM categories')->[0];
+		$m->out("New Categ ID $cat_id added<br>");
+	}
+
+	my $visible = $cgi->param('visible');
+	   $visible = 1 unless length($visible);
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select 	id, parent_id, visible, label, extra_label, weight
+		FROM 	categories
+		WHERE 	lang='$lang' AND parent_id=0 AND visible=$visible ORDER BY weight~);
+
+	$sth->execute();
+
+	my $total_categs = $C->query('select COUNT(*) FROM categories')->[0];
+</%init>
+<span style='float:right; margin-top:9px'>
+<a style="<%$lang eq 'de' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=de">de</a> &middot;
+<a style="<%$lang eq 'en' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=en">en</a> &middot;
+<a style="<%$lang eq 'fr' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=fr">fr</a>
+</span>
+<script language=JavaScript>
+	function del_categ(id) {
+		if (confirm('OK to delete Category ID ' + id)) {
+			document.location="adm_categs.html?delid="+id;
+		}
+	}
+</script>
+
+<% $C->bootstrap_alert(q~<b>INFO</b>&nbsp;&nbsp;Funktions-Update: <a href="/adx/categs.html">Kategorien</a>~,
+	'danger', 'width:75%; margin-top:30px') %><br />
+<h2><%$sth->rows()%> Main Categories &middot; Total <%$total_categs%></h2>
+
+<a href="adm_categs.html?visible=1"><%$visible == 1 ? '<b>' : ''%>Visible<%$visible == 1 ? '</b>' : ''%></a> &middot;
+<a href="adm_categs.html?visible=0"><%$visible == 0 ? '<b>' : ''%>Invisible<%$visible == 0 ? '</b>' : ''%></a> &middot;
+<a href="adm_categs.html?bAdd=1">Add</a>
+<br><br>
+
+<table class='table' style="font-size:1.0rem">
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $parent_id, $visible, $label, $extra_label, $weight) = @{$r};
+%	my $extra_conf = $C->query("select val from properties where `key`='_categ_special_$id\_group_id_sys'")->[0];
+%	my $extra_config = $extra_conf ? " <span style='font-weight:normal'>group_id $extra_conf</span>" : '';
+%	my $check_lang_en = $C->query("select id from categories where id=$id and lang='en'")->[0];
+%	my $check_lang_fr = $C->query("select id from categories where id=$id and lang='fr'")->[0];
+%	my @missing_langs = ();
+%	push(@missing_langs, 'English')  unless $check_lang_en;
+%	push(@missing_langs, 'Francais') unless $check_lang_fr;
+%	unless ($C->get_property("_categ_special_$id\_is_reseller", '_global', 'sys') =~ /^\* /) {
+%		$label = "$label <span rel='tooltip' data-original-title='Reseller' data-placement='top'><i class='icon icon-lock'></i></span>";
+%	}
+	<tr<%!$parent_id ? ' style="background-color:#e8e8e8; font-size:1.05rem"' : ''%>>
+	<td style='width:64px; padding-left:45px'><a href="adm_categ.html?id=<%$id%>"><%$id%></a></td>
+	<td style='font-weight:bold<%$label =~ /^\* New/ ? '; color:red' : ''%>'>
+		<% $label %>
+%		if (!$check_lang_en or !$check_lang_fr) {
+			&middot; <span style="color:red; font-weight:normal">Translation(s) must be created: <% join ', ', @missing_langs %></span>
+%		}
+	</td>
+	<td>
+		<span class="pull-right" style="font-size:0.8rem">
+			<% $C->shorten_title($C->prop("_categ_desc_$id"), 80) %>
+		</span>
+		<%$extra_label%><%$extra_config%>
+	</td>
+	<td style='text-align:right'>W-<%$weight%> <a href="adm_categs.html?bAdd=1&parent_id=<%$id%>"><i class="icon-plus"></i></a></td>
+	</tr>
+%	foreach my $sub_id (@{$A->get_sub_categs($id, $lang)}) {
+%		my ($label, $visible) = @{$C->query("select label, visible FROM categories WHERE id=$sub_id and lang='$lang'")};
+%		my $check_lang_en = $C->query("select id from categories where id=$sub_id and lang='en'")->[0];
+%		my $check_lang_fr = $C->query("select id from categories where id=$sub_id and lang='fr'")->[0];
+%		my @missing_langs = ();
+%		push(@missing_langs, 'Francais') unless $check_lang_fr;
+%		push(@missing_langs, 'English')  unless $check_lang_en;
+%		my $show_vis = $visible ? '' : '<img src="images/eye_blue_sma_strike.png" style="width:19px; height:10px">';
+%		unless ($C->get_property("_categ_special_$sub_id\_is_merchant", '_global', 'sys') =~ /^\* /) {
+%			$label = "$label <i class='icon icon-lock'></i>";
+%		}
+%		unless ($C->get_property("_categ_special_$sub_id\_is_reseller", '_global', 'sys') =~ /^\* /) {
+%			$label = "$label <span rel='tooltip' data-original-title='Reseller' data-placement='top'><i class='icon icon-lock'></i></span>";
+%		}
+		<tr>
+			<td colspan=3 style='padding-left:45px'>
+				<div style="float:right; font-size:0.8rem">
+					<% $C->shorten_title($C->prop("_categ_desc_$sub_id"), 80) %>
+				</div>
+				<a style='margin-right:15px' href="adm_categ.html?id=<%$sub_id%>"><%$sub_id%></a> <b style="margin-left:60px"><%$label%></b> <%$show_vis%>
+%			if (!$check_lang_en or !$check_lang_fr) {
+				&middot; <span style="color:red; font-weight:normal">Translation(s) must be created: <% join ', ', @missing_langs %> &rarr; Cat-ID <% $sub_id %></span>
+%			}
+		</td>
+		<td>
+			<div style='float:right'><a href="adm_categs.html?bAdd=1&parent_id=<%$sub_id%>"><i class="icon-plus"></i></a></div>
+		</td>
+		</tr>
+%		foreach my $sub_sub_id (@{$A->get_sub_categs($sub_id, $lang)}) {
+%			my ($label, $weight, $visible) = @{$C->query("select label, weight, visible FROM categories WHERE id=$sub_sub_id")};
+%			my $show_vis = $visible ? '' : '<img src="images/eye_blue_sma_strike.png" style="width:19px; height:10px">';
+			<tr><td colspan=3 style='padding-left:90px'><a style='margin-right:15px'
+				href="adm_categ.html?id=<%$sub_sub_id%>"><%$sub_sub_id%></a> <%$label%> <%$show_vis%></td>
+			<td style='text-align:right'>W-<%$weight%></td>
+			</tr>
+%		}
+%	}
+% }
+
+</table>
+<%doc>
+	__METACLONING__
+</%doc>

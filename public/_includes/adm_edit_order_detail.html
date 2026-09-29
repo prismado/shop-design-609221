@@ -1,0 +1,73 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $id      = $cgi->param('id') + 0;
+	my $k       = $cgi->param('k');
+	my $bUpdate = $cgi->param('bUpdate');
+
+	if ($cgi->param('bDel')) {
+		# XXX $m->redirect('adm_orders.html');
+		$dbh->do("delete from orders_details where order_id=$id and xkey='$k'");
+		$m->redirect("admix.html?func=orders&show_details=1&id=$id&debug=1");
+	}
+
+	$m->redirect("admix.html?func=orders&show_details=1&id=$id&debug=1") if $cgi->param('bCancel');
+
+	if ($bUpdate) {
+		my $xval = $cgi->param('xval');
+		if ($k eq 'amount_incl_vat') {
+			$dbh->do("update orders set amount_incl_vat=$xval where id=$id");
+		}
+		else {
+			$dbh->do("update orders_details set xval='$xval' where order_id=$id and xkey='$k'")
+				or $m->out("ERR $DBI::errstr<br>");
+		}
+	}
+
+	my ($found, $cur_val);
+	if ($k eq 'amount_incl_vat') {
+		$found = -1;
+		$cur_val = $C->query("select amount_incl_vat from orders where id=$id")->[0];
+	}
+	else {
+		($found, $cur_val) = @{$C->query("select id, xval from orders_details where order_id=$id and xkey='$k'")};
+	}
+</%init>
+Found: ID <%$found%><br>
+<h2>Order Detail - Order ID <%$id%> - <%$k%></h2>
+
+<hr style="border-top:1px dotted #b0b0b0;color:#b0b0b0;background-color:#fff;height:1px;width:100%;" />
+
+<form method="post">
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=k value="<%$k%>">
+
+<table class="table">
+<thead>
+<tr>
+	<th style="text-align:center">Key</th>
+	<th>Value</th>
+</tr>
+</thead>
+
+<tr>
+	<td style="text-align:center"><%$k%></td>
+	<td><input type=text style="width:100px; text-align:center" name=xval value="<%$cur_val%>"></td>
+</tr>
+</table>
+
+<input type=submit class="btn btn-primary" name=bUpdate value="Update">
+<input type=submit class="btn btn-danger" name=bDel value="Del.">
+<input type=submit class="btn" name=bCancel value="Back">
+</form>
+
+% if ($bUpdate) {
+	<b>Updated!</b><br>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,103 @@
+<%init>
+        use ScreenPoint::Core;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $json = JSON->new();
+	my $perm = $C->get_user_perm(); # -- 09Jun2026
+
+	$m->abort(403) unless $perm->{is_admin};
+	# XXX $m->abort(403) unless $perm->{uid} > 0;
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $importance = $cgi->param('importance') + 0; $importance ||= 3;
+	my $sid        = $cgi->param('sid') + 0;
+	my $filter     = $cgi->param('filter');
+	my $filtertype = $cgi->param('filtertype') eq 'not' ? 'not' : '';
+	my $order_id   = $cgi->param('order_id') + 0;
+	my $debug      = $cgi->param('debug') + 0;
+
+	my @dbcols = qw(tstamp uid module service action sid importance id `source`);
+
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my $order_clause = $order_id ? " OR action LIKE '%$order_id%'" : '';
+
+	my @where_clause = ();
+	push(@where_clause, 'importance ' . $C->_lt_() . $importance);
+	push(@where_clause, "(sid=$sid$order_clause)") if $sid;
+	push(@where_clause, "action NOT LIKE 'ERROR%'") if $filter eq 'warn';
+	push(@where_clause, "(action $filtertype like '%$filter%' OR service='$filter'$order_clause)") if $filter;
+	my $wildcard_search = '%' . "$sSearch%";
+	push(@where_clause, "action LIKE '$wildcard_search' OR service LIKE '$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	log 
+			WHERE	$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	# XXX print STDERR "XXX $stmt\n";
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM log WHERE $wcl")->[0];
+
+	while(my $r = $sth->fetch()) {
+		my ($ts, $uid, $mod, $service, $action, $sid, $imp, $id, $src) = @{$r}; # -- 12Jul2026
+		# XXX my @arr = ();
+
+		if ($debug && $perm->{is_devel}) {
+			$sid .= qq~ <a style='color:red; font-weight:bold' 
+				href=adm_log.html?delid=$id&filter=$filter&importance=$importance&filtertype=$filtertype>X</a>~;
+		}
+
+		my @arr = ();
+		$action = "<span style='color:#be3e3e'>$action</span>" if $action =~ /Error/i;
+		$action = "<b>$action</b>" if $imp == 1;
+		push(@arr, $debug ? $C->trans_date($ts) : $C->trans_date_very_short($ts));
+		push(@arr, $C->query("select uname FROM users WHERE id=$uid")->[0] || 'N/A');
+		push(@arr, $mod);
+		push(@arr, $service);
+		push(@arr, $action);
+		push(@arr, $sid);
+		push(@arr, $src);
+
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	__METACLONING__
+</%doc>

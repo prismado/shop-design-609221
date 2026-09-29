@@ -1,0 +1,27 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+%
+% # -- Main Navigation
+%
+<UL class="menu">
+  <LI><i class="fa fa-user"></i><A href="account.html"><% $C->p('account') %></A></LI>
+% if ($C->is_admin()) {
+	<li><i class="fa fa-user"></i><a href='admix.html?func=items'>Adm</a></li>
+% }
+  <LI><i class="fa fa-shopping-cart"></i><A href="basket.html"><% $C->p('basket') %></A></LI>
+  <LI><i class="fa fa-envelope-o"></i><A href="services.html"><% $C->p('services') %></A> </LI>
+  <LI><i class="fa fa-info-circle"></i><A href="contact.html"><% $C->p('contact') %></A> </LI>
+% if ($C->is_logged_in()) {
+  <LI><A style="font-size:10px;" href='#logout' onclick='JavaScript:document.logoutForm.submit()'>Logout <% $C->whoami() %></A></LI>
+% }
+  <LI>
+    <div id="sprachen">
+	<A href="_change_lang.html?lang=de">DE</A>
+	<A href="_change_lang.html?lang=fr">FR</A>
+	<A href="_change_lang.html?lang=en">EN</A></div>
+  </LI>
+</UL>
+
+<form method=post action="/account.html" name="logoutForm"><input type="hidden" name="action" value="logout"></form>

@@ -1,0 +1,84 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $d = $A->get_product($id);
+	delete $d->{_rc};
+
+	my $det = $A->get_product_details($id);
+	my $det_arr = $det->{_arr};
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Article Information</h3>
+  </div>
+
+  <div class="modal-body">
+	<div style="margin-top:-15px" class="pull-right">
+		<% $C->trans_date_short($d->{instime}) %>
+	</div>
+	<h2 style="margin-top:-20px; font-weight:bold">ID <%$id%> &middot; <%$d->{title}%></h2>
+
+%  if (@{$det_arr}) {
+	<table class="mytable">
+	<tr>
+		<th style="width:160px">Time</th>
+		<th>Key</th>
+		<th>Value</th>
+		<th style="text-align:right">Del&nbsp;</th>
+	</tr>
+%	foreach (@{$det_arr}) {
+%		my ($instime, $key, $val, $detid) = split /\t/;
+		<tr><td nowrap><%$C->trans_date_very_short($instime)%></td><td style="font-weight:bold"><%$key%></td><td><%$val%></td>
+		<td style="text-align:right"><a style="color:red"
+			href="_product_meta_tool.html?id=<%$id%>&deldet=<%$detid%>"><i class="icon-remove"></i></a>&nbsp;</td>
+		</tr>
+%	}
+	</table>
+	<hr />
+%  }
+
+	<table class="mytable table-hover table-striped">
+%	foreach (sort keys %{$d}) {
+%	  next unless $d->{$_};
+%	  next if $_ eq 'feat' or $_ eq 'pfeat' or $_ eq 'lang' or $_ eq 'title' or $_ eq 'desc_long'
+%		or $_ =~ /^price/ or $_ eq 'instime' or $_ eq 'cat_id' or $_ eq 'description' or $_ eq 'vat_amount'
+%		or $_ eq 'title_enc' or $_ eq 'teaser';
+%	  my $val = $_ eq 'desc_long' ? $A->shorten_title( $d->{$_}, 50 ) : $d->{$_};
+%	     $val =~ s/</&lt;/g;
+	  <tr>
+		<td style="font-weight:bold"><%$_%></td>
+		<td><% $val %></td>
+	  </tr>
+% 	}
+	</table><br>
+	<form method="get" action="_product_meta_tool.html">
+		<input type="hidden" name="id" value="<%$id%>">
+		<input type="hidden" name="action" value="add_detail">
+		<input type=text name="key" placeholder="Key">
+		<input type=text name="val" placeholder="Value">
+		<input type="submit" class="btn btn-primary" value="Add">
+	</form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

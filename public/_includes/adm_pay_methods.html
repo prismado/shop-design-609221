@@ -1,0 +1,87 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $PMs = $args{PMs};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my %d = ();
+
+	foreach (qw(cc pc3 prx pp pc six sit pcd cod inv pre pmi 2co 2ci twi)) {
+		$d{$_} = $C->{CONFIG}->{"pay_meth_$_"};
+	}
+
+	if ($cgi->param('bUpdate')) {
+		foreach (qw(cc pc3 prx pp pc six sit pcd cod inv pre pmi 2co 2ci twi)) {
+			my $val = $cgi->param("pm_$_") ? 1 : 0;
+			$dbh->do("UPDATE config SET val='$val' WHERE `key`='pay_meth_$_'")
+				or $m->out("ERROR $DBI::errstr<br>");
+			$d{$_} = $val;
+			$C->log(msg=>"Pay Meth $_: $val", importance=>1);
+		}
+	}
+
+	my %icon = ( cc =>'credit-card', pre => 'money', cod => 'envelope', inv => 'edit',
+		pc => 'credit-card', pp => 'pinterest-sign', pmi => 'credit-card' );
+</%init>
+<div style='margin-top:10px' class="pull-right">See also: <a href="adm_shipping.html">Shipping</a> &middot; <a href="adm_vouchers.html">E-Vouchers</a></div>
+<div class="pull-left"><span style='font-size:26px; color:#41414C; margin-top:20px; margin-right:5px; float:left'
+	class="icon-money"></div>
+<h2 class="pull-left">Payment Methods</h2>
+<br clear='all' />
+
+<form method=post>
+
+<table class='table table-hover'>
+<thead>
+	<th colspan="2">Payment Method</th>
+	<th>Short Code</th>
+	<th style='text-align:center'>Costs</th>
+	<th style='text-align:center'>Settings</th>
+</thead>
+<&inc_adm_pay_meth.html, code=>'cc' , C=>$C, active=>$d{cc} , txt=>'Credit Card (Datatrans)', setting=>'config2.html?key=payment_gw_merchantId'&>
+<&inc_adm_pay_meth.html, code=>'pc3', C=>$C, active=>$d{pc3}, txt=>'Credit Card PCI 3.0 (Datatrans / Worldline)',
+							setting=>"adm_db_edit.html?table=config&wcl=`key`%3D%27payment_gw_merchantId%27&s_token=$args{md5_sec_config}"&>
+<&inc_adm_pay_meth.html, code=>'prx', C=>$C, active=>$d{prx}, txt=>'Payrexx AG', setting=>'adm_special_keys.html?area=payrexx_'&>
+<&inc_adm_pay_meth.html, code=>'pc' , C=>$C, active=>$d{pc} , txt=>'Postcard (Datatrans)'&>
+<&inc_adm_pay_meth.html, code=>'six', C=>$C, active=>$d{six}, txt=>'SIX Payment', setting=>'adm_special_keys.html?area=six\_'&>
+<&inc_adm_pay_meth.html, code=>'sit', C=>$C, active=>$d{sit}, txt=>'SIX TWINT', setting=>'adm_special_keys.html?area=six\_'&>
+<&inc_adm_pay_meth.html, code=>'pcd', C=>$C, active=>$d{pcd}, txt=>'Postcard (Direkt)', setting=>'config2.html?key=payment_pcd_pspid'&>
+<&inc_adm_pay_meth.html, code=>'inv', C=>$C, active=>$d{inv}, icon=>$icon{inv}, txt=>'Invoice (Rechnung)', setting=>'adm_settings_invoice.html'&>
+<&inc_adm_pay_meth.html, code=>'pre', C=>$C, active=>$d{pre}, icon=>$icon{pre}, txt=>'Prepayment (Vorauszahlung)',
+								setting=>'adm_settings_prepay.html'&>
+<&inc_adm_pay_meth.html, code=>'pp', C=>$C, active=>$d{pp}, icon=>$icon{pp}, txt=>'PayPal', setting=>'adm_special_keys.html?area=paypal_'&>
+<&inc_adm_pay_meth.html, code=>'cod', C=>$C, active=>$d{cod}, icon=>$icon{cod}, txt=>'COD (Nachname)'&>
+<&inc_adm_pay_meth.html, code=>'pmi', C=>$C, active=>$d{pmi}, txt=>'PAYMILL', setting=>'config2.html?key=PAYMILL_PUBLIC_KEY'&>
+<&inc_adm_pay_meth.html, code=>'2co', C=>$C, active=>$d{'2co'}, txt=>'2Checkout', setting=>'adm_special_keys.html?area=2co'&>
+<&inc_adm_pay_meth.html, code=>'2ci', C=>$C, active=>$d{'2ci'}, txt=>'2Checkout (Inline)', setting=>'adm_special_keys.html?area=2co'&>
+<&inc_adm_pay_meth.html, code=>'twi', C=>$C, active=>$d{'twi'}, txt=>'Twint', setting=>'adm_special_keys.html?area=twi'&>
+</table>
+
+<input type=submit class='btn btn-primary' value="Update" name=bUpdate>
+<input type=button class="btn" onclick="document.location='__dashboard.html'" value="Back">
+</form>
+
+<hr />
+<table class="table table-hover">
+% foreach my $pm (@{ $PMs->{all} }) {
+	<tr>
+	<td><i class="muted icon-<% $pm->{icon} %>"></i></td>
+	<td><% $pm->{psp} %></td>
+	<td><% uc $pm->{pmeth} %></td>
+	<td><% $pm->{num} %></td>
+	<td><% $pm->{active} %></td>
+	</tr>
+% }
+</table>
+
+<i class="icon-info-sign" style='font-size:20px'></i>
+Credit card payments require a contract with a payment provider
+% # -- Als Payment Gateway Provider empfehlen wir Datatrans.
+<%doc>
+	shopd.algonetic.ch
+	__METACLONING__
+</%doc>

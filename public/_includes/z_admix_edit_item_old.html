@@ -1,0 +1,640 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+	my $lang = $args{lang} || 'de';
+
+	eval('use Image::Size;');
+	my $image_size_avail = $@ ? 0 : 1;
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+	my $act_lang = 'style="color:black; font-weight:bold"';
+
+	my $id    = $C->{CGI}->param('id') + 0;
+	my $debug = $C->{CGI}->param('debug');
+
+	my $discount_ref = $C->query("SELECT id FROM products_discount WHERE product_id=$id")->[0];
+	my $show_vat     = $C->get_safe_config('show_vat');
+
+	my ($size_x, $size_y);
+	if ($image_size_avail) {
+		($size_x, $size_y) = imgsize("$ENV{DOCUMENT_ROOT}/produkte/p$id\_orig.jpg");
+	}
+	else {
+		$size_x = 'N/A'; $size_y = 'Image::Size missing';
+	}
+
+	my $rc = 0; my $msg = '';
+	if ($C->{CGI}->param('bUpdate')) {
+		my %data = ();
+		my @cat_ids = ();
+		foreach ($C->{CGI}->all_parameters) {
+			my $val = $C->{CGI}->param($_);
+			if (/^cat_id_\d+$/) {
+				push(@cat_ids, $val + 0) if $val;
+			}
+			$data{$_} = $val;
+		}
+		$data{cat_ids} = join ',', @cat_ids;
+		($rc, $msg) = $A->update_product($id, \%data);
+	}
+	elsif ($C->{CGI}->param('bDel')) {
+		my $ordered = $C->query("SELECT COUNT(*) FROM orders_products where prod_id=$id")->[0];
+		unless ($ordered) {
+		($rc, $msg) = $A->del_product($id);
+		(my $msg_enc = $msg) =~ tr/ /+/;
+		$m->redirect("adm_items.html?msg=$msg_enc");
+		}
+	}
+	elsif ($cgi->param('bCopyProduct')) {
+		my $id = $cgi->param('id');
+		my $new_id = $A->copyproduct(id=>$id);
+		if ($new_id) {
+			$m->redirect("admix.html?func=edit_item&id=$new_id");
+		}
+		else {
+			$m->out("<b style='color:red'>ERROR</b> - <a href='adm_log.html?importance=2&filter=err'>Check Log</a><br>");
+		}
+	}
+	elsif ($C->{CGI}->param('action') eq 'add_feat') {
+		$C->{dbh}->do(qq~INSERT INTO products_feat 
+					(product_id, featname, featkey, lang, weight, description)
+					VALUES ($id, '_new_', "new$$", '$lang', 0, '* tbd *')~);
+		$m->redirect("/admix.html?func=edit_item&id=$id");
+		exit(0);
+	}
+	elsif ($C->{CGI}->param('action') eq 'add_exclude') {
+		$A->add_feature($id, '_exclude', "_new$$", 'de', '* A language independent feature *', -1);
+		$m->out("X Exclude added<br>");
+	}
+	elsif ($C->{CGI}->param('action') eq 'del_feat') {
+		# -- Delete a specific feature from product
+		my $feat_id = $C->{CGI}->param('id');
+		$id = $C->query("SELECT product_id FROM products_feat WHERE id=$feat_id")->[0];
+		$C->{dbh}->do("DELETE FROM products_feat WHERE id=$feat_id");
+		$m->redirect("/admix.html?func=edit_item&id=$id");
+		exit(0);
+	}
+	elsif ($C->{CGI}->param('action') eq 'del_cat') {
+		my $cat_id = $C->{CGI}->param('cid') + 0;
+		$C->{dbh}->do("delete from products2categ where product_id=$id and cat_id=$cat_id");
+		# XXX $m->out("XXX del cat id $cat_id<br>");
+	}
+	elsif ($C->{CGI}->param('bAssignOpt')) {
+		$A->put_product_options();
+	}
+	elsif ($cgi->param('bAddDiscount')) {
+		my $discount_perc   = $cgi->param('discount_perc') + 0;
+		my $discount_amount = $cgi->param('discount_amount') + 0;
+
+		if ($discount_amount > 0.0) {
+			my $data = $A->get_product($id);
+			if ($data->{price_incl_vat} > 0.0) {
+				my $price = $show_vat ? $data->{price_incl_vat} : $data->{price};
+				$discount_perc = $discount_amount * 100 / $price;
+				$C->log(msg => "NOTE: Discount Amount at Prod-ID $id: $discount_amount", importance=>2);
+			}
+		}
+
+		if ($discount_perc > 0.0) {
+		my $errstr = '';
+		$dbh->do("INSERT INTO products_discount (product_id, discount, `description`, status) VALUES ($id, $discount_perc, '-', 1)")
+			or $errstr = $DBI::errstr;
+		if ($errstr) {
+			$m->out("ERR $errstr<br>");
+		}
+		else {
+			# my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+			# $m->redirect("admix.html?func=discount&id=$last_id");
+
+			$discount_ref = $C->query('SELECT LAST_INSERT_ID()')->[0];
+		}
+		}
+	}
+	elsif ($cgi->param('delpic')) {
+		my $pic = $cgi->param('delpic');
+		$dbh->do("DELETE FROM products_feat WHERE product_id=$id AND featkey='20$pic'");
+		my $file = "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_20$pic\_orig\.jpg";
+		unlink $file or $m->out("ERR $file<br>");
+		$file = "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_20$pic\_large\.jpg";
+		unlink $file or $m->out("ERR $file<br>");
+		$m->out("X Deleted: $pic<br>");
+	}
+
+	my $data = $A->get_product($id);
+	if ($data->{'_rc'}) {
+		$msg = "Error E124-307021 rc=$data->{_rc} $data->{_msg}";
+		$rc++;
+		$data = $A->get_product_v2(id=>$id, lang=>'de');
+	}
+	my ($child_id, $child_label) = @{$C->query("select id, label FROM categories WHERE parent_id=$data->{cat_id}")};
+	my $cat_name = $C->query("select label FROM categories WHERE id=$data->{cat_id} AND lang='$lang'")->[0];
+
+	my $res_opt = $A->get_opt_from_product($id, $lang);
+
+	my $sth_opt = $C->{dbh}->prepare("SELECT option_id, label FROM options_desc WHERE lang='$lang' ORDER BY id DESC");
+	   $sth_opt->execute();
+
+	my $sth_camp = $C->{dbh}->prepare('SELECT id FROM campaign_data ORDER BY id DESC LIMIT 99');
+	   $sth_camp->execute();
+	my @campaign_ids = ();
+	while(my $r = $sth_camp->fetch()) {
+		my ($token, $company_id) = @{$C->query("select token, company_id from campaign_data where id=$r->[0]")};
+		my $comp_name = $C->query("select name from companies where id=$company_id")->[0];
+		my $selected = $r->[0] == $data->{campaign_id} ? ' selected' : '';
+		push(@campaign_ids, qq~<option value="$r->[0]"$selected>$comp_name &middot; $token</option>~)
+	}
+
+	my $price_incl_vat = $data->{price_incl_vat};
+
+	delete $data->{'_rc'};
+	delete $data->{'_msg'};
+	delete $data->{'lang'};
+	delete $data->{price_incl_vat};
+
+	my $opts = $A->get_product_options($id);
+	my $opts_count = $#$opts + 1;
+
+	(my $title_enc = $data->{title}) =~ tr/ /\+/;
+	(my $title_enc2 = $data->{title}) =~ s/"/&quot;/g;
+
+	my @feats_typeahead = ();
+
+	push(@feats_typeahead, "'Sphere rangeStep'");
+	push(@feats_typeahead, "'Sphere rangeMin'");
+	push(@feats_typeahead, "'Sphere rangeMax'");
+
+	push(@feats_typeahead, "'Cylinder rangeStep'");
+	push(@feats_typeahead, "'Cylinder rangeMin'");
+	push(@feats_typeahead, "'Cylinder rangeMax'");
+
+	push(@feats_typeahead, "'RadiusBasecurve rangeStep'");
+	push(@feats_typeahead, "'RadiusBasecurve rangeMin'");
+	push(@feats_typeahead, "'RadiusBasecurve rangeMax'");
+
+	push(@feats_typeahead, "'AxisCylinder rangeStep'");
+	push(@feats_typeahead, "'AxisCylinder rangeMin'");
+	push(@feats_typeahead, "'AxisCylinder rangeMax'");
+
+	push(@feats_typeahead, "'Diameter rangeStep'");
+	push(@feats_typeahead, "'Diameter rangeMin'");
+	push(@feats_typeahead, "'Diameter rangeMax'");
+
+	push(@feats_typeahead, "'Addition rangeStep'");
+	push(@feats_typeahead, "'Addition rangeMin'");
+	push(@feats_typeahead, "'Addition rangeMax'");
+
+	my $sth = $dbh->prepare("SELECT featkey FROM products_feat WHERE product_id=$id AND featname='_image'");
+	   $sth->execute();
+	my $extra_images_count = $sth->rows();
+
+	my @categs = split /,/, $data->{cat_ids};
+	my $categ_count = $#categs + 1;
+
+	my $has_style_1 = $C->query(qq~select id from options
+			where id IN
+			(select substr(featkey, 3, 8)
+				from products_feat where product_id=$id AND featkey LIKE '_o%') and style=1~)->[0];
+
+	my $art_no_ref = $A->get_option_id_with_art_no($id, $debug);
+	my $inc_art_no = $C->query("select inc_art_no from options where id=$art_no_ref")->[0];
+
+	my $categories = $A->get_categories();
+	my $all_categs = $categories->{result};
+	my $max_cat_len = length($C->query('select max(id) from categories')->[0]);
+</%init>
+<script type="text/javascript">
+	document.title='Edit Item ID <%$id%> - Ins <%$C->trans_date($data->{instime})%>';
+	function confirm_del(fid) {
+		if (confirm('OK to remove feature ID ' + fid)) {
+			document.location="admix.html?func=edit_item&action=del_feat&id=" + fid;
+		}
+	}
+	function confirm_del_cat(id) {
+		if (confirm('OK to remove Category-ID ' + id)) {
+			document.location="admix.html?func=edit_item&id=<% $id %>&action=del_cat&cid=" + id;
+		}
+	}
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_product.html?id=' + id);
+	}
+	function modal_discount(id) {
+		$('#ajx_2').load('_includes/ajx_modal_discount.html?id=' + id);
+	}
+	function modal_sold(id) {
+		$('#ajx_2').load('_includes/ajx_modal_sold_prod.html?id=' + id);
+	}
+	function modal_details(id) {
+		$('#ajx_2').load('_includes/ajx_modal_prod_details.html?id=' + id);
+	}
+	function modal_upload_file(id) {
+		$('#ajx_2').load('_includes/ajx_modal_upload_file.html?id=' + id);
+% # XXX		$('#ajx_2').load('_includes/ajx_modal_prod_details.html?id=' + id);
+	}
+</script>
+% # -- CKEditor
+<script src="ckeditor.js"></script>
+<script src="assets/uilanguages/languages.js"></script>
+% # -- <link rel="stylesheet" href="sample.css">
+% # -- /CKEditor
+
+% if ($rc) {
+	<span style='color:red'><% $msg %></span><br>
+% }
+% elsif ($msg) {
+	<span style='color:green'><% $msg %></span><br>
+% }
+
+<% $C->bootstrap_alert(qq~<b>INFO</b> <a href="adm_edit_product.html?id=$id">Funktions-Update</a> verf&uuml;gbar~,
+	'danger', 'margin-top:10px; margin-bottom:10px') %>
+
+<form method='post' enctype="multipart/form-data">
+<span style='float:right'>
+% my $c_count = 0;
+% foreach (@categs) {
+%	last if ++$c_count > 4;
+%	my $label = $C->query("select label FROM categories WHERE id=$_ AND lang='de'")->[0];
+	<a href="admix.html?func=items_expand&id=<%$_%>"><span class="label label-success"><%$label%></span></a>
+% }
+% if ($C->{CONFIG}->{multi_lang}) {
+&middot;
+<a <% $lang eq 'de' ? $act_lang : '' %> href="_change_lang.html?lang=de">de</a> &middot; 
+<a <% $lang eq 'en' ? $act_lang : '' %> href="_change_lang.html?lang=en">en</a> &middot; 
+<a <% $lang eq 'fr' ? $act_lang : '' %> href="_change_lang.html?lang=fr">fr</a>
+% }
+</span>
+<table cellspacing=0 cellpadding=0 border=0 width='100%'>
+<tr valign=top><td style='width:110px'>
+<a href='product.html?id=<% $id %>'><img title='Click to see customer view' 
+	style='box-shadow: 7px 7px 4px #888888; margin-bottom:10px' src='produkte/p<% $id %>_thmb.jpg?r=<%rand()%>' width='90'></a><br>
+<input style='font-size:10px' type="file" name="file" />
+<br>
+<input type=text name=remote_pic style='width:177px' placeholder='Remote Picture URL' value=""><br>
+% if ($size_x) {
+	<a href="produkte/p<%$id%>_orig.jpg"><i class="icon-picture"></i></a> <%$size_x%> x <%$size_y%> px
+%	if ($size_x != $size_y) {
+		<a href="_product_meta_tool.html?id=<% $id %>&action=make_square&imgtype=orig&imgsize=<% $C->{CONFIG}->{default_imgsize_large} %>">To Square</a>
+%	}
+	<br />
+% }
+% if ($extra_images_count && $extra_images_count < 5) {
+	<script language=JavaScript>
+	window.onload = function(){
+	$('#feature_imgs').load('ajx_upload_item_pics.html?id=<%$id%>');
+	}
+	</script>
+% }
+% else {
+	<a href='#'
+	onclick="this.style.display='none'; $('#feature_imgs').load('ajx_upload_item_pics.html?id=<%$id%>&rand=<%rand()%>')"><%$extra_images_count%> More Pictures</a>
+% }
+</td>
+<td>
+<span style='font-size:20px; font-weight:bold'><a
+	href='admix.html?func=items_expand&id=<%$data->{cat_id}%>'><%$cat_name || "* Category ID $data->{cat_id} *"%></a> &mdash; 
+	ID <a href='product.html?id=<% $id %>'><% sprintf('%06d', $id) %></a>
+%	if ($debug) {
+		<%$C->html_debug("<a href='_debug_product.html?id=$id'>Dump Product Data</a>")%>
+%	}
+	</span><br>
+
+% my $breadcrumb = $A->get_breadcrumb($data->{cat_id});
+% foreach (@{$breadcrumb}) {
+%	my ($id, $label) = split /\t/;
+	<%$label%> &ndash;
+% }
+<%$cat_name%>
+% if ($child_id) {
+	&ndash; <%$child_label%>
+% }
+<br><br>
+
+	<div class="pull-right"><a href="#" onclick="modal_upload_file(<%$id%>)"><span rel="tooltip"
+		data-original-title="Upload Document" data-placement="left"><i
+			style="font-size:22px" class="icon-file"></i></span></a></div>
+
+	<table cellspacing=0 cellpadding=3 border=0 width='100%'>
+	<tr>
+	<td width=92>Title</td> <td><input type=text name='title' value="<%$title_enc2%>"
+		style='width:400px; font-weight:bold'> &middot;
+	<a target=_blank href="http://www.google.ch/search?as_st=y&tbm=isch&hl=de&as_q=<%$title_enc%>&as_epq=&as_oq=&as_eq=&cr=&as_sitesearch=&safe=images&tbs=isz:lt,islt:vga&biw=1175&bih=770&sei=CVJUUeS1DonusgayjoDgCw">Image Search</a>
+%	if ($debug > 1) {
+		<% $C->html_debug('inc_prod_search') %>
+%	}
+	<&inc_prod_search.html, id=>$id, title_enc=>$title_enc&>
+	</td>
+	</tr>
+	<tr valign=top><td>Description<br>
+		<small>(List&nbsp;View/Promo<br />max.&nbsp;2047&nbsp;chars.)</small></td> <td>
+		<textarea rows=2 style='width:100%' name='description' maxlength="2047"><%$data->{description}%></textarea>
+	</td></tr>
+	<tr valign=top><td nowrap style="padding-right:5px">Description <small><br>(Detail View)<br><br>
+
+		Text module:<br>
+		<span style="font-family:Courier">%%prop <span
+			style="font-family:Verdana; color:#919191"><i>property</i></span>%%</span></small></td> <td>
+		<textarea cols="80" id="editor1" name="desc_long" rows="10"><%$data->{desc_long}%></textarea>
+		<&inc_ckeditor_js.html&>
+	</td></tr>
+	</table>
+
+% if (%{$res_opt}) {
+	<script language=JavaScript>
+		$('#feature_block').load('_includes/ajx_features.html?id=<%$id%>');
+	</script>
+% }
+% if (!$C->{CONFIG}->{admin_hide_feature}) {
+	<a href='#' onclick="this.style.display='none'; $('#feature_block').load('_includes/ajx_features.html?id=<%$id%>&r=<%rand()%>&show_all=1'); document.getElementById('feature_link_266').style.display='none'">Available options</a>&nbsp;&nbsp;
+% }
+% if (!$C->{CONFIG}->{admin_hide_feature} && !%{$res_opt}) {
+	<span id="feature_link_266">
+	<a href='#' onclick="this.style.display='none'; $('#feature_block').load('_includes/ajx_features.html?id=<%$id%>')">Features</a>
+	</span>
+	<br><br>
+% }
+
+<div id=feature_block></div>
+<br />
+<div id=feature_imgs></div>
+</td></tr></table>
+
+<input type=hidden name=func value=edit_item>
+<input type=hidden name=id value='<% $id %>'>
+
+<table cellspacing=0 cellpadding=1 border=0 width='100%'>
+
+<tr>
+	<td colspan=2 align=center>
+	<table cellspacing=0 cellpadding=0 border=0 width='100%'>
+	<tr valign=top>
+	<td>
+		<table cellspacing=0 cellpadding=2 border=0>
+%	my $comma_len = length((split /\./, $data->{price_orig})[1]);
+%	my $price = $comma_len < 3 ? sprintf('%.2f', $data->{price_orig}) : $data->{price_orig};
+		<tr><td style='text-align:left'><b>Price</b></td><td style='text-align:left'><input type=text name=price
+			value='<%$price%>'
+			style='width:95px; margin-top:9px; text-align:right; font-weight:bold'>&nbsp;&nbsp;
+			<span rel="tooltip" data-original-title="Incl. VAT" data-placement="top">(<%$price_incl_vat%>)</span>&nbsp;&nbsp;
+			<& inc_vat_selector.html, prod_type=>$data->{prod_type}, C=>$C &>
+% #			<a href="_debug_product.html?id=<%$id%>"><sup>PT<%$data->{prod_type}%></sup></a>&nbsp;&nbsp;
+%			if ($discount_ref) {
+				<a href='admix.html?func=discount&id=<% $discount_ref %>'><% sprintf('%.2f', $A->get_discount($id)) %> %</a>
+				&rarr; <span
+		style="background-color:lightgreen; padding-top:5px; padding-bottom:5px"><b><%$C->{CONFIG}->{default_curr}%>
+					<%$price_incl_vat%></b> <small>instead of
+				<%$C->{CONFIG}->{default_curr}%> <%sprintf('%.2f', $data->{price_orig_incl_vat})%></small></span>
+%				if ($C->{CONFIG}->{round5}) {
+					<small>(rounded&nbsp;0.05)</small>
+%				}
+%			}
+%			else {
+				<a href="#" onclick="modal_discount(<%$id%>)">Add Discount</a>
+%			}
+			</td></tr>
+
+<tr>
+<td nowrap><b><%$categ_count%> Categories</b></td>
+<td>
+%	foreach my $id (split /,/, $data->{cat_ids}) {
+		<span style="margin-right:20px">
+		<select style="width:180px; margin-top:3px" name="cat_id_<% $id %>">
+%		foreach my $cat (@{$all_categs}) {
+%			my $label = $A->shorten_title($cat->{label}, 16);
+%			   $label = "? $label" unless $id;
+%			my $style = '';
+%			unless ($cat->{parent_id}) {
+%				$style = 'font-weight:bold';
+%			}
+%			$style = 'color:#cccccc' if $cat->{visible} == 0;
+			<option style="<% $style %>" value="<% $cat->{id} %>"
+				<% $cat->{id} == $id ? 'selected' : '' %>><% sprintf("%0$max_cat_len" . 'd', $cat->{id}) %> &ndash; <% $label %>
+			</option>
+%		}
+		</select> <a href="#" onclick="confirm_del_cat(<% $id %>)"><i style="color:red" class="icon-remove"></i></a>
+		</span>
+%	}
+
+<span id="show_categ">
+	<a onclick="document.getElementById('show_categ').style.display='none'; document.getElementById('edit_categ').style.display=''" href="#">Add Category</a>
+</span>
+
+<span style="display:none" id="edit_categ">
+	<select name="cat_id_99999999">
+		<option value="0">&mdash; Select category to add &mdash;</option>
+%	foreach my $cat (@{$all_categs}) {
+%		my $style = '';
+%		unless ($cat->{parent_id}) {
+%			$style = 'font-weight:bold';
+%		}
+%		$style = 'color:#cccccc' if $cat->{visible} == 0;
+%		my $label =  $cat->{label};
+		<option style="<% $style %>" value="<% $cat->{id} %>"><% sprintf("%0$max_cat_len" . 'd', $cat->{id}) %> &ndash; <% $label %></option>
+%	}
+	</select>
+
+% foreach my $id (split /,/, $data->{cat_ids}) {
+%	my $parent_id = $C->query("select parent_id from categories where id=$id")->[0];
+%	my $configured = $data->{cat_ids} =~ /$parent_id/ ? 1 : 0;
+%	next if $configured or !$parent_id;
+%	my $label = $C->query("select label from categories where id=$parent_id and lang='de'")->[0];
+	(Add&nbsp;<%$parent_id%>&nbsp;<%$label%>)
+% }
+</span>
+</td>
+</tr>
+
+% #		<b>Extra</b> <input type=text name=extra value='<%$data->{extra}%>'>
+</tr>
+% unless ($C->{CONFIG}->{admin_hide_campaign_id}) {
+		<tr><td width='100'><a href="admix.html?func=hiddenshop"><b>Campaign ID</b></a></td>
+			<td>
+			<select name="campaign_id">
+			<option value="0">&bull; Please select</option>
+			<% join ', ', @campaign_ids %>
+			</select>
+			</td></tr>
+% }
+		</table>
+	</td>
+	<td>
+		<table cellspacing=0 cellpadding=2 border=0>
+	<tr valign="top"><td widtx='100'><b>Art No</b></td>
+		<td style='text-align:left'><input type=text name=art_no style='width:180px; margin-tox:0px'
+		value='<%$data->{art_no}%>'>
+%		if ($inc_art_no) {
+			&rarr; <a href="admix.html?func=options&id=<%$art_no_ref%>"><%$art_no_ref%></a>
+%		}
+%		if ($art_no_ref < 0) {
+%			my $err = $art_no_ref;
+%			if ($art_no_ref == -1) {
+%				$err = 'Cannot be uniquely assigned: More than one inc_art_no';
+%			}
+%			elsif ($art_no_ref == -2) {
+%				$err = 'Cannot be uniquely assigned: More than one option/feature with count option! Tip: Choose exactly one of the assigned options and mark &laquo;is Article No&raquo;.';
+%			}
+			<br clear='all' />
+			<div class='pull-right'><table style='width:390px'><tr><td><b style="color:red"><%$err%></b></td></tr></table></div>
+%		}
+	</td></tr>
+	<tr><td widtx='100'><b>Count</b></td><td>
+%	if ($art_no_ref > 0) {
+			[ <% $data->{count} == 99999999 ? '&infin;' : $data->{count} %> ] &rarr;
+			<a href="admix.html?func=options&id=<%$art_no_ref%>">Edit</a>
+			<input type=hidden name=count value="99999999">
+%	}
+%	else {
+		<input type=text name=count
+		style='width:64px; text-align:right; margin-top:9px' value='<%$data->{count}%>'>
+%	}
+	<select name="condition" style='width:135px; margin-left:45px; margin-top:9px'>
+% unless ($has_style_1) {
+	<option value="SO"<%$data->{condition} eq 'SO' ? ' selected' : ''%>>Stock Only</option>
+	<option value="OR"<%$data->{condition} eq 'OR' ? ' selected' : ''%>>Allowed Overrun</option>
+% }
+% else {
+	<option value="OR"<%$data->{condition} eq 'OR' ? ' selected' : ''%>>Special</option>
+% }
+	<option value="IP"<%$data->{condition} eq 'IP' ? ' selected' : ''%>>Info Page</option>
+	<option value="IN"<%$data->{condition} eq 'IN' ? ' selected' : ''%>>Invisible</option>
+	</select>
+	</td></tr>
+
+	<tr>
+		<td><b>Brand</b></td>
+		<td><input type="text" name="brand" style="margin-top:9px" value="<% $data->{brand} %>">
+		</td>
+	</tr>
+% #		<tr><td width='100'><b>Zustand</b></td><td><input type=text name=condition value='<% $data->{condition} %>'></td></tr>
+% unless ($C->{CONFIG}->{admin_hide_sale_type}) {
+	<tr><td><b>Sale Type</b></td><td><input type=text name=sale_type style='width:85px' value='<%$data->{sale_type}%>'></td></tr>
+% }
+		</table>
+	</td>
+	</tr>
+	</table>
+	</td>
+</tr>
+
+<tr valign='top'>
+<td style='width:110'>
+	<div style='margin-top:3px; font-weight:bold'>Feature(s)</div>
+<br>
+
+<span style='font-size:12px'>
+<a href='admix.html?func=edit_item&id=<% $id %>&action=add_feat'> + Feature</a><br>
+<a href="admix.html?func=edit_item&id=<%$id%>&action=add_exclude">+ Exclude</a>
+</span>
+</td>
+<td>
+	<table class='mytable'>
+	<thead>
+		<th>Label</th>
+		<th>Identifier</th>
+		<th>Value</th>
+		<th>Weight</th>
+	</thead>
+% foreach (sort keys %{$data->{feat}}) {
+%	my ($weight, $feat_name, $feat_key, $feat_id) = split /\t/;
+%	my $dat = $data->{feat}->{$_};
+%	   $dat =~ s/"/&quot;/g;
+%	# XXX   $dat =~ s/'/"/g;
+%	$weight = sprintf('%d', $weight);
+%	if ($feat_name eq '_exclude') {
+		<&render_exclude_line.html, A=>$A, C=>$C,
+			weight=>$weight, feat_key=>$feat_key, feat_name=>$feat_name, feat_id=>$feat_id, dat=>$dat &>
+%	}
+%	else {
+%	my $style_code = $weight < 0 ? 'background-color:lightgreen' : '';
+	<tr><td nowrap>
+	<div style='cursor:pointer;float:left;width:25px; height:25px' onclick='confirm_del(<%$feat_id%>)'><div class='icon-remove' style='color:red;padding-top:10px;'></div></div>
+		<input type='text' name='_featnam_<% $feat_id %>' value="<% $feat_name %>"
+			style='font-weight:bold; margin-top:10px; width:200px; <%$style_code%>'></td> 
+	<td><input type='text' name="_featkey_<%$feat_id%>" id="autofeat_<%$feat_id%>" autocomplete="off"
+		style='margin-top:10px; width:145px; color:#666; font-size:11px; <%$style_code%>'
+		value="<%$feat_key%>"></td>
+	<td><input type='text' name='_featval_<%$feat_id%>'
+		style='margin-top:10px; font-weight:bold; width:250px; <%$style_code%>' value="<%$dat%>"></td>
+	<td><abbr title='Negativ-Zahl bedeutet hier &laquo;Teaser Text&raquo;'><input type='text' name='_featwei_<% $feat_id %>' 
+		style='width:33px; margin-top:10px; text-align:right; <%$style_code%>' value='<%$weight%>'></abbr></td>
+	</tr>
+%	}
+% }
+	</table>
+% unless (%{$data->{feat}}) {
+	None at this time
+% }
+</td></tr>
+
+<%doc>
+<%perl>
+	delete $data->{feat};
+	delete $data->{title};
+	delete $data->{cat_id};
+	delete $data->{teaser};
+	delete $data->{description};
+	delete $data->{instime};
+	delete $data->{price};
+	delete $data->{art_no};
+	delete $data->{count};
+	delete $data->{cat_ids};
+	delete $data->{condition};
+	delete $data->{extra};
+	delete $data->{campaign_id};
+	delete $data->{desc_long};
+	delete $data->{price_orig};
+	delete $data->{price_orig_incl_vat};
+</%perl>
+
+% foreach my $key (keys %$data) {
+	<tr>
+	<td>&bull; <b><% $key %></b></td>
+	<td><input type=text name='<% $key %>' value='<% $data->{$key} %>'></td></tr>
+% }
+</%doc>
+
+</table><br>
+
+<div style='margin-right:25px' class="pull-right">
+	<a href="#" onclick="modal_sold(<%$id%>)">Order(s)</a> &middot;
+	<a href="#" onclick="modal_details(<%$id%>)">Details</a>
+</div>
+<input type=submit value='Update' name=bUpdate class='btn btn-primary'>&nbsp;&nbsp;
+<input type=button value='Cancel' onclick='history.go(-1)' class=btn>&nbsp;&nbsp;
+<input type=button value='<% $opts_count %> Options' onclick="$('#ajx_1').load('_includes/options.html?id=<% $id %>')" class=btn>
+&nbsp;&nbsp;<input type=button value='Copy Product' onclick="$('#ajx_1').load('_includes/copyproduct.html?id=<%$id%>')" class="btn btn-warning">
+&nbsp;&nbsp;<input type=button class="btn btn-danger" onclick="modal(<%$id%>)" value="Delete">
+
+</form>
+
+<div id='ajx_1'></div>
+
+<script language=JavaScript>
+	var subjects = [<%join ', ', @feats_typeahead%>];
+%	foreach (sort keys %{$data->{feat}}) {
+%		my ($weight, $feat_name, $feat_key, $feat_id) = split /\t/;
+		$('#autofeat_<%$feat_id%>').typeahead({source: subjects})
+%	}
+%	if (%{$res_opt}) {
+		$('#feature_block').load('_includes/ajx_features.html?id=<%$id%>');
+%	}
+</script>
+
+<div id='ajx_2'></div>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary">Save changes</button>
+  </div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

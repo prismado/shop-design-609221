@@ -1,0 +1,231 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+
+	my $id   = $cgi->param('id') || $cgi->param('delid');
+	   $id  *= 1;
+	my $val  = $cgi->param('val');
+	my $key  = $cgi->param('key');
+	my $area = $cgi->param('area');
+	my $bAdd = $cgi->param('bAdd');
+
+	my $last_ins = 0;
+
+	if ($cgi->param('bAdd')) {
+		my $errstr = '';
+		$C->{dbh}->do(qq~insert into config_prod_feat (featkey, featname, lang)
+				values ('upselling_cat_id_9999', '5555', 'sys')~)
+			or ($errstr = $DBI::errstr);
+		$last_ins = $C->query('SELECT LAST_INSERT_ID()')->[0] unless $errstr;
+		$m->out("ERR $errstr<br>") if $errstr;
+	}
+	elsif ($key) {
+		$id = $C->query("select id FROM config WHERE `key`='$key'")->[0];
+	}
+
+	my $stmt = qq~select id, featkey, featname, featname from config_prod_feat
+			where lang='sys' and featkey like 'upselling\_%' order by 4 limit 99999~;
+	   $stmt = "SELECT id, `key`, val FROM config WHERE id=$id" if $id;
+
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	(my $area_disp = $area) =~ tr/a-z/A-Z/;
+
+	my $apply_vat_ch = $C->get_safe_property( 'apply_vat_ch', 'sys' ) + 0;
+	my $apply_vat_ch_id = $C->{id};
+	$C->set_safe_property( 'apply_vat_ch', 0, 'sys' ) unless $apply_vat_ch_id;
+</%init>
+<script type="text/javascript" src="lib/DataTables-1.9.4/media/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="lib/DataTables-1.9.4/media/js/jquery.dataTables.bootstrap.js"></script>
+
+<div style="margin-top:10px" class="pull-right">
+	<a href="#" onclick="modal_add_upsell()"><i style="font-size:28px; margin-top:10px" class="icon-plus-sign"></i></a>
+</div>
+
+<div style="margin-right:10px; margin-top:20px" class="pull-right">
+	<a target="_blank" href="https://docs.ch2.be/_search.html?q=%2Bupsell*&wiki_29=1&wiki_8=1&narrow_search=1">Help</a> &mdash;
+</div>
+
+<h2>Upselling: <%$sth->rows()%> positions <%$args{debug} ? ' - Debug' : ''%></h2>
+
+% if ($bAdd) {
+	Added: <a href="adm_safe_property.html?id=<%$last_ins%>"><% $last_ins %></a><br>
+% }
+
+% if ($args{debug} > 1) {
+	<%$stmt%><br>
+	<%$C->html_debug('Rows: ' . $sth->rows())%>
+% }
+<form>
+<input type=hidden name=id value="<% $id %>">
+
+<table id="myTable" role="table" class='table table-hover table-striped table-first-column-number data-table sort display'>
+
+<thead>
+<tr>
+<th nowrap style="width:170px; text-align:left">Upsell Key<span class="sort-icon"><span></th>
+<th>Source Filter<span class="sort-icon"><span></th>
+<th>Label<span class="sort-icon"><span></th>
+<th>Target ID<span class="sort-icon"><span></th>
+<th>Target Info<span class="sort-icon"><span></th>
+</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+%	my $extra_info = $C->query("select val from config where `key`='$key\__explain'")->[0] || '';
+%	(my $key_disp = $key) =~ s/\_/\|\|/;
+%	    $key_disp = (split /\|\|/, $key_disp)[1] || 'N/A';
+	<tr>
+
+	<td style="text-align:left" data-order="<%$key_disp%>" nowrap>
+		<a href="#" onclick="modal_details(<%$id%>)"><% $key_disp %></a>
+%	    if ($args{debug}) {
+		&middot; <a href="adm_safe_property.html?id=<%$id%>"><i>Safe Prop.</i></a>
+%	    }
+	</td>
+
+%	if ($key_disp =~ /^item_id_(\d+)$/) {
+%		my $prod_id = $1;
+%		my $d = $A->get_product($prod_id);
+		<td nowrap><a target="_blank" href="product.html?id=<%$prod_id%>">Item-ID <%$prod_id%></a></td>
+		<td nowrap><b><% $A->shorten_title($d->{title}, 40) %></b> (<% $d->{price_incl_vat} %>)</td>
+%	}
+%	elsif ($key_disp =~ /^cat_id_(\d+)$/) {
+%		my $cat_id = $1;
+%		my $label = $C->query("select label from categories where id=$cat_id")->[0];
+		<td nowrap>Cat-ID <% $cat_id %></td>
+		<td><b><% $label || 'N/A' %></b></td>
+%	}
+%	elsif ($key_disp =~ /^cat\_id\_(\d+)\_to_item$/) {
+		<td>
+%		my $label = $C->query("select label from categories where id=$1")->[0];
+		Cat-ID <% $1 %></td>
+		<td><b><% $label %></b></td>
+%	}
+%	else {
+		<td>&mdash;</td><td>&mdash;</td>
+%	}
+
+%	if ($key_disp =~ /^item_id_(\d+)$/) {
+%		my $prod_ids = $val;
+		<td nowrap>
+%		foreach my $prod_id (split /,/, $prod_ids) {
+%			my $d = $A->get_product($prod_id);
+			<a target="_blank" href="product.html?id=<%$prod_id%>">Item-ID <%$prod_id%></a><br>
+%		}
+		</td>
+		<td nowrap>
+% # XXX			<b><% $A->shorten_title($d->{title}, 40) %></b> (<%$d->{price_incl_vat}%>)
+		</td>
+%	}
+%	elsif ($key_disp =~ /^cat_id_\d+$/) {
+%		my $cat_id = $val;
+%		if ($cat_id =~ /(.+).*\(\d+\)$/) {
+%			$cat_id = $1;
+%		}
+%		my $label = $C->query("select label from categories where id=$cat_id")->[0];
+		<td nowrap>Cat-ID <% $cat_id %></b></td>
+		<td><b><% $label || 'N/A' %></b></td>
+%	}
+%	elsif ($key_disp =~ /^cat\_id\_\d+\_to_item$/) {
+%		my $d = $A->get_product($val);
+		<td>
+%			foreach my $prod_id (split /,/, $val) {
+				<a target="_blank" href="product.html?id=<%$prod_id%>">Item-ID <%$prod_id%></a><br>
+%			}
+		</td>
+		<td><b><% $A->shorten_title($d->{title}, 40) %></b></td>
+%	}
+%	else {
+		<td></td><td><% $val %></td>
+%	}
+
+	</tr>
+% }
+
+</table>
+</form>
+<br /><br />
+
+<div class="span8 pull-right">
+<table class="mytable">
+
+<tr>
+	<th colspan="3">Infos / Explanations to the parameters</th>
+</tr>
+
+<tr>
+<td>cat_id</td>
+<td>If item of this category are in basket</td>
+<td>Cat-ID(s), comma-separated</td>
+</tr>
+
+<tr>
+<td>cat_id_<i>9999</i>_to_item</td>
+<td>If item of this category are in basket</td>
+<td>Number, Item-ID</td>
+</tr>
+
+<tr>
+<td>item_id</td>
+<td>Specific upselling item mapping</td>
+<td>Number, Item-ID</td>
+</tr>
+
+<tr>
+<td>no_items_cat_id</td>
+<td>If no items at all are in basket</td>
+<td>Cat-IDs, comma-separated</td>
+</tr>
+
+<tr>
+<td>no_items_item_id</td>
+<td>If no items at all are in basket</td>
+<td>Item-IDs, comma-separated</td>
+</tr>
+
+</table>
+</div>
+
+<%doc>
+<div class="pull-right">
+
+<form class="form-horizontal" method=post>
+<input type=hidden name=area value="<%$area%>">
+<fieldset>
+    <div class="control-group">
+
+          <label class="control-label" for="input01">Add new VAT-ID</label>
+          <div class="controls">
+            <input type="text" name="key" class="input-xlarge">
+<input type=submit class="btn btn-primary" value='Add' name=bAdd>
+            <p class="help-block">e.g. vat_47</p>
+          </div>
+        </div>
+
+    </div>
+</fieldset>
+</form>
+
+</div>
+</%doc>
+
+<script type="text/javascript" charset="utf-8">
+	$(document).ready( function() {
+		$('#myTable').dataTable(
+		{
+			"bPaginate": false,
+			"sPaginationType": "full_numbers",
+			"iDisplayLength": 500
+		} );
+	} );
+</script>
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,76 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $bUpdate = $cgi->param('bUpdate');
+	my $bSendPreview = $cgi->param('bSendPreview');
+
+	if ($bUpdate) {
+		(my $xkey = $cgi->param('xkey')) =~ s/'/''/g;
+		(my $val = $cgi->param('val')) =~ s/'/''/g;
+		(my $xdesc = $cgi->param('xdesc')) =~ s/'/''/g;
+		$C->{dbh}->do("update newsletter_settings set xkey='$xkey', val='$val', xdesc='$xdesc' where id=$args{id}")
+			or $m->out("ERROR $DBI::errstr<br>");
+	}
+	elsif ($C->{CGI}->param('bDelete')) {
+		$C->{dbh}->do("delete from newsletter_settings where id=$args{id}");
+		$m->redirect('adm_newsletter_settings.html');
+	}
+
+	my ($xkey, $val, $xdesc) = @{$C->query(
+		"select xkey, val, xdesc from newsletter_settings where id=$args{id}")};
+</%init>
+% # -- CKEditor
+<script src="ckeditor.js"></script>
+<script src="assets/uilanguages/languages.js"></script>
+% # -- <link rel="stylesheet" href="sample.css">
+% # -- /CKEditor
+
+<script language=JavaScript>
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_newsletter_setting.html?id=' + id);
+	}
+</script>
+
+<h2><i class="icon-cog"></i> Edit Newsletter Setting <%$args{id}%></h2>
+
+<form method=post>
+<input type=hidden name=id value="<%$args{id}%>">
+
+<table class="mytable table-hover">
+
+<tr>
+<th style="width:111px">Key</th>
+<td><input style='margin-top:5px; font-weight:bold' type=text name=xkey placeholder="foo" value="<%$xkey%>"></td>
+</tr>
+
+<tr>
+<th>Value</th>
+<td><input style='margin-top:5px; width:80%' type=text name="val" placeholder="Value" value="<%$val%>"></td>
+</tr>
+
+<tr>
+<th>Description</th>
+<td><input style='margin-top:5px; width:80%' type=text name="xdesc" placeholder="Description" value="<%$xdesc%>"></td>
+</tr>
+
+</table><br>
+
+<input type=submit name=bUpdate value="Update" class="btn btn-primary">
+<input type=button value="Back" onclick="document.location='adm_newsletter_settings.html'" class="btn">
+<input type=button onclick="modal(<%$args{id}%>)" value="Delete" class="btn btn-danger">
+</form>
+% if ($bSendPreview) {
+	Preview sent to <%$C->{CONFIG}->{newsletter_preview_email} || 'N/A'%>.<br>
+% }
+
+% # XXX <tt>{{email}}</tt> &rarr; E-Mail address<br>
+
+<div id='ajx_2'></div>
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,77 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $this = $C->this();
+</%init>
+<div id="<% $this %>">
+
+	<style type="text/css" media="screen">
+		@import "DataTables-1.9.1/media/css/demo_table_jui.css";
+		@import "DataTables-1.9.1/media/css/jui_themes/ui-lightness/my-jquery-ui.css";
+% #		@import "DataTables/media/css/jquery.dataTables.min.css";
+% #		@import "DataTables/examples/resources/syntax/shCore.css";
+		/*
+		 * Override styles needed due to the mix of three different CSS sources! For proper examples
+		 * please see the themes example in the 'Examples' section of this site
+		 */
+		.dataTables_info { padding-top: 0; }
+		.dataTables_paginate { padding-top: 0; }
+		.css_right { float: right; }
+		#example_wrapper .fg-toolbar { font-size: 0.8em }
+		#theme_links span { float: left; padding: 2px 10px; }
+		table.dataTable tr.even { background-color: #F5F6FF; }
+	</style>
+		
+	<script type="text/javascript" src="DataTables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready( function() {
+			$('#example').dataTable( {
+				"bJQueryUI": true,
+				"sPaginationType": "full_numbers",
+				"iDisplayLength": 25,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "_includes/_server_processing.html"
+			} );
+
+			var oTable = $('#example').dataTable();
+			oTable.fnSort( [ [0,'desc'] ] );
+		} );
+	</script>
+
+<div id="fw_container">
+<div id="fw_content">
+
+	<div class="pull-right">
+		<a href="../adx/orders.html">Neue Version</a>
+	</div>
+
+<div style="width:100%; margin-top: 1em; margin-left:auto; margin-right:auto;">
+	
+<div id="theme_links" class="fg-toolbar ui-widget-header ui-corner-all fg-buttonset fg-buttonset-multi">
+	<div class="css_clear"></div>
+</div>
+
+<table class='mytable table-hover' id='example'>
+<thead>
+<tr>
+	<th style="width:82px">Order ID</th>
+	<th style='width:135px'>Customer</th>
+	<th style="width:125px">Time</th>
+	<th style="width:348px">Products</th>
+	<th style='width:112px; text-aligx:right'>Amount <%$C->{CONFIG}->{default_curr}%></th>
+	<th style='width:144px'>Pay Meth</th>
+	<th style='width:82px'>Ship</th>
+	<th style='min-width:100px'>Status</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

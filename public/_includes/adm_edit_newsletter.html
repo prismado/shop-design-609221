@@ -1,0 +1,137 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+
+	my $bUpdate      = $cgi->param('bUpdate');
+	my $email        = $cgi->param('email');
+	my $bSendPreview = $cgi->param('bSendPreview');
+
+	$email ||= $C->query("select email from users where id=$args{UID}")->[0];
+
+	if ($bUpdate) {
+		(my $mailtext = $cgi->param('mailtext')) =~ s/'/''/g;
+		    # -- 22Sep2023 (3 lines):
+		    $mailtext =~ s/<td height="(\d+)">&nbsp;<\/td>/<td height="$1"><\/td>/g;
+		    $mailtext =~ s/<div>&nbsp;<\/div>/<div><\/div>/g;
+		    $mailtext =~ s/<td bgcolor="(.+)" height="1">&nbsp;<\/td>/<td bgcolor="$1" height="1"><\/td>/g;
+		(my $subject = $cgi->param('subject')) =~ s/'/''/g;
+		my $newsletter_type = $cgi->param('newsletter_type') + 0;
+		my $sender = $cgi->param('sender');
+		my $lang   = $cgi->param('lang') || 'de';
+		$C->{dbh}->do(qq~
+			update	newsletter set 
+				subject='$subject', mailtext='$mailtext', sender_email='$sender',
+				newsletter_type=$newsletter_type, lang='$lang', last_mod=NOW(), last_user='$args{uname}'
+			where 	id=$args{id}~);
+	}
+	elsif ($C->{CGI}->param('bDelete')) {
+		$C->{dbh}->do("delete from newsletter where id=$args{id}");
+		$m->redirect('adm_newsletter.html');
+	}
+	elsif ($bSendPreview) {
+		$A->send_newsletter_preview(id=>$args{id}, email=>$email);
+	}
+	elsif ($cgi->param('bSend')) {
+		my $scope = $cgi->param('scope');
+		$C->{dbh}->do("update newsletter set status=2 where id=$args{id}");
+		$A->send_newsletter_batch(id => $args{id}, scope=>$scope);
+		# $A->send_newsletter(id => $args{id});
+		$m->redirect('adm_newsletter.html');
+	}
+
+	my ($subject, $mailtext, $sender_email, $status, $newsletter_type, $lang) = @{$C->query(
+		"select subject, mailtext, sender_email, status, newsletter_type, lang from newsletter where id=$args{id}")};
+</%init>
+% # -- CKEditor
+<script src="ckeditor.js"></script>
+<script src="assets/uilanguages/languages.js"></script>
+<script type="text/javascript">
+	CKEDITOR.config.height = '480px';
+	CKEDITOR.config.allowedContent = true;
+</script>
+% # -- /CKEditor
+
+<script language=JavaScript>
+	function modal(id) {
+		$('#ajx_2').load('_includes/ajx_modal_del_newsletter.html?id=' + id);
+	}
+	function modal_send_preview(id) {
+		$('#ajx_2').load('_includes/ajx_modal_send_newsletter_preview.html?id=' + id);
+	}
+	function send(id) {
+		$('#ajx_2').load('_includes/ajx_modal_send_newsletter.html?id=' + id);
+	}
+</script>
+
+% if ($args{sent} ) {
+	<br>
+	<% $C->bootstrap_alert('Sent on ' . $C->trans_date_short($args{sent}), 'success') %>
+% }
+
+% if ($args{debug}) {
+%	my $send_count = $C->get_safe_property("nl_$args{id}_sendcounter", 'sys');
+	XX Debug / Count: <% $send_count %> &rarr; <a href="adm_safe_property.html?id=<% $C->{id} %>"><% $C->{id} %></a><br>
+% }
+
+<form method=post>
+<div class="pull-right">
+	Type <span rel="tooltip" data-original-title="1=Std, 2=Template" data-placement="top"><input type=text
+		style="width:33px; text-align:center; margin-top:10px; margin-right:20px"
+		name="newsletter_type" value="<%$newsletter_type || 1%>"></span>
+
+	Language Code <input type=text style="width:33px; text-align:center; margin-top:10px"
+		name="lang" value="<%$lang%>">
+</div>
+
+<h2><i class="icon-envelope-alt"></i> Edit Newsletter <%$args{id}%></h2>
+
+<input type=hidden name=id value="<%$args{id}%>">
+
+<table class="mytable table-hover">
+
+<tr>
+<th>Sender</th>
+<td><input style='margin-top:5px; width:320px' type=text name=sender placeholder="Sender E-Mail" value="<%$sender_email%>"></td>
+</tr>
+
+<tr>
+<th>Subject</th>
+<td><input style='margin-top:5px; width:75%' type=text name=subject placeholder="Subject" value="<%$subject%>">
+% if ($subject =~ /^\{\{prop (.+?)\}\}/) {
+%	my $prop = $1;
+%	my $prop_id = $C->query("select id from properties where `key`='$prop\_de'")->[0];
+	<a href="adm_property.html?id=<% $prop_id %>"><% $C->prop($prop) %></a>
+% }
+</td>
+</tr>
+
+</table><br>
+
+<textarea cols="80" id="editor1" name="mailtext" rows="10"><%$mailtext%></textarea><br><br>
+<& adm_inc_ckeditor_js.html, C=>$C, noBootsTr=>0 &>
+
+<input type=submit name=bUpdate value="Update" class="btn btn-primary">
+% if ($status != 2 && $status != 3) {
+	&nbsp;&nbsp;<input type=button onclick="send(<%$args{id}%>)" value="Send ..." class="btn btn-warning">
+% }
+&nbsp;&nbsp;<input type=button onclick="modal_send_preview(<%$args{id}%>)" value="Send Preview" class="btn btn-info">
+&nbsp;&nbsp;<input type=button onclick="modal(<%$args{id}%>)" value="Delete" class="btn btn-danger">
+&nbsp;&nbsp;<input type=button value="Back" onclick="document.location='adm_newsletter.html'" class="btn">
+</form>
+% if ($bSendPreview) {
+	<% $C->bootstrap_alert("Preview sent to $email", 'success') %>
+	<br>
+% }
+
+<code>{{email}}</code> &rarr; E-Mail address<br><br>
+
+<code>{{prop newsletter_salutation}} {{lastname}}</code> &rarr; Salutation
+
+<div id='ajx_2'></div>
+
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,22 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+</%init>
+
+<h3>Settings</h3>
+
+<p>
+by <a target=_blank href="http://ps-media.ch">ps-media GmbH</a> &amp;
+	<a href="http://screenpoint.net">Screen Point AG</a>, Z&uuml;rich
+</p>
+<p>
+% if ($C) {
+	Host: <%$C->getOwnHostname()%>
+% }
+% else {
+	Host: <b>*** N/A ***</b>
+% }
+</p>
+<%doc>
+	__METACLONING__
+</%doc>

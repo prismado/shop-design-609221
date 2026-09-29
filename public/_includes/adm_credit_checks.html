@@ -1,0 +1,70 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $debug = $args{debug};
+
+	my $sth = $C->{dbh}->prepare(q~
+		select	id, user_id, tstamp, xkey, xval 
+		from 	users_details 
+		where	xkey = 'deltavista_check_time'
+		order 	by id desc 
+		limit 	1000
+	~);
+	$sth->execute();
+</%init>
+<h2>Credit Checks (Deltavista)</h2>
+
+% if ($debug) {
+	<% $C->html_debug('Debug') %>
+	Is Admin: <% $args{is_admin} %><br>
+% }
+<table class="mytable table-hover table-striped">
+<thead>
+	<tr>
+		<th>Check Time</th>
+		<th style="width:19%">Firstname Lastname</th>
+		<th style="width:16%">Company</th>
+		<th style="width:19%">City</th>
+		<th>E-Mail</th>
+		<th style="text-align:right; padding-right:30px">Amount</th>
+		<th>Result</th>
+		<th>Raw&nbsp;</th>
+	</tr>
+</thead>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $user_id, $tstamp, $xkey, $xval) = @{$r};
+%	my $uinf = $A->get_user_info($user_id);
+%	my $decision = $uinf->{deltavista_decision} || 'GREEN';
+%	my ($street, $street_no) = $C->split_street_number($uinf->{street});
+%	my $file = 'soap_' . $C->url_friendly("$uinf->{firstname}\-$uinf->{lastname}\-$street") .
+%		($tstamp gt '2019-02-05' ? '_resp.xml' : '.xml');
+	<tr>
+	<td nowrap><% $C->trans_date_short($tstamp) %></td>
+	<td nowrap style="padding-right:10px">
+%	  if ($args{is_admin}) {
+		<a href="user.html?id=<%$user_id%>"><% $uinf->{firstname} %> <% $uinf->{lastname} || "* UID $user_id / ID $id *" %></a>
+%	  }
+%	  else {
+		<% $uinf->{firstname} %> <% $uinf->{lastname} || "* UID $user_id / ID $id *" %>
+%	  }
+	</td>
+	<td><% $uinf->{company} %></td>
+	<td><% $uinf->{zip} %> <% $uinf->{city} || '* No city *' %></td>
+	<td><% $uinf->{email} || 'N/A' %></td>
+	<td style="text-align:right; padding-right:30px"><% $uinf->{deltavista_amount} || 'N/A' %></td>
+	<td><span class='label label-<% $decision eq 'GREEN' ? 'success' : 'important'%>'><% $decision %></span></td>
+	<td style="text-align:center">
+%		if ($tstamp gt '2019-02-05') {
+%		}
+		<a href="adm_open_file.html?file=<%$file%>"><i class="icon-eye-open"></i></a>
+	</td>
+	</tr>
+% }
+</table>
+<br />
+
+<form method="post">
+<input type="button" class="btn" value="Back" onclick="document.location='.'">
+</form>

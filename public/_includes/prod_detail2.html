@@ -1,0 +1,129 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $id = $args{'id'};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $lang = $args{'lang'} || 'de';
+	my $discount = $A->get_discount($id);
+	my $price_net = sprintf('%.2f', $d->{price} * (1 - $discount / 100) * (1 + $C->{CONFIG}->{vat} / 100));
+
+	my $msg = $C->getSessData('msg');
+	$C->del_sess_key('msg');
+</%init>
+<!-- Faccbook Tags -->
+<meta property="og:type" content="product" /> 
+<meta property="og:title" content="<% $d->{'title'} %>" /> 
+<meta property="og:description" content="<%$d->{desc_long}%>" /> 
+<meta property="og:image" content="http://<%$ENV{HTTP_HOST}%>/produkte/p<%$id%>_orig.jpg" /> 
+<meta property="og:url" content="http://<%$ENV{HTTP_HOST}%>/product.html?id=<%$id%>" /> 
+<meta property="og:site_name" content="<%$ENV{HTTP_HOST}%>" /> 
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+
+<div class="box_head">
+          <h2><% $d->{'title'} %></h2>
+        </div>
+        <!--end box_head -->
+
+
+ <div id="productLeft">
+        
+% if ($d->{price_incl_vat} != $d->{price_orig_incl_vat}) {
+	<span class="aktionsOffer"></span>
+% }
+          <div class="productImage"> <img src="produkte/p<%$id%>_orig.jpg" alt="<% $d->{'title'} %>" title="<% $d->{'title'} %>" /> </div>
+
+          <div id="productPrice">
+          <p style="font-size:10px;"><%$C->p('image_text')%></p>
+           <&prod_summary.html, C => $C, A => $A, d => $d, id => $id&>
+ 
+        </div>  <!--end productLeft -->
+        
+ <div class="productDescription">
+          <p> <%$d->{desc_long}%></p>
+</div><!--end productDescription -->        
+
+<&prod_detail_textblock.html, CORE => $C, A => $A, d => $d, id => $id, lang => $lang, msg => $msg&>
+
+<div id="addtoCart">
+	<form action="basket.html">
+	<input type=hidden name=id value="<%$id%>">
+	<nobr>
+	Anzahl
+	<select name=count style='margin-left:10px' onchange='updateTotal(this.value)'>
+	<option>1</option>
+	<option>2</option>
+	<option>3</option>
+	<option>4</option>
+	<option>5</option>
+	<option>6</option>
+	<option>7</option>
+	<option>8</option>
+	<option>9</option>
+% # --	<option>10</option>
+	</select>
+	</nobr>
+	<input type=submit class="blu_btn" value="In den Warenkorb">
+	</form>
+</div>
+
+<script language=JavaScript>
+	var packPrice = new Array();
+%	for (my $i=1; $i<11; $i++) {
+		packPrice[<%$i%>] = "<%sprintf('%.2f', $i * $d->{price_incl_vat})%>";
+%	}
+
+	function updateTotal(count) {
+% # --		new_total = count * <%$d->{price_incl_vat}%>;
+		new_total = packPrice[count];
+
+		rabatt_total = count * <%$d->{price_orig_incl_vat}%>;
+
+		document.getElementById('detail_price_total').innerHTML =
+			'<div class="detailPreis">CHF ' + new_total + '</div>';
+
+		document.getElementById('detailPreissmall').innerHTML =
+			'<div>anstatt<br /><s>CHF ' + rabatt_total + '.00' + '</s></div>';
+	}
+</script>
+
+
+% if ($C->is_devel()) {
+	<br clear='all' />
+%	my $mandatory_feat = $A->get_mandatory_feat($id);
+%	foreach my $feat_id (keys %{$mandatory_feat}) {
+%		my $description = $C->query("SELECT description FROM voptions WHERE id=$feat_id AND lang='de'")->[0];
+		Mandatory Feature ID: <b><%$feat_id%></b> <%$description%><br>
+%	}
+%	if ($C->{CGI}->param('dump')) {
+		<table>
+%		foreach (sort keys %$d) {
+%			next if $_ eq 'feat' or $_ eq '_rc';
+			<tr><td nowrap><b><%$_%></b></td><td style='padding-left:22px'>"<%$d->{$_}%>"</td></tr>
+%		}
+		</table>
+		<table>
+%		foreach (sort keys %{$d->{feat}}) {
+			<tr><td nowrap><b><%$_%></b></td><td style='padding-left:22px'>"<%$d->{feat}->{$_}%>"</td></tr>
+%		}
+		</table>
+%	}
+	&rarr; <a href="product.html?id=<%$id%>&dump=1">Dump Product Data</a>
+	<&page_info.html, 'END'&>
+% }
+
+<%doc>
+% if ($d->{brand}) {
+	<% $d->{brand} %>.gif"><br>
+% }
+
+% if ($d->{teaser}) {
+	<% $d->{teaser} %><br>
+% }
+
+% if ($discount) {
+	<img src="images/offer_small.png" width="170" height="30" alt="offer">
+% }
+</%doc>

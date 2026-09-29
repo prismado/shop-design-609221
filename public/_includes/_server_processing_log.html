@@ -1,0 +1,112 @@
+<%init>
+        use ScreenPoint::Core;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $importance = $cgi->param('importance') + 0; $importance ||= 3;
+	my $sid        = $cgi->param('sid') + 0;
+	my $filter     = $cgi->param('filter');
+	my $filtertype = $cgi->param('filtertype') eq 'not' ? 'not' : '';
+	my $order_id   = $cgi->param('order_id') + 0;
+	my $debug      = $cgi->param('debug') + 0;
+
+	my @dbcols = qw(tstamp uid module service action sid importance id);
+
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+
+	my $order_clause = $order_id ? " OR action LIKE '%$order_id%'" : '';
+
+	my @where_clause = ();
+	push(@where_clause, 'importance ' . $C->_lt_() . $importance);
+	push(@where_clause, "sid=$sid") if $sid;
+	push(@where_clause, "action NOT LIKE 'ERROR%'") if $filter eq 'warn';
+	push(@where_clause, "(action $filtertype like '%$filter%' OR service='$filter'$order_clause)") if $filter;
+	my $wildcard_search = '%' . "$sSearch%";
+	push(@where_clause, "action LIKE '$wildcard_search' OR service LIKE '$sSearch%'") if $sSearch;
+
+	my $wcl = join ' AND ', @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	log 
+			WHERE	$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	# XXX print STDERR "XXX $stmt\n";
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM log WHERE $wcl")->[0];
+
+	while(my $r = $sth->fetch()) {
+		my @arr = ();
+		$r->[2] =~ s/^Core; \///;
+		if ($debug) {
+		$r->[0] = $C->trans_date($r->[0]); $r->[0] = "<nobr>$r->[0]</nobr>";
+		}
+		else {
+		$r->[0] = $C->trans_date_very_short($r->[0]); $r->[0] = "<nobr>$r->[0]</nobr>";
+		}
+		$r->[1] = $C->query("select uname FROM users WHERE id=$r->[1]")->[0] || 'N/A';
+
+		$r->[2] =~ s/^custom\///;
+		# XXX $r->[2] =~ s/^Shop; \/custom\//Shop; /;
+		$r->[2] = substr($r->[2], 0, 33) . '...' if length($r->[2]) > 33;
+		$r->[2] = "<nobr>$r->[2]</nobr>";
+		$r->[4] = "<span style='color:#be3e3e'>$r->[4]</span>" if $r->[4] =~ /ERROR/i && $r->[6] == 1;
+
+		if ($r->[6] == 1) {
+			$r->[4] = "<b style='color:#2b6c7f'>$r->[4]</b>";
+		}
+		elsif ($r->[6] == 3) {
+			$r->[4] = "<span style='color:green; font-style:italic'>$r->[4]</span>";
+		}
+		$r->[5] = "<a href='adm_log.html?importance=5&sid=$r->[5]'>$r->[5]</a>" if $r->[5];
+
+		if ($debug) {
+			$r->[5] = "$r->[5] <a style='color:red; font-weight:bold' href=adm_log.html?delid=$r->[7]&filter=$filter&importance=$importance&filtertype=$filtertype>X</a>";
+		}
+
+		foreach (@{$r}) {
+			push(@arr, $_);
+		}
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	zzshopd
+	__METACLONING__
+</%doc>

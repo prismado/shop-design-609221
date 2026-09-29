@@ -1,0 +1,62 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $d = $A->get_product_v2(id=>$id);
+
+	my $price_incl_vat = $C->get_safe_config('show_vat') ? $d->{price_incl_vat} : $d->{price};
+</%init>
+<script language=JavaScript>
+$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=func value="edit_item">
+%
+<!-- Modal -->
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+%
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Please specify discount</h3>
+  </div>
+%
+  <div style="padding-top:10px" class="modal-body">
+	<span style='float:right; margin-bottom:15px; margin-top:0px'><img src="images/sale_yellow.png"></span>
+		<h2>Add Discount</h2>
+		<table class=mytable>
+		<thead><tr><th>Product</th><th style='text-align:right'>Item-ID&nbsp;</th></tr></thead>
+		<tr style="height:40px">
+		<td><b><% $d->{title} %></b></td>
+		<td style='text-align:right'><%$id%>&nbsp;</td>
+		</tr>
+		</table><br>
+		Current Price: <b>CHF <%sprintf('%.2f', $price_incl_vat)%></b><br><br>
+
+		<div class="pull-right">
+			Discount: <input type=text style='width:75px; font-weight:bold; text-align:center; margin-top:9px'
+				value='0.00' name=discount_amount> <b><%$C->{CONFIG}->{default_curr}%></b>
+		</div>
+		Discount: <input type=text style='width:62px; font-weight:bold; text-align:center; margin-top:9px'
+			value='0.00' name=discount_perc> <b>%</b><br>
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" name=bAddDiscount type=submit value="Add Discount">
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+</%doc>

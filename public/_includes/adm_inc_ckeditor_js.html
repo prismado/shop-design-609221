@@ -1,0 +1,48 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	# XXX my $cfg_ckeditor_css = $C->get_sys_config('ckeditor_css');
+	my @css = ();
+	foreach (split /,/, $C->get_sys_config('ckeditor_css')) {
+		push(@css, "\t\t\t'$_'");
+	}
+</%init>
+<script>
+	// -- DN309221-2
+	var editor;
+
+	function createEditor( languageCode ) {
+		if ( editor )
+			editor.destroy();
+
+		editor = CKEDITOR.replace( 'editor1', {
+			filebrowserBrowseUrl: '_browser_browse.html',
+			filebrowserUploadUrl: '_uploader_upload2.html',
+			language: 'de',
+			extraAllowedContent: 'h1[*]{*}(*); ul li[*]{*}(*); td[*]',
+
+%	unless ($args{noBootsTr}) {
+% #			// Custom stylesheet for editor content.
+			contentsCss: [
+<% join ",\n", @css %>
+% #				'https://docs.ch2.be/css/bootstrap.min.css'
+% #				'lib/bootstrap/css/bootstrap.min.css'
+% #				'css/stylesheet.css',
+% #				'css/bootstrap-responsive.css'
+			],
+%	}
+
+			on: {
+				instanceReady: function() { }
+			}
+		});
+	}
+
+% #	// At page startup, load the default language:
+	createEditor( '' );
+</script>
+<%doc>
+	__METACLONING__
+</%doc>

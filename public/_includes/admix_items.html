@@ -1,0 +1,45 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $sth = $C->{'dbh'}->prepare("SELECT id, label, visible FROM categories WHERE lang='$lang' AND parent_id=0 ORDER BY weight");
+	   $sth->execute();
+</%init>
+
+<h2>Products</h2>
+
+% # XXX <a href="admix.html?func=items_expand&id=528">List Products</a><br><br>
+
+<table class='mytable'>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $label, $visible) = @{$r};
+%	my $count = $C->query("SELECT COUNT(*) FROM products2categ WHERE cat_id=$id")->[0];
+%	my $sth2 = $C->{'dbh'}->prepare("SELECT id, label, visible FROM categories WHERE parent_id=$id AND lang='$lang'");
+%	   $sth2->execute();
+	<tr valign=top style='line-height:130%' onmouseover="this.className='highlight_noptr'" onmouseout="this.className=''">
+	<td width='15%' nowrap><a href='admix.html?func=items_expand&id=<%$id%>'><b><%$label%></b></a></td>
+	<td style='width:40'>(<% $count %>)</td>
+	<td style='width:50'><img style='margin-top:5px' src='/images/eye_blue_sma<% !$visible ? '_strike' : '' %>.png'></td>
+	<td>
+		<table cellspacing=0 cellpadding=2 border=0 style='margin-bottom:11px'>
+%		while(my $rr = $sth2->fetch()) {
+%			my ($id, $label, $visible) = @{$rr};
+%			my $count = $C->query("SELECT COUNT(*) FROM products2categ WHERE cat_id=$id")->[0];
+			<tr><td nowrap style='width:233px'>&raquo; <a
+				href='admix.html?func=items_expand&id=<%$id%>'><%$label%></a></td>
+			<td style='text-align:right'>(<%$count%>)</td>
+			<td align=right width=44><img style='margin-top:5px'
+				src='/images/eye_blue_sma<% !$visible ? '_strike' : '' %>.png'></td>
+			</tr>
+%		}
+		</table>
+	</td>
+	</td></tr>
+% }
+
+</table><br>
+
+<a href='admix.html?func=config_items'>Items Global Konfigurieren</a><br>

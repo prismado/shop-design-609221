@@ -1,0 +1,50 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	my $show_inactive = $C->{CGI}->param('show_inactive_paymeth');
+
+	my %pay_meths = ();
+
+	foreach (keys %{$C->{CONFIG}}) {
+		next unless /^pay_meth_(.+)$/;
+		$pay_meths{$1} = $C->{CONFIG}->{$_};
+	}
+
+	my %pay_meth_hr = ( cc=>'CreditCard Datatrans', '2co'=>'2Checkout', '2ci'=>'2Checkout (inline)', inv=>'Invoice', pre=>'Prepaid', twi=>'TWINT',
+		cod=>'Nachnahme', pc=>'Postcard', pcd=>'Postcard Direct', pp=>'PayPal', prx=>'Payrexx',
+			six=>'SIX Saferpay', sit=>'SIX Twint', pmi=>'PAYMILL', 'pc3'=>'Credit Card PCI 3.0 DT' );
+
+	my %pay_meth_icon = ( cc=>'credit-card', '2co'=>'credit-card', '2ci'=>'credit-card', pre=>'money', cod=>'envelope', inv=>'edit',
+		pc=>'credit-card', pp=>'pinterest-sign', prx=>'credit-card', pmi=>'credit-card', pc3=>'credit-card', six=>'credit-card' );
+</%init>
+<h2>Payment Methods</h2>
+
+<ul class="cards widget">                        
+                        
+% foreach (sort keys %pay_meths) {
+%	my $xlabel = $pay_meths{$_} ? 'success' : 'important';
+%	next if $xlabel ne 'success' && !$show_inactive;
+%	my $link = 'adm_pay_methods.html';
+%	   $link = 'adm_special_keys.html?area=six' if $_ eq 'six';
+%	   $link = 'adm_special_keys.html?area=paypal_' if $_ eq 'pp';
+%	   $link = 'adm_special_keys.html?area=pay_meth_special' if /^special\d+$/;
+%	if (/^special(\d+)$/) {
+%		$pay_meth_hr{$_} = "Special $1: $pay_meths{$_}";
+%	}
+	<li>
+		<a href="<%$link%>"><button class="btn pull-right btn-mini">Open</button></a>
+		<i class="pull-left muted icon-<%$pay_meth_icon{$_} || 'cog'%>"></i>
+			<div>
+			<p class="title"><%$pay_meth_hr{$_} || "* $_ *"%> &middot; <span style="color:#cccccc">[ <% $_ %> ]</span></p>
+			<p class="info"><span class='label label-<%$xlabel%>'><%$pay_meths{$_} ? 'Active' : 'Not used'%></span></p>
+			</div>
+	</li>
+% }
+ 
+</ul>
+
+<a href="__dashboard.html?show_inactive_paymeth=1">Show All</a><br><br>
+<%doc>
+	__METACLONING__
+</%doc>

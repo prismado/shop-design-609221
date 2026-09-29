@@ -1,0 +1,44 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+</%init>
+%
+% # -- Info Box
+%
+<TABLE class="infoBoxContents" border=0 cellSpacing=0 cellPadding=0 width="100%">
+  <TBODY>
+    <TR>
+      <TD><A class="categor" href="info_about.html"><% $C->p('about') %></A></TD>
+    </TR>
+       <TR>
+      <TD><A class="categor" href="info_delivery.html"><% $C->p('delivery') %></A></TD>
+    </TR> 
+    <TR>
+      <TD><A class="categor" href="info_services.html"><% $C->p('services') %></A></TD>
+    </TR>
+    <TR>
+      <TD><A class="categor" href="rma.html"><% $C->p('rma_order') %></A></TD>
+    </TR>
+    <TR>
+      <TD><A class="categor" href="info_help.html"><% $C->p('help') %></A></TD>
+    </TR>
+    
+    <TR>
+      <TD><A class="categor" href="info_agb.html"><% $C->p('agbs') %></A></TD>
+    </TR>
+    
+    <TR>
+      <TD><A class="categor" href="info_terms.html"><% $C->p('terms') %></A></TD>
+    </TR>
+    
+    <TR>
+      <TD><A class="categor" href="info_policy.html"><% $C->p('policy') %></A></TD>
+    </TR>
+     <TR><TD height="19"></TD>
+    <TR><TD>
+    
+</Td></TR>
+    
+  </TBODY>
+</TABLE>
+

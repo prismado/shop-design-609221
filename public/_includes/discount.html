@@ -1,0 +1,74 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $pre_selected_date = $C->{CGI}->param('imp_date');
+
+	$C->load_properties('account');
+	my $prop = $C->{property}->{'account'};
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my $sth = $C->{dbh}->prepare('SELECT DISTINCT SUBSTR(instime, 1, 10) FROM products2categ ORDER BY id DESC LIMIT 19');
+	   $sth->execute();
+	my @import_dates = ();
+
+	while(my $r = $sth->fetch()) {
+		my $sel = $r->[0] eq $pre_selected_date ? ' selected' : '';
+		push(@import_dates, "<option value='$r->[0]'$sel>" . $C->trans_date($r->[0]) . '</option>');
+	}
+
+	(my $last_imp_date = $import_dates[0]) =~ s/^<option value='(.+)'>.+<\/option>$/$1/;
+	$last_imp_date = $pre_selected_date if $pre_selected_date;
+
+	$sth = $C->{dbh}->prepare("SELECT id, label FROM categories WHERE lang='de' AND visible=1 ORDER BY weight");
+	$sth->execute();
+
+	# -- Within a <form> ... </form> !
+</%init>
+%
+<!-- b><% $prop->{"your_login_name$l"}%>:</b -->
+
+Rabatt: <input type=text size=4 name=discount value='0.0'> %&nbsp;&nbsp;&nbsp;&nbsp;
+Einschränken auf Import:
+<select name=import_date onchange="redir(this)">
+<% join '', @import_dates %>
+<option value=''>&bull; Nicht einschränken</option>
+</select>
+<br><br>
+
+<script language=JavaScript>
+	function redir(val) {
+		if (document.discForm.import_date.value == '') { return; }
+		document.location='admix.html?func=discount&action=group&imp_date=' + document.discForm.import_date.value;
+	}
+</script>
+
+<table cellspacing=0 cellpadding=2>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $label) = @{$r};
+%	my $count = $C->query("SELECT count(*) FROM vproducts where lang='$lang' AND cat_id=$id AND count>0")->[0];
+%	next unless $count;
+%	my $stmt = "SELECT count(*) FROM vproducts WHERE substr(instime, 1, 10)='$last_imp_date' AND lang='$lang' AND cat_id=$id";
+%	my $count_last_imp = $C->query($stmt)->[0];
+%	my $real_count = $count_last_imp ? "&nbsp;&nbsp;&nbsp;(<b>$count_last_imp Stk.</b>)" : '';
+	<tr><td width='166'><input type=checkbox name="cat_<% $id %>"> <% $label %></td>
+		<td align=right><% $count %>&nbsp;&nbsp;&nbsp;Stk.</td>
+		<td align=right><% $real_count %></td>
+	</tr>
+% }
+</table>
+
+<input type=hidden name=func value='edit_item'>
+
+<table cellspacing=0 cellpadding=0>
+</table><br>
+
+<input type=submit value='Zuweisen' name=bAssign><br>
+
+% if ($C->is_devel()) {
+	<& debug.html, CORE => $C &>
+% }

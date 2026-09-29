@@ -1,0 +1,130 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my ($email, $newsletter) = @{$C->query("SELECT email, newsletter FROM users WHERE id=" . $C->getUID())};
+
+	$C->load_properties('account');
+	my $prop = $C->{property}->{'account'};
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my %addr_label = ( 1 => $prop->{"bill_addr$l"}, 2 => $prop->{"deliv_addr$l"} );
+</%init>
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+% }
+
+<!-- ######################################################################################################## -->
+ <!-- ######################################################################################################## -->
+  <form method=post>
+           
+
+%		for (my $i = 2; $i > 0; $i--) {
+%		my $addr = $A->get_address($i);
+             
+                <div class="accountBox_head">
+                  <h5><% $addr_label{$i} %></h5>
+                </div>
+                
+                <ol>
+                  <li class="row clearfix">
+                    <label class="input_tag" for="firstname_<% $i %>">Vorname</label>
+                    <div class="inputOuter">
+                      <input id="firstname_<% $i %>" type="text" name="firstname_<% $i %>" value="<% $addr->{firstname} %>"> 
+                    </div>
+                  </li>
+                  
+                  <li class="row clearfix">
+                    <label class="input_tag" for="lastname_<% $i %>">Nachname</label>
+                    <div class="inputOuter">
+                      <input type=text value='<% $addr->{lastname} %>' name="lastname_<% $i %>">
+                    </div>
+                  </li> 
+                  
+                 <li class="row clearfix">
+                    <label class="input_tag" for="company_<% $i %>">Firma</label>
+                    <div class="inputOuter">
+                      <input type=text value='<% $addr->{company} %>' name="company_<% $i %>">
+                    </div>
+                  </li>  
+                             <li class="row clearfix">
+                    <label class="input_tag" for="street_<% $i %>"> Adresse</label>
+                    <div class="inputOuter">
+                      <input type=text value='<% $addr->{street} %>' name="street_<% $i %>">
+                    </div>
+                  </li> 
+                  
+                                  <li class="row clearfix">
+                    <label class="input_tag" for="zip_<% $i %>">PLZ</label>
+                    <div class="inputOuter">
+                      <input class="half" type=text value='<% $addr->{zip} %>' name="zip_<% $i %>">
+       </div>
+                  </li>
+              <li class="row clearfix">
+                    <label class="input_tag" for="city_<% $i %>">Ort</label>
+                    <div class="inputOuter">
+                     <input class="half" type=text value='<% $addr->{city} %>' name="city_<% $i %>">
+                       </div>
+                  </li>
+     <li class="row clearfix">
+                    <label class="input_tag" for="phone_<% $i %>">Telefon</label>
+                    <div class="inputOuter">
+                      <input type=text value='<% $addr->{phone} %>' name="phone_<% $i %>">
+                   </div>
+                  </li>
+                </ol>
+ 
+%	}
+
+                
+<div class="accountBox_head">
+                  <h5>Account Daten anpassen</h5>
+                </div>
+                <ol>
+                    <li class="row clearfix">
+                    <label class="input_tag" for="phone_1"><% $prop->{"your_login_name$l"}%></label>
+                    <div class="inputOuter">
+                      <input type="text" value='<% $C->getSessData('uname') || $C->whoami() %>' name="uname">
+%	if ($C->whoami() =~ /\@/) {
+		&mdash; Vorschlag: <b><% $C->propose_uname($C->whoami()) %></b>
+%	}
+                   </div>
+                  </li>
+                  
+                                 <li class="row clearfix">
+                    <label class="input_tag" for="pass_old">Altes Passwort:</label>
+                    <div class="inputOuter">
+                      <input type="text" value='' name="pass_old">
+                   </div>
+                  </li>
+                       <li class="row clearfix">
+                    <label class="input_tag" for="pass_new">Neues Passwort</label>
+                    <div class="inputOuter">
+                      <input type="text" value='' name="pass_new">
+                   </div>
+                  </li>
+                                   <li class="row clearfix">
+                    <label class="input_tag" for="email">E-Mail:</label>
+                    <div class="inputOuter">
+                      <input type="text" value='<% $email %>' name="email">
+                   </div>
+                  </li>  
+                     <li class="row clearfix">
+                    <label class="input_tag" for="newsletter">Newsletter aboniert:</label>
+                    <div class="inputOuter">
+                      <input type="checkbox" name="newsletter" <% $newsletter ? ' checked' : '' %>>
+                   </div>
+                  </li> 
+                                                   
+                </ol> 
+<br>
+                <input type="submit"  class="blu_btn" value='Speichern' name='bSaveProfile'>
+              </form>
+
+
+<!-- ######################################################################################################## -->

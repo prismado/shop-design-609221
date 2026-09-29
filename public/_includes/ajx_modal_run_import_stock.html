@@ -1,0 +1,44 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $sth = $C->{dbh}->prepare(q~
+		select 	id, label 
+		from 	categories 
+		where 	visible>0 and parent_id=0 and lang='de'
+		order	by weight
+	~);
+	   $sth->execute();   
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post action="_run_tool.html" enctype="multipart/form-data">
+<input type=hidden name=action value="importstock">
+<input type=hidden name=func value="edit_item">
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	<h3 id="myModalLabel">Import Stock...</h3>
+  </div>
+  <div class="modal-body" style="padding-top:10px">
+	<p>
+		Backend: <a target="_blank" href="https://cloudpack.linker.shop">https://cloudpack.linker.shop</a>
+			&rarr; Reports &rarr; WMS Stocks
+	</p><br />
+
+	<h3 style="margin-top:0px !important">Please choose CSV file ...</h3>
+	<input type="file" name="csv_file">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" namx=bXX type=submit value="Import">
+  </div>
+</div>
+</form>

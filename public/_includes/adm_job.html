@@ -1,0 +1,165 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @queue = ();
+
+	my ($name, $path, $weight) = @{$C->query("select substr(featkey, 10, 31), featname, weight from    config_prod_feat where id=$args{id}")};
+	my $name_esc = $C->uri_esc($name);
+	my $len = length($args{id});
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, substr(featkey, 13+$len, 31), featname, weight
+		from 	config_prod_feat 
+		where 	featkey like 'job_detail_$args{id}\_%'
+		order	by 2
+	~);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+
+	my %job_detail = my %job_detail_w_id = my @job_det_arr = ();
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $featkey, $featname, $weight) = @{$r};
+		$job_detail{$featkey}      = $featname;
+		$job_detail_w_id{$featkey} = "$id\t$featname";
+		next if $featkey eq '_runs_every' or $featkey eq '_is_active' or $featkey eq '_rc';
+		push(@job_det_arr, "$id\t$featkey\t$featname\t$weight");
+	}
+
+	$job_detail{_rc} = 'N/A' unless length($job_detail{_rc});
+
+	my ($act_id, $is_active)  = split /\t/, $job_detail_w_id{_is_active};
+	my ($run_id, $runs_every) = split /\t/, $job_detail_w_id{_runs_every};
+
+	(my $script_short = $path) =~ s/\.pl//;
+
+	my $source = "$C->{CONFIG}->{DOCUMENT_ROOT}/custom/$C->{CONFIG}->{theme}/jobs/$path";
+
+	my $src_code = $C->slurp_file($source);
+	(my $src_code_disp = ${$src_code}) =~ s/\</\&lt;/g;
+
+	my @xpara = ();
+	foreach (keys %job_detail) {
+		next if /^\_/;
+		push(@xpara, "\-\-$_ \"$job_detail{$_}\"");
+	}
+	push(@xpara, "--JOBID $args{id}");
+	push(@xpara, "--db $ENV{db_name}");
+</%init>
+% if ($args{is_devel} or $args{debug}) {
+<div style="margin-top:20px" class="pull-right">
+	<a href="/adx/show.html?macro=prism_sys_jobs">Alle Jobs</a> &ndash;
+	<a href="/_systex/install/help/de/11/3/">Online-Hilfe</a> &ndash;
+	<a href="adm_job.html?id=<%$args{id}%>&bAddParam=1">Add Param</a>
+</div>
+% }
+<h2><i class="icon-cog"></i> System Job-ID <% $args{id} %> &middot; <% $name %></h2>
+
+<script language="JavaScript">
+	function modal_run() {
+		$('#ajx_modal').load('ajx_modal_generic.html?msg=Do+you+want+to+delete+this+job%3F&title=Confirm+Delete+<% $name_esc %>&id=<% $args{id} %>');
+        }
+</script>
+
+<form method="post">
+<input type=hidden name="id" value="<%$args{id}%>">
+
+<table class="mytable">
+<thead>
+<tr>
+	<th>Job Name / Reference</th>
+% if ($args{is_devel} or $args{debug}) {
+	<th>Path (Script)</th>
+% }
+	<th>Runs every</th>
+	<th style="text-align:right">Active&nbsp;</th>
+</tr>
+</thead>
+<tr style="line-height:55px">
+% if ($args{is_devel} or $args{debug}) {
+<td><input type=text name="name" value="<% $name %>" placeholder="Job Name, e.g. foo_xy" style="width:88%; font-weight:bold"></td>
+<td><input type=text name="path" value="<% $path %>" placeholder="Path" style="width:88%"></td>
+% }
+% else {
+	<td style="font-weight:bold"><% $name %></td>
+	<input type=hidden name=name value="<% $name %>">
+	<input type=hidden name=path value="<% $path %>">
+% }
+<td><a href="adm_safe_property.html?id=<%$run_id%>"><% $runs_every %> min</a></td>
+<td style="text-align:right"><a href="adm_safe_property.html?id=<%$act_id%>"><% $is_active ? 'Yes' : 'No' %></a></td>
+</tr>
+</table>
+
+
+<table class="mytable table-hover">
+<thead>
+	<tr>
+		<th style="width:20%">Param</th>
+		<th>Value</th>
+		<th style="text-align:right">Edit&nbsp;</th>
+	</tr>
+</thead>
+% foreach (@job_det_arr) {
+%	my ($id, $featkey, $featname) = split /\t/;
+%	if ($featkey =~ /^\_/) {
+	<tr>
+	<td colspan="2"><% $featname %></td>
+	<td style="text-align:right"><a href="adm_safe_property.html?id=<%$id%>"><i class="icon-edit"></i></a>
+	</tr>
+%	}
+%	else {
+	<tr>
+	<td style="font-weight:bold">
+		<% $featkey %>
+	</td>
+	<td><% $featname %></td>
+	<td style="text-align:right"><a href="adm_safe_property.html?id=<%$id%>"><i class="icon-edit"></i></a>
+	</tr>
+%	}
+% }
+
+</table><br />
+
+	<div class="pull-right">
+		<input type=submit value="Run Now" name="bRun" class="btn btn-mini btn-warning">
+	</div>
+% if ($args{is_devel} or $args{debug}) {
+	<input type=submit value="Update" name="bUpdate" class="btn btn-primary">
+	<input type=button value="Delete" class="btn btn-danger" style="margin-left:10px; margin-right:10px" onclick="modal_run()">
+% }
+	<input type=button class="btn" onclick="document.location='adm_jobs.html'" value="Back" stylx="margin-left:10px" />
+</form>
+
+	<div class="alert <% $job_detail{_rc} ? '' : 'alert-success' %> fade in">
+		<button type="button" class="close" data-dismiss="alert">×</button>
+		<% $args{appmsg} %>
+%	    unless ($args{bRun}) {
+		<b>Note</b> RC = <% $job_detail{_rc} %><br>
+%	    }
+%		if ($args{debug} > 1) {
+			<code><% $C->{CONFIG}->{DOCUMENT_ROOT} %>/custom/<% $C->{CONFIG}->{theme} %>/jobs/<% $path %> <% join ' ', @xpara %>
+			</code>
+%		}
+	</div>
+
+<div class="pull-right">
+	<a href="adm_jobs.html?filter=<% $path %>">Permalink</a>&nbsp;
+</div>
+<a href="adm_log.html?importance=4&filter=<% $script_short %>"><i class="icon-book"></i> Job Log</a> /
+<a href="#" onclick="document.getElementById('hidden_151').style.display=''">Source</a>
+
+<span id="hidden_151" style="display:none">
+<br />
+<code><% $C->{CONFIG}->{DOCUMENT_ROOT} %>/custom/<% $C->{CONFIG}->{theme} %>/jobs/<% $path %><% join ', ', @xpara %></code><br><br>
+
+<pre><% $src_code_disp %></pre>
+</span>
+
+<div id="ajx_modal"></div>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,39 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $UINF = $args{UINF};
+	my $newsletter = $args{newsletter};
+</%init>
+<table class='mytable table-hover'>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>Verein / Firma</th>
+<td><input type=text name=company_1 style='margin-top:10px; width:205px' value="<%$UINF->{company}%>">
+% if ($UINF->{company}) {
+	&middot; <a href="customers.html?company_from=<%$UINF->{uname}%>">Same Company</a>
+% }
+</td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6; width:111px'>Vorname</th>
+<td><input type=text name=firstname style='margin-top:10px' value="<%$UINF->{firstname}%>"></td>
+</tr>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6; width:111px'>Nachname</th>
+<td><input type=text name=lastname style='margin-top:10px' value="<%$UINF->{lastname}%>"></td>
+</tr>
+
+<%doc>
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6; widtx:111px'>DOB</th>
+<td><input type=text name=dob style='margin-top:10px; width:78px' value="<%$UINF->{dob}%>"></td>
+</tr>
+</%doc>
+
+<tr>
+<th style='border-right-style:solid; border-color:#cfcfd6;'>E-Mail</th>
+<td><input type=text name=email style='margin-top:10px; width:333px' value="<%$UINF->{email}%>"></td>
+</tr>
+
+</table>

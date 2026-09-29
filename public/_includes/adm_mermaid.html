@@ -1,0 +1,147 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @queue = ();
+
+	foreach (@{$C->get_systemq()}) {
+		my ($cmd_raw, $id, $time) = split /\t/;
+		my $tstamp = substr($time, 0, 4).'-'.substr($time, 4,2).'-'.substr($time,6,2).' '.
+			substr($time, 9, 2).':'.substr($time, 11, 2).':'.substr($time, 13,2);
+		my $datetime = $C->trans_date($tstamp);
+		my $uid = $C->query("select uid from log where sid=(select sid from session where id=$id limit 1) and uid>0")->[0];
+		my $uname = $C->query("select uname from users where id=$uid")->[0];
+		push(@queue, "$time\t$cmd_raw\t$datetime\t$uname");
+	}
+
+	my $st_log = $C->{dbh}->prepare(q~
+		select tstamp, action, module, uid from log where service='run_systemq' order by id desc limit 25~);
+	   $st_log->execute();
+
+	my $fileinfo                = $C->get_file_info("$ENV{DOCUMENT_ROOT}/_systex/z_E-SHOP_Export.txt");
+	my $last_update_import_file = $C->trans_date( $fileinfo->{mod} );
+	my $import_age              = $C->age_of_timestamp_min( $fileinfo->{mod} );
+	   $import_age              = $import_age > 200 ? ('~' . sprintf('%.0f', $import_age / 60) . " hours") : "$import_age min";
+
+	my $fileinfo_google_feed    = $C->get_file_info("$ENV{DOCUMENT_ROOT}/zz_trash_google-shopping.xml");
+	my $last_mod_google_feed    = $C->trans_date( $fileinfo_google_feed->{mod} );
+
+	my $last_import_run = $C->trans_date($C->query(q~select tstamp from log where service='import_iag_products' and action like 'Completed%' order by 1 desc limit 1~)->[0]);
+</%init>
+<div style="margin-top:20px" class="pull-right">
+	<a href="adm_mermaid.html?debug=1">Hidden Actions</a>
+</div>
+<h2><%$C->{CONFIG}->{site_title}%> &middot; Custom Functions</h2>
+
+<script language="JavaScript">
+	function modal_run(id) {
+                $('#ajx_modal').load('_includes/ajx_modal_run_googlefeed.html?id=' + id);
+        }
+	function modal_run_import_stock(id) {
+		$('#ajx_modal').load('_includes/ajx_modal_run_import_stock.html?id=' + id);
+	}
+	function modal_run_cloudpack(id) {
+                $('#ajx_modal').load('_includes/ajx_modal_run_cloudpack.html?id=' + id);
+        }
+	function modal_run_nodejs_sass(id) {
+                $('#ajx_modal').load('_includes/ajx_modal_nodejs_sass.html?id=' + id);
+        }
+	function modal_run_creditcheck(id) {
+                $('#ajx_modal').load('_includes/ajx_modal_creditcheck.html?id=' + id);
+        }
+</script>
+
+<table class="mytable table-hover">
+<thead>
+	<tr>
+		<th style="width:3%">Pos</th>
+		<th style="text-align:center; padding-right:20px">Run</th>
+		<th style="width:22%">Action</th>
+		<th>Description</th>
+	</tr>
+</thead>
+
+<& inc_adm_action_row.html, action=>'importstock', i=>1, label=>'Import stock ...',
+	desc=>'Import CSV stock export from linker.shop' &>
+
+<& inc_adm_action_row.html, action=>'sendorder2cp', i=>2, label=>'Send order to cloudpack.pl ...',
+	desc=>'Automatically called at the end of each order &ndash; <a href=adm_special_keys.html?area=cloudpack>Config</a>' &>
+
+<& inc_adm_action_row.html, action=>'googlefeed', i=>3, label=>'Google Shopping Feed ...',
+	desc=>"<a target=_blank href=de/google-shopping.xml>Download XML Feed</a> ($fileinfo_google_feed->{size_kb} KB,
+			$last_mod_google_feed)" &>
+
+</table><br />
+
+% if ($args{appmsg} or $args{debug}) {
+%	if ($args{appmsg} eq '__READ_deltavista' or $args{debug} == 2) {
+%		my $response = $C->get_sess_array_hash('deltavista', 'ASC');
+		<h4>Deltavista Report</h4>
+%	  if ($response->{deltavista_decision} =~ /error/i) {
+		<span style="color:red"><% $response->{deltavista_decision} %></span>
+%	  }
+%	  else {
+		<table class="mytable table-hover">
+			<tr><th>Decision</th><td style="font-weight:bold"><%$response->{deltavista_decision}%></td></tr>
+			<tr><th>Info Text</th><td style="font-weight:normal"><%$response->{deltavista_infoText}%></td></tr>
+%		foreach (sort keys %{$response} ){
+%			next if $_ eq 'deltavista_decision' or $_ eq 'deltavista_infoText__person' or $_ eq 'deltavista_infoText' or $_ eq 'deltavista_infoText__addr';
+%			next if $response->{$_} eq 'NONE' or $response->{$_} eq 'DEBT_CATEGORY';
+%			my $label = substr($_, 11, 200);
+			<tr><th><%$label%></th><td><%$response->{$_}%></td></tr>
+%		}
+		</table>
+%	  }
+%	}
+%	else {
+		<div class="well"><% $args{appmsg} %></div>
+%	}
+% }
+
+<form name="actionForm" method="post" action="adm_mermaid.html">
+<input type="hidden" name="action" value="">
+</form>
+<script language="JavaScript">
+	function mydo (action) {
+		document.actionForm.action.value = action;
+		document.actionForm.submit();
+	}
+</script>
+
+% if (@queue) {
+<table class="table table-hover">
+<thead>
+	<tr>
+		<th style="width:15%">Queued</th><th>Command</th><th>User</th>
+	</tr>
+</thead>
+% foreach (@queue) {
+%	my ($ts, $cmd_raw, $datetime, $uid) = split /\t/;
+	<tr><td nowrap><%$datetime%></td><td><%$cmd_raw%></td><td><%$uid%></td></tr>
+% }
+</table><br />
+% }
+
+% my %memo = ();
+% while(my $r = $st_log->fetch()) {
+%	my ($tstamp, $action, $module, $uid) = @{$r};
+%	next if $memo{$action};
+%	$memo{$action} = 1;
+	<%$C->trans_date($tstamp)%>&nbsp;&nbsp;<%$action%><br>
+% }
+<br />
+
+<a href="adm_log.html?importance=4">Log</a>
+
+<div id="ajx_modal"></div>
+
+% if ($args{action}) {
+	<br><br>
+	<div class="well">
+	Called: <% $args{action} %>
+	</div>
+% }

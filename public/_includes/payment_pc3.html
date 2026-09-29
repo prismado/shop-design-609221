@@ -1,0 +1,72 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	use Digest::HMAC_MD5 qw(hmac_md5_hex);
+
+	my $order_id = $C->getSessData('order_id');
+	my $refno = $order_id;
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $total = sprintf('%.2f', $A->get_basket_total());
+	   $total += $A->{ship_tot_cc};
+	$total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+	(my $total_no_dot = $total) =~ tr/\.//d;
+
+	my $msg = $C->{CGI}->param('msg');
+
+	my $merchantId = $C->{CONFIG}->{payment_gw_merchantId};
+	my $currency = 'CHF';
+
+	my $sign = '';
+	my $string = "$merchantId$total_no_dot$currency$refno";
+
+	if ($C->{CONFIG}->{payment_gw_merchantId} eq '1100004677') {
+		my $key = '52951d43e8c403e4e8a510ff75ab743e1230c3cc61f0114ffb09adc367ab146ee09a83232861788e4a8a95d0f02a8c164b7c0f5cb6382f72c1c447e09e158608';
+		my $key_pack = pack 'H*', $key;
+		$sign = hmac_md5_hex($string, $key_pack);
+	}
+</%init>
+<div class="container">
+
+<%doc>
+XXX:
+/XXX
+</%doc>
+
+
+<h1>Kreditkartenzahlung</h1>
+Order ID <%$order_id%><br><br>
+
+<form id="paymentForm"
+      data-merchant-id="<%$merchantId%>"
+      data-amount="<%$total_no_dot%>"
+      data-currency="<%$currency%>"
+      data-refno="<%$refno%>"
+	data-language="<%$lang%>"
+	data-payment_host="<%$C->{CONFIG}->{HTTP_HOST}%>"
+	data-sign="<%$sign%>">
+
+<div class="well">
+	Betrag: <b>CHF <%$total%></b><br><br>
+	<button class="btn btn-primary" id="paymentButton">Bezahlen!</button>
+</div>
+</form>
+
+<script type="text/javascript">
+    $("#paymentButton").click(function () {
+        Datatrans.startPayment({'form': '#paymentForm'});
+    });
+</script>
+
+% if ($args{mode} eq 'test') {
+	<a target="_blank" href="_test_pci3_datatrans_lightbox.html?merchantId=1100004677">Demo</a> &middot;
+	<a target="_blank" href="config2.html?key=payment_gw_merchantId">Change to Prod</a><br>
+% }
+
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

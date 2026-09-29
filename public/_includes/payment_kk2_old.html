@@ -1,0 +1,97 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $order_id = $C->getSessData('order_id');
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $total = sprintf('%.2f', $A->get_basket_total());
+	   $total += $A->{ship_tot_cc};
+	$total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+	(my $total_no_dot = $total) =~ tr/\.//d;
+</%init>
+<h3><%$C->p('main_title')%></h3><br>
+<img src="images/bestell_ablauf_pic3_<% $lang %>.gif" alt="" width="476" height="40"><br>
+
+<b><% $C->p('order') %> <% sprintf('%08d', $order_id) %></b><br><br>
+
+<% $C->p('instruction') %><br><br>
+
+<form NAME="uppform" ACTION="https://payment.datatrans.biz/upp/jsp/upStart.jsp" METHOD="post">
+% # <form action='http://schaer4.nine.ch/cgi-bin/env3823.cgi' method=post>
+<input type=hidden name="language" value="<% $lang %>">
+<input type=hidden name="amount" value="<% $total_no_dot %>">
+<input type=hidden name="refno" value="<% $order_id %>">
+<input type=hidden name="currency" value="CHF">
+<input type=hidden name="merchantId" value="3000000418">
+<input type=hidden name="testOnly" value="no">
+
+<input type="hidden" name="meta_enc_hex"     value="456fe60cc40539a546a41c32ea05e3436dab46a51c2cea54a14155e40cff4169e153af126fef04a8446cef07fd443eb102f44069b350ff416de606">
+<input type="hidden" name="payment_host"     value="ssl.auctionline.ch">
+<input type="hidden" name="this_server_dec"  value="<% $ENV{HTTP_HOST} %>">
+<input type="hidden" name="user_dec"         value="<% $C->whoami() %>">
+<input type="hidden" name="total_amount_dec" value="<% $total %>">
+
+<b><% $C->p('form_title') %></b><br>
+
+<div style='float:right'>
+<img src="images/logo_verifiedbyvisa.gif" width="70" height="40"><br>
+<img src="images/logo_securecode_master.gif" width="94" height="8">
+</div>
+
+<table>
+<tr>
+	<td width="19%"><%$C->p('card_type')%></td>
+	<td width="23%">
+	<select name="paymentmethod">
+	<option value=""><% $C->p('opt_choose') %>...</option>
+	<option value="VIS">Visa</option>
+	<option value="ECA">Eurocard/Mastercard</option>
+	<option value="AMX">American Express</option>
+	</select>
+	</td>
+	<td valign="top" style='padding-left:8px'><%$C->p('card_type_text')%></td>
+</tr>
+
+<tr>
+    <td><% $C->p('cardholder') %></td>
+    <td><input  type=TEXT name="payment_kk_name" id="kk_name"></td>
+    <td valign="top" style='padding-left:8px'><% $C->p('cardholder_text') %></td>
+</tr>
+
+<tr>
+    <td><% $C->p('card_number') %></td>
+    <td><input  type="text" class="form_kk" name="cardno" id="kk_number"></td>
+    <td valign="top" style='padding-left:8px'><% $C->p('card_number_text') %></td>
+</tr>
+
+<tr>
+    <td><% $C->p('card_valid') %></td>
+    <td><select style="font-family: tahoma,verdana,arial;font-size: 9px;color: #5E5E5E;width: 80px;" name="expm">
+	<% ${$C->renderOptions(type => 'months')} %></select>
+
+      <select style="font-family: tahoma,verdana,arial;font-size: 9px;color: #5E5E5E;width: 55px;" name="expy">
+	<% ${$C->renderOptions(type => 'years')} %></select></td>
+    <td valign="top" style='padding-left:8px'><% $C->p('card_valid_text') %></td>
+</tr>
+
+<tr>
+    <td style='vertical-align:top'><%$C->p('card_cvv')%></td>
+    <td style='vertical-align:top'><input name="cvv" id="payment_kk_cvv"  maxlength="4" type="text" class="cvv_form"></td>
+   <td valign="top" style='padding-left:8px'><img src="images/cvv_bild.jpg" width="191" height="85" alt="cvv-code"><br>
+     <% $C->p('card_cvv_text') %></td>
+</tr>
+  
+</table><br>
+
+<%$C->p('sum_text')%>: <b>CHF&nbsp;<%$total%></b><br><br>
+
+<input id="payment_submit_kk" class="submit_wide_orange" 
+		type="submit" name="payment_submit_kk" value="<% $C->p('button_send') %>">
+	</form>
+
+% if ($C->is_devel()) {
+	<& debug.html, CORE => $C &>
+% }

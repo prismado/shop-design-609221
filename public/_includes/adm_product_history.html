@@ -1,0 +1,38 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id   = $args{id} + 0;
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $perm = $args{perm};
+
+	my $hist = $A->get_product_history(id=>$id);
+</%init>
+<table class="mytable">
+% foreach my $d (@{$hist->{hist_arr}}) {
+	<tr>
+	<td style="width:11%" nowrap><% $C->trans_date_short($d->{created}) %></td>
+	<td><% $d->{service} %></td>
+	<td><% $d->{action} %></td>
+	<td>
+%	foreach (sort keys %{$d}) {
+%		next if $_ eq 'created' or $_ eq 'service' or $_ eq 'action' or $_ eq 'id';
+		<% $_ %>=<% $d->{$_} %>&nbsp;&nbsp;
+%	}
+%	if ($perm->{is_devel}) {
+		Dev:
+		<a href="/adm_db_edit.html?table=products_history&wcl=id%3D<% $d->{id} %>">Edit</a>
+%	}
+	</td>
+	</tr>
+% }
+</table>
+
+% foreach (sort keys %{$hist}) {
+%	next if $_ eq 'hist_arr' or $_ eq 'VERSION' or $_ eq 'rows';
+	X -- <% $_ %> = <% $hist->{$_} %><br>
+% }
+<br />
+<%doc>
+	Created: 13Dec2023
+</%doc>

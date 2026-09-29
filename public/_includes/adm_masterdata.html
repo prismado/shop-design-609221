@@ -1,0 +1,243 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $A         = $args{A};
+	my $pane      = $args{pane}      || 1;
+	my $subselect = $args{subselect} || 1;
+	my $perm      = $args{perm};
+
+	my @files = ();
+	opendir(D, "$ENV{DOCUMENT_ROOT}/produkte/docs");
+	while(my $f = readdir(D)) {
+		next if $f =~ /^\./ or $f =~ /^uid_\d+_.+/ or $f =~ /^zz_trash_.+/ or $f eq 'readme.txt' or $f eq 'index.html';
+		my $size = int((-s "$ENV{DOCUMENT_ROOT}/produkte/docs/$f") / 1024) + 1;
+		push(@files, "$f\t$size");
+	}
+	closedir(D);
+
+	my $order_email_sender = $C->{CONFIG}->{order_email_sender} || $C->{CONFIG}->{order_email};
+
+	my $maildom = (split /\@/, $order_email_sender)[1];
+	my $dns_info = $C->get_dns_info(hostname=>$maildom);
+
+	my $sth = $C->{dbh}->prepare(q~select id, action, tstamp from log where service='mail_generics' order by id desc limit 20~);
+	   $sth->execute();
+</%init>
+<div style="margin-top:10px" class="pull-right">
+	<form>
+	<input class="btn" type=button onclick="document.location='adm_config.html'" value="Back">
+	</form>
+</div>
+
+<div class="pull-left"><span style='font-size:26px; color:#41414C; margin-top:20px; margin-right:5px; float:left'
+	class="icon-cog"></div>
+<h2>Master and Address Data</h2>
+
+<form method="post" name="myForm0" enctype="multipart/form-data" class="form-horizontal">
+
+<div class="fancy-tab-container">
+
+	<ul class="nav nav-tabs three-tabs fancy">
+
+	<li class="<% ($args{del_file} or $args{msg} =~ /^File/ or $pane != 1) ? '' : 'active' %>"><a href="#fancya1" data-toggle="tab">Master Data</a></li>
+	<li class="<% ($args{del_file} or $args{msg} =~ /^File/ or $pane == 2) ? 'active' : '' %>"><a href="#fancya2" data-toggle="tab">Upload</a></li>
+	<li class="<% $pane == 3 ? 'active' : '' %> dropdown">
+		<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tech <b class="caret"></b></a>
+		<ul class="dropdown-menu">
+		<li class="<% $pane == 3 && $subselect == 1 ? 'active' : ''%>"><a href="#fancya3" data-toggle="tab">E-Mail Test</a></li>
+		<li class="<% $pane == 3 && $subselect == 2 ? 'active' : ''%>"><a href="#fancya4" data-toggle="tab">Etc.</a></li>
+		</ul>
+	</li>
+	</ul>
+
+	<div class="tab-content">
+
+	<div class="tab-pane <% ($args{del_file} or $args{msg} =~ /^File/ or $pane == 2 or $pane == 3) ? 'fade' : 'fade in active' %>" id="fancya1">
+		<br />
+		<table style="border:0px" class="mytable table-hover">
+		<& inc_masterdat_row.html, label=>'Site Title',   name=>'site_title',   value=>$C->{CONFIG}->{site_title} &>
+		</table>
+		<table style="border:0px" class="mytable table-hover">
+		<tr><td colspan="2" style="border-bottom:0px"></td></tr>
+		<& inc_masterdat_row.html, label=>'Company',      name=>'site_company', value=>$C->prp('site_company') &>
+		<& inc_masterdat_row.html, label=>'Address',      name=>'site_addr',    value=>$C->prp('site_addr') &>
+		<& inc_masterdat_row.html, label=>'ZIP Code',     name=>'site_zip',     value=>$C->prp('site_zip') &>
+		<& inc_masterdat_row.html, label=>'City',         name=>'site_city',    value=>$C->prp('site_city') &>
+		<& inc_masterdat_row.html, label=>'Country Code', name=>'site_country_code', value=>$C->prp('site_country_code') &>
+		<& inc_masterdat_row.html, label=>'E-Mail',       name=>'site_email',   value=>$C->prp('site_email') &>
+		<& inc_masterdat_row.html, label=>'Corporate Domain', name=>'site_corp_dom', value=>$C->prp('site_corp_dom') &>
+		<& inc_masterdat_row.html, label=>'Phone',        name=>'site_phone',   value=>$C->prp('site_phone') &>
+		<& inc_masterdat_row.html, label=>'Fax',          name=>'site_fax',     value=>$C->prp('site_fax') &>
+		<& inc_masterdat_row.html, label=>'Website URL',  name=>'site_website', value=>$C->prp('site_website') &>
+		</table>
+
+		<table style="border:0px" class="mytable table-hover">
+		<tr><td colspan="2" style="border-bottom:0px"></td></tr>
+		<& inc_masterdat_row.html, label=>'IBAN',         name=>'site_iban',      value=>$C->prp('site_iban') &>
+		<& inc_masterdat_row.html, label=>'Bank Name',    name=>'site_bank_name', value=>$C->prp('site_bank_name') &>
+		</table>
+
+		<table style="border:0px" class="mytable table-hover">
+		<tr><td colspan="2" style="border-bottom:0px"></td></tr>
+		<& inc_masterdat_row.html, label=>'Headquarter',    name=>'site_headquarter', value=>$C->prp('site_headquarter') &>
+		</table>
+
+		<table style="border:0px" class="mytable table-hover">
+		<tr><td colspan="2" style="border-bottom:0px"></td></tr>
+		<& inc_masterdat_row.html, label=>'Copyright',    name=>'site_copyright', value=>$C->prp('site_copyright') &>
+		</table>
+	</div>
+
+	<div class="tab-pane <% ($args{del_file} or $args{msg} =~ /^File/ or $args{pane} == 2) ? 'fade in active' : 'fade' %>" id="fancya2">
+                <h3>Logo(s)</h3>
+		<p>Shop Logo: 640px × 228px, Name: <a href="images/logo.png" target="_blank">logo.png</a></p>
+		<input type="file" name="file" /><br /><br />
+
+		<table class="mytable table-hover table-striped">
+		<thead>
+		<tr>
+		<th>File Name</th>
+		<th>Type</th>
+		<th style="padding-left:120px;">Last Mod.</th>
+		<th style="text-align:right">Size</th>
+		<th></th>
+		</tr>
+		</thead>
+%		foreach my $f (sort @files) {
+%			my ($file, $size) = split /\t/, $f;
+%			my $fileinf = $C->get_file_info("$ENV{DOCUMENT_ROOT}/produkte/docs/$file");
+%			my $age_min = $C->age_of_timestamp_min($fileinf->{mod});
+			<tr>
+			<td style="width:35%"><a target="_blank" href="produkte/docs/<% $file %>"><% $file %></a></td>
+			<td><% uc $fileinf->{ext} %></td>
+			<td style="padding-left:120px;">
+%				if ($age_min < 10) {
+					<span style="background-color:lightgreen"><% $C->trans_date_short($fileinf->{mod}) %></span> &rarr; <% $age_min %> min
+%				}
+%				else {
+					<% $C->trans_date_short($fileinf->{mod}) %>
+%				}
+			</td>
+			<td style="text-align:right"><% $fileinf->{size_kb} %> KB</td>
+			<td style="text-align:right">
+%			    if ($file !~ /^logo.+/ && $file !~ /^mail-header\.+/) {
+				<a href="#" onclick="del_file('<%$file%>')"><i style="color:red" class="icon-remove"></i></a>
+%			    }
+			</td>
+			</tr>
+%		}
+		</table>
+	</div>
+
+	<div class="tab-pane <% $pane == 3 && $subselect == 1 ? 'face in active' :'fade' %>" id="fancya3">
+		<h2>E-Mail Delivery Test</h2>
+		<table style="border:0px" class="table table-hovex">
+		<tr><td colspan="2">
+		Check e-mail delivery through <b>mail relay</b> server <a
+			href="/adx/special_keys.html?area=smtp"><% $C->{CONFIG}->{mail_relay} || 'localhost' %></a> &middot;
+				[ <% $C->shorten_title($C->{CONFIG}->{smtp_user}, 11) . substr($C->{CONFIG}->{smtp_user}, -3) %> ] &middot;
+					[ <% uc $C->{CONFIG}->{smtp_conn_sec} %>] &ndash;
+						Default Bounce: <a href="/adx/special_keys.html?area=smtp_bounce"><% $C->{CONFIG}->{smtp_bounce_mail} %></a>
+							or dmarc-reports@<% $maildom %><br><br>
+
+		</td></tr>
+%		my $bounce_mail = $C->getSessData('test_bounce') || $C->{CONFIG}->{smtp_bounce_mail};
+		<& inc_masterdat_row.html, label=>'From E-Mail'  , name=>'test_email_from', value=>$order_email_sender, hide_micro_help=>1 &>
+		<& inc_masterdat_row.html, label=>'To E-Mail'    , name=>'test_email'     , value=>$C->getSessData('test_email'), hide_micro_help=>1 &>
+		<& inc_masterdat_row.html, label=>'Bounce E-Mail', name=>'test_bounce'    , value=>$bounce_mail, hide_micro_help=>1 &>
+		<& inc_masterdat_row.html, label=>'Subject'      , name=>'test_subject'   , value=>$C->getSessData('test_subject'), hide_micro_help=>1 &>
+		</table><br />
+		<input type="submit" class="btn btn-primary" name="bSendMail" value="Send Test E-Mail" style="width:225px">
+		<input type="submit" class="btn btn-success" name="bSendMaix" value="Send Test E-Mail via mail_x( )" style="width:225px; margin-left:15px">
+		<br /><br />
+		<a href="https://docs.ch2.be/email/?maildom=<% $maildom %>&mx1=mail1.eshop.pub">DNS E-Mail Settings of <% $maildom %></a> &ndash;
+		Check SPF: <code>dig txt <% $maildom %></code> &ndash;
+		Check DMARC: <code>dig txt _dmarc.<% $maildom %></code>
+%		if ($perm->{is_devel}) {
+			&ndash; Dev: <a href="https://docs.ch2.be/w/aaa-mrs/domreg">DOM-Reg</a> (RS)
+%		}
+		<br>
+	</div>
+
+	<div class="tab-pane <% $pane == 3 && $subselect == 2 ? 'face in active' : 'fade' %>" id="fancya4">
+		<h2>System Settings</h2>
+		<ol>
+		<li><a href="adm_safe_properties.html?lang=sys&filter=google\_">Google Analytics</a></li>
+		<li><a href="adm_safe_properties.html?lang=sys&filter=currency\_">Currencies</a></li>
+		<li><a href="adm_safe_properties.html?lang=sys">All Internal System Settings</a></li>
+		</ol>
+%		my $sprop_inf = $args{sprop_inf};
+%		my %prp_len = ();
+%		foreach (@{$sprop_inf}) {
+%			my ($col, $type, $len) = split /\t/;
+%			$prp_len{$col} = $len if $len;
+%		}
+		<hr noshade />
+		Note: Key-Length: <% $prp_len{featkey} %> 
+%		if ($prp_len{featkey} < 63) {
+			(Recommended: 63)
+%		}
+			/ Value-Length: <% $prp_len{featname} %>
+%		if ($prp_len{featname} < 127) {
+			(Recommended: 127+)
+%		}
+		<br /><br />
+
+%		foreach (sort keys %$perm) {
+%			next if /^\_\_.+/;
+			[ perm ] &middot; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%		}
+		<br />
+		<textarea style="width:70%" name="batch_code" placeholder="Batch Code"></textarea><br /><br />
+
+		<input type="submit" value="Go" name="bCallBatch">
+	</div>
+
+    </div>
+
+</div><br />
+
+<input type="submit" class="btn btn-primary" name="bUpdate" value="Update">
+<input class="btn" type=button onclick="document.location='adm_config.html'" value="Cancel">
+
+</form>
+
+% if ($args{msg}) {
+	<% $C->bootstrap_alert($args{msg}, 'success') %>
+% }
+% if ($args{del_file}) {
+	<% $C->bootstrap_alert("File $args{file} deleted.", 'success') %>
+% }
+
+% if ($pane == 3) {
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $action, $tstamp) = @{$r};
+		<a href="adm_db_edit.html?table=log&wcl=id%3D<% $id %>"><% $C->trans_date_short($tstamp) %></a> &middot; <% $action %><br>
+%	}
+	<br />
+	<h4>DNS <% $maildom %></h4>
+%	foreach (sort keys %{$dns_info}) {
+%		next if $_ eq 'hostname';
+		&bull; <b><% $_ %></b> = <tt><% $dns_info->{$_} %></tt><br>
+%	}
+% }
+
+<form name="delForm" method="post">
+<input type=hidden name="del_file" value="1">
+<input type=hidden name="file">
+</form>
+<script language="JavaScript">
+	function del_file(file) {
+		if (confirm("Delete file " + file + "?")) {
+			document.delForm.file.value=file;
+			document.delForm.submit();
+		}
+	}
+</script>
+
+<%doc>
+	Algo-23
+
+	__METACLONING__
+</%doc>

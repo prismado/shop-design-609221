@@ -1,0 +1,125 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $order_id = $C->getSessData('order_id');
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $total = sprintf('%.2f', $A->get_basket_total());
+	   $total += $A->{ship_tot_cc};
+	$total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+	(my $total_no_dot = $total) =~ tr/\.//d;
+
+	my $msg = $C->{CGI}->param('msg');
+</%init>
+
+ <div id="checkout_kk" class="clearfix">
+      <div class="checkoutStatus">
+        <UL>
+          <LI><span class="number">1</span>Einkauf abschliessen</LI>
+          <LI><span class="number">2</span>Übersicht</LI>
+          <LI><span class="numberOn">3</span>Zahlung</LI>
+          <LI><span class="number">4</span>Bestätigung</LI>
+        </ul>
+      </div>
+      <!--checkoutStatus -->
+<div class="checkoutText"> <h5><% $C->p('order') %> <% sprintf('%08d', $order_id) %></h5>
+% if ($msg) {
+	<b style='color:red'><%$msg%></b><br /><br>
+
+	<b>Bitte nochmals eingeben oder eine <a href="checkout2.html">andere Zahlungsmethode</a> w&auml;hlen.</b><br><br>
+% }
+<% $C->p('instruction') %><br>
+            </div>
+
+
+<form NAME="uppform" ACTION="https://payment.datatrans.biz/upp/jsp/upStart.jsp" METHOD="post">
+% # <form action='http://schaer4.nine.ch/cgi-bin/env3823.cgi' method=post>
+<input type=hidden name="language" value="<% $lang %>">
+<input type=hidden name="amount" value="<% $total_no_dot %>">
+<input type=hidden name="refno" value="<% $order_id %>">
+<input type=hidden name="currency" value="CHF">
+<input type=hidden name="merchantId" value="3000006725">
+<input type=hidden name="testOnly" value="<%$C->{CONFIG}->{payment_gw_testOnly}%>">
+
+<input type="hidden" name="meta_enc_hex"     value="456fe60cc40539a546a41c32ea05e3436dab46a51c2cea54a14155e40cff4169e153af126fef04a8446cef07fd443eb102f44069b350ff416de606">
+<input type="hidden" name="payment_host"     value="<%$C->{CONFIG}->{HTTP_HOST}%>">
+<input type="hidden" name="this_server_dec"  value="<% $ENV{HTTP_HOST} %>">
+<input type="hidden" name="user_dec"         value="<% $C->whoami() %>">
+<input type="hidden" name="total_amount_dec" value="<% $total %>">
+
+ <table class="checkoutTable">
+          <thead>
+            <tr>
+              <th colspan="3"class="first_td"><h4><% $C->p('form_title') %></h4></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="first_td mobileHeader" ><%$C->p('card_type')%></td>
+              <td >	<select name="paymentmethod">
+	<option value=""><% $C->p('opt_choose') %>...</option>
+	<option value="VIS">Visa</option>
+	<option value="ECA">Eurocard/Mastercard</option>
+	<option value="AMX">American Express</option>
+	</select></td>
+              <td class="left"><%$C->p('card_type_text')%></td>
+            </tr>
+                      
+              <tr>
+              <td class="first_td mobileHeader"><% $C->p('card_number') %></td>
+              <td ><input  type="text" name="cardno" id="kk_number"></td>
+              <td class="left"><% $C->p('card_number_text') %></td>
+            </tr>
+            
+ <tr>
+              <td class="first_td mobileHeader"><% $C->p('cardholder') %></td>
+              <td ><input  type=TEXT  name="payment_kk_name" id="kk_name"></td>
+              <td class="left"><% $C->p('cardholder_text') %></td>
+            </tr>
+
+                                    <tr>
+              <td class="first_td mobileHeader"><% $C->p('card_valid') %></td>
+              <td ><select style="width: 80px;" name="expm">
+	<% ${$C->renderOptions(type => 'months')} %></select>
+    
+            <select style="width:80px;" name="expy">
+	<% ${$C->renderOptions(type => 'years')} %></select></td>
+              <td class="left"><% $C->p('card_valid_text') %></td>
+            </tr>
+            
+                        <tr>
+              <td class="first_td mobileHeader"><%$C->p('card_cvv')%></td>
+              <td ><input name="cvv" id="payment_kk_cvv"  maxlength="4" type="text" class="cvv_form"></td>
+              <td class="left">  <% $C->p('card_cvv_text') %><br><br>
+
+ <img src="images/cvv_bild.jpg" width="191" height="85" alt="cvv-code"></td>
+            </tr>
+          </tbody>
+        </table>
+
+ <table class="checkoutTable">
+          <thead>
+            <tr>
+              <th colspan="3"class="first_td"><h4>Betrag</h4></th>
+            </tr>
+          </thead>
+          <tbody>
+      </tbody>
+          <tr>
+            <td class="left"><%$C->p('sum_text')%> <% $C->{CONFIG}->{vat}%>% <% $C->p('mwst') %>&nbsp;</strong></td>
+              <td class="last_td"><h5><%$total%></h5></td>
+          </tr>
+        </table>
+
+ <input id="payment_submit_kk" class="blu_btn" 
+		type="submit" name="payment_submit_kk" value="<% $C->p('button_send') %>">
+      </form>
+      </div> <!-- end checkout --> 
+
+
+% if ($C->is_devel()) {
+	<& debug.html, CORE => $C &>
+% }

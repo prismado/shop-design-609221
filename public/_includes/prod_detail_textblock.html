@@ -1,0 +1,176 @@
+<%init>
+        my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	my $lang = $args{'lang'} || 'de';
+	my $id = $args{id};
+	my $d = $args{'d'}; # -- Produkte-Daten
+	my $link = '';
+
+	my $prop = $C->{property}->{product}; # -- Property file of product is loaded!
+	my $l = $lang eq 'de' ? '' : "_$lang";
+
+	my $opts = $A->get_product_options($id);
+	my $options = $A->get_options($id); # -- e.g. Staerke, Radius, ...
+
+	my $price_total = $d->{price_incl_vat} + $d->{upsell_tot};
+</%init>
+
+% if ($C->is_devel()) {
+	<&page_info.html, 'START'&>
+	<b style='color:red'><%$args{msg}%></b><br>
+	Upsell Total: <% $d->{upsell_tot} %> / Price Total: <% $price_total %><br>
+% }
+
+<div id="productDetails">
+<table>
+% foreach (sort keys %{$d->{'feat'}}) {
+%	my ($weight, $key, $id) = split /\t/;
+%	next if $weight < 0 or $key eq '_new_'; # -- Skip teaser text (weight < 0) here
+%	if ($key eq 'link') { $link = $d->{feat}->{$_}; next; }
+	<tr><td class="td_first"><nobr><%$key%></nobr></td>
+	<td style='padding-left:20px'><%$d->{feat}->{$_}%></td></tr>
+% }
+</table>
+</div> <!-- end productDetails-->	
+
+<div id="productOptions">
+%	if (@{$opts}) {
+		<table width='100%'><tr><td><b><% $prop->{"options$l"} %></b></td></tr></table>
+		<form>
+		<table border=0 cellspacing=0 cellpadding=0>
+%		foreach (@{$opts}) {
+%		my ($oid, $price, $title, $description) = @{$C->query("SELECT id, price, title, description FROM vproducts WHERE id=$_")};
+%			my $checked = $C->getSessData("upprod_id_$id\_$oid") ? ' checked' : '';
+%			$price = sprintf('%.2f', $price * (1 + $C->{CONFIG}->{vat} / 100));
+			<tr><td><input type=checkbox id="cb_o<% $oid %>" value='1'<% $checked %>
+			onclick="$('#ajx_1').load('_ajx_set_opt2.html?opt=' + this.value + '&oid=<% $oid %>&prod_id=<% $id %>&rnd=<% rand() %>'); updateTot(<% $oid %>, <% $price %>)"> 
+				<% $title %>, <% $description %></td> <td align=right>&nbsp;<b><% $price %> CHF</b></td></tr>
+%		}
+		</table>
+		</form>
+%	}
+</div><!-- end productOptions-->	
+
+<div id="productParameters">
+
+% my $sphere_step = $A->get_feature_by_key2($id, 'Sphere rangeStep');
+% if ($sphere_step) {
+<div class="parameterBox">
+%	my $style_left = my $style_right = '';
+%	my $rc = 0;
+%	if ($args{msg} =~ /\[100\]$/ or $args{msg} =~ /\[101\]$/) {
+%		$rc = 1;
+%		$style_left = "<b style='color:red'><abbr title='$args{msg}'>"; $style_right = '</abbr></b>';
+%	}
+	<label class="input_tag"><%$style_left%>St&auml;rke<%$style_right%> <em>*</em></label>
+	<&product_prop_1feat.html, feature => 'Sphere', id => $id, step => $sphere_step, A => $A, rc => $rc&>
+</div>
+% }
+
+% my $cylinder_step = $A->get_feature_by_key2($id, 'Cylinder rangeStep');
+% if ($cylinder_step) {
+<div class="parameterBox">
+%	my $style_left = my $style_right = '';
+%	my $rc = 0;
+%	if ($args{msg} =~ /\[400\]$/ or $args{msg} =~ /\[401\]$/) {
+%		$rc = 1;
+%		$style_left = "<b style='color:red'><abbr title='$args{msg}'>"; $style_right = '</abbr></b>';
+%	}
+	<label class="input_tag"><%$style_left%>Zylinder<%$style_right%> <em>*</em></label>
+	<&product_prop_1feat.html, feature => 'Cylinder', id => $id, step => $cylinder_step, A => $A, rc => $rc&>
+</div>
+% }
+
+% my $cyl_step = $A->get_feature_by_key2($id, 'AxisCylinder rangeStep');
+% if ($cyl_step) {
+<div class="parameterBox">
+%	my $style_left = my $style_right = '';
+%	my $rc = 0;
+%	if ($args{msg} =~ /\[200\]$/ or $args{msg} =~ /\[201\]$/) {
+%		$rc = 1;
+%		$style_left = "<b style='color:red'><abbr title='$args{msg}'>"; $style_right = '</abbr></b>';
+%	}
+	<label class="input_tag"><%$style_left%>Achse<%$style_right%> <em>*</em></label>
+	<&product_prop_1feat.html, feature => 'AxisCylinder', id => $id, step => $cyl_step, A => $A, rc => $rc&>
+</div>
+% }
+
+% my $base_curve_step = $A->get_feature_by_key2($id, 'RadiusBasecurve rangeStep');
+% if ($base_curve_step) {
+<div class="parameterBox">
+%	my $style_left = my $style_right = '';
+%	my $rc = 0;
+%	if ($args{msg} =~ /\[300\]$/ or $args{msg} =~ /\[301\]$/) {
+%		$rc = 1;
+%		$style_left = "<b style='color:red'><abbr title='$args{msg}'>"; $style_right = '</abbr></b>';
+%	}
+	<label class="input_tag"><%$style_left%>Radius<%$style_right%> <em>*</em></label>
+	<&product_prop_1feat.html, feature => 'RadiusBasecurve', id => $id, step => $base_curve_step, A => $A, rc => $rc&>
+</div>
+% }
+
+% my $base_diameter_step = $A->get_feature_by_key2($id, 'Diameter rangeStep');
+% if ($base_diameter_step) {
+<div class="parameterBox">
+%	my $style_left = my $style_right = '';
+%	my $rc = 0;
+%	if ($args{msg} =~ /\[500\]$/ or $args{msg} =~ /\[501\]$/) {
+%		$rc = 1;
+%		$style_left = "<b style='color:red'><abbr title='$args{msg}'>"; $style_right = '</abbr></b>';
+%	}
+	<label class="input_tag"><%$style_left%>Durchmesser<%$style_right%> <em>*</em></label>
+	<&product_prop_1feat.html, feature => 'Diameter', id => $id, step => $base_diameter_step, A => $A, rc => $rc&>
+</div>
+% }
+
+% my $base_addition_step = $A->get_feature_by_key($id, 'Addition rangeStep');
+% if ($base_addition_step) {
+<div class="parameterBox">
+%	my $style_left = my $style_right = '';
+%	my $rc = 0;
+%	if ($args{msg} =~ /\[600\]$/ or $args{msg} =~ /\[601\]$/) {
+%		$rc = 1;
+%		$style_left = "<b style='color:red'><abbr title='$args{msg}'>"; $style_right = '</abbr></b>';
+%	}
+	<label class="input_tag"><%$style_left%>Addition<%$style_right%> <em>*</em></label>
+	<&product_prop_1feat.html, feature => 'Addition', id => $id, step => $base_addition_step, A => $A, rc => $rc&>
+</div>
+% }
+
+
+%
+<&product_options_numbers.html, type => 3, id => $id, lang => $lang, A => $A, msg => $args{msg}, rc => $args{rc}&>
+% # -- <&product_options.html, type => 1, id => $id, lang => $lang, A => $A&>
+ </div> <!-- end productParameters -->
+
+ <div class="productDescription1">
+          <p> <% $prop->{"desc$l"} %></p>
+</div><!--end productDescription -->   
+
+
+ <div class="productDescription2">	
+%	# -- Zusatz-Informationen:
+<% $prop->{"additional_info$l"} %>
+	
+%# <% ${$C->include("_includes/prod_detail_txt_$lang\.html")} %>
+</div><!--end productDescription2 -->   <br clear='all' />
+
+<hr>
+
+% if ($C->is_devel()) {
+	<a href="product2.html?id=<%$id%>">Preview (new)</a><br>
+	<&page_info.html, 'END'&>
+% }
+
+<script language=JavaScript>
+	var dTotal = <% $price_total %>;
+	function updateTot(oid, price) {
+		c = document.getElementById('cb_o' + oid).checked;
+		if (c) { dTotal += price; }
+		else { dTotal -= price; }
+		dTotal = Math.round(dTotal*100)/100;
+		dynTotal.innerHTML = dTotal;
+	}
+</script>

@@ -1,0 +1,71 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $bUpdate = $cgi->param('bUpdate');
+	my $delid = $cgi->param('delid');
+	my $updID = $cgi->param('bUpdID');
+	my $updTxt = $cgi->param('bUpdTxt');
+	my $extradir = '';
+
+	my $sth = $dbh->prepare(qq~	SELECT	id, is_active, weight, prod_id, url, last_mod, 
+						last_user, valid_from, valid_to, xtext 
+					FROM 	teaser
+					WHERe	lang='$args{lang}'
+					ORDER	BY id DESC LIMIT 9999~);
+	$sth->execute();
+</%init>
+<table class="table table-hover">
+<thead>
+<tr>
+	<th>Image</th>
+	<th>Teaser Text</th>
+	<th>Product</th>
+	<th style='text-align:center'>Edit</th>
+</tr>
+</thead>
+<tbody>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $is_active, $weight, $prod_id, $url, $last_mod, $last_user, $valid_from, $valid_to, $xtext) = @{$r};
+%	my $txt = $C->slurp_file("$C->{CONFIG}->{DOCUMENT_ROOT}/img_slides/info$_\.txt");
+%	my $prod_exists = $C->query("select id FROM products WHERE id=$prod_id")->[0];
+%	my $prod_title = $C->query("select title FROM products_desc WHERE product_id=$prod_id AND lang='$args{lang}'")->[0] || '';
+	<tr><td style='text-align:left'>
+	<a href="adm_edit_teaser.html?id=<%$id%>"><img style='width:350px'
+		title="ID <%$id%>" src="img_slides/s<%$id%>.jpg?r=<%rand()%>" /></a>
+	</td>
+	<td><%$xtext%></td>
+	<td>
+%	if ($url && $url ne 'category-0-list.html') {
+%		(my $cat_id = $url) =~ s/^category\-(\d+)\-.+\.html$/$1/;
+%		    $cat_id = 0 unless $cat_id =~ /^\d+$/;
+%		if ($cat_id) {
+%			my $label = $C->query("select label from categories WHERE id=$cat_id")->[0];
+			Category <%$cat_id%> <a target="_blank" href="<%$url%>"><%$label%></a>
+%		}
+%		else {
+			<a target="_blank" href="<%$url%>"><%$url%></a>
+%		}
+%	}
+%	elsif ($prod_id) {
+		<a target="_blank" href="article-<%$prod_id%>-product.html"><%$prod_title%></a>
+%	}
+%	else {
+		(None)
+%	}
+	</td>
+	<td style='text-align:center'><a href="adm_edit_teaser.html?id=<%$id%>">edit</a></td>
+	</tr>
+% }
+% unless ($args{teaser_count}) {
+	<tr><td colspan="5" style='text-align:center'>No front teaser right now</td></tr>
+% }
+</tbody>
+</table>
+
+<%doc>
+	__METACLONING__
+</%doc>

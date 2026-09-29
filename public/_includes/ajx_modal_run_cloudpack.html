@@ -1,0 +1,75 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $sth = $C->{dbh}->prepare(q~
+		select 	id, instime, pay_meth, uname, email, status, amount_incl_vat
+		from 	vorders
+		where 	status != 3
+		order	by id desc limit 20
+	~);
+	   $sth->execute();
+
+	my %pay_meth_hr = (
+		1 => 'CC',
+		3 => 'Bill',
+		4 => 'PayPal',
+		6 => 'PreP',
+		14 => 'SIX'
+	);
+</%init>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post action="_run_tool.html">
+<input type=hidden name=action value="sendorder2cp">
+<input type=hidden name=func value="edit_item">
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+	style="width:800px; margin-left:-400px">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+
+    <h3 id="myModalLabel">cloudpack.pl / Linker.shop</h3>
+
+  </div>
+  <div class="modal-body" style="padding-top:10px">
+
+	<h3 style="margin-top:0px !important">Send to cloudpack.pl ...</h3>
+
+	<table class="mytable table-hover">
+	<thead>
+		<tr>
+			<th colspan="2">Order-ID</th>
+			<th style="text-align:center">Pay Meth</th>
+			<th>Created</th>
+			<th>User</th>
+			<th>E-Mail</th>
+			<th style="text-align:right">Amount</th>
+		</tr>
+	</thead>
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $instime, $pay_meth, $uname, $email, $status, $amount_incl_vat) = @{$r};
+		<tr>
+		<td style="width:3%"><input style="margin-top:0px" type=radio name="order_id" value="<%$id%>"></td>
+		<td style="font-weight:bold"><% $id %></td>
+		<td style="text-align:center"><% $pay_meth_hr{$pay_meth} || "* $pay_meth * " %></td>
+		<td nowrap><% $C->trans_date_short($instime) %></td>
+		<td><% $uname %></td>
+		<td><% $email %></td>
+		<td nowrap style="text-align:right; font-weight:bold"><% $C->decimal_mark($amount_incl_vat) %> <%$C->{CONFIG}->{default_curr}%></td>
+		</tr>
+%	}
+	</table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<input class="btn btn-primary" namx=bXX type=submit value="Run!">
+  </div>
+</div>
+</form>

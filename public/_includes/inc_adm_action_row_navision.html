@@ -1,0 +1,20 @@
+<%init>
+	my %args = $m->caller_args(0);
+</%init>
+<tr style="height:35px">
+<td style="padding-right:20px; padding-top:6px">
+%	if ( $args{action} eq 'navision-orders' ) {
+	    <span rel="tooltip" data-original-title="Click to specify details and run job..." data-placement="bottom">
+		<a href="#" stylx="" onclick="modal_run_navision()"><b><% $args{label} %></b></a>
+	    </span>
+%	}
+%	else {
+	    <span rel="tooltip" data-original-title="Click to run job" data-placement="top">
+		<span style="cursor:pointer; font-weight:bold"
+			onclick="mydo('<%$args{action}%>')" clasx=""><% $args{label} %></span>
+	    </span>
+%	}
+</td>
+<td><% $args{desc} %></td>
+</tr>
+
