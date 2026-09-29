@@ -22,8 +22,10 @@
 		<div class="mt-6">
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 			<p class="text-sm text-gray-600 leading-relaxed"><% $prod->{desc_long} %></p>
+
+			<h3 class="font-bold mt-4 mb-4">Weitere Bilder</h3>
 %			foreach (@{$imgs->{pics}}) {
-				XX <% $_ %> &rarr;
+				<small><% $_ %></small><br>
 				<img style="width:200px;" src="../<% $_ %>"><br>
 %			}
 %			if ($perm->{is_devel}) {
