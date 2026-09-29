@@ -1,0 +1,130 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use File::Copy;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $SID = $C->getSID();
+	my $cgi = $C->{CGI};
+
+	my $action  = $cgi->param('action');
+	my $id      = $cgi->param('id') + 0;
+	my $imgsize = $cgi->param('imgsize') || 700;
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	$C->log(msg=>"Action: $action", service=>'_product_tool', importance=>2);
+
+	if ($action eq 'make_square') {
+		my $DOCROOT = $ENV{DOCUMENT_ROOT};
+		my $image   = "$DOCROOT/produkte/p$id\_large.jpg";
+		$imgsize *= 1;
+		my $imgsize_q = $imgsize . 'x' . $imgsize;
+	 my $cmd = qq~/usr/bin/convert "$DOCROOT/produkte/p$id\_large.jpg" -gravity center -extent $imgsize_q "$DOCROOT/produkte/p$id\_large_b.jpg"~;
+
+		$C->log(msg=>$cmd, service=>'_product_tool', importance=>1);
+		system($cmd) && print STDERR "ERR $cmd\n";
+	}
+	elsif ($action eq 'as_ad_pic') {
+		my $img = $cgi->param('img');
+		my ($dbid, $ext) = @{$C->query("select id, `description` from products_feat where product_id=$id and featname='_image' and featkey='$img'")};
+		$ext ||= 'jpg';
+		my $errstr = '';
+		$C->{dbh}->do("update products_feat SET weight=-2 WHERE id=$dbid") or do { $errstr = $DBI::errstr };
+		$C->create_toast_note(body=>qq~<center>Bild $img als Hauptbild bei Ads<br>
+				Format: $ext $errstr<br>
+				<small> DB-ID $dbid</small></center>~, delay=>7500, width=>'480px');
+	}
+	elsif ($action eq 'as_main_pic') {
+		my $i       = $cgi->param('i');
+		my $ext     = $cgi->param('ext') || 'jpg';
+		my $docroot = $C->{CONFIG}->{DOCUMENT_ROOT};
+		my $cur_ext = $C->get_file_extension( $C->get_full_file_name("$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_large") );
+
+		my @msgs = ();
+		my $errstr = '';
+		my $rc = 0;
+		my %rcode = ();
+
+		unless ($rc) { copy "$docroot/produkte/p$id\_large.$cur_ext", "/tmp/zz_trash_p$id\_large.$cur_ext" or do { $rc++; $rcode{41} = 1; } }
+		unless ($rc) { copy "$docroot/produkte/p$id\_thmb.$cur_ext",  "/tmp/zz_trash_p$id\_thmb.$cur_ext"  or do { $rc++; $rcode{44} = 1; } }
+		unless ($rc) { copy "$docroot/produkte/p$id\_orig.$cur_ext",  "/tmp/zz_trash_p$id\_orig.$cur_ext"  or do { $rc++; $rcode{45} = 1; } }
+
+		unless ($rc) { copy "$docroot/produkte/p$id\_$i\_large.$ext", "$docroot/produkte/p$id\_large.$ext" or do { $rc++; $rcode{47} = 1; } }
+		unless ($rc) { copy "$docroot/produkte/p$id\_$i\_thmb.$ext",  "$docroot/produkte/p$id\_thmb.$ext"  or do { $rc++; $rcode{48} = 1; } }
+		unless ($rc) { copy "$docroot/produkte/p$id\_$i\_orig.$ext",  "$docroot/produkte/p$id\_orig.$ext"  or do { $rc++; $rcode{49} = 1; } }
+
+		unless ($rc) { copy "/tmp/zz_trash_p$id\_large.$cur_ext", "$docroot/produkte/p$id\_$i\_large.$cur_ext" or do { $rc++; $rcode{51} = 1; } }
+		unless ($rc) { copy "/tmp/zz_trash_p$id\_thmb.$cur_ext",  "$docroot/produkte/p$id\_$i\_thmb.$cur_ext"  or do { $rc++; $rcode{52} = 1; } }
+		unless ($rc) { copy "/tmp/zz_trash_p$id\_orig.$cur_ext",  "$docroot/produkte/p$id\_$i\_orig.$cur_ext"  or do { $rc++; $rcode{53} = 1; } }
+
+		foreach (keys %rcode) {
+			$C->create_toast_note(body=>"Err E407131-54: $_ (Quellformat: $cur_ext)", type=>'error', delay=>7500);
+		}
+		unless ($rc) {
+			if ($ext ne $cur_ext) {
+				my $stmt = qq~update products_feat set `description`='$cur_ext' where product_id=$id and featkey='$i' limit 1~;
+				$C->{dbh}->do($stmt);
+				unlink "$docroot/produkte/p$id\_large.$cur_ext";
+				unlink "$docroot/produkte/p$id\_thmb.$cur_ext";
+			}
+		}
+		my $msg = join "<br>", @msgs;
+		$C->create_toast_note(body=>qq~<center><b>Neues Hauptbild gesetzt</b><br><small>($i / $ext)</small></center> $msg~, delay=>6000,
+			style=>'.toast, .max-w-300 { max-width: 400px !important; opacity: 0.85 }');
+		$m->redirect("/adx/edit-product.html?id=$id");
+	}
+	elsif ($action eq 'del_pic') {
+		my $delpic = $cgi->param('delpic');
+		$C->{dbh}->do("DELETE FROM products_feat WHERE product_id=$id AND featkey='20$delpic'");
+		unlink "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_20$delpic\_orig.jpg";
+		unlink "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_20$delpic\_large.jpg";
+		unlink "$C->{CONFIG}->{DOCUMENT_ROOT}/produkte/p$id\_20$delpic\_thmb.jpg";
+		$C->create_toast_note(body=>qq~<center>Das Bild wurde gel&ouml;scht<br><small>($delpic)</small></center>~);
+	}
+	elsif ($action eq 'excl_img') {
+		my $img = $cgi->param('img');
+		my ($dbid, $ext) = @{$C->query("select id, `description` from products_feat where product_id=$id and featname='_image' and featkey='$img'")};
+		$ext ||= 'jpg'; # -- 30Jun2024
+		my $errstr = '';
+		$C->{dbh}->do("update products_feat SET weight=-1 WHERE id=$dbid") or do { $errstr = $DBI::errstr };
+		$C->create_toast_note(body=>qq~<center>Ausschluss bei Rotation:<br>
+			<img class="w--100" src="/produkte/p$id\_$img\_thmb.$ext"><br><small>$img</small>$errstr</center>~, type=>$errstr ? 'danger' : 'pink');
+	}
+	elsif ($action eq 'incl_img') {
+		my $img = $cgi->param('img');
+		my ($dbid, $ext) = @{$C->query("select id, `description` from products_feat where product_id=$id and featname='_image' and featkey='$img'")};
+		$ext ||= 'jpg'; # -- 30Jun2024
+		my $errstr = '';
+		$C->{dbh}->do("update products_feat SET weight=0 WHERE id=$dbid") or do { $errstr = $DBI::errstr };
+		$C->create_toast_note(body=>qq~<center>Einblenden bei Rotation:<br>
+			<img class="w--100" src="/produkte/p$id\_$img\_thmb.$ext"><br><small>$img</small>$errstr</center>~, type=>$errstr ? 'danger' : 'success');
+	}
+	elsif ($action eq 'update_extra') {
+		my $raw_weight    = sprintf('%.3f', $cgi->param('raw_weight'   ));
+		my $product_type  = $cgi->param('product_type');
+		my $gtin          = $cgi->param('gtin');
+		my $campaign_id   = $cgi->param('campaign_id') + 0;
+
+		$A->set_feature($id, '_exclude', 'GTIN', 'de', $gtin, -1);
+		$A->set_feature($id, '_exclude', 'GTIN', 'en', $gtin, -1);
+		$A->set_feature($id, '_exclude', 'GTIN', 'fr', $gtin, -1);
+
+		$A->set_feature($id, '_exclude', 'raw_weight'   , 'de', $raw_weight   , -2);
+		$A->set_feature($id, '_exclude', 'raw_weight'   , 'en', $raw_weight   , -2);
+
+		$A->set_feature($id, '_exclude', 'product_type' , 'de', $product_type , -3);
+		$A->set_feature($id, '_exclude', 'product_type' , 'en', $product_type , -3);
+
+		$C->{dbh}->do("update products set campaign_id=$campaign_id where id=$id");
+	}
+
+	$m->redirect("adx/edit-product.html?id=$id");
+	# XX $m->redirect("adm_edit_product.html?id=$id");
+</%init>
+<%doc>
+	Created: 04Dez2024
+	http://zzshop.jgd.ch/_product_tool.html?id=108&action=make_square&imgsize=825
+</%doc>
