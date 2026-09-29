@@ -24,7 +24,11 @@
 
 	<!-- Produktdetails -->
 		<div>
-			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $prod->{brand} %></p>
+			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $prod->{brand} %>
+%				if ($perm->{is_admin}) {
+					&ndash; XX
+%				}
+			</p>
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><% $prod->{title} %></h1>
 
 			<p class="text-xs text-gray-400 mb-5">
