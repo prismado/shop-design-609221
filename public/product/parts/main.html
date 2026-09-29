@@ -15,9 +15,19 @@
 
 	<!-- Produktbild + Beschreibung -->
 	<div>
-		<img src="<% $img_url %>"
-			class="w-full rounded-2xl object-cover border border-gray-200 bg-white"
-			loading="lazy">
+		<button type="button" id="main-img-btn-<% $id %>" data-src="<% $img_url %>"
+			class="group relative block w-full rounded-2xl overflow-hidden border border-gray-200
+				bg-white cursor-zoom-in">
+			<img src="<% $img_url %>" class="w-full object-cover" loading="lazy" alt="<% $prod->{title} %>">
+			<span class="absolute bottom-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow
+				group-hover:bg-white transition">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+					stroke="currentColor" class="w-[18px] h-[18px] text-gray-600">
+					<path stroke-linecap="round" stroke-linejoin="round"
+						d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
+				</svg>
+			</span>
+		</button>
 
 		<div class="mt-6">
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
@@ -35,8 +45,9 @@
 					</button>
 %				}
 				</div>
+%			}
 
-				<!-- Bilder-Modal: gross, mit Vor-/Zurück-Navigation -->
+				<!-- Bilder-Modal: gross, mit Vor-/Zurück-Navigation (Hauptbild + Zusatzbilder) -->
 				<div id="gallery-modal-<% $id %>"
 					class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4">
 					<button type="button" class="gallery-close absolute top-4 right-4
@@ -65,17 +76,22 @@
 
 				<script>
 				(function () {
-					var root  = document.getElementById('gallery-<% $id %>');
-					var modal = document.getElementById('gallery-modal-<% $id %>');
-					if (!root || !modal) return;
+					var mainBtn   = document.getElementById('main-img-btn-<% $id %>');
+					var thumbRoot = document.getElementById('gallery-<% $id %>');
+					var modal     = document.getElementById('gallery-modal-<% $id %>');
+					if (!modal) return;
 
-					var thumbs   = Array.prototype.slice.call(root.querySelectorAll('.thumb-btn'));
+					var thumbs  = thumbRoot ? Array.prototype.slice.call(thumbRoot.querySelectorAll('.thumb-btn')) : [];
+					var sources = [];
+					if (mainBtn) sources.push(mainBtn.dataset.src);
+					thumbs.forEach(function (t) { sources.push(t.dataset.src); });
+
 					var modalImg = modal.querySelector('.gallery-modal-img');
 					var idx      = 0;
 
 					function show(i) {
-						idx = (i + thumbs.length) % thumbs.length;
-						modalImg.src = thumbs[idx].dataset.src;
+						idx = (i + sources.length) % sources.length;
+						modalImg.src = sources[idx];
 					}
 					function openModal(i) {
 						show(i);
@@ -87,8 +103,9 @@
 						modal.classList.remove('flex');
 					}
 
+					if (mainBtn) mainBtn.addEventListener('click', function () { openModal(0); });
 					thumbs.forEach(function (btn, i) {
-						btn.addEventListener('click', function () { openModal(i); });
+						btn.addEventListener('click', function () { openModal(i + 1); });
 					});
 					modal.querySelector('.gallery-close').addEventListener('click', closeModal);
 					modal.querySelector('.gallery-prev').addEventListener('click', function () { show(idx - 1); });
@@ -102,7 +119,6 @@
 					});
 				})();
 				</script>
-%			}
 %			if ($perm->{is_devel}) {
 				<p class="mt-5">XX <% $C->{CONFIG}->{DOCUMENT_ROOT} %></p>
 				<p class="mt-5">XX <% $img_url %></p>
