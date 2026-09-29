@@ -6,6 +6,7 @@
 	my $A    = $args{A};
 	my $perm = $args{perm};
 	my $prod = $args{prod};
+	my $imgs = $args{imgs};
 	my $id   = $args{id};
 
 	my $img_url = "../produkte/p$id\_large.jpg"; # -- https://placehold.co/450x450/d8d8d8/a8a8a8?text=Produkt-\nBild
@@ -41,14 +42,6 @@
 				Artikelnummer <% $prod->{art_no} %>
 <%doc>
 XXX:
-%			if ($perm->{is_devel}) {
-				&middot;
-				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc" 
-					class="underline hover:text-gray-600">Edit desc.</a>
-				&ndash;
-				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_discount" 
-					class="underline hover:text-gray-600">Edit disc.</a>
-%			}
 /XXX
 </%doc>
 			</p>
@@ -85,6 +78,9 @@ XXX:
 				<li>X -- <% $_ %> = <b><% $prod->{$_} %></b></li>
 %			}
 			</ul>
+%				foreach (@{$imgs->{pics}}) {
+					XX ........ <% $_ %><br>
+%				}
 %			}
 		</div>
 
