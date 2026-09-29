@@ -26,7 +26,7 @@ Möglichst flexible Aufteilung der wichtigsten Template-"Wrapper" und ihrem Part
 
 ## Technologie-Entscheidungen
 
-Guter Mix aus Performance und Wartbarkeit.
+Guter Mix aus Performance und Wartbarkeit. Zurückhaltend mit zusätzlichen <style>...</style>-Anweisungen: Stattdessen nach Möglichkeit Tailwind Kernfunktionen verwenden. Generell lieber HTML statt weitere JavaScript-Programmierung, sollte ein passender HTML-Standard zur Verfügung stehen. Falls der Einsatz externer JavaScript-Bibliotheken Sinn macht, bitte darauf hinweisen und diese eher final einbinden anstatt auf die CDn-Quelle zu verlinken
 
 ## Design-Philosophie
 
