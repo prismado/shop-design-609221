@@ -1,0 +1,43 @@
+<%init>
+	use ScreenPoint::Core;
+	use File::Copy;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $ifile               = $cgi->param('upload') || '';
+	my $upload_tempfilename = $cgi->tmpFileName($ifile);
+
+	my $ifile_work = $ifile;
+	my $funcNum = 1;
+	my $message = '';
+	unless ($upload_tempfilename) {
+		$message = 'ERROR';
+	}
+
+	my $ext = $C->get_file_extension($ifile);
+	$ifile_work =~ s/\.$ext$//;
+	$ext =~ tr/A-Z/a-z/;
+	my $target_file = $C->url_friendly($ifile_work) . "\.$ext";
+	my $target_path = '';
+
+	if ($ext eq 'jpg' or $ext eq 'png' or $ext eq 'tif' or $ext eq 'gif' or $ext eq 'jpeg' or $ext eq 'tiff') {
+		$target_path = $C->get_sys_config('upload_path_pic');
+	}
+	else {
+		$target_path = $C->get_sys_config('upload_path_doc');
+	}
+
+	copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/$target_path/$target_file";
+	# XXX copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/produkte/docs/$target_file";
+
+	my $url = "/$target_path/$target_file";
+	# XXX my $url = "/produkte/docs/$target_file";
+
+	$C->log( msg => "Upload $ifile: $target_path/$target_file", service => '_uploader_upload2', importance => 2 );
+</%init>
+<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction(<%$funcNum%>, '<%$url%>', '<%$message%>');</script>
+<%doc>
+	__METACLONING__
+</%doc>

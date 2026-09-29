@@ -1,0 +1,101 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+	use File::Copy;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $ifile               = $cgi->param('showcase_file') || '';
+	my $upload_tempfilename = $cgi->tmpFileName($ifile);
+	my $zone                = $cgi->param('zone');
+	my $id                  = $cgi->param('id') + 0;
+	my $perm                = $C->get_user_perm();
+	my $ext                 = $C->get_file_extension($ifile);
+	my $debug               = $C->getSessData('debug') || 0;
+	my $imginf              = $C->get_image_info(img_path=>$upload_tempfilename, ext=>$ext, debug=>$debug);
+
+	$m->redirect('_error.html') unless $perm->{is_admin};
+
+	my $ifile_work          = $ifile;
+	   $ifile_work          =~ s/\.$ext$//;
+	my $target_file         = $C->url_friendly($ifile_work) . "\.$ext";
+	my $target_path         = $C->get_sys_config('upload_path_pic');
+
+	foreach ($cgi->all_parameters) {
+		$C->log(msg=>"[ CGI ] - $_ = " . $cgi->param($_), service=>'_upload_prodimg_by_adm');
+	}
+
+	if (($imginf->{x} < $C->{CONFIG}->{default_imgsize_large} or $imginf->{y} < $C->{CONFIG}->{default_imgsize_large}) && $ext ne 'pdf') {
+		my $msg = $debug ? "<br>$imginf->{msg}" : '';
+		$C->create_toast_note(body=>qq~<center class='text-dark'>Die Aufl&ouml;sung $imginf->{x} x $imginf->{y} ist zu gering.<br>
+				Mindestaufl&ouml;sung: <b>1000 &times; 1000 Pixel</b>$msg</center>~,
+			type=>'warning', width=>'390px', delay=>9000);
+		unless ($ifile =~ /^force\_.+/) {
+			$m->out(q~{ "meta": { "file": "", "file_path": "" } }~);
+			return;
+		}
+	}
+
+	if ($zone == 3) {
+		my ($y, $m, $d, $ss, $mm, $hh) = (localtime( time() ))[5,4,3,0,1,2]; $y += 1900; $m += 1;
+		my $ts       = sprintf('%d%02d%02d-%02d%02d%02d', $y, $m, $d, $hh, $mm, $ss);
+		my $img_path = "$C->{CONFIG}->{DOCUMENT_ROOT}/$target_path";
+		my $img_orig = "$img_path/p$id\_$ts\_orig.$ext";
+		my $img2     = "$img_path/p$id\_$ts\_orig2.$ext";
+
+		copy $upload_tempfilename, $img_orig;
+
+		my $i_len  = $imginf->{x} < 1000 ? 1000 : $imginf->{x};
+		my $i_area = $i_len . "x$i_len";
+		system(qq~/usr/bin/convert "$img_orig" -gravity center -extent "$i_area" "$img2"~);
+
+		if ($ext =~ /^avif$/i) {
+			copy $img_orig, "$img_path/p$id\_$ts\_large.$ext";
+			copy $img_orig, "$img_path/p$id\_$ts\_thmb.$ext";
+		}
+		else {
+			system(qq~/usr/bin/convert -resize "x1000" "$img2" "$img_path/p$id\_$ts\_large.$ext"~);
+			system(qq~/usr/bin/convert -resize "x240"  "$img2" "$img_path/p$id\_$ts\_thmb.$ext"~);
+			# XX system(qq~/usr/bin/montage -geometry "x1000" "$img2" "$img_path/p$id\_$ts\_large.$ext"~);
+			# XX system(qq~/usr/bin/montage -geometry "x240"  "$img2" "$img_path/p$id\_$ts\_thmb.$ext"~);
+			unlink $img2;
+		}
+
+		$A->add_feature($id, '_image', $ts, 'SYS', $ext);
+		$C->create_toast_note(body=>"Zusatzbild $target_path/p$id\_$ts\_orig.$ext");
+	}
+	else {
+		copy $upload_tempfilename, "$C->{CONFIG}->{DOCUMENT_ROOT}/$target_path/p$id\_orig.$ext";
+		$C->log(msg=>"Copied to $target_path/p$id\_orig.$ext", service=>'_upload_prodimg_by_adm') if $debug;
+
+		my $res1 = $A->recreate_image( id=>$id, size=>1000, square=>1, ext=>$ext, suffix=>'large', debug=>$debug );
+		my $res2 = $A->recreate_image( id=>$id, size=>$C->{CONFIG}->{default_imgsize_thmb}+0, square=>1, ext=>$ext, suffix=>'thmb' );
+		foreach (sort keys %$res1) {
+			next if $_ eq 'VERSION';
+			print STDERR $C->now(12), " [res1] - $_ = $res1->{$_}\n";
+		}
+		foreach (sort keys %$res2) {
+			next if $_ eq 'VERSION';
+			print STDERR $C->now(12), " [res2] - $_ = $res2->{$_}\n";
+		}
+	}
+
+	$C->saveSessData('targetp_403181', "$target_path/zz_trash_$target_file");
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+    "meta": {
+        "file": "<% $target_file %>",
+        "file_path": "<% $target_path %>/zz_trash_<% $target_file %>",
+        "version": "0.8001"
+    }
+}
+<%doc>
+	Created 19Mar2024
+
+	__METACLONING__
+</%doc>
