@@ -43,90 +43,18 @@
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
 
-<& partials/left_nav.html, v => \%v, A => $A, C => $C &>
+	<& partials/left_nav.html, v => \%v, A => $A, C => $C &>
 
-<!-- Produkte (Mitte, ca. 70%) -->
+	<!-- Produkte (Mitte, ca. 70%) -->
+	<section>
+		<& parts/main.html, C => $C &>
+	</section>
 
-<section>
-	<& parts/main.html, C => $C &>
-</section>
-
-<%doc>
-XXX:
-/XXX
-</%doc>
-
-<& partials/daily_offer.html, C => $C &>
-<%doc>
-XXX:
-  <!-- Tagesangebote (rechts, ca. 15%) -->
-  <aside id="tagesangebote" class="mt-10 lg:mt-0 scroll-mt-24">
-    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1 flex items-center gap-1.5">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-500">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
-      </svg>
-      Tagesangebote
-    </h2>
-
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Kopfhörer" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-35%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">In-Ear Kopfhörer SoundDot</p>
-        <p class="text-sm font-bold text-red-600">CHF 39.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 59.–</p>
-      </a>
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Powerbank" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-40%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">Powerbank ChargeGo 20K</p>
-        <p class="text-sm font-bold text-red-600">CHF 29.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 49.–</p>
-      </a>
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Maus" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-25%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">Kabellose Maus ClickPro</p>
-        <p class="text-sm font-bold text-red-600">CHF 19.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 25.–</p>
-      </a>
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot USB-Hub" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-15%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">USB-C Hub ConnectAll 7-in-1</p>
-        <p class="text-sm font-bold text-red-600">CHF 34.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 39.–</p>
-      </a>
-    </div>
-
-    <div class="hidden lg:flex items-center gap-1.5 mt-4 text-[11px] text-gray-400">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-      </svg>
-      Angebote nur solange Vorrat reicht
-    </div>
-  </aside>
-/XXX
-</%doc>
-
+	<& partials/daily_offer.html, C => $C &>
 </div>
 
 <& partials/footer.html, C => $C &>
 <& partials/footer_js.html, C => $C &>
-
-<%doc>
-XXX:
-/XXX
-</%doc>
 
 </body>
 </html>
