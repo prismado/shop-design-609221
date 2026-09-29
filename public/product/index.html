@@ -51,7 +51,11 @@
 
 <!-- Produkte (Mitte, ca. 70%) -->
 <section>
+<& parts/main.html, C => $C, prod => $prod, id => $id &>
+</section>
 
+<%doc>
+XXX:
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
 		<!-- Produktbild + Beschreibung -->
@@ -121,7 +125,8 @@
 	</div>
 
 </section>
-
+/XXX
+</%doc>
 	<& partials/daily_offer.html, C => $C &>
 </div>
 
