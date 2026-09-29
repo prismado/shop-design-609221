@@ -4,6 +4,7 @@
 	my %args = $m->caller_args(0);
 
 	my $perm = $args{perm};
+	my $C    = $args{C};
 
 	my $prod;
 	my $id;
@@ -19,19 +20,14 @@
 
 			<div class="mt-6">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
-				<p class="text-sm text-gray-600 leading-relaxed"><% $prod->{desc_long} %></p>
+				<p class="text-sm text-gray-600 leading-relaxed">tbd</p>
 			</div>
 		</div>
 
 		<!-- Produktdetails -->
 		<div>
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $prod->{brand} %></p>
-			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">tbd</h1>
-
-% # XX			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
-
-% # XXX			<div class="flex flex-wrap gap-3 mb-8"> </div>
-
+			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Tbd</h1>
 		</div>
 
 	</div>
