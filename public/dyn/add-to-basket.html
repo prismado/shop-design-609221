@@ -8,10 +8,11 @@
 
 	my $id = $cgi->param('id') + 0;
 
-	$C->log(msg => "XX Add to basket prod-id $id", service => 'dyn/add-to-basket');
+	$C->log(msg => "Add to Basket Prod-ID $id", service => 'dyn/add-to-basket');
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
-	$r->content_type('text/plain; charset=utf-8');
+	# XX $r->content_type('text/plain; charset=utf-8');
+	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
   "rc": 0,
