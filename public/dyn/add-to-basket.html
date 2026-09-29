@@ -1,0 +1,14 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	# -- Geplant:
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+
+	$r->content_type('text/plain; charset=utf-8');
+</%init>
+{
+  "rc": 0,
+  "message": "okay um <% $C->now(12) %>"
+}
