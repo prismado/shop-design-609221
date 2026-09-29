@@ -35,6 +35,8 @@
 
 			<p class="text-xs text-gray-400 mb-5">
 				Artikelnummer <% $prod->{art_no} %>
+<%doc>
+XXX:
 %			if ($perm->{is_devel}) {
 				&middot;
 				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc" 
@@ -43,6 +45,8 @@
 				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_discount" 
 					class="underline hover:text-gray-600">Edit disc.</a>
 %			}
+/XXX
+</%doc>
 			</p>
 
 			<div class="flex flex-wrap items-end gap-3 mb-1">
