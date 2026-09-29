@@ -17,6 +17,7 @@ Dieses Repository dient der Entwicklung eines **neuen Themes für den Prismado-S
 
 ## Arbeitsweise / Regeln
 
+- Vertraue in erster Linie darauf, dass die bestehende HTML-Vorlage rein inhaltlich bereits durchdacht ist und die richtigen Elemente in den Variablen zur Laufzeit dargestellt werden. Falls du Fragen zu einem Mason-Code-Block hast, kannst du mich gerne zwischenfragen anstatt die Verzeichnisse nach .pm-Modulen zu durchsuchen und zu analysieren.
 - **Niemals eigenständig `git commit` / `git add` / `git push` ausführen.** Der Nutzer prüft und vergleicht Änderungen selbst, bevor er einchecken. Änderungen nur vorschlagen bzw. umsetzen, das Einchecken bleibt beim Nutzer.
 - Bei Detailfragen zum gerenderten Ergebnis kann eine Seite via `http://localhost/...` abgerufen werden (siehe `public/CLAUDE.md`), meist reicht aber die Analyse der Templates ohne Rendering.
 
