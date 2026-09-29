@@ -9,8 +9,6 @@
 
 	my $perm = $C->get_user_perm();
 
-	# XXX my %v = (daily_609231 => 'Tagesangebote am Montag');
-
 	my $cgi = $C->{CGI};
 	my $id    = $cgi->param('id') + 0;
 	my $debug = $cgi->param('debug');
@@ -27,7 +25,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>qqqArtikel | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
+<title>Artikel | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
