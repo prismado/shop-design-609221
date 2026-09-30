@@ -33,8 +33,10 @@
         </div>
         <div class="p-4 flex flex-col flex-1">
 %		if ($debug) {
-			<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products"><span
-				class="text-red-500 text-xs">Debug</span></a>
+			<span class="text-xs text-red-500">
+				<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products">prod</a> -
+				<a href="/adm_db_edit?wcl=product_id%3D<% $count + 1 %>&table=products_desc">desc</a>
+			</span>
 %		}
 		<a href="product?id=<%  $count + 1 %>">
 			<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
