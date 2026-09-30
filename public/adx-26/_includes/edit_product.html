@@ -227,7 +227,7 @@
 	<div class="float-end mr-2">
 		<div class="text-center">
 			<% ${ $A->modal( label=>'<i class="fi fi-pencil fs--20"></i>',
-				url=>"/adx/_ajax/modal_edit_wysiwyg.html?id=$args{id}&css_id=403281_179&lang=$lang", css_id=>'403281_179') } %>
+				url=>"_ajax/modal_edit_wysiwyg.html?id=$args{id}&css_id=403281_179&lang=$lang", css_id=>'403281_179') } %>
 		</div>
 
 		<a class="btn btn-sm row-pill btn-<% $lang eq 'de' ? '' : 'outline-' %>dark mt-1 fs--12" id="lang_switch_de" href="#" onclick="setLang('de')">DE</a><br>
