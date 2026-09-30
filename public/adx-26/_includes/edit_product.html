@@ -40,7 +40,7 @@
 		my $c_nav = qq~<a class="link-muted" href="/adm_categ.html?id=$catinf->{id}">$catinf->{label}</a>~;
 		if ($catinf->{parent_id}) {
 			if ($catinf->{visible}) {
-				$c_nav = qq~$c_nav &rarr; <a class="link-muted" href="/adm_categ.html?id=$catinf->{parent_id}">$catinf->{par_label}</a>~;
+		$c_nav = qq~$c_nav &rarr; <a class="link-muted" href="/adm_categ.html?id=$catinf->{parent_id}">$catinf->{par_label}</a>~;
 			}
 			else {
 				$c_nav = qq~$c_nav &rarr; <a href="/adm_categ.html?id=$catinf->{parent_id}"><s>$catinf->{par_label}</s></a>~;
@@ -103,7 +103,8 @@
 		<span class="float-end">
 %		if ($prdinf->{discount_perc}) {
 			<small>Statt</small> <s class="text-gray-500"><% $C->decimal_mark($prdinf->{price_orig_incl_vat}) %></s>
-			<span style="font-size:0.9em" class="badge-pink rounded ml-1 <% $cache_data->{"upd_$args{id}_discount_perc"} ? 'animate-pulse' : '' %> p-1">
+			<span style="font-size:0.9em"
+			class="badge-pink rounded ml-1 <% $cache_data->{"upd_$args{id}_discount_perc"} ? 'animate-pulse' : '' %> p-1">
 				<% sprintf('%.0f', $prdinf->{discount_perc}) %> %</span>
 			<% ${ $A->modal( label=>'<i class="fi fi-pencil"></i>', css_id=>'403131_64',
 			url=>"/adx/_ajax/modal_edit_product_discount.html?id=$args{id}&what=discount_perc&val=$prdinf->{discount_perc}&css_id=403131_64&size=md") } %>
