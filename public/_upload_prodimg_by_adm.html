@@ -16,6 +16,7 @@
 	my $ext                 = $C->get_file_extension($ifile);
 	my $debug               = $C->getSessData('debug') || 0;
 	my $imginf              = $C->get_image_info(img_path=>$upload_tempfilename, ext=>$ext, debug=>$debug);
+	my $default_img_size_lg = $C->{CONFIG}->{default_imgsize_large} + 0; # -- 30Sep2026
 
 	$m->redirect('_error.html') unless $perm->{is_admin};
 
@@ -28,11 +29,12 @@
 		$C->log(msg=>"[ CGI ] - $_ = " . $cgi->param($_), service=>'_upload_prodimg_by_adm');
 	}
 
-	if (($imginf->{x} < $C->{CONFIG}->{default_imgsize_large} or $imginf->{y} < $C->{CONFIG}->{default_imgsize_large}) && $ext ne 'pdf') {
+	# XXX if (($imginf->{x} < $C->{CONFIG}->{default_imgsize_large} or $imginf->{y} < $C->{CONFIG}->{default_imgsize_large}) && $ext ne 'pdf') {
+	if (($imginf->{x} < $default_img_size_lg or $imginf->{y} < $default_img_size_lg) && $ext ne 'pdf') {
 		my $msg = $debug ? "<br>$imginf->{msg}" : '';
 		$C->create_toast_note(body=>qq~<center class='text-dark'>Die Aufl&ouml;sung $imginf->{x} x $imginf->{y} ist zu gering.<br>
-				Mindestaufl&ouml;sung: <b>1000 &times; 1000 Pixel</b>$msg</center>~,
-			type=>'warning', width=>'390px', delay=>9000);
+				Mindestaufl&ouml;sung: <b>$default_img_size_lg &times; $default_img_size_lg Pixel</b>$msg</center>~,
+			type=>'warning', width=>'390px', delay=>8000);
 		unless ($ifile =~ /^force\_.+/) {
 			$m->out(q~{ "meta": { "file": "", "file_path": "" } }~);
 			return;
@@ -57,10 +59,9 @@
 			copy $img_orig, "$img_path/p$id\_$ts\_thmb.$ext";
 		}
 		else {
-			system(qq~/usr/bin/convert -resize "x1000" "$img2" "$img_path/p$id\_$ts\_large.$ext"~);
+			# XXX system(qq~/usr/bin/convert -resize "x1000" "$img2" "$img_path/p$id\_$ts\_large.$ext"~);
+			system(qq~/usr/bin/convert -resize "x$default_img_size_lg" "$img2" "$img_path/p$id\_$ts\_large.$ext"~);
 			system(qq~/usr/bin/convert -resize "x240"  "$img2" "$img_path/p$id\_$ts\_thmb.$ext"~);
-			# XX system(qq~/usr/bin/montage -geometry "x1000" "$img2" "$img_path/p$id\_$ts\_large.$ext"~);
-			# XX system(qq~/usr/bin/montage -geometry "x240"  "$img2" "$img_path/p$id\_$ts\_thmb.$ext"~);
 			unlink $img2;
 		}
 
@@ -71,7 +72,8 @@
 		copy $upload_tempfilename, "$C->{CONFIG}->{DOCUMENT_ROOT}/$target_path/p$id\_orig.$ext";
 		$C->log(msg=>"Copied to $target_path/p$id\_orig.$ext", service=>'_upload_prodimg_by_adm') if $debug;
 
-		my $res1 = $A->recreate_image( id=>$id, size=>1000, square=>1, ext=>$ext, suffix=>'large', debug=>$debug );
+		# XXX my $res1 = $A->recreate_image( id=>$id, size=>1000, square=>1, ext=>$ext, suffix=>'large', debug=>$debug );
+		my $res1 = $A->recreate_image( id=>$id, size=>$default_img_size_lg, square=>1, ext=>$ext, suffix=>'large', debug=>$debug );
 		my $res2 = $A->recreate_image( id=>$id, size=>$C->{CONFIG}->{default_imgsize_thmb}+0, square=>1, ext=>$ext, suffix=>'thmb' );
 		foreach (sort keys %$res1) {
 			next if $_ eq 'VERSION';
