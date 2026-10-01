@@ -33,7 +33,12 @@
 			count => 1,
 			lang  => 'de'
         	);
-		push(@msgs, "Artikel wurde wieder zum Warenkorb hinzugefügt: $rc $msg");
+		unless ($rc) {
+			push(@msgs, 'Artikel wurde wieder zum Warenkorb hinzugefügt');
+		}
+		else {
+			push(@msgs, "Fehler beim zurückholen des Aritkels: RC $rc $msg");
+		}
 	}
 
 	# XXX if ($redoid) {
