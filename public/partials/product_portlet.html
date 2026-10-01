@@ -9,8 +9,6 @@
 
 	my $prod = $A->get_product_v2(id => $id, public => 1);
 
-	# XXX my $prod_id = $count + 1;
-	# XXX my $img_url = "produkte/p$id\_thmb.jpg";
 	my $img_url = $prod->{image}->{url};
 	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
 	   $img_url = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild' unless $img_exists;
@@ -24,7 +22,7 @@
 		class="w-full aspect-square object-cover group-hover:scale-105
 			transition-transform duration-500" loading="lazy">
 	</a>
-          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-24%</span>
+          <span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">-924%</span>
           <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2
 			rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
