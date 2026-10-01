@@ -75,13 +75,19 @@
 
 </div>
 
-<form method="post" name="f610012">
-<input type="hidden" name="delid" value="">
-</form>
-
 <script>
 	function removeFromBasket(basketId) {
-		document.f610012.delid.value = basketId;
-		document.f610012.submit();
+		var form = document.createElement('form');
+		form.method = 'post';
+		form.action = '';
+
+		var input   = document.createElement('input');
+		input.type  = 'hidden';
+		input.name  = 'delid';
+		input.value = basketId;
+
+		form.appendChild(input);
+		document.body.appendChild(form);
+		form.submit();
 	}
 </script>
