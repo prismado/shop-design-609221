@@ -5,7 +5,9 @@
 	var text      = toast.querySelector('.toast-text');
 	var hideTimer = null;
 
-	function showToast(ok, message) {
+	function showToast(ok, message, delay) {
+		delay = (typeof delay === 'number') ? delay : 4000;
+
 		iconOk.classList.toggle('hidden', !ok);
 		iconError.classList.toggle('hidden', ok);
 		toast.classList.toggle('bg-green-50', ok);
@@ -29,5 +31,5 @@
 				toast.classList.add('hidden');
 				toast.classList.remove('flex');
 			}, 300);
-		}, 4000);
+		}, delay);
 	}
