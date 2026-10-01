@@ -5,8 +5,30 @@
 	my $C = $args{C};
 	my $A = $args{A};
 	my $v = $args{v};
+	my $prod_highlight = $args{prod_highlight};
 	my $debug = $args{debug};
 </%init>
+
+</div>
+
+<div>
+% foreach my $hl (@{ $prod_highlight->{ids} }) {
+	XX
+	<% $hl->{brand} %> / <% $hl->{title} %>
+	<br>
+% }
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
+
+
+
+
+
+
+
+
 
 % for (my $i=0; $i < 8; $i++) {
 	<& product_portlet.html, count => $i, v => $v, A => $A, C => $C, debug => $debug &>
