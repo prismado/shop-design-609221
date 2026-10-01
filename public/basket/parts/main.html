@@ -39,7 +39,11 @@
 					X -- <b><% $_ %></b> = <% $bsk_itms->{$_} %><br>
 %				}
 %				foreach my $d (@{$bsk_itms->{items}}) {
-					XX ... <% $d %><br>
+% # XXX					XX ... <% $d %><br>
+%					foreach (sort keys %$d) {
+						XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
+%					}
+					------------------------<br>
 %				}
 			</div>
 		</div>
