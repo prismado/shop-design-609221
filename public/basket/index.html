@@ -20,6 +20,8 @@
 		my $title   = $C->query("select title from products_desc where product_id=$prod_id limit 1")->[0] || 'n/a';
 		my ($rc, $msg) = $A->delfrombasketbyid(id => $delid);
 		push(@msgs, "$title - Prod-ID $prod_id");
+		push(@msgs, '');
+		push(@msgs, qq~<a href="#!">Rückgängig machen</a>~);
 	}
 
 	my $bsk_itms = $A->get_basket_items_v2();
