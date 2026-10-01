@@ -12,7 +12,6 @@
 
 	my $delid  = $cgi->param('delid') + 0;
 	my $redo   = $cgi->param('redo') + 0; # -- Prod-ID
-	# XXX my $redoid = $cgi->param('redoId') + 0;
 	my $debug  = $cgi->param('debug');
 
 	my @msgs = ();
@@ -34,7 +33,7 @@
 			count => 1,
 			lang  => 'de'
         	);
-		push(@msgs, "Wieder da. $rc $msg");
+		push(@msgs, "Artikel wurde wieder zum Warenkorb hinzugefügt: $rc $msg");
 	}
 
 	# XXX if ($redoid) {
@@ -97,17 +96,6 @@
 
 <%doc>
 XXX:
----------- Nicht mehr benötigt:
-% if ($redo) {
-	<script>
-	fetch('../dyn/add-to-basket.html', {
-		method: 'POST',
-		body: new URLSearchParams({ id: '<% $redo %>' })
-	})
-		.then(function () { window.location.href = location.pathname + '?redoId=<% $redo %>'; })
-		.catch(function () { window.location.href = location.pathname; });
-	</script>
-% }
 /XXX
 </%doc>
 
