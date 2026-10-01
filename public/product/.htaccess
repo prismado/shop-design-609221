@@ -4,6 +4,7 @@ RewriteEngine On
 
 # Von `irgendwas-xxxx/1234`                  umleiten nach: `./?id=1234`
 # Von `irgendwas-xxxx-yyyy/4321`             umleiten nach: `./?id=4321`
+# Von `irgendwas-xxxx-yyyy-zzzz/5555`        umleiten nach: `./?id=5555`
 
 # Beispiele:
 
