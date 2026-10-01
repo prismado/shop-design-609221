@@ -11,7 +11,7 @@
 
 	my $img_url = $prod->{image}->{url};
 	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
-	   $img_url = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild' unless $img_exists;
+	   $img_url = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Kein\nBild' unless $img_exists;
 </%init>
 
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm
