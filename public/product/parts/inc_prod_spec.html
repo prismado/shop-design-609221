@@ -35,16 +35,10 @@
 	<div class="rounded-xl border border-gray-200 overflow-hidden">
 
 
-
-
 <%doc>
 XXX:
-		<table clasx="table table-sm border table-striped fs--14 mt-4 hidden-md-down">
-		</table>
 /XXX
 </%doc>
-
-
 
 
 
@@ -52,17 +46,18 @@ XXX:
 			<tbody class="divide-y divide-gray-100">
 %			foreach	my $feat (@features) {
 %				next if	$feat->{k} =~ /^URL/; #	-- 10Apr2025
-				<tr>
-				<td nowrap><b><% $feat->{k} %></b></td>
-				<td>
-%				if ($max_len_feat > 31)	{
-					<span class="hidden-lg-down"><%	$feat->{v} %></span>
-					<span class="fs--10 hidden-xl-up hidden-md-down"><% $C->shorten_title($feat->{v}, 31) %></span>
-%				}
-%				else {
-					<% $feat->{v} %>
-%				}
-				</td>
+				<tr class="odd:bg-gray-50">
+					<td nowrap><b><% $feat->{k} %></b></td>
+					<td>
+%					if ($max_len_feat > 31)	{
+						<span clasx="hidden-lg-down"><%	$feat->{v} %></span>
+						<span
+						clasx="fs--10 hidden-xl-up hidden-md-down"><% $C->shorten_title($feat->{v}, 31) %></span>
+%					}
+%					else {
+						<% $feat->{v} %>
+%					}
+					</td>
 				</tr>
 %			}
 				<tr class="odd:bg-gray-50">
