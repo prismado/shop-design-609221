@@ -14,8 +14,18 @@
 
 <div>
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
-	XX <% $hl->{brand} %> / <% $hl->{title} %>
-	<br>
+	XX Prod-ID <% $hl->{id} %>: <% $hl->{brand} %> / <% $hl->{title} %><br>
+		URL Teil: <% $hl->{title_enc} %><br>
+		<% $hl->{count_product} %> Stk.<br>
+		CHF <% $hl->{price_incl_vat_fmt} %> statt <s><% $hl->{price_orig_incl_vat} %></s>
+			&rarr; <% $hl->{discount_perc} %> %<br>
+		<% $hl->{cat_name} %><br>
+		<b><% $hl->{desc_keyw} %></b><br>
+		<% $hl->{description} %><br>
+%	foreach (sort keys %$hl) {
+% #		XX <% $_ %> = <% $hl->{$_} %><br>
+%	}
+	<hr><br>
 % }
 </div>
 
