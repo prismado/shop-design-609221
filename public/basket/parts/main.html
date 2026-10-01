@@ -42,9 +42,10 @@
 %				foreach my $d (@{$bsk_itms->{items}}) {
 					<tr valign="top">
 						<td><% $d->{count} %> &times;</td>
+						<td>Prod-ID <% $d->{prod_id} %></td>
 						<td>
 %							foreach (sort keys %$d) {
-%								next if $_ eq 'count';
+%								next if $_ eq 'count' or $_ eq 'prod_id';
 								XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
 %							}
 						</td>
