@@ -4,17 +4,16 @@
 
 	my $C = $args{C};
 	my $A = $args{A};
-	my $v = $args{v};
+	# XXX my $v = $args{v};
 	my $prod_highlight = $args{prod_highlight};
-	my $debug = $args{debug};
+	my $debug          = $args{debug};
 </%init>
 
 </div>
 
 <div>
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
-	XX
-	<% $hl->{brand} %> / <% $hl->{title} %>
+	XX <% $hl->{brand} %> / <% $hl->{title} %>
 	<br>
 % }
 </div>
@@ -31,7 +30,7 @@
 
 
 % for (my $i=0; $i < 8; $i++) {
-	<& product_portlet.html, count => $i, v => $v, A => $A, C => $C, debug => $debug &>
+	<& product_portlet.html, count => $i, A => $A, C => $C, debug => $debug &>
 % }
 
       <!-- Produkt 9 -->
