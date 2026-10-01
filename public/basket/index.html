@@ -11,6 +11,7 @@
 	my $cgi = $C->{CGI};
 
 	my $delid = $cgi->param('delid') + 0;
+	my $redo  = $cgi->param('redo') + 0;
 	my $debug = $cgi->param('debug');
 
 	my @msgs = ();
@@ -19,9 +20,15 @@
 		my $prod_id = $C->query("select prod_id from basket where id=$delid")->[0];
 		my $title   = $C->query("select title from products_desc where product_id=$prod_id limit 1")->[0] || 'n/a';
 		my ($rc, $msg) = $A->delfrombasketbyid(id => $delid);
+		push(@msgs, 'Artikel wurde aus Warenkorb entfernt:');
 		push(@msgs, $title);
 		push(@msgs, '');
-		push(@msgs, qq~<a href="/dyn/add-to-basket.html?id=$prod_id">Rückgängig machen</a>~);
+		push(@msgs, qq~<a href="?redo=$prod_id">Rückgängig machen</a>~);
+	}
+
+	if ($redo) {
+		# Ajax oder HTMX-Request nach: /dyn/add-to-basket.html?id=$redo
+		push(@msgs, 'XX construction');
 	}
 
 	my $bsk_itms = $A->get_basket_items_v2();
@@ -64,11 +71,12 @@
 	<& partials/daily_offer.html, C => $C &>
 </div>
 
-% if ($delid) {
+% if (@msgs) {
 	<& ../partials/inc_toast.html &>
 	<script>
 	<& ../partials/toast_js.html &>
-	showToast(true, 'Artikelposition wurde entfernt.\n\n<% join "\\n", @msgs %>', 9000);
+	showToast(true, '<% join "\\n", @msgs %>', 9000);
+% # XXX	showToast(true, 'Artikelposition wurde entfernt.\n\n<% join "\\n", @msgs %>', 9000);
 	</script>
 % }
 
