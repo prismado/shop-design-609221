@@ -63,7 +63,7 @@
 %			$main_cat = 1;
 %		}
 		<tr style="background-color:<% $main_cat ? '#f0f0f0' : 'white' %> !important">
-			<td style="width:100px" class="pt-2"><a href="/adm_categ.html?id=<% $c->{id} %>"><% $c->{id} %></a></td>
+			<td style="width:100px" class="pt-2"><a href="categ.html?id=<% $c->{id} %>"><% $c->{id} %></a></td>
 			<td style="width:220px"><% $label %></td>
 			<td><% $C->txt("_categ_desc_$c->{id}", $lang) %>
 %				if ($c->{has_meta}) {
