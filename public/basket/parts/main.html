@@ -17,6 +17,8 @@
 		img_min_w   => '72px',
 		add_vat     => 1
 	);
+
+	my $bsk_itms = $A->get_basket_items_v2();
 </%init>
 
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
@@ -32,6 +34,9 @@
 				<table>
 					<% $bsk->{out} %>
 				</table>
+%				foreach (sort keys %$bsk_itms) {
+					X -- <b><% $_ %></b> = <% $bsk_itms->{$_} %><br>
+%				}
 			</div>
 		</div>
 
