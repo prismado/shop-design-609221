@@ -34,10 +34,7 @@
 				<table>
 					<% $bsk->{out} %>
 				</table>
-%				foreach (sort keys %$bsk_itms) {
-%					next if $_ eq 'items' or $_ eq 'VERSION';
-% # XXX					[bsk_itms] - <b><% $_ %></b> = <% $bsk_itms->{$_} %><br>
-%				}
+				<br />
 				<table>
 %				foreach my $d (@{$bsk_itms->{items}}) {
 					<tr valign="top">
@@ -48,6 +45,7 @@
 							<% $d->{pdata}->{title} %><br>
 							Art No. <% $d->{pdata}->{art_no} %>
 						</td>
+						<td nowrap>&ndash;<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</td>
 						<td nowrap><b><% $d->{price} %> CHF</b></td>
 					</tr>
 %				}
