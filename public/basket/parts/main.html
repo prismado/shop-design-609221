@@ -45,10 +45,11 @@
 						<td>Prod-ID <% $d->{prod_id} %></td>
 						<td>
 %							foreach (sort keys %$d) {
-%								next if $_ eq 'count' or $_ eq 'prod_id';
-								XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
+%							next if $_ eq 'count' or $_ eq 'prod_id' or $_ eq 'instime' or $_ eq 'price';
+							XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
 %							}
 						</td>
+						<td nowrap><% $d->{price} %> CHF</td>
 					</tr>
 %				}
 				</table>
