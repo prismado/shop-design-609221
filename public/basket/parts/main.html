@@ -22,24 +22,22 @@
 			<div class="mt-6">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed">Artikelliste</p>
-% # XXX				<table> <% $bsk->{out} %> </table>
 				<br />
+
 				<table style="border: 2px red solid;">
 %				foreach my $d (@{$bsk_itms->{items}}) {
 					<tr valign="top">
 						<td style="width:8%;">
-						<a href="/product/?id=<% $d->{prod_id} %>">
-							<img style="max-width:82px; min-width:75px"
-								src="<% $d->{pdata}->{image}->{url} %>">
-						</a>
+							<a href="/product/?id=<% $d->{prod_id} %>">
+								<img style="max-width:82px; min-width:75px"
+									src="<% $d->{pdata}->{image}->{url} %>">
+							</a>
 						</td>
 						<td nowrap><% $d->{count} %> &times;</td>
-						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %><br>
-% # XXX							XX <% $d->{pdata}->{image}->{url} %>
-						</td>
+						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %></td>
 						<td nowrap>
 							<% $d->{pdata}->{title} %><br>
-							Art No. <% $d->{pdata}->{art_no} %>
+% # XXX							Art No. <% $d->{pdata}->{art_no} %>
 						</td>
 						<td nowrap>&ndash;<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</td>
 						<td nowrap><b><% $d->{price} %> CHF</b></td>
@@ -53,8 +51,6 @@
 		<div>
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tbd xx</p>
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Warenkorb</h1>
-
-% # XXX			<p> <hr /><br> </p>
 		</div>
 
 	</div>
