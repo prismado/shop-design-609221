@@ -71,7 +71,13 @@
     </div>                                                                                                              
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-	<& partials/index_products.html, prod_highlight => $prod_highlight, A => $A, C => $C, debug => $debug &>
+	<& partials/index_products.html,
+		prod_highlight => $prod_highlight,
+		perm           => $perm,
+		A              => $A,
+		C              => $C,
+		debug          => $debug
+	&>
     </div>
 </section>
 
