@@ -3,7 +3,6 @@
 	var iconOk    = toast.querySelector('.toast-icon-success');
 	var iconError = toast.querySelector('.toast-icon-error');
 	var text      = toast.querySelector('.toast-text');
-% # XXX	var cartBadge = document.getElementById('cart-count');
 	var hideTimer = null;
 
 	function showToast(ok, message) {
@@ -29,6 +28,5 @@
 				toast.classList.add('hidden');
 				toast.classList.remove('flex');
 			}, 300);
-		}, 3000);
+		}, 5000);
 	}
-% # XXX })();
