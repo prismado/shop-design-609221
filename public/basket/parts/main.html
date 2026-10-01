@@ -45,7 +45,9 @@
 
 					<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
 						<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
-						<span class="text-base font-bold text-gray-900 whitespace-nowrap">CHF <% $d->{price} %></span>
+						<span class="text-base font-bold text-gray-900 whitespace-nowrap">
+							CHF <% sprintf('%.2f', $d->{price}) %>
+						</span>
 					</div>
 				</div>
 %			}
