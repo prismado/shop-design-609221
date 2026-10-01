@@ -84,6 +84,9 @@
 %			if ($perm->{is_devel}) {
 				Dev
 %			}
+%			elsif ($perm->{is_admin}) {
+				Adm
+%			}
 			<% $C->shorten_title((split /\@/, $perm->{email})[0], 15) %>
 		</span>
 %	}
