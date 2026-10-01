@@ -63,7 +63,8 @@ XXX:
 %			}
 
 %			unless ($bsk_itms->{item_count}) {
-				<p>Ihr Warenkorb ist leer.</p>
+				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer' &>
+% # XXX				<p>Ihr Warenkorb ist leer.</p>
 %			}
 			</div>
 
