@@ -13,8 +13,12 @@
 	my $delid = $cgi->param('delid') + 0;
 	my $debug = $cgi->param('debug');
 
+	my @msgs = ();
+
 	if ($delid) {
+		my $prod_id = $C->query("select prod_id from basket where id=$delid")->[0];
 		my ($rc, $msg) = $A->delfrombasketbyid(id => $delid);
+		push(@msgs, "Prod-ID $prod_id");
 	}
 
 	my $bsk_itms = $A->get_basket_items_v2();
@@ -61,7 +65,7 @@
 	<& ../partials/inc_toast.html &>
 	<script>
 	<& ../partials/toast_js.html &>
-	showToast(true, 'Artikelposition wurde entfernt.');
+	showToast(true, 'Artikelposition wurde entfernt.\n\n<% join '<br>', @msgs %>');
 	</script>
 % }
 
