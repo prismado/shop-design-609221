@@ -11,27 +11,37 @@
 	my $cgi = $C->{CGI};
 
 	my $delid  = $cgi->param('delid') + 0;
-	my $redo   = $cgi->param('redo') + 0;
-	my $redoid = $cgi->param('redoId') + 0;
+	my $redo   = $cgi->param('redo') + 0; # -- Prod-ID
+	# XXX my $redoid = $cgi->param('redoId') + 0;
 	my $debug  = $cgi->param('debug');
 
 	my @msgs = ();
+	my $prod_id;
 
 	if ($delid) {
-		my $prod_id = $C->query("select prod_id from basket where id=$delid")->[0];
-		my $title   = $C->query("select title from products_desc where product_id=$prod_id limit 1")->[0] || 'n/a';
+		$prod_id  = $C->query("select prod_id from basket where id=$delid")->[0];
+		my $title = $C->query("select title from products_desc where product_id=$prod_id limit 1")->[0] || 'n/a';
 		my ($rc, $msg) = $A->delfrombasketbyid(id => $delid);
 		push(@msgs, 'Artikel wurde aus Warenkorb entfernt:');
 		push(@msgs, $title);
 		push(@msgs, '');
-		push(@msgs, qq~<a href="?redo=$prod_id">Rückgängig machen</a>~);
+		push(@msgs, qq~<a href="#!" onclick="redo()">Rückgängig machen</a>~);
 	}
 
-	if ($redoid) {
-		my $title = $C->query("select title from products_desc where product_id=$redoid limit 1")->[0] || 'n/a';
-		push(@msgs, 'Artikel wurde wieder zum Warenkorb hinzugefügt:');
-		push(@msgs, $title);
+	if ($redo) {
+		my ($rc, $msg) = $A->add2basket_details(
+			id    => $redo,
+			count => 1,
+			lang  => 'de'
+        	);
+		push(@msgs, "Wieder da. $rc $msg");
 	}
+
+	# XXX if ($redoid) {
+	# XXX	my $title = $C->query("select title from products_desc where product_id=$redoid limit 1")->[0] || 'n/a';
+	# XXX	push(@msgs, 'Artikel wurde wieder zum Warenkorb hinzugefügt:');
+	# XXX	push(@msgs, $title);
+	# XXX }
 
 	# -- $redo wird NICHT hier serverseitig verarbeitet: der eigentliche "Rückgängig machen"-Request
 	# -- läuft clientseitig per Ajax gegen /dyn/add-to-basket.html (siehe Script weiter unten),
@@ -85,6 +95,9 @@
 	</script>
 % }
 
+<%doc>
+XXX:
+---------- Nicht mehr benötigt:
 % if ($redo) {
 	<script>
 	fetch('../dyn/add-to-basket.html', {
@@ -93,6 +106,19 @@
 	})
 		.then(function () { window.location.href = location.pathname + '?redoId=<% $redo %>'; })
 		.catch(function () { window.location.href = location.pathname; });
+	</script>
+% }
+/XXX
+</%doc>
+
+% if ($delid) {
+	<form method="post" name="f610012">
+	<input type="hidden" name="redo" value="<% $prod_id %>">
+	</form>
+	<script>
+		function redo() {
+			document.f610012.submit();
+		}
 	</script>
 % }
 
