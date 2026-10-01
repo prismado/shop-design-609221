@@ -7,16 +7,7 @@
 	my $C    = $args{C};
 	my $A    = $args{A};
 
-	my $bsk = $A->get_basket(
-		theme       => 'algonetic',
-		hide_img    => 0,
-		hide_subdsc => 0,
-		hide_ppp    => 1,
-		lightbox    => 1,
-		img_max_w   => '75px',
-		img_min_w   => '72px',
-		add_vat     => 1
-	);
+	# XXX my $bsk = $A->get_basket();
 
 	my $bsk_itms = $A->get_basket_items_v2();
 </%init>
@@ -63,13 +54,7 @@
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tbd xx</p>
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Warenkorb</h1>
 
-			<p>
-				<hr /><br>
-%				foreach (sort keys %$bsk) {
-%					next if $_ eq 'out';
-					XX <% $_ %> = <% $bsk->{$_} %><br>
-%				}
-			</p>
+% # XXX			<p> <hr /><br> </p>
 		</div>
 
 	</div>
