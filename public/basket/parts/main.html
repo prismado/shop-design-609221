@@ -9,11 +9,6 @@
 	my $A        = $args{A};
 </%init>
 
-<%doc>
-XXX:
-/XXX
-</%doc>
-
 <div class="flex flex-col gap-6">
 
 	<div>
@@ -58,7 +53,8 @@ XXX:
 						<span class="text-base font-bold text-gray-900 whitespace-nowrap">
 							CHF <% sprintf('%.2f', $d->{price}) %>
 						</span>
-						<a href="?delid=<% $d->{basket_id} %>">X</a>
+% # XXX						<a href="?delid=<% $d->{basket_id} %>">X</a>
+						<a href="#!" onclick="removeFromBasket(<% $d->{basket_id} %>)">X</a>
 					</div>
 				</div>
 %			}
@@ -78,3 +74,14 @@ XXX:
 	</div>
 
 </div>
+
+<form method="post" name="f610012">
+<input type="hidden" name="delid" value="">
+</form>
+
+<script>
+	function removeFromBasket(basketId) {
+		document.f610012.delid.value = basketId;
+		document.f610012.submit();
+	}
+</script>
