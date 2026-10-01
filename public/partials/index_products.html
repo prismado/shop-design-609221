@@ -10,16 +10,13 @@
 </%init>
 
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
-	<& product_portlet.html, XXXcount => 0, id => $hl->{id}, A => $A, C => $C, debug => $debug &>
+	<& product_portlet.html, id => $hl->{id}, A => $A, C => $C, debug => $debug &>
 % }
 
 
 
 <%doc>
 XXX:
-% for (my $i=0; $i < 8; $i++) {
-	<& product_portlet.html, count => $i, A => $A, C => $C, debug => $debug &>
-% }
 /XXX
 </%doc>
 
