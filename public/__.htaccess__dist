@@ -1,3 +1,8 @@
 RewriteEngine On
 
 RewriteRule ^_ajax/(.+)                                 custom/algonetic/html/_ajax/$1
+
+# -- a2enmod headers
+<FilesMatch "\.(html?|htm)$">
+	Header set X-Robots-Tag "noindex, nofollow, noarchive"
+</FilesMatch>
