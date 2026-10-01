@@ -39,12 +39,12 @@
 						<td style="width:8%;">
 						<a href="/product/?id=<% $d->{prod_id} %>">
 							<img style="max-width:82px; min-width:75px"
-								src="/produkte/p<% $d->{prod_id} %>_thmb.webp">
+								src="<% $d->{pdata}->{image}->{url} %>">
 						</a>
 						</td>
 						<td nowrap><% $d->{count} %> &times;</td>
 						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %><br>
-							XX <% $d->{pdata}->{image}->{url} %>
+% # XXX							XX <% $d->{pdata}->{image}->{url} %>
 						</td>
 						<td nowrap>
 							<% $d->{pdata}->{title} %><br>
