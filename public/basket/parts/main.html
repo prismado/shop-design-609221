@@ -31,13 +31,16 @@
 			<div class="mt-6">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed">Artikelliste</p>
-				<table>
-					<% $bsk->{out} %>
-				</table>
+% # XXX				<table> <% $bsk->{out} %> </table>
 				<br />
-				<table>
+				<table style="border: 2px red solid;">
 %				foreach my $d (@{$bsk_itms->{items}}) {
 					<tr valign="top">
+						<td style="width:8%;">
+						<a href="#!">
+						<img style="max-width:75px; min-width:72px" src="/produkte/p<% $d->{prod_id} %>_thmb.webp">
+						</a>
+						</td>
 						<td nowrap><% $d->{count} %> &times;</td>
 % #						<td nowrap>Prod-ID <% $d->{prod_id} %></td>
 						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %></td>
