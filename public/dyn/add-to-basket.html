@@ -11,7 +11,6 @@
 	$C->log(msg => "Add to Basket Prod-ID $id", service => 'dyn/add-to-basket');
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
-	# XX $r->content_type('text/plain; charset=utf-8');
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
