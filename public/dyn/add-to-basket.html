@@ -13,8 +13,6 @@
 
 	my $id = $cgi->param('id') + 0;
 
-	# XX $C->log(msg => "Add to Basket Prod-ID $id", service => 'dyn/add-to-basket');
-
 	my ($rc, $msg) = $A->add2basket_details(
 		id    => $id,
 		count => 1,
