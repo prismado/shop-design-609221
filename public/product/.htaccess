@@ -11,4 +11,8 @@ RewriteEngine On
 # Von `robi-tobi-cam/7`                      umleiten nach: `./?id=7`
 # Von `lenovo-thinkvision-t32h-30-monitor/8` umleiten nach: `./?id=8`
 
-RewriteRule ^.*/(\d+)$				./?id=$1
+# Echte Dateien/Verzeichnisse (z. B. parts/, partials/, index.html) nicht umschreiben
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^.*/(\d+)/?$			./?id=$1 [QSA,L]
