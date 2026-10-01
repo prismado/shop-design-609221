@@ -10,9 +10,10 @@
 
 	my $cgi = $C->{CGI};
 
-	my $delid = $cgi->param('delid') + 0;
-	my $redo  = $cgi->param('redo') + 0;
-	my $debug = $cgi->param('debug');
+	my $delid  = $cgi->param('delid') + 0;
+	my $redo   = $cgi->param('redo') + 0;
+	my $redoid = $cgi->param('redoId') + 0;
+	my $debug  = $cgi->param('debug');
 
 	my @msgs = ();
 
@@ -24,6 +25,12 @@
 		push(@msgs, $title);
 		push(@msgs, '');
 		push(@msgs, qq~<a href="?redo=$prod_id">Rückgängig machen</a>~);
+	}
+
+	if ($redoid) {
+		my $title = $C->query("select title from products_desc where product_id=$redoid limit 1")->[0] || 'n/a';
+		push(@msgs, 'Artikel wurde wieder zum Warenkorb hinzugefügt:');
+		push(@msgs, $title);
 	}
 
 	# -- $redo wird NICHT hier serverseitig verarbeitet: der eigentliche "Rückgängig machen"-Request
@@ -84,7 +91,7 @@
 		method: 'POST',
 		body: new URLSearchParams({ id: '<% $redo %>' })
 	})
-		.then(function () { window.location.href = location.pathname; })
+		.then(function () { window.location.href = location.pathname + '?redoId=<% $redo %>'; })
 		.catch(function () { window.location.href = location.pathname; });
 	</script>
 % }
