@@ -9,10 +9,10 @@
 	my $debug          = $args{debug};
 </%init>
 
+% if ($perm->{is_devel}) {
 </div>
 
 <div>
-XX <% $perm->{uname} %><br>
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
 	XX <% $hl->{brand} %> / <% $hl->{title} %>
 	<br>
@@ -20,6 +20,7 @@ XX <% $perm->{uname} %><br>
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+% }
 
 
 
