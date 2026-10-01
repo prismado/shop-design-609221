@@ -9,8 +9,6 @@
 	my $A        = $args{A};
 </%init>
 
-% # XXX <& ../partials/inc_toast.html &>
-
 <%doc>
 XXX:
 /XXX
@@ -62,6 +60,10 @@ XXX:
 						<a href="?delid=<% $d->{basket_id} %>">X</a>
 					</div>
 				</div>
+%			}
+
+%			unless ($bsk_itms->{item_count}) {
+				<p>Ihr Warenkorb ist leer.</p>
 %			}
 			</div>
 
