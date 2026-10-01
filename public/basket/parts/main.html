@@ -43,14 +43,20 @@
 					<tr valign="top">
 						<td nowrap><% $d->{count} %> &times;</td>
 						<td nowrap>Prod-ID <% $d->{prod_id} %></td>
+						<td nowrap>Prod-ID <% $d->{pdata}->{art_no} %></td>
 						<td nowrap>
+							<% $d->{pdata}->{title} %><br>
+							Art No. <% $d->{pdata}->{art_no} %><br>
+%							foreach my $prd (sort keys %{$d->{pdata}}) {
+% # XXX								XX ...... <% $prd %><br>
+%							}
 %							foreach (sort keys %$d) {
 %							next if $_ eq 'count' or $_ eq 'prod_id' or $_ eq 'instime' or $_ eq 'price'
 %								or $_ eq 'basket_id' or $_ eq 'vat_perc' or $_ eq 'price_active';
-							XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
+% # XXX							XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
 %							}
 						</td>
-						<td nowrap><% $d->{price} %> CHF</td>
+						<td nowrap><b><% $d->{price} %> CHF</b></td>
 					</tr>
 %				}
 				</table>
