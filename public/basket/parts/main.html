@@ -36,25 +36,17 @@
 				</table>
 %				foreach (sort keys %$bsk_itms) {
 %					next if $_ eq 'items' or $_ eq 'VERSION';
-					[bsk_itms] - <b><% $_ %></b> = <% $bsk_itms->{$_} %><br>
+% # XXX					[bsk_itms] - <b><% $_ %></b> = <% $bsk_itms->{$_} %><br>
 %				}
 				<table>
 %				foreach my $d (@{$bsk_itms->{items}}) {
 					<tr valign="top">
 						<td nowrap><% $d->{count} %> &times;</td>
-						<td nowrap>Prod-ID <% $d->{prod_id} %></td>
-						<td nowrap>Prod-ID <% $d->{pdata}->{art_no} %></td>
+% #						<td nowrap>Prod-ID <% $d->{prod_id} %></td>
+						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %></td>
 						<td nowrap>
 							<% $d->{pdata}->{title} %><br>
-							Art No. <% $d->{pdata}->{art_no} %><br>
-%							foreach my $prd (sort keys %{$d->{pdata}}) {
-% # XXX								XX ...... <% $prd %><br>
-%							}
-%							foreach (sort keys %$d) {
-%							next if $_ eq 'count' or $_ eq 'prod_id' or $_ eq 'instime' or $_ eq 'price'
-%								or $_ eq 'basket_id' or $_ eq 'vat_perc' or $_ eq 'price_active';
-% # XXX							XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
-%							}
+							Art No. <% $d->{pdata}->{art_no} %>
 						</td>
 						<td nowrap><b><% $d->{price} %> CHF</b></td>
 					</tr>
