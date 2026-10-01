@@ -1,7 +1,70 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+
+	my $d  = $args{prod};
+	my $C  = $args{C};
+	my $id = $args{id};
+
+	my $lang = 'de';
+
+	my %feature = my %feat_ident = my %feat_label = ();
+	my $max_len_feat = my $feat_count = 0;
+	my @features = (); # -- 14Aug2024
+        foreach (sort keys %{$d->{pfeat}}) {
+                my ($weight, $label, $ident, $val) = split /\t/;
+                next if $ident eq 'LONG_DESC';
+                $feature{$label}    = $d->{pfeat}->{$_} unless $label =~ /^\_/;
+                $feat_ident{$ident} = $d->{pfeat}->{$_} unless $label =~ /^\_/;
+                $feat_label{$ident} = $label;
+                if ($feat_label{$ident} =~ /^\* .+ \*$/) {
+                        $feat_label{$ident} = $C->query(
+                                "SELECT featname FROM products_feat WHERE product_id=$id AND lang='de' AND featkey='$ident'")->[0] .
+                                        " - ($ident) <i class='font-weight-normal'>$lang</i>";
+                }
+                my %feat = ( k => $feat_label{$ident}, v => $feat_ident{$ident} );
+                push(@features, \%feat) if length( $feat_ident{$ident} );
+                my $len_feat = length($d->{pfeat}->{$_});
+                $max_len_feat = $len_feat if $len_feat > $max_len_feat;
+                $feat_count++ unless $label =~ /^\_/;
+        }
+</%init>
 <div class="mt-8 pt-8 border-t border-gray-200">
 	<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Technische Daten</h2>
 
 	<div class="rounded-xl border border-gray-200 overflow-hidden">
+
+
+
+
+
+		<table clasx="table table-sm border table-striped fs--14 mt-4 hidden-md-down">
+%		foreach	my $feat (@features) {
+%			next if	$feat->{k} =~ /^URL/; #	-- 10Apr2025
+			<tr>
+			<td nowrap><b><% $feat->{k} %></b></td>
+			<td>
+%				if ($max_len_feat > 31)	{
+					<span class="hidden-lg-down"><%	$feat->{v} %></span>
+					<span class="fs--10 hidden-xl-up hidden-md-down"><% $C->shorten_title($feat->{v}, 31) %></span>
+%				}
+%				else {
+					<% $feat->{v} %>
+%				}
+			</td>
+			</tr>
+%		}
+		</table>
+
+
+
+
+
+
+
+
+
+
 		<table class="w-full text-sm">
 			<tbody class="divide-y divide-gray-100">
 				<tr class="odd:bg-gray-50">
@@ -23,10 +86,6 @@
 				<tr class="odd:bg-gray-50">
 					<td class="px-4 py-2.5 font-medium text-gray-500 whitespace-nowrap">Prozessor</td>
 					<td class="px-4 py-2.5 text-gray-800">Intel Core i5-8265U, 8th Gen</td>
-				</tr>
-				<tr class="odd:bg-gray-50">
-					<td class="px-4 py-2.5 font-medium text-gray-500 whitespace-nowrap">Touchscreen</td>
-					<td class="px-4 py-2.5 text-gray-800">Ja</td>
 				</tr>
 				<tr class="odd:bg-gray-50">
 					<td class="px-4 py-2.5 font-medium text-gray-500 whitespace-nowrap">Bildschirm</td>
