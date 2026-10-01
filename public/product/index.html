@@ -17,7 +17,6 @@
 	my @path_elems = split /\//, $this;
 	my $home = $#path_elems ? '..' : '.';
 
-	# XXX my $prod = $A->get_product($id);
 	my $prod = $A->get_product_v2(id => $id, public => 1);
 	my $imgs = $A->get_product_extra_imgs(id => $id);
 </%init>

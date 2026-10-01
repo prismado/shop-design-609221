@@ -10,7 +10,6 @@
 	my $id   = $args{id};
 
 	my $img_url = $prod->{image}->{url};
-	# XX my $img_url = "../produkte/p$id\_large.jpg"; # -- https://placehold.co/450x450/d8d8d8/a8a8a8?text=Produkt-\nBild
 </%init>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
@@ -158,7 +157,7 @@
 				<span class="text-3xl font-bold text-red-600">CHF <% $prod->{price_incl_vat} %></span>
 				<span class="text-base text-gray-400 line-through mb-0.5">CHF <% $prod->{price_orig_incl_vat} %></span>
 				<span class="bg-red-600 text-white text-xs font-bold
-					px-2 py-1 rounded-full mb-0.5">-<% $prod->{discount_perc} %>%</span>
+					px-2 py-1 rounded-full mb-0.5">-<% sprintf('%.1f', $prod->{discount_perc}) %>%</span>
 %			}
 %			else {
 				<span class="text-3xl font-bold text-gray-900">CHF <% $prod->{price_incl_vat} %></span>
