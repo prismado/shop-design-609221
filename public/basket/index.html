@@ -41,16 +41,6 @@
 		}
 	}
 
-	# XXX if ($redoid) {
-	# XXX	my $title = $C->query("select title from products_desc where product_id=$redoid limit 1")->[0] || 'n/a';
-	# XXX	push(@msgs, 'Artikel wurde wieder zum Warenkorb hinzugefügt:');
-	# XXX	push(@msgs, $title);
-	# XXX }
-
-	# -- $redo wird NICHT hier serverseitig verarbeitet: der eigentliche "Rückgängig machen"-Request
-	# -- läuft clientseitig per Ajax gegen /dyn/add-to-basket.html (siehe Script weiter unten),
-	# -- danach lädt die Seite ohne den ?redo=-Parameter neu.
-
 	my $bsk_itms = $A->get_basket_items_v2();
 </%init>
 <!DOCTYPE html>
@@ -98,11 +88,6 @@
 	showToast(true, '<% join "\\n", @msgs %>', 9000);
 	</script>
 % }
-
-<%doc>
-XXX:
-/XXX
-</%doc>
 
 % if ($delid) {
 	<script>
