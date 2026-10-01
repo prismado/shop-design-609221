@@ -1,5 +1,7 @@
 RewriteEngine On
 
-# Von `lenovo-thinkvision-t32h-30-monitor/7` nach `./?id=7`
+# Von `robi-tobi-cam/7`                      umleiten nach: `./?id=7`
+# Von `lenovo-thinkvision-t32h-30-monitor/8` umleiten nach: `./?id=8`
 
+RewriteRule ^.*/(\d+)$				./?id=$1
 RewriteRule ^.*-(.*-.*-.*-.*)/(\d+)$		./?id=$2
