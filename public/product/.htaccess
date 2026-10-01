@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# ........ lenovo-thinkvision-t32h-30-monitor/7 nach ./?id=7
+
+RewriteRule ^lenovo-thinkvision-t32h-30-monitor/(\d+)$		./?id=$1
