@@ -24,27 +24,41 @@
 				<p class="text-sm text-gray-600 leading-relaxed">Artikelliste</p>
 				<br />
 
-				<table stylx="border: 2px red solid;">
+				<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 %				foreach my $d (@{$bsk_itms->{items}}) {
-					<tr valign="top">
-						<td style="width:8%;">
-							<a href="/product/?id=<% $d->{prod_id} %>">
-								<img style="max-width:82px; min-width:75px"
-									src="<% $d->{pdata}->{image}->{url} %>">
-							</a>
-						</td>
-						<td nowrap><% $d->{count} %> &times;</td>
-						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %></td>
-						<td nowrap>
-							<b><% $d->{pdata}->{title} %></b><br>
-							<% $d->{pdata}->{desc_keyw} %>
-						</td>
-						<td nowrap>&ndash;<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</td>
-						<td nowrap><b><% $d->{price} %> CHF</b></td>
-					</tr>
+					<div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
+						<a href="/product/?id=<% $d->{prod_id} %>"
+							class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200
+								bg-white self-start sm:self-center">
+							<img src="<% $d->{pdata}->{image}->{url} %>" class="w-full h-full object-cover"
+								loading="lazy" alt="<% $d->{pdata}->{title} %>">
+						</a>
+
+						<div class="flex-1 min-w-0">
+							<a href="/product/?id=<% $d->{prod_id} %>" class="font-semibold text-gray-900 text-sm
+								sm:text-base hover:text-red-600 transition line-clamp-2"><% $d->{pdata}->{title} %></a>
+							<p class="text-xs text-gray-400 mt-0.5">Art.-Nr. <% $d->{pdata}->{art_no} %></p>
+%						if ($d->{pdata}->{desc_keyw}) {
+							<p class="text-xs text-gray-500 mt-1 line-clamp-1"><% $d->{pdata}->{desc_keyw} %></p>
+%						}
+%						if ($d->{pdata}->{discount_perc}) {
+							<span class="inline-block mt-1.5 bg-red-600 text-white text-[11px] font-bold
+								px-2 py-0.5 rounded-full">-<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</span>
+%						}
+						</div>
+
+						<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
+							<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
+							<span class="text-base font-bold text-gray-900 whitespace-nowrap">CHF <% $d->{price} %></span>
+						</div>
+					</div>
 %				}
-				</table>
-				<p><% $bsk_itms->{item_count} %> Artikel / <b>Total: CHF <% $bsk_itms->{basket_total} %><b></p>
+				</div>
+
+				<div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-200">
+					<span class="text-sm text-gray-500"><% $bsk_itms->{item_count} %> Artikel</span>
+					<span class="text-base font-bold text-gray-900">Total: CHF <% $bsk_itms->{basket_total} %></span>
+				</div>
 			</div>
 		</div>
 
