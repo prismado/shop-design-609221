@@ -57,10 +57,12 @@
 	<& partials/daily_offer.html, C => $C &>
 </div>
 
-<script>
+% if ($delid) {
+	<script>
 	<& ../partials/toast_js.html &>
 	showToast(true, 'asdf xx');
-</script>
+	</script>
+% }
 
 <& partials/footer.html, C => $C &>
 <& partials/footer_js.html, C => $C &>
