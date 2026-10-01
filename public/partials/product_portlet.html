@@ -4,20 +4,22 @@
 	my $C     = $args{C};
 	my $A     = $args{A};
 	my $v     = $args{v};
-	my $count = $args{count};
+	my $id    = $args{id};
+	# XXX my $count = $args{count};
 	my $debug = $args{debug};
 
-	my $prod = $A->get_product($count + 1);
+	my $prod = $A->get_product($id);
+	# XXX my $prod = $A->get_product($count + 1);
 
-	my $prod_id = $count + 1;
-	my $img_url = "produkte/p$prod_id\_thmb.jpg";
+	# XXX my $prod_id = $count + 1;
+	my $img_url = "produkte/p$id\_thmb.jpg";
 	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}/$img_url" ? 1 : 0;
 	   $img_url = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild' unless $img_exists;
 </%init>
 
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
         <div class="relative overflow-hidden">
-	<a href="product?id=<% $count + 1 %>">
+	<a href="product?id=<% $id %>">
           <img src="<% $img_url %>" alt="UltraBook Pro 14"
 		class="w-full aspect-square object-cover group-hover:scale-105
 			transition-transform duration-500" loading="lazy">
@@ -34,11 +36,11 @@
         <div class="p-4 flex flex-col flex-1">
 %		if ($debug) {
 			<span class="text-xs text-red-500">
-				<a href="/adm_db_edit?wcl=id%3D<% $count + 1 %>&table=products">prod</a> -
-				<a href="/adm_db_edit?wcl=product_id%3D<% $count + 1 %>&table=products_desc">desc</a>
+				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=products">prod</a> -
+				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc">desc</a>
 			</span>
 %		}
-		<a href="product?id=<%  $count + 1 %>">
+		<a href="product?id=<%  $id %>">
 			<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
 				<% $prod->{title} %>
 			</h3>
