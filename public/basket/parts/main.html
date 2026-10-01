@@ -54,7 +54,10 @@
 							CHF <% sprintf('%.2f', $d->{price}) %>
 						</span>
 % # XXX						<a href="?delid=<% $d->{basket_id} %>">X</a>
-						<a href="#!" onclick="removeFromBasket(<% $d->{basket_id} %>)">X</a>
+						<a href="#!" onclick="removeFromBasket(<% $d->{basket_id} %>)" aria-label="Artikel entfernen"
+							class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full
+								text-gray-400 hover:text-gray-600 hover:bg-gray-100 italic font-serif text-lg
+								leading-none transition">&times;</a>
 					</div>
 				</div>
 %			}
