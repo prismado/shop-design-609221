@@ -34,26 +34,16 @@
 
 	<div class="rounded-xl border border-gray-200 overflow-hidden">
 
-
-<%doc>
-XXX:
-/XXX
-</%doc>
-
-
-
 		<table class="w-full text-sm">
 			<tbody class="divide-y divide-gray-100">
 %			foreach	my $feat (@features) {
 %				next if	$feat->{k} =~ /^URL/; #	-- 10Apr2025
 				<tr class="odd:bg-gray-50">
-					<td class="px-4 py-2.5 font-medium text-gray-500 whitespace-nowrap">
-						<b><% $feat->{k} %></b>
-					</td>
+					<td class="px-4 py-2.5 font-medium text-gray-500 whitespace-nowrap"><% $feat->{k} %></td>
 					<td class="px-4 py-2.5 text-gray-800">
-%					if ($max_len_feat > 31)	{
-						<span clasx="hidden-lg-down"><%	$feat->{v} %></span>
-						<span clasx=""><% $C->shorten_title($feat->{v}, 31) %></span>
+%					if ($max_len_feat > 35)	{
+						<% $feat->{v} %>
+						<% $C->shorten_title($feat->{v}, 35) %>
 %					}
 %					else {
 						<% $feat->{v} %>
