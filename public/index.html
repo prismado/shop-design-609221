@@ -11,6 +11,8 @@
 
 	my $perm = $C->get_user_perm();
 
+	my $prod_highlight = $A->get_product_highlights(shuffle=>0);
+
 	my $this = $C->this(); # -- product/index
 	my @path_elems = split /\//, $this;
 	my $home = $#path_elems ? '..' : '.';
@@ -69,7 +71,7 @@
     </div>                                                                                                              
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-	<& partials/index_products.html, A => $A, C => $C, debug => $debug &>
+	<& partials/index_products.html, prod_highlight => $prod_highlight, A => $A, C => $C, debug => $debug &>
     </div>
 </section>
 
