@@ -10,7 +10,6 @@
 	}
 
 	my $cgi = $C->{CGI};
-	# XXX my $UID = $C->getUID();
 	my $perm = $C->get_user_perm(); # -- 07Jan2026
 	my $UID  = $perm->{uid};
 
@@ -53,7 +52,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Adm <% $label %> &middot; <% $C->{CONFIG}->{HTTP_HOST} %></title>
+<title>Adm-26 <% $label %> &middot; <% $C->{CONFIG}->{HTTP_HOST} %></title>
 <&_includes/header_meta_theme.html&>
 <link href="/lib/bootstrap-toggle-buttons/static/stylesheets/bootstrap-toggle-buttons.css" rel="stylesheet">
 <script src="/lib/bootstrap-toggle-buttons/static/js/jquery.toggle.buttons.js" type="text/javascript"></script>
