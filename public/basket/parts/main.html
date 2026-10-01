@@ -41,11 +41,12 @@
 				<table>
 %				foreach my $d (@{$bsk_itms->{items}}) {
 					<tr valign="top">
-						<td><% $d->{count} %> &times;</td>
-						<td>Prod-ID <% $d->{prod_id} %></td>
+						<td nowrap><% $d->{count} %> &times;</td>
+						<td nowrap>Prod-ID <% $d->{prod_id} %></td>
 						<td>
 %							foreach (sort keys %$d) {
-%							next if $_ eq 'count' or $_ eq 'prod_id' or $_ eq 'instime' or $_ eq 'price';
+%							next if $_ eq 'count' or $_ eq 'prod_id' or $_ eq 'instime' or $_ eq 'price'
+%								or $_ eq 'basket_id' or $_ eq 'vat_perc';
 							XX ..... <b><% $_ %></b> = <% $d->{$_} %><br>
 %							}
 						</td>
