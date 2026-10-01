@@ -10,7 +10,12 @@
 
 	my $cgi = $C->{CGI};
 
+	my $delid = $cgi->param('delid') + 0;
 	my $debug = $cgi->param('debug');
+
+	if ($delid) {
+		my ($rc, $msg) = $A->delfrombasketbyid(id => $delid);
+	}
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
