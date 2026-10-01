@@ -1,0 +1,53 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $UID     = $C->getUID();
+	my $perm    = $C->get_user_perm();
+	my $lang    = $C->getSessData('_current_lang') || 'de';
+	my $license = $C->get_license();
+	my $cgi     = $C->{CGI};
+
+	my $id = $cgi->param('id');
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>Adm Safe Property <%$id%> &middot; <%$C->{CONFIG}->{site_title}%></title>
+	<& _includes/header_meta_theme.html &>
+</head>
+
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+
+    <div class="row-fluid">
+	<& _includes/adm_safe_property.html, lang=>$lang, perm=>$perm, C=>$C &>
+    </div>
+
+<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

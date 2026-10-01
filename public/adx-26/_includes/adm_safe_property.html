@@ -1,0 +1,131 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $lang = $args{lang};
+	my $perm = $args{perm};
+
+	my $cgi = $C->{CGI};
+
+	my $id        = $cgi->param('id') + 0;
+	my $cb_global = $cgi->param('cb_global');
+
+	my $page = $cb_global ? '_global' : $cgi->param('page');
+	my $key = $cgi->param('key');
+	my $val = my $val_orig = $cgi->param('val');
+
+	my $prop_inf = $C->get_table_infos( schema => $ENV{db_name}, table => 'config_prod_feat' );
+
+	if ($cgi->param('bUpdate')) {
+		$page = 'tbd' if !$cb_global && $page eq '_global';
+		(my $val_enc = $val) =~ s/'/''/g;
+		$C->{dbh}->do("update config_prod_feat SET featkey='$key', featname='$val_enc' WHERE id=$id")
+			or $m->out("ERR $DBI::errstr<hr>");
+	}
+	elsif ($cgi->param('bDelete')) {
+		$C->{dbh}->do("delete FROM config_prod_feat WHERE id=$id") or $m->out("ERR<br>");
+		$m->redirect('adm_safe_properties.html');
+	}
+
+	($page, $key, $val, my $last_mod) = @{$C->query("select 0, featkey, featname, 0 FROM config_prod_feat WHERE id=$id")};
+	 my $val_text_field_raw = $val;
+	(my $val_text_field = $val) =~ s/"/&quot;/g;
+
+	my $width_label = '44';
+	my $width_page  = '29';
+
+	if (length($val_text_field) < 10) {
+		$width_label = 24;
+		$width_page  = 49;
+	}
+
+	if ($page eq '_global') {
+		$width_page  -= 10;
+		$width_label += 10;
+	}
+</%init>
+<div class="pull-right" style="margin-top:10px">
+	[<%$lang%>]
+</div>
+<h2>Property ID <%$id%></h2>
+
+<form method="post">
+<input type=hidden name=id value="<%$id%>">
+
+<table class="table">
+<thead>
+	<tr>
+	<th style='width:20%'>Key</th>
+	<th style='width:<%$width_label%>%'>Content / Label</th>
+% unless ($page eq '_global') {
+% # XXX	<th style='width:<%$width_page%>%'>Page</th>
+% }
+	</tr>
+</thead>
+<tr>
+	<td><input type=text name=key  style='width:94%; font-weight:bold' value="<%$key%>"></td>
+	<td><textarea name=val style="width:98%; height:180px"><%$val_text_field%></textarea></td>
+% if ($page eq '_global') {
+	<input type="hidden" name="page" value="_global">
+% }
+% else {
+% # XXX	<td><input type=text name=page style='width:96%; font-weight:bold' placeholder="Page reference or _global" value="<%$page%>"></td>
+% }
+</tr>
+<tr>
+<td colspan=2>
+<%doc>
+	<div class="pull-right">
+		Last Mod. <% $C->trans_date_short($last_mod) %>
+	</div>
+</%doc>
+	<input type=submit name=bUpdate class="btn btn-primary" value="Update">
+	<input type=submit name=bDelete class="btn btn-danger" value="Delete">
+	<input type=button class="btn" onclick="JavaScript:document.location='adm_safe_properties.html'" value="Cancel">
+</td>
+</tr>
+</table>
+
+</form>
+
+<%$val_text_field_raw%>
+
+<hr style="border-top:1px dotted #b0b0b0;color:#b0b0b0;background-color:#fff;height:1px;width:100%;" />
+
+<table border="0" cellspacing=0 cellpadding=7>
+% unless (@{$prop_inf}) {
+	<tr><td>No db structure availabe (?)</td></tr>
+% }
+% foreach (@{$prop_inf}) {
+%	my ($col, $type, $len) = split /\t/;
+%	next if $col eq 'tstamp' or $col eq 'weight';
+
+%	my $extrainfo = $col =~ /^feat.+/ && $len < 127 ?
+%		'<span style="color:maroon">(Tip: Should be expanded with data type &lsaquo;char(127)&rsaquo;)</span>' : '';
+%	# -- ALTER TABLE config_prod_feat CHANGE featname featname CHAR(127) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+
+%	if ($col eq 'id' && $type ne 'mediumint') {
+%		$extrainfo = '&larr; Recommended: mediumint';
+%	}
+%	elsif ($col eq 'id') {
+%		next;
+%	}
+
+	<tr><td style="font-weight:bold"><%$col%></td><td><code><% $type %></code></td><td style="text-align:right"><%$len%></td>
+	<td><%$extrainfo%></td>
+	</tr>
+% }
+</table>
+
+% if ($perm->{is_devel}) {
+	<br />
+	Devel:
+	<a href="adm_db_edit.html?table=config_prod_feat&wcl=id%3D<% $id %>">DB Edit</a>
+% }
+
+% unless ($C->is_admin()) {
+	<table id='table_list2'></table>
+% }
+<%doc>
+	__METACLONING__
+</%doc>
