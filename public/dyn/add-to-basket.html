@@ -12,6 +12,7 @@
 	my $cgi = $C->{CGI};
 
 	my $id = $cgi->param('id') + 0;
+	my $sid = $C->getSID();
 
 	my ($rc, $msg) = $A->add2basket_details(
 		id    => $id,
@@ -25,5 +26,5 @@
 </%init>
 {
   "rc": 0,
-  "message": "okay um <% $C->now(12) %>"
+  "message": "okay um <% $C->now(12) %>, SID <% $C->{sid} %>"
 }
