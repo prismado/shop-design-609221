@@ -25,6 +25,10 @@
 
 	my $size = $len_val > 50 ? 'lg' : 'md';
 	   $size = 'xl' if $len_val > 240;
+
+	# fuer JS-String-Literal escapen (txt() kann z. B. "<abbr title='_global'>" liefern)
+	(my $js_txt_delete = $C->txt('delete')) =~ s/(['\\])/\\$1/g;
+	$js_txt_delete =~ s/[\r\n]+/ /g;
 </%init>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
@@ -119,7 +123,7 @@
 
 document.getElementById('del_404080_49').addEventListener('click', function() {
   Swal.fire({
-    title: '<% $C->txt('delete') %>?',
+    title: '<% $js_txt_delete %>?',
     text: "Dies kann nicht rückgängig gemacht werden!",
     icon: 'warning',
     showCancelButton: true,
