@@ -9,7 +9,7 @@
 	my $debug          = $args{debug};
 </%init>
 
-% if ($perm->{is_devel}) {
+% if ($perm->{is_devel} && 1==2) {
 </div>
 
 <div>
@@ -35,15 +35,26 @@
 
 
 
+% foreach my $hl (@{ $prod_highlight->{ids} }) {
+	<& product_portlet.html, count => $hl->{id}, A => $A, C => $C, debug => $debug &>
+% }
 
 
 
 
 
-
+<%doc>
+XXX:
 % for (my $i=0; $i < 8; $i++) {
 	<& product_portlet.html, count => $i, A => $A, C => $C, debug => $debug &>
 % }
+/XXX
+</%doc>
+
+
+
+
+
 
 <%doc>
 XXX:
