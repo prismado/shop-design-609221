@@ -16,6 +16,8 @@
 	if ($delid) {
 		my ($rc, $msg) = $A->delfrombasketbyid(id => $delid);
 	}
+
+	my $bsk_itms = $A->get_basket_items_v2();
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -49,7 +51,7 @@
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, A => $A, C => $C &>
+		<& parts/main.html, bsk_itms => $bsk_itms, A => $A, C => $C &>
 	</section>
 
 	<& partials/daily_offer.html, C => $C &>

@@ -3,11 +3,12 @@
 
 	my %args = $m->caller_args(0);
 
+	my $bsk_itms = $args{bsk_itms};
 	my $perm = $args{perm};
 	my $C    = $args{C};
 	my $A    = $args{A};
 
-	my $bsk_itms = $A->get_basket_items_v2();
+	# XXX my $bsk_itms = $A->get_basket_items_v2();
 </%init>
 
 <div class="flex flex-col gap-6">
