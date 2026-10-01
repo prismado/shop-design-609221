@@ -37,6 +37,7 @@
 						<td nowrap>Art.-Nr. <% $d->{pdata}->{art_no} %></td>
 						<td nowrap>
 							<% $d->{pdata}->{title} %><br>
+							<% $d->{pdata}->{desc_keyw} %>
 % # XXX							Art No. <% $d->{pdata}->{art_no} %>
 						</td>
 						<td nowrap>&ndash;<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</td>
