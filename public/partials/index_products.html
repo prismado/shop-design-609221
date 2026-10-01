@@ -10,33 +10,13 @@
 </%init>
 
 % if ($perm->{is_devel} && 1==2) {
-</div>
-
-<div>
-% foreach my $hl (@{ $prod_highlight->{ids} }) {
-	XX Prod-ID <% $hl->{id} %>: <% $hl->{brand} %> / <% $hl->{title} %><br>
-		URL Teil: <% $hl->{title_enc} %><br>
-		<% $hl->{count_product} %> Stk.<br>
-		CHF <% $hl->{price_incl_vat_fmt} %> statt <s><% $hl->{price_orig_incl_vat} %></s>
-			&rarr; <% $hl->{discount_perc} %> %<br>
-		<% $hl->{cat_name} %><br>
-		<b><% $hl->{desc_keyw} %></b><br>
-		<% $hl->{description} %><br>
-%	foreach (sort keys %$hl) {
-% #		XX <% $_ %> = <% $hl->{$_} %><br>
-%	}
-	<hr><br>
-% }
-</div>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 % }
 
 
 
 
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
-	<& product_portlet.html, count => $hl->{id}, A => $A, C => $C, debug => $debug &>
+	<& product_portlet.html, count => $hl->{id}, id => $hl->{id}, A => $A, C => $C, debug => $debug &>
 % }
 
 
