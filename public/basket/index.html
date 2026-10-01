@@ -112,12 +112,20 @@ XXX:
 </%doc>
 
 % if ($delid) {
-	<form method="post" name="f610012">
-	<input type="hidden" name="redo" value="<% $prod_id %>">
-	</form>
 	<script>
 		function redo() {
-			document.f610012.submit();
+			var form = document.createElement('form');
+			form.method = 'post';
+			form.action = '';
+
+			var input   = document.createElement('input');
+			input.type  = 'hidden';
+			input.name  = 'redo';
+			input.value = '<% $prod_id %>';
+
+			form.appendChild(input);
+			document.body.appendChild(form);
+			form.submit();
 		}
 	</script>
 % }
