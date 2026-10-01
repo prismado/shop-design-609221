@@ -26,10 +26,9 @@
 		push(@msgs, qq~<a href="?redo=$prod_id">Rückgängig machen</a>~);
 	}
 
-	if ($redo) {
-		# Ajax oder HTMX-Request nach: /dyn/add-to-basket.html?id=$redo
-		push(@msgs, 'XX construction');
-	}
+	# -- $redo wird NICHT hier serverseitig verarbeitet: der eigentliche "Rückgängig machen"-Request
+	# -- läuft clientseitig per Ajax gegen /dyn/add-to-basket.html (siehe Script weiter unten),
+	# -- danach lädt die Seite ohne den ?redo=-Parameter neu.
 
 	my $bsk_itms = $A->get_basket_items_v2();
 </%init>
@@ -77,6 +76,17 @@
 	<& ../partials/toast_js.html &>
 	showToast(true, '<% join "\\n", @msgs %>', 9000);
 % # XXX	showToast(true, 'Artikelposition wurde entfernt.\n\n<% join "\\n", @msgs %>', 9000);
+	</script>
+% }
+
+% if ($redo) {
+	<script>
+	fetch('../dyn/add-to-basket.html', {
+		method: 'POST',
+		body: new URLSearchParams({ id: '<% $redo %>' })
+	})
+		.then(function () { window.location.href = location.pathname; })
+		.catch(function () { window.location.href = location.pathname; });
 	</script>
 % }
 
