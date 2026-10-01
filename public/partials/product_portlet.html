@@ -8,7 +8,6 @@
 	my $debug = $args{debug};
 
 	my $prod = $A->get_product_v2(id => $id, public => 1);
-	# XXX my $prod = $A->get_product($id);
 
 	# XXX my $prod_id = $count + 1;
 	# XXX my $img_url = "produkte/p$id\_thmb.jpg";
@@ -17,7 +16,8 @@
 	   $img_url = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Produkte-\nBild' unless $img_exists;
 </%init>
 
-<article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+<article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm
+			hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
         <div class="relative overflow-hidden">
 	<a href="product?id=<% $id %>">
           <img src="<% $img_url %>" alt="UltraBook Pro 14"
@@ -36,7 +36,7 @@
         <div class="p-4 flex flex-col flex-1">
 %		if ($debug) {
 			<span class="text-xs text-red-500">
-				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=products">prod</a> -
+				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=products">prod</a> |
 				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc">desc</a>
 			</span>
 %		}
