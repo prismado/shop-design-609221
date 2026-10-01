@@ -68,10 +68,10 @@
 	while(my $r = $sth->fetch()) {
 		my ($id, $key, $val, $tstamp) = @{$r};
 		$key =~ s/^$filter//i if $filter =~ /\_$/;
-		# XXX $key =~ s/^currency\_//;
 		$val =~ s|<.+?>||g; # -- Remove HTML tags
 		my @arr = ();
-		push(@arr, "<div style='text-align:center'><a href='adm_safe_property.html?id=$id'>$id</a></div>");
+		# XXX push(@arr, "<div style='text-align:center'><a href='adm_safe_property.html?id=$id'>$id</a></div>");
+		push(@arr, "<div style='text-align:center'><a href='safe-property.html?id=$id'>$id</a></div>");
 		push(@arr, "<b>$key</b>");
 		push(@arr, substr($C->utf2iso($val), 0, 80));
 
