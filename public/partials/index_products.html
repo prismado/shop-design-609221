@@ -2,9 +2,9 @@
 	use utf8;
 	my %args = $m->caller_args(0);
 
-	my $C = $args{C};
-	my $A = $args{A};
-	# XXX my $v = $args{v};
+	my $C              = $args{C};
+	my $A              = $args{A};
+	my $perm           = $args{perm};
 	my $prod_highlight = $args{prod_highlight};
 	my $debug          = $args{debug};
 </%init>
@@ -12,6 +12,7 @@
 </div>
 
 <div>
+XX <% $perm->{uname} %><br>
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
 	XX <% $hl->{brand} %> / <% $hl->{title} %>
 	<br>
