@@ -1,0 +1,53 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h3>Einstellungen (Administrator)</h3>
+
+<p>
+	&bull; <a href="/adx/special_keys.html?area=paypal">PayPal-Einstellungen</a> &middot; <tt><% $C->{CONFIG}->{paypal_item_name} %></tt><br>
+	&bull; <a href="/adx/payment.html">Payment-Einstellungen</a>
+</p>
+
+<h4 class="mt-10">Abschlussverarbeitung</h4>
+
+<ul class="custom-list">
+	<li><tt>_callback/complete_order_paypal.html</tt><br>
+		Testen: <a href="/_callback/complete_order_paypal.html?invoice=386">Order-ID xx</a> &mdash;
+			<a href="https://shopd.algonetic.ch/adm_db_edit.html?table=orders&wcl=id%3D386">DB Edit</a> (Status 1 setzen)<br><br>
+
+                        $A-&gt;mail_order2cust(id => $refno);<br>
+                        $A-&gt;mail_order2merchant(id => $refno);
+	</li>
+	<li class="mt-5"><code>custom/algonetic/html/payment_pp.html</code></li>
+	<li><code>custom/algonetic/html/include/payment_pp.html</code></li>
+	<li><a href="../../11/4/sub-mail_pdf_bill.html">$A-&gt;mail_pdf_bill( )</a> &ndash; <a href="/_systex/install/help/de/11/4/?filter=mail">Mailversand</a></li>
+</ul>
+
+<%doc>
+XXX:
+<%perl>
+	my $pend_order_nl_id = $C->query(q~SELECT id FROM `newsletter` WHERE newsletter_type=2 AND subject like '{{%'~)->[0];
+
+        my $remind_job_id    = $C->query(q~
+		SELECT id FROM `config_prod_feat` WHERE featname='send_reminder.pl' and lang='sys' and featkey like 'job_path_%' limit 1~)->[0];
+
+	my $params = $C->get_job_params(id=>$remind_job_id);
+</%perl>
+
+<ol class="custom-list mt-4">
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-send-reminder">Send Reminder</a></li>
+</ol>
+
+</%doc>

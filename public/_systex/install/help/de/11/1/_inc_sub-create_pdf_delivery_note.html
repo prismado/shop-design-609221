@@ -1,0 +1,91 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new( $C );
+</%init>
+
+<%perl>
+	my $cgi = $C->{CGI};
+
+	my $order_id = $cgi->param('order_id') || $C->query('select max(id) from orders where status=4')->[0];
+	   $order_id += 0;
+
+	my @b_arr = ();
+	my $ord_items = $A->get_order_items(order_id=>$order_id, show_options=>1);
+
+	my $sth = $C->{dbh}->prepare(qq~SELECT id, xkey, xval FROM orders_details
+				WHERE order_id=$order_id AND xkey like '%pr%' order by 2~);
+	   $sth->execute();
+</%perl>
+
+<p class="mb-3">
+	Beispiel: Order-ID <a href="sub-create_pdf_delivery_note.html?order_id=<% $order_id %>"><% $order_id %></a>
+		&mdash; <a href="https://www.auctionline.ch/_systex/install/help/de/11/1/sub-create_pdf_delivery_note.html?order_id=72321">Produktiv</a>
+		&mdash; <a target="_blank" href="/adm_order.html?id=<% $order_id %>">Gehe zu Bestellung<sup>blank</sup></a>
+</p>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-perl">my $ord_items = $A-&gt;get_order_items(order_id=&gt;<% $order_id %>, show_options=&gt;1);</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-perl">foreach my $row (@{ $ord_items-&gt;{item_rows} }) { ... }</code></pre>
+</div>
+
+% foreach my $row (@{ $ord_items->{item_rows} }) {
+	<table class="bg-white border" style="min-width:55%;">
+%	foreach (sort keys %{ $row }) {
+		<tr>
+			<td class="border" style="width:170px;"><% $_ %></td>
+			<td class="border pl-5 pr-3"><b><% $row->{$_} %></b>
+%				if (/^orders_product_id$/) {
+					&rarr; <a href="/adm_db_edit.html?table=orders_products&wcl=id%3D<% $row->{$_} %>">Edit</a>
+						<small>Wert 0.0001 bei <code>discount_perc</code> setzen, um Discount auf "0" zu &uuml;bersteuern / 27Nov2024</small>
+%				}
+%				elsif (/^prod_id$/) {
+					&rarr; <a href="/adx/edit-product.html?id=<% $row->{$_} %>">Gehe zu Produkt</a>
+%				}
+			</td>
+		</tr>
+%	}
+	</table>
+	<br />
+% }
+
+<p class="mt-5 mb-2">
+	<tt>orders_details</tt>
+</p>
+
+<table>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+	<tr>
+	<td class="pr-5"><a href="/adm_db_edit.html?table=orders_details&wcl=id%3D<% $id %>"><% $id %></a></td>
+	<td><% $key %></td>
+	<td class="pl-5"><b><% $val %></b>
+%		if ($key =~ /\_discount_perc$/) {
+			&rarr; <small><b class="text-red-800">NEW</b> 27Nov2024</small>
+%		}
+	</td>
+	</tr>
+% }
+</table><br>
+
+<p class="mb-3">
+	<a href="/_debug_order.html?id=<% $order_id %>&debug=1">Add Key/Value</a>
+</p>
+
+<table>
+% foreach (sort keys %{ $ord_items }) {
+%	next if /^x_hist_.+/ or /^x_uuid_.+/ or /^VERSION$/;
+%	next unless length( $ord_items->{$_} );
+	<tr>
+	<td><% $_ %></td><td><% $ord_items->{$_} %></td>
+	</tr>
+% }
+</table>

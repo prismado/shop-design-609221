@@ -1,0 +1,98 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $sth = $C->{dbh}->prepare(q~SELECT id, SUBSTR(k, 14,15)+0 FROM work WHERE k LIKE 'alert\_408211\_%' order by 2 DESC LIMIT 10~);
+	   $sth->execute();
+</%perl>
+
+<h3 class="mt-5">Editieren: Lange Beschreibung</h3>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_ajax/modal_edit_wysiwyg.html</code></pre>
+</div>
+
+<div class="w-3/4">
+	<pre class="line-numbers" data-start="10"><code
+		class="language-html">&lt;iframe src="/adx/_wysiwyg_edit_for_iframe.html?id=&lt;% $id %&gt;&lang=&lt;% $lang %&gt;" id="if403281"
+	style="width:100%; border:none; height:50vh" frameborder="0"&gt;&lt;/iframe&gt;</code></pre>
+</div>
+
+<h5>Modal für WYSIWYG-Editor</h5>
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_wysiwyg_edit_for_iframe.html</code></pre>
+</div>
+
+<p>
+	Standardmässig ist der Summernote-Editor aktiviert: <a
+		href="https://dms.prismado.com/html_frontend/documentation/plugins-vendor-summernote.html">documentation/plugins-vendor-summernote</a>
+</p>
+
+<h4 class="mt-5">Template: Produkt editieren</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_includes/edit_product.html</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_includes/inc_upload_dropzone.html # -- Upload Dropzone</code></pre>
+</div>
+
+<h4 class="mt-10">Template: &Ouml;ffentliche Ansicht</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/html/include/product.html</code></pre>
+</div>
+
+<h3 class="mt-10">Automatische Benachrichtigung ("Artikel erfordern Ihre Aufmerksamkeit")</h3>
+
+<p>
+	<a target="_blank" href="../3/job-alert_stock_events_pl.html"><tt><u>_systex/hourly/alert_stock_events.pl</u></tt></a>
+</p>
+
+<p class="mt-5">
+	Status der Alerts werden in der Tabelle <tt>products_feat</tt> gespeichert.<br>
+	&bull; featkey <tt>OP_ALERT</tt> (weight <tt>-1</tt>) &rarr; 1 oder 0<br>
+	&bull; featkey <tt>OP_RECOMM</tt> (weight <tt>-1</tt>)<br><br>
+</p>
+
+<h3 class="mt-1">Bereits benachrichtigt</h3>
+
+<table>
+% while(my $r = $sth->fetch()) {
+%	my ($alert_id, $prod_id) = @{$r};
+%	my $alert_msg = $C->query("select `description` from products_feat where product_id=$prod_id and featkey='OP_RECOMM' and featname='_exclude'")->[0];
+	<tr>
+		<td><a target="_blank" href="/adx/edit-product.html?id=<% $prod_id %>">Prod-ID <% $prod_id %></a></td>
+		<td class="pl-5"><% $alert_msg %></td>
+		<td class="pl-5">W&ndash;<a target="_blank" href="/adm_db_edit.html?table=work&wcl=id%3D<% $alert_id %>"><% $alert_id %></a></td>
+	</tr>
+% }
+</table>
+
+<p class="mt-5">
+	<a href="../3/job-hourly_tasks.pl.html">Hourly Tasks</a>
+</p>
+
+<h4 class="mt-10">Hinweis zur DB-Struktur (products)</h4>
+
+<tt>extra</tt>
+<p>1 = neu | 2 = refurb. | 3 = gebraucht</p>
+
+<h4 class="mt-10">Siehe auch</h4>
+
+<ol class="custom-list">
+<li>$A-&gt;get_product_files( ) &ndash; (Alter Edit)</li>
+<li><a href="../4/?filter=prod">$A-&gt;Methoden</a></li>
+</ol>

@@ -1,0 +1,43 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<ul class="mt-10 custom-list">
+	<li><h3>Teaser</h3>
+		Rotation von grossem Bild mit Text am oberen Ende der Startseite.<br><br>
+
+		ADX: <a href="/adm_teaser.html">Teaser verwalten</a><br><br>
+
+		<div class="w-1/2 ZZmb-5">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-shell">custom/algonetic/html/include/inc_carousel.html</code></pre>
+		</div>
+	</li>
+
+	<li clasx=""><h3>Promo Header</h3>
+
+		<p>Mediumtext, max. 16777215 Zeichen</p>
+
+		<div class="w-1/2 mb-5">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-perl">$C-&gt;txt('product_promo_header', 'de')</code></pre>
+		</div>
+
+		<div class="w-2/3 mt-5 mb-1" style="border:2px solid blue; padding:10px;">
+			<% $C->txt('product_promo_header', 'de') %>
+		</div>
+
+		<a class="ml-1" href="/adx/manage-property.html?area=product_promo_header">Promo Header Editieren</a>
+	</li>
+</ul>

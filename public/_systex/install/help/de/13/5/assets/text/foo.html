@@ -1,0 +1,64 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $A    = $s{A};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h3 class="mt-2"><% $C->{CONFIG}->{HTTP_HOST} %> &middot;
+	<% $C->shorten_title($C->{CONFIG}->{site_title}, 25) %> &larr; <a href="/adx/special_keys.html?area=site"><small>Edit</small></a></h3>
+
+<h4 class="mt-5">Verwaltung der Standard-Label als Administrator</h4>
+
+<p class="mt-5 mb-2">
+	Via Men&uuml;: "Content / Inhalt" &rarr; "Inhalte-1":
+</p>
+
+<ul class="custom-list mt-3">
+	<li><a href="/adx/content.html">adx/content</a></li>
+</ul>
+
+<%perl>
+	my $std_labels = $A->get_std_labels();
+	my @labels = ();
+	push(@labels, '<table class="ZZmin-w-full bg-white border border-gray-300">');
+	foreach my $key (sort keys %{ $std_labels->{link} }) {
+		push(@labels, qq~<tr class="border-b border-gray-300">
+				<td class="py-1 px-2 pr-10"><tt clasx="font-weight-bold">$key</tt></td>
+				<td class="py-1 px-2">$std_labels->{caption}->{$key}</td>
+				</tr>~);
+	}
+	push(@labels, '</table>');
+</%perl>
+
+<h4>Aktuelle Werte f&uuml;r <u>alle</u> Produktegruppen</h4>
+
+<% join '', @labels %>
+
+<h4>Werte für <u>individuelle</u> Produktegruppen</h4>
+
+<a href="/adx/categ-setting.html">Einstellen</a>
+
+<%doc>
+XXX:
+<p class="mt-4">
+	<div class="w-3/4">
+		<pre clasx="line-numbers" data-start="10"><code
+			class="language-shell">custom/<% $C->{CONFIG}->{theme} %>/html/assets/images/logo/logo_pub.svg # -- www-data</code></pre>
+	</div>
+</p>
+
+<ul class="custom-list mt-5">
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-errors">Errors / Warnings / Messages</a></li>
+
+</ul>
+/XXX
+</%doc>

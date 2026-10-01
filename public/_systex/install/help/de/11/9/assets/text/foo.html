@@ -1,0 +1,51 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h4 class="mt-5">Wysiwyg Editor</h4>
+
+<p>
+	<a href="/adx/_wysiwyg_editor.html">Demo</a>
+</p>
+
+<p>
+	<a href="https://summernote.org/getting-started/">summernote.org/getting-started</a>
+</p>
+
+<%doc>
+XXX:
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-html">&lt;script src="assets/js/prism_dt.js" defer=""&gt;&lt;/script&gt;</code></pre>
+</div>
+
+<h4 class="mt-5">Einheitlicher Programm-Code</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_ajax/webc_datatables.html</code></pre>
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">ll -t adx/_ajax/server_processing_*.html</code></pre>
+</div>
+
+<h5>Datenbankabfrage für "orders"</h5>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">vi adx/_ajax/server_processing_orders.html # -- adx/orders</code></pre>
+</div>
+
+<ol class="mt-10 custom-list">
+
+<li><a href="/adx/orders.html">Beispiel &lsaquo;orders&rsaquo;</a></li>
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Web Components</a></li>
+
+</ol>
+/XXX
+</%doc>

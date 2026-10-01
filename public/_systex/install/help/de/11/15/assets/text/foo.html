@@ -1,0 +1,80 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h3 class="mt-5">Infos und Tools</h3>
+
+<ol class="ZZmt-10 custom-list">
+	<li><a target="_blank" href="https://dms.prismado.com/components-forms.html">Components : Forms</a> (Smarty V3)</li>
+	<li><a target="_blank" href="https://dms.prismado.com/plugins-sow-lazyload.html">LazyLoad</a> (Smarty V3)</li>
+	<li><a href="/adx/custom-layout.html">Layout-Einstellungen</a> (ADX)</li>
+	<li><a href="/adx/config-layout.html">Design-Patterns</a> (ADX)</li>
+</ol>
+
+<h4>LazyLoad: Basic Usage <small>(like any other lazyload)</small></h4>
+
+<div class="w-3/4 mb-10">
+	<pre clasx="line-numbers" data-start="10"><code class="language-html">&lt;img width="300" height="300" class="lazy"
+	data-src="image.jpg"
+	src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="&gt;</code></pre>
+</div>
+
+% # =====================================================================
+<!-- To test LazyLoad -->
+<script src="/assets/js/core.min.js"></script>
+% # =====================================================================
+
+<table>
+<tr>
+	<td>
+		<img width="320" height="320" class="img-fluid lazy" style="border:3px red solid;"
+			data-src="../../../assets/images/demo-pic-very-large.png?pid=<% $$ %>"
+				src="../../../assets/images/demo-pic-monitor-small.webp" data-loaded="false">
+	</td>
+
+	<td class="pl-10">
+		<img width="640" height="320" class="img-fluid lazy" style="border:3px red solid; ZZwidth:640px; ZZheight:320px;"
+			data-src="../../../assets/images/demo-pic-very-large-2.png?pid=<% $$ %>" data-loaded="false"
+				src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 640 320%22 /%3E">
+	</td>
+</tr>
+</table>
+
+<div class="ZZw-3/4 mt-10 mb-10">
+	<pre clasx="line-numbers" data-start="10"><code class="language-html">&lt;img width="320" height="320" class="img-fluid lazy" style="border:3px red solid;"
+			data-src="../../../assets/images/demo-pic-very-large.png" data-loaded="false"
+				src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 320 320%22 /%3E"&gt;
+	</code></pre>
+</div>
+
+<h4>923 : 742</h4>
+
+<tt>data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 923 742%22 /%3E</tt>
+
+
+<h3>Siehe auch</h3>
+
+<ol class="ZZmt-10 custom-list">
+	<li><a target="_blank" href="https://dms.prismado.com/html_frontend/">HTML Frontend</a> (Smarty)</li>
+</ol>
+
+<%doc>
+XXX:
+<p>
+	Wenn du <b>Lazy Loading</b> für nicht sichtbare und versteckte Bilder verwendest und sie zurückstellst, bis alle wichtigen Ressourcen geladen wurden,
+	kannst du die Zeit bis Interaktivität reduzieren. <a target="_blank"
+	href="https://developer.chrome.com/docs/lighthouse/performance/offscreen-images/?utm_source=lighthouse&utm_medium=lr">Weitere Informationen</a>. (LCP / FCP)
+</p>
+/XXX
+</%doc>

@@ -1,0 +1,70 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+% foreach (sort keys %{ $perm }) {
+% # XXX	XX <% $_ %> = <% $perm->{$_} %><br>
+% }
+<h4>Allgemein</h4>
+
+<p class="mt-5">
+	Proj. Ref. 1322-7
+</p>
+
+<h4>Reporting</h4>
+
+% unless ($perm->{is_admin}) {
+	<% $C->bootstrap_alert(q~Administrator <a href="/signin">Login</a> erforderlich f&uuml;r weitere Ansicht~, 'warning') %>
+% }
+% else {
+
+<ol class="custom-list">
+	<li>Produkte und Marken, die Kunden auf Google kaufen<br>
+	<a target="_blank" href="https://merchants.google.com/mc/reporting/report?a=5078663551&reportId=6">merchants.google.com/mc/reporting</a>
+	</li>
+</ol>
+
+<h4>Konversionen (Conversion Tracking)</h4>
+<p>
+	<a href="/adx/conv-track.html">Einstellungen</a> &mdash; <a href="/adx/manage-property.html?area=google">Alle Google Einstellungen</a>
+</p>
+
+<h4>Abrechnungen</h4>
+
+<p>
+	<a target="_blank" href="https://ads.google.com/aw/billing/documents">ads.google.com/aw/billing/documents</a><br>
+	Dokumente zu den Aktivitäten eines Monats stehen normalerweise am 5. Arbeitstag des Folgemonats zur Verfügung.
+</p>
+
+<p class="mt-5">
+	Vergangene Abrechnungen kannst du bei Bedarf nachträglich über folgenden Google-Link herunterladen:<br>
+	<a target="_blank" href="https://drive.google.com/drive/folders/1WlwdCVD5mUrKqt94z1bpZAuT87gL7hOb">drive.google.com/drive/folders</a>
+</p>
+
+<h4 class="mt-10">Siehe auch</h4>
+<ul class="custom-list">
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-dhl">DHL</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-errors">Errors / Warnings / Messages</a></li>
+
+</ul>
+
+% }
+
+
+<%doc>
+XXX:
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$A-&gt;dhl_send_shipment( )</code></pre>
+</div>
+/XXX
+</%doc>

@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $A    = $args{A};
+	my $perm = $args{perm};
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+</%init>
+	<hr class="mt-10 border-black">
+
+	<p class="float-right">
+		<span class="mr-1"><a href="/adx/help.html">Suchen</a> &mdash;</span>
+%		if ($perm->{uid} > 0) {
+			<% $perm->{email} %>
+%		}
+%		else {
+			<a href="/">Login</a>
+%		}
+	</p>
+
+	<p>
+		<b>DOKUMENTATION</b> &ndash;
+		<a class="<% $href_cl %>" href="/adx/config.html" style="color:#cccccc !important">ADX Config</a> &ndash;
+		<a class="<% $href_cl %>" href="/_systex/install/help/">Help</a> &ndash;
+		<a class="<% $href_cl %>" href="/_systex/install/help/de/">Start [de]</a>
+
+%		if ($perm->{is_devel}) {
+			&ndash;	<a class="<% $href_cl %>" href="https://docs.ch2.be/w/prismado-shop/feat-online-help">Wiki</a>
+			&ndash;	<a href="/adx/show.html?macro=prism_core_funcs">Prismado Core</a>
+			&ndash;	<a href="/adx/manage-property.html?area=redir">Redirects</a> <a	href="/adx/config-dev.html">?</a>
+				<tt><% $A->prism_get_redir(in=>'adm_help')->{redir} %></tt>
+%		}
+	</p>

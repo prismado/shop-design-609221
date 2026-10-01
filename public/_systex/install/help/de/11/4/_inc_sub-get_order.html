@@ -1,0 +1,38 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	use ScreenPoint::Auctionline;
+
+	my $A = ScreenPoint::Auctionline->new( $C );
+</%init>
+
+<%perl>
+	my $last_oid = $C->query('select id from orders order by 1 desc limit 1')->[0];
+
+	my $odat = $A->get_order($last_oid);
+</%perl>
+
+<p>
+	XX <% $last_oid %>
+</p>
+
+% foreach ( @{$odat->{'_products'}} ) {
+	XX ------------ <% $_ %><br>
+% }
+
+<table>
+% foreach (sort keys %{ $odat }) {
+%	next if /^hist\_.+/ or /^uuid\_.+/ or /^XX .+/ or /^cb\_.+/ or /^\_.+/;
+%	next unless length( $odat->{$_} );
+	<tr>
+	<td><b><% $_ %></b></td><td><% $odat->{$_} %></td>
+	</tr>
+% }
+</table>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">tbd</code></pre>
+</div>
+	

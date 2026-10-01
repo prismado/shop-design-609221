@@ -1,0 +1,35 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h3>Infos</h3>
+
+<p>
+	Dark Mode Aktuell: <tt><% $C->txt('sys_layout_dark_mode', 'sys')+0 %></tt> &rarr;
+		<a target="_blank" href="/adx/manage-property.html?area=sys_layout">Einstellung</a>
+</p><br>
+
+<div class="w-3/4">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-html">custom/algonetic/html/index.html</code></pre>
+</div>
+
+<h3 class="mt-10">Siehe auch</h3>
+
+<ul class="ZZmt-10 custom-list">
+	<li>ADX: <a target="_blank" href="/adx/custom-layout.html">Custom-Layout</a></li>
+	<li><a href="https://x.prismado.com/lab/layout2023/components-icons.html">Icons</a></li>
+</ul>

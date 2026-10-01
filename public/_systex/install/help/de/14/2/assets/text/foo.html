@@ -1,0 +1,32 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<p>
+	Pro-Zone <a href="/adm_hiddenshop.html">Verwaltung</a> durch Admin
+</p>
+
+<p class="mt-5">
+	Zugang für Kunden: <a href="/prozone.html">Pro-Zone</a>
+</p>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/html/prozone.html</code></pre>
+</div>
+
+<h5 class="mt-8">Siehe auch</h5>
+
+<ol class="custom-list">
+	<li><a href="../../11/4/?filter=prozone">$A-&gt;Funktionen</a></li>
+	<li><a href="../../11/1/sub-mail_x.html">$C-&gt;mail_x( )</a></li>
+</ol>

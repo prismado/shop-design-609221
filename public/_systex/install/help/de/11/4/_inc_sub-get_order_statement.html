@@ -1,0 +1,89 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	use ScreenPoint::Auctionline;
+
+	my $A = ScreenPoint::Auctionline->new( $C );
+</%init>
+
+<%perl>
+	my $oid = $C->query(q~
+		SELECT	order_id
+		FROM	orders_details
+		WHERE	xkey LIKE 'prod\_id\_%' AND xkey NOT LIKE '%\_price%'
+			AND order_id IN (
+				SELECT order_id FROM orders_products GROUP BY order_id HAVING count(*) > 1
+			)
+		GROUP	BY substr(xkey, 1, 13)
+		HAVING	COUNT(*) > 1 order BY 1 DESC
+		LIMIT	1
+	~)->[0];
+
+	my $o_stmt = $A->get_order_statement(
+		order_id      => $oid,
+		add_vat       => 1,
+		hide_pos      => 0,      # -- optional, hide pos column
+		link_products => 0,
+		row_class     => 'row_small'
+	);
+</%perl>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$stmt = $A-&gt;get_order_statement(
+	order_id      =&gt; {ORDER_ID},
+	add_vat       =&gt; {1|0},
+	hide_pos      =&gt; {1|0},      # -- optional, hide pos column
+	link_products =&gt; {1|0},
+	row_class     =&gt; 'row_small' # -- optional
+);
+
+# -- $stmt->{out} = Skalar Reference (HTML)
+# -- $stmt->{subtotal}</code></pre>
+</div>
+
+% foreach (sort keys %{ $o_stmt }) {
+%	next if /^VERSION$/;
+	X -- <b><% $_ %></b> = <% $o_stmt->{$_} %><br>
+% }
+
+<p class="mt-5 mb-5">
+	<a href="/adm_order.html?id=<% $oid %>">Order-ID <% $oid %></a>
+</p>
+
+<style>
+	tr.row_small td { padding: 4px; }
+	.row_small { border-bottom: 1px solid #000; }
+	.td_410051 {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width:255px;
+	}
+	td.vat_amnt_410061 { color:green; padding-right:6px; }
+	#gt_406092_244 { color:black !important; padding-right:6px; }
+</style>
+
+<table class="w-3/4" style="background-color:white; border: 2px solid green;">
+	<% ${ $o_stmt->{out} } %>
+</table>
+
+<h4>Anpassung mit CSS <small>(optional)</small></h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-css">	tr.row_small td { padding: 4px; }
+	.row_small { border-bottom: 1px solid #000; }
+	.td_410051 {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width:255px;
+	}
+	td.vat_amnt_410061 { color:green; padding-right:6px; }
+	#gt_406092_244 { color:black !important; padding-right:6px; }</code></pre>
+</div>
+
+<h4>Siehe auch</h4>
+
+<a href="./?filter=get_basket">$A-&gt;get_basket...</a>

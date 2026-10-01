@@ -1,0 +1,30 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $perm = $C->get_user_perm();
+</%init>
+<html>
+<head>
+	<title>Online-Hilfe</title>
+	<link href="../assets/css/main.css" rel="stylesheet">
+</head>
+<body>
+	<p>
+		<a href="..">Start</a> &ndash;
+		<a href=".">Index</a>
+%		if ($perm->{is_devel}) {
+			&ndash; <a href="https://docs.ch2.be/w/prismado-shop/feat-online-help">Wiki</a>
+%		}
+	</p>
+
+	<table>
+%	foreach my $dir (@{ $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de", '^\d+$') }) {
+		<tr>
+			<td><a href="<% $dir %>"><% $dir %></a></td>
+		</tr>
+%	}
+	</table>
+</body>
+</html>

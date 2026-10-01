@@ -1,0 +1,34 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<p class="mt-5">
+	<a href="/adx/payment.html"><b>Einstellung in ADX</b></a><br><br>
+
+	Aktuelle Auswahl bei Checkout (Property):<br>
+	<a href="/adx/manage-property.html?area=creditcard"><% $C->txt('creditcard', 'de') %></a>
+</p>
+
+<p class="mt-5">
+	Am 10.09.2024 bei PostFinance: Identifier nur noch <code><b>post-finance-pay</b></code><br><br>
+
+	PostFinance hat die bisherigen Zahlungsmethoden "PostFinance Card" und "PostFinance E-Finance" vereint und durch die neue,
+	verbesserte Zahlungsmethode <b>PostFinance Pay</b> ersetzt
+</p>
+
+<ul class="mt-10 custom-list">
+	<li><a target="_blank" href="https://docs.payrexx.com/developer/general-info/payment-method">Payrexx Docu</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-payment-payrexx">Payrexx</a></li>
+	<li><a href="https://docs.ch2.be/_search.html?q=%2Bpayment%2A&wiki_50=1&narrow_search=1&wiki_29=1">Wiki-Suche</a></li>
+
+</ul>

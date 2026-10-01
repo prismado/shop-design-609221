@@ -1,0 +1,52 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $prop_id = $C->query("select id from properties where `key`='warranty_declaration_de' limit 1")->[0];
+</%perl>
+
+<h4>RMA (Return Merchandise Authorization)</h4>
+
+<ol class="custom-list mt-4">
+	<li>Seite (&ouml;ffentlich): <a href="/info-delivery.html">RMA-Antrag</a><br>
+		Hinterlegt bei Google MC ("Policy url") &rarr; <a href="/info-warranty.html">info-warranty</a> <small>(30 Tage-Fenster)</small>
+% #			<a href="/adx/manage-property.html?area=warranty_declaration">E</a>
+				&larr; <a href="/adm_property.html?id=<% $prop_id %>">Edit</a>
+
+		<div class="mt-2 w-1/2 p-3" style="border:2px solid red;">
+			<% $C->txt('warranty_declaration', 'de') %>
+		</div>
+	</li>
+
+	<li><a href="/adx/manage-property.html?area=delivery_text_returns">Abschnitt editieren</a> (Kundensicht)<br>
+
+		<div class="mt-2 w-1/2 p-3" style="border:2px solid red;">
+			<% $C->txt('delivery_text_returns', 'de') %>
+		</div>
+
+		<ul class="custom-list mt-2">
+			<li>Kunden-Link <a href="/account-orders.html">Bestellungen</a></li>
+		</ul>
+	</li>
+	<li><a target="_blank" href="https://merchants.google.com/mc/returnoverview?a=5078663551">Google MC</a></li>
+</ol>
+
+<h4>Etc</h4>
+
+<ol class="custom-list mt-4">
+	<li><a href="/adx/show.html?macro=prism_core_funcs">System-Einstellungen</a> (cancel_order)</li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-order">Order</a></li>
+</ol>
+

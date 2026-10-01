@@ -1,0 +1,86 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	my $sub  = 1;
+
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)\/(\d+)/) {
+		$this = $1;
+		$sub  = $2;
+	}
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $title = $C->get_online_help_refs()->{ref}->{"$this\/$sub"};
+
+	my $text = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$this/$sub/assets/text");
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	(my $short_file_name = $C->get_short_file_name( $ENV{REQUEST_URI} )) =~ s/\.html$//;
+	    $short_file_name =~ s/^sub\-//;
+
+	$r->content_type("text/html; charset=utf-8");
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>[ H ] - <% $title %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<h1 class="text-4xl font-bold text-gray-800 mt-8">Sub-Bereich <% $this %>&ndash;<% $sub %> &ndash; <% $title %></h1>
+
+	<h4 class="mt-3 mb-5">$A-&gt;<% $short_file_name %>( )</h4>
+
+	<p class="mb-3"><a class="<% $href_cl %>" href=".">Aufw&auml;rts</a> &mdash; <a href="/adx/dev-lab.html">Dev Lab</a></p>
+
+	<h4>An Kunde</h4>
+
+	<p>PDF-Attachment wird erstellt</p>
+
+	<div class="w-1/2">
+		<pre clasx="line-numbers" data-start="10"><code class="language-perl">$A-&gt;create_pdf_bill(order_id=&gt;{ORDER_ID})</code></pre>
+	</div>
+
+	<p>
+		Tech Info: Das PDF-Dokument wird konkret erstellt innerhalb <tt>$C-&gt;create_pdf_bill( vat_inc =&gt; {1|0} )</tt>.<br>
+		Die Datensätze werden bespielt via <tt>$args{bill_data}; # -- Array ref with hashes</tt>
+	</p>
+
+	<h5>Name der erstellten PDF-Datei</h5>
+	<div class="w-3/4">
+		<pre class="line-numbers" data-start="14"><code
+			class="language-perl">$res{save_as} = $args{save_as} || "upload/qr_bill_$res{order_id}\_$now10\.pdf";</code></pre>
+	</div>
+
+	<h5 class="mt-10">Testen / &Uuml;berpr&uuml;fen</h5>
+	<a href="/adm_log.html?importance=4&filter=N407191-27"><pre>N407191-27</pre></a>
+
+	<h4 class="mt-10">Siehe auch</h4>
+	<p clasx="mt-10">
+		&bull; <a href="sub-mail_pdf_bill.html">$A-&gt;mail_pdf_bill( )</a><br>
+		&bull; <a href="/adm_log.html?importance=4&filter=mail_pdf_bill">Log</a><br>
+		&bull; <a href="sub-get_webenv.html">$C-&gt;get_webenv( )</a>
+	</p>
+
+%	if ($perm->{is_devel}) {
+		<hr class="mt-8">
+		<small>Dev: REQUEST_URI <% $ENV{REQUEST_URI} %></small>
+%	}
+
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>

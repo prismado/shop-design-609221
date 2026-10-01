@@ -1,0 +1,53 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h4>Infos</h4>
+<ol class="mt-4 custom-list">
+	<li>
+		Auf Produktiv-System:<br>
+		Sync Database to Gurke &ndash; <a href="https://www.auctionline.ch/adx/show.html?macro=prism_sys_jobs&q=sync">System Jobs</a><br>
+
+% #		<div class="w-3/4">
+		<pre clasx="line-numbers" data-start="10"><code
+		class="language-shell">/var/www/shop/custom/algonetic/jobs/rsync.pl --dest "git@gurke.ch2.be:/tmp/git-dbcloning/" --src "/var/lib/mysql/_info/shop/{{YYYYMMDD}}*.tar.gz" --JOBID 151 --db shop</code></pre>
+% #		</div>
+	</li>
+
+	<li class="mt-10">
+		<a target="_blank" href="https://www2.auctionline.ch/adx/show.html?macro=prism_sys_jobs">System Jobs @ www2</a><br>
+		Bewegungsdaten holen mit Job: "Sync Database from Gurke"<br><br>
+
+		<b>Daten auflisten innerhalb Container www2</b><br>
+		ll -t /var/www/html/_systex/data/import/zz_trash_remote/20*|head -3<br><br>
+
+		Quelle der Bewegungsdaten (Gurke):
+		<div class="w-1/2">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-shell">ll -t /tmp/git-dbcloning/20*-all.tar.gz|head -3</code></pre>
+		</div>
+	</li>
+
+	<li class="mt-10">
+		<h3>Repopulate auf Failover System</h3>
+		ll -t /var/www/html/_systex/data/import/zz_trash_remote/20*|head -3<br>
+		/root/bin/repopulate.pl # -- @ www2
+	</li>
+</ol>
+
+<h4>Siehe auch</h4>
+
+<ol class="mt-4 custom-list">
+	<li>Wiki: <a href="https://docs.ch2.be/w/auctionline2023/backup">Infos</a></li>
+</ol>

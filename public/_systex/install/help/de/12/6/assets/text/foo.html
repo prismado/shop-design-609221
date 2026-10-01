@@ -1,0 +1,47 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h3>Conversion-Verkn&uuml;pfung</h3>
+
+<p class="mb-5">
+	<a target="_blank" href="https://tagmanager.google.com/">tagmanager.google.com</a>
+</p>
+
+<p class="mb-8">
+	Auszulösende Trigger: "Consent Initialization - All Pages"
+</p>
+
+<img class="w-3/4 mb-10" src="../../../assets/images/tagmanager_411060.png">
+
+<h3>Siehe auch</h3>
+
+<ul class="custom-list">
+	<li><a href="https://docs.ch2.be/w/know-how/google-consent-v2">Wiki: Know-how Google Consent v2</a></li>
+	<li><a href="https://docs.ch2.be/_search.html?q=%2Bconsent%2A">Wiki-Suche</a></li>
+	<li><a href="../2/">Google-Einstellungen</a></li>
+</ul>
+
+<h3>Lab</h3>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">custom/algonetic/html/include/inc_cookie_consent.html</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/html/assets/js/prism_cookie_consent.js</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/html/_ajax/webc_prism_cookie_consent.html</code></pre>
+</div>

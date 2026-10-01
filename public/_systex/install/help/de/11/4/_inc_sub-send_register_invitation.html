@@ -1,0 +1,29 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+</%init>
+<h4>Funktionstest</h4>
+
+<p>
+	<a href="https://shopd.algonetic.ch/adm_user.html?id=1909&debug=1">adm_user.html?id=1909</a> &rarr; <% $C->txt('invitation_link_acc_reg_subject', 'de') %>
+</p>
+
+<h4 class="mt-8">Hinweis</h4>
+
+<p class="mt-2">
+	Verwendung von <a href="../../11/1/sub-mail_x.html">mail_x( )</a>
+</p>
+
+<%doc>
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">tbd</code></pre>
+</div>
+</%doc>
+
+<h5 class="mt-10">Siehe auch</h5>
+<ol class="mt-2 custom-list">
+	<li><a href="/adx/manage-property.html?area=invitation">Properties</a></li>
+	<li><a href="/adx/show.html?macro=prism_core_funcs">Prismado Kernfunktion</a></li>
+	<li><a href="https://docs.ch2.be/w/prismado-shop/feat-registration">Wiki</a></li>
+</ol>

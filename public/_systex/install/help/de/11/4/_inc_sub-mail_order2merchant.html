@@ -1,0 +1,51 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	my $title = 'N/A';
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	my $cart_symb = $C->get_safe_property('unicode_cart_128722', 'sys');
+</%init>
+	<h4><% $cart_symb %> E-Mail an H&auml;ndler</h4>
+
+	<ol class="custom-list">
+		<li>Wrapper für <a href="sub-mail_pdf_bill.html">$A-&gt;mail_pdf_bill( )</a></li>
+		<li>E-Mail mit PDF-Attachment wird gesendet an <% $C->{CONFIG}->{order_email} %></li>
+	</ol>
+
+	<h4>Parameter</h4>
+
+	<ol class="custom-list">
+		<li><code>id</code> &ndash; Order-ID</li>
+		<li><code>subject</code> &ndash; Betreffzeile</li>
+	</ol>
+
+	<h4>Template</h4>
+
+	<div class="w-1/2">
+		<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/mail_templates/confirm_merchant_inc.html</code></pre>
+	</div>
+
+	<h4>Beispiel-Aufruf innerhalb der Funktion als call_batch( )</h4>
+
+	<div class="w-1/2">
+		<pre class="line-numbers" data-start="10"><code
+			class="language-perl">$A-&gt;mail_pdf_bill(
+	order_id =&gt; 825,
+	to       => 'shopd.algo.merchant@eshop.pub',
+	subject  =&gt; '=?UTF-8?B?8J+bkiBCZXN0ZWxsdW5nIFtBdWZ0cmFnIE5yLiA4MjVd?='
+)</code></pre>
+	</div>
+
+	<h4>Log-Aktivitäten</h4>
+
+	<p>Alle Rückgabewerte von $C-&gt;call_batch( ) &middot;
+		(Service: <a href="/adm_log.html?importance=4&filter=mail_order2merchant"><tt>mail_order2merchant</tt></a>)</p>
+
+	<h5 class="mt-10">Siehe auch</h5>
+	<p class="mt-3">
+		&bull; <a href="sub-mail_pdf_bill.html">$A-&gt;mail_pdf_bill( )</a> (E-Mail an Kunde)<br>
+	</p>

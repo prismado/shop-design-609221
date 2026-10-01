@@ -1,0 +1,44 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+</%init>
+<div class="w-1/2 mt-5">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">my $sid = $C-&gt;getSID(); # -- <% $C->getSID() %></code></pre>
+</div>
+
+<p>
+	Gibt als Rückgabewert die aktuelle Session-ID (SID) zurück (Ganzzahl).<br>
+	Falls noch keine Session-ID vorhanden wäre, wird durch internen Aufruf zu $C-&gt;newSID( ) eine neue Session-ID ermittelt.<br>
+	Die SID ist als <code>int(10) unsigned</code> definiert und reicht damit bis zu 4'294'967'295.
+</p>
+
+<ol class="custom-list mt-5">
+	<li>Grösser <b>0</b>: Aktuelle Session-ID</li>
+	<li><b>0</b>: Bei <code>$C-&gt;{MODE}</code> = <tt>'shell'</tt></li>
+</ol>
+
+<p class="mt-5">
+	Bis Version 1.0001 von Core werden die Cookies mit folgender Abfrage abgerufen, was leider ab Debian 12 zu Abstürzen führt:
+</p>
+
+<div class="w-1/2 mt-5">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">eval { %cookies = Apache2::Cookie-&gt;fetch; };</code></pre>
+</div>
+
+<div class="w-3/4 mt-5">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-perl">my $cookie_header = $self-&gt;{R}-&gt;headers_in-&gt;{'Cookie'};# -- stabilere Methode</code></pre>
+</div>
+
+<div class="w-3/4 mt-5">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-perl">my $cs = $self-&gt;get_cookies_simple(); # -- stabilere und simplere Methode</code></pre>
+</div>
+
+<h4 class="mt-10">Siehe auch</h4>
+
+<ol class="custom-list">
+	<li><a href="./?filter=cookie">Cookies</a></li>
+	<li><a href="https://docs.ch2.be/w/prismado-shop/feat-session">Wiki</a>
+</ol>

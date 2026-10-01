@@ -1,0 +1,44 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h4>Deeplink URL zu Bestellung</h4>
+
+<p>
+	<% $C->get_safe_property( 'edi_1_deeplink_order', 'sys' ) %><i style="color:blue">135746736</i><br>
+</p>
+
+<%doc>
+XXX:
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$A-&gt;dhl_send_shipment( )</code></pre>
+</div>
+/XXX
+</%doc>
+
+<br><br>
+
+<ul class="custom-list">
+	<li><a href="/adm_safe_properties.html?lang=sys&filter=edi">EDI-Werte</a> (Safe-Properties)</li>
+
+	<li><a href="/adx/help.html?fil=<% $C->uri_esc(q~mnemonic LIKE 'edi\_%'~) %>&chk=<%
+		substr($C->md5_secret(q~mnemonic LIKE 'edi\_%'~), 0, 6) %>">Weitere Hilfe</a></li>
+
+	<li><a href="/adx/config.html">Konfigurationseinstellungen</a> (alle)</li>
+
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-errors">Errors / Warnings / Messages</a></li>
+
+	<li><a target="_blank" href="https://docs.ch2.be/w/prismado-shop/feat-safe-property">Safe-Properties</a> (Wiki)</a>
+
+</ul>

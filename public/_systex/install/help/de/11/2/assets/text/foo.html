@@ -1,0 +1,69 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	# XXX my $subs = $C->readdir('/usr/local/lib/site_perl/auto/ScreenPoint/Core', '^z\_.+', 0, '!~');
+</%perl>
+
+<h4 class="mt-5">Innerhalb &lt;head&gt;</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-html">&lt;script src="assets/js/prism_dt.js" defer=""&gt;&lt;/script&gt;</code></pre>
+</div>
+
+<h4 class="mt-5 mt-10">Einheitlicher Programm-Code</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_ajax/webc_datatables.html</code></pre>
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">ll -t adx/_ajax/server_processing_*.html</code></pre>
+</div>
+
+<h5 class="mt-10">Datenbankabfrage für "orders"</h5>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">vi adx/_ajax/server_processing_orders.html # -- adx/orders</code></pre>
+</div>
+
+
+<h5 class="mt-10">Prismado Dialog</h5>
+
+<p>Innerhalb &lt;head&gt;</p>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"&gt;&lt;/script&gt;
+&lt;script src="/assets/js/prism_dialog_shadowRoot.js" defer=""&gt;&lt;/script&gt;</code></pre>
+</div>
+
+<p>Innerhalb &lt;body&gt;</p>
+
+<div class="w-3/4">
+	<pre class="line-numbers" data-start="10"><code
+		class="language-html">&lt;prism-dialog-sr class="float-end" prompt="Eing. m/Instr." instruction="Bitte Wert eingeben"
+	callback="foo" timeout="2500" css_id="pd_404211_33" referer="/adx/dev-webc-prism-dialog.html"
+	x_info="Von der 3. Eingabe"
+	x_gaga="gugu 12345"&gt;
+&lt;/prism-dialog-sr&gt;</code></pre>
+</div>
+
+<a href="/adx/dev-webc-prism-dialog.html">Prismado Dialog</a>
+
+
+<ol class="mt-10 custom-list">
+
+<li><a href="https://docs.ch2.be/w/prismado-shop/html-modal">Wiki: Modal</a></li>
+<li><a href="/adx/orders.html">Beispiel &lsaquo;orders&rsaquo;</a></li>
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Web Components</a></li>
+
+</ol>

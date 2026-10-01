@@ -1,0 +1,85 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	# -- Created: 20Jul2024
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	my $sub  = 1;
+
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)\/(\d+)/) {
+		$this = $1;
+		$sub  = $2;
+	}
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $title = $C->get_online_help_refs()->{ref}->{"$this\/$sub"};
+
+	my $text = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$this/$sub/assets/text");
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	(my $short_file_name = $C->get_short_file_name( $ENV{REQUEST_URI} )) =~ s/\.html$//;
+	    $short_file_name =~ s/^sub\-//;
+	    $short_file_name = 'create_pdf_delivery_note';
+
+	$r->content_type("text/html; charset=utf-8");
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>[ H ] - <% $short_file_name %> - <% $title %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+	<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+	<script src="/adx/assets/js/prism-code.js"></script>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<h1 class="text-4xl font-bold text-gray-800 mt-8">Sub-Bereich <% $this %>&ndash;<% $sub %> &ndash; <% $title %></h1>
+
+	<p class="mt-5 mb-10">&uarr; <a class="<% $href_cl %>" href=".">Aufw&auml;rts</a> &mdash; <a href="/adx/dev-lab.html">Dev Lab</a></p>
+
+	<h2 class="mb-5">$C-&gt;<% $short_file_name %>( )</h2>
+
+%	my $chap    = 11;
+%	my $subchap =  1;
+	<%perl>
+		my $tpl = $C->exec(
+			comp_file => "_inc_sub\-$short_file_name\.html",
+			theme     => 'algonetic',
+			perm      => $perm,
+			C         => $C,
+			ts        => $C->now(1),
+			dir       => "help/de/$chap/$subchap"
+		);
+
+		if (!$perm->{is_admin}) {
+			$m->out(q~<h4>Zugriff verweigert / Access denied</h4>
+					<p>Mindeststufe Administrator erforderlich.</p>~);
+		}
+		else {
+			$m->out($tpl->{out});
+		}
+	</%perl>
+
+%	if ($perm->{is_devel}) {
+		<div class="mt-10 w-3/4">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-perl">vi <% $C->get_site_perl() %>/Core/<% $short_file_name %>.al</code></pre>
+		</div>
+		<hr class="mt-8">
+		<small>Dev: REQUEST_URI <% $ENV{REQUEST_URI} %> &mdash; <a href="sub-get_webenv.html">$C-&gt;get_webenv( )</a></small>
+%	}
+
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>

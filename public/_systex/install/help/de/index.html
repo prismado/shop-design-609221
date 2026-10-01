@@ -1,0 +1,73 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+
+	my $help = $C->get_online_help();
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>Online-Hilfe | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+% #	<link href="assets/css/main.css" rel="stylesheet">
+	<& _includes/inc_header.html &>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+%	foreach (sort keys %{ $help }) {
+%		next if /^out$/ or /^web$/ or /^IN$/;
+		X -- <% $_ %> = <% $help->{$_} %><br>
+%	}
+	<br>
+
+%	foreach my $h (@{ $help->{web} }) {
+%		next if $h->{audience} eq 'dev' && !$perm->{is_devel};
+%		my $hlp = $C->get_online_help(source=>"online_help_area_$h->{area_code}");
+		<h1 class="text-4xl font-bold text-gray-800 mt-10">
+			<% $h->{title}->{de} %>
+		</h1>
+		<p class="float-right">[ <% uc $h->{mnemonic} %> &ndash; <a href="<% $h->{area_code} %>/">Bereich <code><% $h->{area_code} %></code></a> ]</p>
+		<p class="mt-3 mb-3 font-semibold">
+%		    unless ($h->{desc}->{de} eq '...') {
+			<% $h->{desc}->{de} %>
+%		    }
+		</p>
+
+%		foreach my $w (sort keys %{ $h }) {
+%			next if $w =~ /^mnemonic$/ or $w =~ /^desc$/ or $w =~ /^title$/ or $w =~ /^area_code$/ or $w =~ /^url$/;
+%			if (ref($h->{$w}) eq 'HASH') {
+%				foreach (sort keys %{ $h->{$w} }) {
+					[ web ] &middot; [ HASH <% $w %> ] <b><% $_ %></b> = <% $h->{$w}->{$_} %><br>
+%				}
+%			}
+%			else {
+				[ web ] &middot; <b><% $w %></b> = <% $h->{$w} %><br>
+%			}
+%		}
+%		foreach my $sub_h (@{ $hlp->{web} }) {
+			&bull; <a
+			class="text-blue-500 underline hover:text-blue-700 font-bold" href="<% $h->{area_code} %>/<% $sub_h->{area_code} %>"><% $sub_h->{title}->{de} %></a>
+				&middot; (<% $sub_h->{mnemonic} %> &middot; <% $h->{area_code} %>-<% $sub_h->{area_code} %>)
+%			if ($sub_h->{audience} && $sub_h->{audience} ne 'adm') {
+				&ndash; Zielgruppe: <span class="text-red-800"><% $sub_h->{audience} %></span>
+%			}
+			<br>
+
+%			foreach (sort keys %{ $sub_h }) {
+%				next if /^title$/ or /^desc$/ or /^mnemonic$/ or /^url$/ or /^area_code$/ or /^audience$/;
+				XX <% $_ %> = <% $sub_h->{$_} %><br>
+%			}
+%		}
+
+		<hr class="mt-3 mb-3">
+%	}
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>

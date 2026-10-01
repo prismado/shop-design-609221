@@ -1,0 +1,45 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<ol class="custom-list">
+	<li><a href="/adm_mail_tpl.html">E-Mail-Templates verwalten</a> (Administrator)</li>
+</ol>
+
+<h4>Verzeichnis der Templates</h4>
+
+<div class="w-1/2 mt-5">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-shell">custom/algonetic/mail_templates</code></pre>
+</div>
+
+<h4>H&auml;ufig gesucht</h4>
+
+<ul class="custom-list mt-5">
+	<li><a target="_blank" href="/adm_open_mail_tpl.html?tpl=confirm_cust_de.html"><b>E-Mail-Best&auml;tigung an Kunde</b></a><br>
+		<ul class="custom-list mt-2" style="line-height:110%">
+		<li><a target="_blank" href="/adx/manage-property.html?area=contact_adress">Adress- / Kontaktangaben in Fusszeile</a></li>
+		<li>Telefon <% $C->txt('site_phone', 'de') %> &rarr; <a href="/adx/manage-property.html?area=site_phone">&Auml;ndern</a></li>
+		</ul>
+	</li>
+</ul>
+
+<h4 class="mt-10">Siehe auch</h4>
+
+<ul class="custom-list mt-5">
+	<li><a href="../1/">Stammdaten</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-dhl">DHL</a></li>
+	<li><a href="https://docs.ch2.be/w/prismado-shop/feat-mail">Wiki</a> (E-Mail)</li>
+
+</ul>

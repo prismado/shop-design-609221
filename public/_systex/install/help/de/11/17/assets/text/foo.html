@@ -1,0 +1,49 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+
+	my $filter = $C->{CGI}->param('filter');
+</%init>
+
+<%perl>
+	my $files = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/custom/algonetic/html/assets/css", '.+\.css$');
+</%perl>
+
+<style>
+    .custom-list-2 {
+      column-count: 3;
+      column-gap: 1rem; /* Abstand zwischen den Spalten */
+    }
+</style>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/html/assets/css</code></pre>
+</div>
+
+<ul class="custom-list custom-list-2">
+% my $i = 0;
+% foreach my $f (@{ $files }) {
+%	last if ++$i > 20;
+	<li><a target="_blank" class="<% $f eq 'prism_main.css' ? 'text-red-500' : '' %>" href="/assets/css/<% $f %>"><% $f %></a></li>
+% }
+</ul>
+
+<h4 class="mb-1">Siehe auch</h4>
+
+<ol class="custom-list">
+	<li>
+		<a href="/adx/config-layout.html">Dropdown, Input</a> &ndash;
+		<a href="https://dms.prismado.com/components-forms.html">Form-Komponenten</a> (Smarty)
+	</li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-online-help">Feature Online Help</a></li>
+</ol>

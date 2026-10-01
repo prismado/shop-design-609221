@@ -1,0 +1,26 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<p class="mb-4">
+	Siehe auch <a href="/_systex/install/help/de/4/1/">4&ndash;1</a>
+</p>
+
+<pre>
+custom/default/jobs/send_reminder.pl
+
+select id, uid, instime from orders where status=1 and pay_meth IN (4, 5, 7, 10, 11, 14, 16) order by id desc limit 9999
+</pre>
+
+<a href="https://docs.ch2.be/w/prismado-shop/feat-order">Wiki Infos</a>

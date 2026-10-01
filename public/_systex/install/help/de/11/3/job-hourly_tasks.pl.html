@@ -1,0 +1,108 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	my $sub  = 1;
+
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)\/(\d+)/) {
+		$this = $1;
+		$sub  = $2;
+	}
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $title = $C->get_online_help_refs()->{ref}->{"$this\/$sub"};
+
+	unless ($perm->{is_admin}) {
+		$m->out('Access denied');
+		return;
+	}
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	(my $this_job = $C->get_short_file_name( $ENV{REQUEST_URI} )) =~ s/^job\-//;
+	    $this_job =~ s/\.html$//;
+
+	my $s_code = $C->slurp_file("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/$this_job");
+	${ $s_code } =~ s/\</&lt;/g;
+	${ $s_code } =~ s/\>/&gt;/g;
+
+	my $job_files = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/hourly");
+
+	$r->content_type("text/html; charset=utf-8");
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>[ H ] - <% $this_job %> <% $title %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<h1 class="text-4xl font-bold text-gray-800 mt-8 mb-8"><% $this %>&ndash;<% $sub %> &ndash; <% $title %></h1>
+
+	<h4 class="mt-3 mb-3">Aufzurufende System Jobs</h4>
+
+	<p class="float-right">
+		<a href="/adm_log.html?importance=4&debug=1&filter=">Log</a>
+	</p>
+
+	<table class="bg-white">
+%	foreach my $fn (@{ $job_files }) {
+%		next unless $fn =~ /(.+)\.pl$/;
+%		next if $fn eq '_foo.pl';
+%		my $fn_short = $1;
+		<tr class="border"><td class="p-1">
+%		if (-e "$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/11/3/job-$fn_short\_pl.html") {
+			<a href="job-<% $fn_short %>_pl.html">_systex/hourly/<% $fn %></a>
+%		}
+%		else {
+			_systex/hourly/<% $fn %>
+%		}
+		</td>
+		<td class="pl-10 pr-2">
+%		if ($fn eq 'alert_stock_events.pl') {
+%			my $unicode_symb = $C->get_safe_property('unicode_police_light_408211', 'sys');
+%			my $recip = $C->get_safe_property('recip_shop_operator', 'sys'); $recip = '' if $recip =~ /^\* .+/;
+%			   $recip ||= ($C->{CONFIG}->{HTTP_HOST} =~ /^www2\./ ? 'dev@ch2.be' : $C->{CONFIG}->{order_email});
+			<% $unicode_symb %> Artikel erfordern Ihre Aufmerksamkeit &rarr; <tt><% $recip %></tt>
+				<a href="/adm_db_edit.html?table=config_prod_feat&wcl=featkey%3D%27recip_shop_operator%27">E</a>
+			&rarr; <a href="/adm_safe_properties.html?lang=sys&filter=unicode_police_light">S-Property</a>
+			&mdash; <a href="../13/">E-Mail Reports</a>
+%		}
+%		elsif ($fn =~ /prod/) {
+			Produkt-relevant
+%		}
+		</td></tr>
+%	}
+	</table>
+
+	<h3 class="mt-3 mb-5"><% $this_job %></h3>
+
+	<p class="mb-3"><a class="<% $href_cl %>" href=".">Aufw&auml;rts</a> &mdash; <a href="/adx/dev-lab.html">Dev Lab</a></p>
+
+	<div class="w-1/2">
+		<pre clasx="line-numbers" data-start="10"><code class="language-shell">vi _systex/<% $this_job %></code></pre>
+	</div>
+
+	<pre class="line-numbers" data-start="1"><code class="language-perl"><% ${ $s_code } %></code></pre>
+
+%	if ($perm->{is_devel}) {
+		<hr class="mt-4">
+		<small>Dev: REQUEST_URI <% $ENV{REQUEST_URI} %></small>
+%	}
+
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>

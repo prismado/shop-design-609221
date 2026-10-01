@@ -1,0 +1,123 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $sth = $C->{dbh}->prepare(q~
+		SELECT	DISTINCT featkey FROM config_prod_feat
+		WHERE	lang='sys' AND
+			featkey not LIKE 'job\_%' and featkey NOT LIKE 'ship\_%'  AND featkey NOT LIKE 'google\_%' and featkey NOT LIKE 'nl\_%' and
+			featkey NOT LIKE 'unicode\_%' AND featkey NOT like 'upselling\_%' AND featkey NOT like '\_categ\_%'
+		ORDER	BY 1~);
+	$sth->execute() or $m->out("ERR $DBI::errstr<br>");
+</%perl>
+
+<h4 class="mt-5">E-Mail-Benachrichtigungen
+%	if ($perm->{is_devel}) {
+		&ndash; <a target="_blank" href="https://con2.luckywork.net/SOGo/so/mrs.zwei@ch2.be/Preferences#!/mailer">Con-2 mrs.zwei@ch2.be</a>
+%	}
+</h4>
+
+<p>
+	02.11.2024: SoGo-Filter auf Con-2 "Daily-Report"
+</p>
+
+<table style="ZZborder:3px solid red; width:100%;">
+<tr valign="top"><td>
+	<h3 class="mt-0">Con-2 reto <small>&ndash; Daily-Reporty</small></h3>
+	<ul class="custom-list mt-5 w-3/4">
+
+	<li>
+		<b>Betreff</b> entspricht den regulären Ausdrücken
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">^Report:</code></pre></div>
+	</li>
+
+	<li>
+		<b>Von</b> enthält
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">noreply@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">no_reply@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">news@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">root@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">shop@</code></pre></div>
+	</li>
+
+	<li>
+		<b>Von</b> entspricht den regulären Ausdrücken
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">\bNoReply\..+@.+</code></pre></div>
+	</li>
+
+	<li>
+		<b>An</b> enthält
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">root@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">dev@eshop.pub</code></pre></div>
+	</li>
+
+	<li>
+		<b>Header</b> <tt>List-Unsubscribe</tt> enthält
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">http</code></pre></div>
+	</li>
+
+	</ul>
+</td>
+
+% # ===================================================================================================================================  Con-2
+<td>
+	<h3 class="mt-0">Con-2 mrs.zwei (Catch) <small>&ndash; Daily</small></h3>
+	<ul class="custom-list mt-5 w-3/4">
+
+	<li>
+		<b>Betreff</b> entspricht den regulären Ausdrücken
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">^Report: .+</code></pre></div>
+	</li>
+
+	<li>
+		<b>Von</b> enthält
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">news@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">notifications@</code></pre></div>
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">no-reply</code></pre></div>
+	</li>
+
+	<li>
+		<b>An</b> enthält
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">git-</code></pre></div>
+	</li>
+
+	<li>
+		<b>Header</b> <tt>Reply-To</tt> enthält
+		<div class="w-1/2"><pre clasx="line-numbers" data-start="10"><code class="language-perl">no-reply</code></pre></div>
+	</li>
+
+	</ul>
+</td>
+</tr>
+</table>
+
+<div class="w-1/2 mt-10 mb-5">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$C-&gt;get_safe_property( '{KEY}', '{LANG}' )</code></pre>
+</div>
+
+% while(my $r = $sth->fetch()) {
+	&bull; <a target="_blank" href="/adm_safe_properties.html?lang=sys&filter=<% $r->[0] %>"><% $r->[0] %></a><br>
+% }
+
+<h3>Siehe auch</h3>
+
+<ol class="custom-list">
+	<li><a target="_blank" href="/adm_safe_properties.html?lang=sys&filter=%40">Verwaltung der Safe-Properties</a></li>
+	<li><a href="../3/job-hourly_tasks.pl.html">Hourly Tasks</a></li>
+	<li><a href="/adx/forward-message.html"><b>Test-Versand</b></a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-properties">Feature: Property</a> &ndash;
+		<a href="https://docs.ch2.be/w/prismado-shop/feat-safe-property">Safe Property</a></li>
+	<li><a href="../../13/1/">Kap. 13-1</a> Stammdaten / Properties</li>
+</ol>

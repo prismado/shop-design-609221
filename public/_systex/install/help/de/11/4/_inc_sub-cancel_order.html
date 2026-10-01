@@ -1,0 +1,18 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+</%init>
+
+<div class="w-3/4">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$A-&gt;cancel_order(
+	id            =&gt; {ORDER_ID},
+	uid           =&gt; {UID},
+	notify_mail   =&gt; {0 oder 1 / 0=Standard},
+	notify_sender =&gt; {ABSENDER_E-MAIL}            # -- Standard: $C->{CONFIG}->{order_email_sender}
+)</code></pre>
+</div>
+
+<ol class="custom-list mt-10">
+	<li><a href="../../4/5/">History / Status</a></li>
+</ol>

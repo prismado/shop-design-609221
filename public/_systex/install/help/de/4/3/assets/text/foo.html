@@ -1,0 +1,68 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+
+	my $h3 = 'text-2xl font-bold text-gray-800 mt-5 mb-2';
+	my $h4 = 'text-xl font-bold text-gray-800 mt-5 mb-2';
+</%init>
+<h4 class="<% $h4 %>">Modal</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">_includes/ajx_modal_delivery_note.html</code></pre>
+	Hier wird implizit auch die Dispatch Notification generiert (GDELR_...xml), falls es sich um eine EDI-Bestellung handelt.
+</div>
+
+
+
+<h3 class="<% $h3 %>">EDI</h3>
+
+<h4 class="<% $h4 %>">Auto-Job</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">custom/algonetic/jobs/edi_transmit_dispatch.pl</code></pre>
+
+	Dieser Job wird typischerweise alle 25 Minuten automatisch ausgeführt. Es findet eine Abfrage der Aufträge statt, welche in der Order-History
+	die <a href="../../4/5/">Status-ID 228</a> (EDI Dispatch Notification created) aufweisen.
+</div>
+
+
+
+
+<h4 class="<% $h4 %>">SHIPMENT_ID</h4>
+
+<p>$A->edi_dispatch_to_transmit()</p><br>
+
+<code>my $odat = $A-&gt;get_order_items( order_id=&gt;$order_id, show_options=&gt;1 );</code><br><br>
+
+<code>&lt;SHIPMENT_ID&gt;&lt;% $s{odat}->{x_dhl_shipmentTrackingNumber} %&gt;&lt;/SHIPMENT_ID&gt;</code><br>
+
+<pre>$A->create_edi_dispatch(); # -- Erstellt XML-Datei basierend auf custom/algonetic/macros/edi_dispatch.xml</pre>
+
+<h5 class="mt-3 mb-2">DHL-Parameer abfragen</h5>
+<code>SELECT * FROM orders_details where order_id=746 AND xkey LIKE 'dhl_%'</code><br>
+
+
+
+
+<h4 class="<% $h4 %>">XML-Dateien</h4>
+
+<pre>_systex/data/GDELR_10391065_$x_order_id\.xml</pre>
+
+
+<h3 class="mt-10">Siehe auch</h3>
+
+<ul class="custom-list">
+	<li><a href="../../11/1/?filter=create_pdf_delivery">$C-&gt;create_pdf_delivery_note( )</a></li>
+	<li><a href="../../11/4/?filter=get_order">$A-&gt;get_order...</a></li>
+	<li><a href="/adx/show.html?macro=master_data">PDF-Einstellungen</a></li>
+</ul>

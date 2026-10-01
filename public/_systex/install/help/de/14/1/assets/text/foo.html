@@ -1,0 +1,30 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $prop_id_mailtx = $C->query("select id from properties where `key`='prozone_mailtext_de' and page='_global'")->[0];
+
+	my $sender = (split /\@/, $C->{CONFIG}->{order_email})[0] . '@eshop.pub';
+</%perl>
+
+<ol class="custom-list mt-5">
+	<li><a href="/adm_hiddenshop.html">Verwaltung</a> (Administrator)</li>
+	<li><a target="_blank" href="/prozone.html">Kundensicht</a></li>
+	<li><a href="/adx/manage-property.html?area=prozone_mailtext">Mailtext</a> &ndash;
+		<a href="/adm_db_edit.html?table=properties&wcl=id%3D<% $prop_id_mailtx %>">2</a> &ndash; <small>(Sender: <% $sender %>
+			<a href="/adx/special_keys.html?area=order">order_email</a>)</small></li>
+	<li><a href="/adx/manage-property.html?area=prozone">Properties</a> (Alle Textbausteine)</li>
+</ol>
+
+<img class="mt-10 w-3/4" src="../../../assets/images/prozone-410201.png">

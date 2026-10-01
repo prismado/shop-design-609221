@@ -1,0 +1,98 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $last_outfile   = `ls -t $C->{CONFIG}->{DOCUMENT_ROOT}/upload/pricelist_v3*.csv|head -1`;
+	(my $outfile_short = $last_outfile) =~ s/^$C->{CONFIG}->{DOCUMENT_ROOT}\/upload\///;
+	my $prod_example   = $C->query(q~select product_id from products_feat where featkey='title' and featname='_exclude' and weight < 0 limit 1~)->[0];
+
+	my $jobid = $C->query("SELECT id FROM config_prod_feat WHERE featkey like 'job_path_%' AND lang='sys' AND featname='galaxus_products2dg.pl' LIMIT 1")->[0];
+	my $param = $C->get_job_params(id=>$jobid);
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<p class="mt-8">
+	Nachfolgend der Pfad zum Makro, welches die Produkte für den EDI-Partner unter Berücksichtigung von <tt>EDI_SKIP</tt> exportiert:
+</p>
+
+<div class="w-1/2 mt-3">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/macros/export_products_edi.html</code></pre>
+</div>
+
+<p class="mt-8">
+	Das oben aufgelistete Makro wird von folgendem <a href="/adm_job.html?id=<% $jobid %>"><b>Job ID <% $jobid %></b></a> aufgerufen: <a
+		href="../../11/3/job-galaxus_products2dg.pl.html">job-galaxus_products2dg.pl</a><br><br>
+
+%	foreach (sort keys %{ $param }) {
+%		next if /pass/i or /^quiet$/;
+		&bull; <tt><% $_ %></tt> = <% $param->{$_} %>
+%		if (/^x_extra$/) {
+			&nbsp;&nbsp;<small><i>(<b>1</b> = Nur Neugeräte / <b>2</b> = Refurbished / <b>0</b> = alle)</i></small>
+%		}
+		<br>
+%	}
+	<br>
+
+	Outfile: <a href="/upload/<% $outfile_short %>"><tt><% $outfile_short %></tt></a>
+	<br><br>
+
+	Wenn der Parameter <tt>x_extra</tt> auf <tt>1</tt> gesetzt ist, werden nur Neugeräte an den EDI-Partner übermittelt.<br>
+	Möchte man alle Geräte übermitteln, inklusive Refurbished, so muss bei dem <a href="../../11/3/">Job-Aufruf</a> <tt>x_extra</tt> auf <tt>0</tt> gesetzt werden.
+</p>
+
+<h4>Fall spezieller Titel</h4>
+
+<p>
+	Wird vom EDI-Partner ein verkürzter oder spezieller Produkte-Titel gewünscht (z.B. Galaxus), so kann dieser im exclude-Wert <tt>title</tt> eingepflegt werden.<br>
+	Beispiel-Produkt <a href="/adx/edit-product.html?id=<% $prod_example %>">ID <% $prod_example %></a> &rarr; <a
+		href="https://docs.ch2.be/w/prismado-shop/feat-product">Wiki Infos</a>
+</p>
+
+<h4>Extra-Spezifikation bei Refurbished Ger&auml;ten</h4>
+
+<p>
+	<a target="_blank" href="../../files/specificationdata-ssg-1243.xlsx">specificationdata-ssg-1243.xlsx</a>
+</p>
+
+<h4>Restock-Date</h4>
+
+<div class="w-3/4">
+<p>
+	Wenn der Lagerbestand mit 0 angegeben wird, aber das Restock Date das Tagesdatum ist, geht das Galaxus-System davon aus, dass der Artikel 
+	verf&uuml;gbar ist und stellt ihn auf dem Marktplatz noch dar. (s. E-Mail v. Momme 02.07.2024, 13:52)
+</p>
+
+<p class="mt-5">
+	E-Mail v. Chiara.Weilenmann@digitecgalaxus.ch (11.10.2024, 18:15)<br>
+	<i>Mir ist soeben aufgefallen, dass ihr uns viele veraltete Restock Daten im Bestandesfeed übermittelt. Solange ihr Ware an Lager habt wird der Wert nicht gezogen. Wir brauchen aber trotzdem verlässliche Restock Daten – wenn ihr keines habt bitte auch kein Restock Datum ausweisen.</i>
+</p>
+</div>
+
+<p class="mt-5 mb-5">
+	Spalte in Export-Datei: <tt>RestockDate</tt>, Format: TT.MM.JJJJ
+</p>
+
+<tt>custom/algonetic/macros/export_products_edi.html</tt>:
+<div class="w-1/2 mt-3">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl"># -- getProdFeat(id,'EDI_RESTOCK_DATE')
+$d{instime} = $d{restock_date} if $d{restock_date};</code></pre>
+</div>
+
+<h4>Siehe auch</h4>
+
+<ol class="custom-list">
+	<li><a href="../9">Refurbished-Ger&auml;te</a></li>
+	<li><a href="../../11/3/">Jobs</a></li>
+	<li><a href="/adx/edi.html">EDI-Verwaltung</a> (Administrator)</li>
+	<li><a href="../2/">GTIN</a> (Refurbished-Ger&auml;te)</li>
+</ol>
+

@@ -1,0 +1,70 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	my $sub  = 1;
+
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)\/(\d+)/) {
+		$this = $1;
+		$sub  = $2;
+	}
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $title = $C->get_online_help_refs()->{ref}->{"$this\/$sub"};
+
+	my $text = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$this/$sub/assets/text");
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>Online-Hilfe: <% $title %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<h1 class="text-4xl font-bold text-gray-800 mt-8 mb-5">Sub-Bereich <% $this %>&ndash;<% $sub %> &ndash; <% $title %></h1>
+
+	<p class="mb-3"><a class="<% $href_cl %>" href=".">Aufw&auml;rts</a></p>
+
+<%doc>
+XXX:
+%	foreach my $text_file (@{$text}) {
+%		if ($perm->{is_devel}) {
+			<span class="float-right">
+				[ Dev ] &middot; <a href="assets/text/<% $text_file %>"><tt><% $text_file %></tt></a>
+			</span>
+%		}
+		<%perl>
+			my $tpl = $C->exec(
+				comp_file => $text_file,
+				theme     => 'algonetic',
+				perm      => $perm,
+				C         => $C,
+				ts        => $C->now(1),
+				dir       => "help/de/$this/$sub/assets/text"
+			);
+
+			$m->out($tpl->{out});
+		</%perl>
+%	}
+/XXX
+</%doc>
+
+%	if ($perm->{is_devel}) {
+		<hr class="mt-4">
+		<small>Dev: REQUEST_URI <% $ENV{REQUEST_URI} %></small>
+%	}
+
+</body>
+</html>

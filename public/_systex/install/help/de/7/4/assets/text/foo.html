@@ -1,0 +1,86 @@
+<%init>
+	use utf8;
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h3>Produktbewirtschaftung</h3>
+
+<p class="mb-3 font-bold">
+	Achten Sie bei der Bewirtschaftung Ihrer Produkte auf folgende Punkte:
+</p>
+
+<ol class="custom-list">
+	<li>Quadratische Produktebilder von mindestens 1000 Pixel Länge</li>
+	<li>Artikeleigenschaften vorzugweise über "Artikeleigenschaften / Konfiguration" zuweisen, statt als beschreibenden Freitext</li>
+	<li>Weisen Sie gegebenenfalls mehrere passende Kategorien zu</li>
+	<li>Überprüfen Sie die Stückzahl und Preis</li>
+</ol>
+
+<h3>Optionen</h3>
+
+<ol class="custom-list">
+	<li><a href="/adx/options.html">Verwalten aller Optionen</a>
+%		if ($perm->{is_devel}) {
+			&ndash; <a class="text-red-800" href="/admix.html?func=options">Alte Version</a>
+%		}
+	</li>
+	<li><a href="/admix.html?func=options&style=1">Optionen Style 1</a> (alt) &middot; Style 1 = St&uuml;zahl-relevant</li>
+</ol>
+
+<p class="mt-5"><a href="https://youtu.be/pje0XaXbNLY">Erklärvideo</a></p>
+
+<%perl>
+	my $sth = $C->{dbh}->prepare(q~select distinct featkey from products_feat where featkey NOT LIKE 'GTIx%' AND weight < 0 AND featname='_exclude' order by 1~);
+	   $sth->execute() or $m->out("<h2>Error</h2>");
+
+	my %info_hr = (
+		EDI_EXTERNAL_URL => 'Direktlink zum EDI-Partner',
+		EDI_RESTOCK_DATE => 'Format JJJJ-MM-DD, z.B. 2020-01-13',
+		EDI_SKIP         => '1=auslassen, 0=&uuml;bermitteln',
+		GTIN             => q~<a href="../2/">Siehe hier</a>~,
+		OP_ALERT         => '1 oder 0',
+		OP_RECOMM        => 'Empfehlungstext an Bewirtschafter, Freitext, max. 2047 Zeichen',
+		product_type     => 'Typischer Wert: general / w: -3',
+		raw_weight       => 'Gewicht in kg zum Beispiel 2.100 oder in Gramm zum Beispiel 2100 / w: -2',
+		title            => 'F&uuml;r GALAXUS bzw. EDI allgemein, wenn spezieller Artikel-Titel verlangt wird'
+	);
+</%perl>
+
+<h3>Produkteigenschaften</h3>
+
+<h5>M&ouml;gliche Exclude-Schl&uuml;ssel</h5>
+
+<ol class="custom-list mt-3">
+% while(my $r = $sth->fetch()) {
+	<li><tt><% $r->[0] %></tt>
+%		if ( $info_hr{$r->[0]} ) {
+			&rarr; <% $info_hr{$r->[0]} %>
+%		}
+%		else {
+%			my $prod_id = $C->query("select product_id from products_feat where featname='_exclude' and featkey='$r->[0]' limit 1")->[0];
+			&rarr; <a target="_blank" style="color:red" href="/adx/edit-product.html?id=<% $prod_id %>"><% $prod_id %></a>
+%		}
+%		if ($r->[0] eq 'OP_ALERT') {
+%			my $prod_id = $C->query("select product_id from products_feat where featname='_exclude' and featkey='OP_ALERT' order by 1 desc limit 1")->[0];
+			&rarr; <a target="_blank" style="color:red" href="/adx/edit-product.html?id=<% $prod_id %>"><% $prod_id %></a>
+%		}
+	</li>
+% }
+</ol>
+
+<p class="mt-8 mb-3">
+	<h4>Siehe auch</h4>
+	&bull; <a href="https://docs.ch2.be/w/publigate/product-features">Wiki: Product Feature</a> &middot; <small>Exclude Feature abrufen</small><br>
+	&bull; <a href="https://docs.ch2.be/w/prismado-shop/feat-product">Produkt</a> &middot; <small>Allgemein</small><br>
+	&bull; <a href="../3/">Produkt kopieren</a>
+</p>

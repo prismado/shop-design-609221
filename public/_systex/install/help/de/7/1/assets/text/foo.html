@@ -1,0 +1,60 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h4>Allgemein</h4>
+
+<ol class="custom-list">
+	<li>Öffnen Sie als Administrator die <a href="/adx/products.html">Produkte-Seite</a></li>
+	<li>Wählen Sie oben eine Kategorie aus</li>
+	<li>Klicken Sie auf das eingerahmte Plus-Symbol <b>[ + ]</b></li>
+</ol>
+
+<h4>Zustands-Klassen (Grading)</h4>
+
+<p>
+	A-Grade bis D-Grade, Qualit&auml;tszustand f&uuml;r Refurbished Ger&auml;te
+		(Quelle: <a target="_blank" href="https://www.galaxus.ch/de/s1/producttype/pc-refurbished-3711">Galaxus</a>)
+</p>
+
+<ul class="custom-list mt-3 w-2/3">
+	<li>
+		<tt>A</tt>: Wie neu, beste Qualit&auml;t<br>
+		Bildschirm und Gehäuse haben keine Kratzer oder andere Gebrauchsspuren. Das Produkt sieht aus wie neu.
+	</li>
+
+	<li>
+		<tt>B</tt>: Sehr gut<br>
+		Bildschirm und Gehäuse können minimale Gebrauchsspuren aufweisen.
+		Keine sichtbaren Kratzer bei eingeschaltetem Bildschirm. Minimale Gebrauchsspuren bei Gehäuse aus 30cm sichtbar.
+	</li>
+
+	<li>
+		<tt>C</tt> gut<br>
+		Bildschirm und Gehäuse haben leichte Gebrauchsspuren. Keine sichtbaren Kratzer bei eingeschaltetem Bildschirm. Gehäuse mit leichten Kratzern und Dellen.
+	</li>
+</ul>
+
+<h4>Weitere Funktionen</h4>
+<p class="mb-3">
+	&bull; <a href="../9/">Refurbished-Artikel vorbereiten</a><br>
+	&bull; Siehe auch <a href="../3/">Produkt kopieren</a><br>
+	&bull; <tt>$A-&gt;get_product_art_no( id=&gt;{ID} )-&gt;{art_no}</tt>
+</p>
+
+% if ($perm->{is_devel}) {
+	<br><br>
+
+	<code class="text-xl font-bold text-gray-800 mt-8 mb-5">$A-&gt;copyproduct()</code><br>
+	X -- Method &uuml;berpr&uuml;fen / &uuml;berarbeiten! en und fr m&uuml;ssen ebenfalls eingepflegt werden!
+% }

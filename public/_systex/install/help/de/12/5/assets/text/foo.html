@@ -1,0 +1,43 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $survey_on = $C->get_property('google_rating_survey_opt_in_active', '_global', 'sys') + 0;
+	my $db_id_scr = $C->query("select id from properties where `key` like 'google_rating_survey_opt_in_script_%' limit 1")->[0];
+</%perl>
+
+<h3>Anleitung</h3>
+<p>
+	<a target="_blank" href="https://merchants.google.com/mc/customerreviews/overview?a=5078663551">merchants.google.com/mc/customerreviews</a>
+</p>
+
+<p class="mt-4">
+	<a href="/order_detail.html">Letzte Seite nach Bestellung</a>
+</p>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/html/order_detail.html</code></pre>
+</div>
+
+<h3>Einstellungen</h3>
+
+<ul class="custom-list mt-4">
+	<li><h4>Opt-in-Einstellungen</h4>
+		<a href="/adx/manage-property.html?area=google_rating_survey_opt_in_active">On/Off (aktuell: <tt><% $survey_on %></tt>)</a><br>
+		<a href="/adm_db_edit.html?table=properties&wcl=id%3D<% $db_id_scr %>">Script editieren</a><br>
+		<a href="/adx/manage-property.html?area=google_rating_survey_opt_in">Alle Opt-in-Einstellungen</a>
+	</li>
+	<li class="mt-4"><a href="/adx/manage-property.html?area=google_rating">Alle Rating-Einstellungen</a></li>
+	<li class="mt-4"><a href="/adx/manage-property.html?area=google">Alle Google Properties</a></li>
+</ul>

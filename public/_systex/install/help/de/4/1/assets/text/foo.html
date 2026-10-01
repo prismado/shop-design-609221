@@ -1,0 +1,85 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $pend_order_nl_id = $C->query(q~SELECT id FROM `newsletter` WHERE newsletter_type=2 AND subject like '{{%'~)->[0];
+
+        my $remind_job_id    = $C->query(q~
+		SELECT id FROM `config_prod_feat` WHERE featname='send_reminder.pl' and lang='sys' and featkey like 'job_path_%' limit 1~)->[0];
+
+	my $params = $C->get_job_params(id=>$remind_job_id);
+</%perl>
+
+<h4>Manuelle Stornierung durch den Administrator</h4>
+
+<p>
+	Klick auf Button <b>[ Storno ]</b>.
+	Die Stückzahlen der stornierten Bestellung werden bei den entsprechenden Artikeln wieder erhöht.
+</p>
+
+% if ($perm->{is_devel}) {
+	<p>Order Status (Tinyint): <tt>3</tt>=Storno / <tt>4</tt>=Okay</p>
+	<div class="w-1/2">
+		<pre clasx="line-numbers" data-start="10"><code class="language-perl">$A-&gt;cancel_order(id =&gt; {ORDER-ID} );</code></pre>
+	</div>
+% }
+
+
+<h4>Automatische Stornierung (nach Ablauf einer definierten Zeit)</h4>
+
+<p class="mb-3">
+	Die Stückzahlen der automatisch stornierten Bestellung werden bei den entsprechenden Artikeln wieder erhöht.
+</p>
+
+<a href="/adm_edit_newsletter.html?id=<% $pend_order_nl_id %>">E-Mail-Text: <% $C->txt('pending_order') %></a><br>
+
+<ol class="custom-list mt-4">
+
+<li><a href="/adm_job.html?id=<% $remind_job_id %>">System Job</a>, der nach <b><% $params->{wait_min} %> Minuten</b> automatisch erinnert
+	und nach
+%		if ($params->{wait_min_storno} < 60) {
+			<b><% $params->{wait_min_storno} %> Minuten</b>
+%		}
+%		else {
+			<b><% sprintf('%.1f', $params->{wait_min_storno} / 60) %> Stunden</b>
+%		}
+	automatisch  storniert.<br>
+
+	<table class="mt-3 mb-4">
+%	foreach (sort keys %{ $params }) {
+%		next if /^quiet$/;
+%		unless ($perm->{is_devel}) {
+%			next if /^notify_sender$/;
+%		}
+		<tr>
+		<td class="pr-4"><% $_ %></td><td><% $params->{$_} %></td>
+		</tr>
+%	}
+	</table>
+</li>
+
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-send-reminder">Send Reminder</a></li>
+</ol>
+
+<h4>Etc</h4>
+
+<ol class="custom-list mt-4">
+% if ($perm->{is_devel}) {
+	<li>Dev: document.location='admix.html?func=orders&id=798&action=del'<br>
+	_includes/admix_order_detail.html &rarr; action eq 'del'
+	</li>
+% }
+<li><a href="/adx/show.html?macro=prism_core_funcs">System-Einstellungen</a> (cancel_order)</li>
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-order">Order</a></li>
+</ol>

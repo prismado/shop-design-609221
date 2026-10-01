@@ -1,0 +1,61 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<ol class="custom-list">
+	<li><a href="../1/?filter=sess">$C-&gt;Sessions</a></li>
+	<li><a href="../4/?filter=sess">$A-&gt;Sessions</a></li>
+</ol>
+
+<%doc>
+XXX:
+<%perl>
+	my $subs = $C->readdir('/usr/local/lib/site_perl/auto/ScreenPoint/Core', '^z\_.+', 0, '!~');
+
+	my $chap = my $subchap = 0;
+	if ($s{dir} =~ /^help\/de\/(\d+)\/(\d+)\/.+/) {
+		$chap    = $1;
+		$subchap = $2;
+	}
+</%perl>
+/XXX
+</%doc>
+
+<style>
+    .custom-list {
+      column-count: 3;
+      column-gap: 1rem; /* Abstand zwischen den Spalten */
+    }
+</style>
+
+<%doc>
+XXX:
+<ol class="custom-list">
+
+% foreach my $sub (@{ $subs }) {
+%	next if $sub =~ /^abc\_.+/ or $sub =~ /^cosmiq\_.+/ or $sub =~ /^\_.+/;
+%	(my $sub_disp = $sub) =~ s/\.al$//;
+	<li>
+%		if (-e "$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$chap/$subchap/sub\-$sub_disp\.html") {
+%		}
+	</li>
+% }
+
+/XXX
+</%doc>
+
+
+<h4>Siehe auch</h4>
+<ol class="custom-list">
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-online-help">Feature Online Help</a></li>
+</ol>

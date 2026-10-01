@@ -1,0 +1,64 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<p class="mt-5">
+	Registrierung: <a target="_blank" href="https://gtinregistry.gs1.ch/">https://gtinregistry.gs1.ch</a><br><br>
+
+	Kontrollabfrage einer GTIN-Nummer: <a target="_blank" href="https://vbg.gs1.ch/de">vbg.gs1.ch</a> /
+		<a target="_blank" href="https://www.gs1.org/services/verified-by-gs1/iframe">gs1.org</a>
+</p>
+
+<h4>Datenerfassung</h4>
+
+<ol class="custom-list">
+	<li><h5>Computer, Notebooks</h5>
+		Segment <tt>65000000</tt> &middot; (<tt>65010100</tt> = Zubehör)</li>
+	<li><h5>Monitore</h5>
+		Segment <tt>65010700</tt><br>
+	Definition: Umfasst alle Produkte, die als Monitore beschrieben werden können, welche zur Anzeige von Informationen
+	wie beispielsweise Computerdaten verwendet werden.<br>
+	Definition Excludes: Ausgenommen sind Produkte wie beispielsweise TV-Sets, die nicht speziell zur Anzeige von Computerdaten verwendet werden.</li>
+</ol>
+
+<p class="mt-3">
+	<h5>Segmente überprüfen:</h5>
+	&bull; <a target="_blank" href="https://gpc-browser.gs1.org/">gpc-browser.gs1.org</a>
+</p>
+
+<h4>Etc.</h4>
+
+<p clasx="mt-10">
+	Weitere Informationen zum <a href="../9/">Publizieren von Refurbished-Geräten</a> findet ihr in meiner E-Mail vom 1. Oktober 2024 um 08:56 Uhr.
+</p>
+
+<ol class="custom-list mt-10">
+	<li><a href="../8">Siehe auch</a></li>
+</ol>
+
+<%doc>
+XXX:
+
+<ul class="custom-list mt-3 w-2/3">
+	<li>
+		<tt>A</tt>: Wie neu, beste Qualit&auml;t<br>
+		Bildschirm und Gehäuse haben keine Kratzer oder andere Gebrauchsspuren. Das Produkt sieht aus wie neu.
+	</li>
+</ul>
+
+<p class="XXXmt-3 mb-3">
+	Siehe auch <a href="../3/">Produkt kopieren</a>
+</p>
+/XXX
+</%doc>

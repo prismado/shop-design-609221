@@ -1,0 +1,17 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-user">Wiki Infos</a>
+
+% # Deine E-Mail: "<% $perm->{email} %>"

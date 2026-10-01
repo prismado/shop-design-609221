@@ -1,0 +1,55 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $do_cat = $A->get_daily_offer_categ()->{id};
+
+	my $sth = $C->{dbh}->prepare("select id, title, extra from vproducts where cat_id=$do_cat and lang='de'");
+	   $sth->execute();
+</%perl>
+
+<h4>Allgemein</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-sql">select cat_id from categ_meta where xkey='daily_offer' and xval='1' limit 1</code></pre>
+</div>
+
+<p>
+	Kategorie ID <% $do_cat %><br>
+</p>
+
+<ul class="custom-list mt-5">
+% while(my $r = $sth->fetch()) {
+%	my ($id, $title, $extra) = @{$r};
+	<li>Prod-ID <% $id %> - <% $title %></li>
+% }
+</ul>
+
+<%doc>
+XXX:
+<ul class="custom-list mt-3 w-2/3"> </ul>
+/XXX
+</%doc>
+
+<h4>Siehe auch</h4>
+
+<p class="mb-3">
+	&bull; <a href="../../11/4/?filter=daily">Funktionen</a><br>
+	&bull; <a href="../9/">Refurbished-Artikel vorbereiten</a><br>
+	&bull; Siehe auch <a href="../3/">Produkt kopieren</a>
+</p>

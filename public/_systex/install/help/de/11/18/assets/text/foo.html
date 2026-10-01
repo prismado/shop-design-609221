@@ -1,0 +1,31 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+
+	my $filter = $C->{CGI}->param('filter');
+</%init>
+
+<h3>Infos</h3>
+
+<p>
+	<a href="/adx/show.html?macro=prism_sys_jobs&q=clean">Cleanup Jobs</a> (ADX)
+</p>
+
+<p class="mt-10">
+% # XXX	<a href="/adx/config-layout.html">Dropdown, Input</a> &ndash;
+% # XXX	<a href="https://dms.prismado.com/components-forms.html">Form-Komponenten</a> (Smarty)
+</p>
+
+<h3 class="mt-10">Tipps</h3>
+
+<tt>find custom/default/jobs/ -name 'clean*.pl'</tt>

@@ -1,0 +1,86 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $A    = $s{A};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<p>
+	Durch eine Datenbankabfrage der Admin-Funktionen wird zusätzlich eine automatisierte Dokumentation und
+	<a href="/adx/help.html">Funktions-Suche</a> m&ouml;glich.<br>
+	Weiter k&ouml;nnen aktuelle Links in E-Mail-Inhalten generiert werden.<br><br>
+
+	Bsp.: "<a href="/adm_orders.html">adm_orders.html</a>" umleiten zu neuer Funktion "adx/orders.html".
+</p>
+
+<ol class="custom-list mt-5 XXXmb-5">
+	<li><a href="/adx/manage-property.html?area=redir">Manage Redirs</a></li>
+</ol>
+
+% my $redir = $A->prism_get_redir(in=>'adm_help');
+% my $redix = $A->prism_get_redir(in=>'_generic_error');
+
+<div class="w-1/2">
+	<h4 class="mt-5">Beispiel</h4>
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$redir = $A-&gt;prism_get_redir(in=&gt;'adm_help');
+# $redir-&gt{rc}    =  <% $redir->{rc} %>
+# $redir-&gt{redir} = "<% $redir->{redir} %>"</code></pre>
+
+	<h4>URL für generisches Fehlerereignis</h4>
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">$redix = $A-&gt;prism_get_redir(in=&gt;'_generic_error');
+# $redix-&gt{rc}    =  <% $redix->{rc} %>
+# $redix-&gt{redir} = "<% $redix->{redir} %>"</code></pre>
+
+</div>
+
+<p class="mt-10">
+	<a href="/adm_help3.html">Legacy Help</a>
+</p>
+
+<%doc>
+XXX:
+<%perl>
+	my $subs = $C->readdir('/usr/local/lib/site_perl/auto/ScreenPoint/Core', '^z\_.+', 0, '!~');
+
+	my $chap = my $subchap = 0;
+	if ($s{dir} =~ /^help\/de\/(\d+)\/(\d+)\/.+/) {
+		$chap    = $1;
+		$subchap = $2;
+	}
+</%perl>
+
+<style>
+    .custom-list {
+      column-count: 3;
+      column-gap: 1rem; /* Abstand zwischen den Spalten */
+    }
+</style>
+
+<ol class="custom-list">
+
+% foreach my $sub (@{ $subs }) {
+%	next if $sub =~ /^abc\_.+/ or $sub =~ /^cosmiq\_.+/ or $sub =~ /^\_.+/;
+%	(my $sub_disp = $sub) =~ s/\.al$//;
+	<li>
+%		if (-e "$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$chap/$subchap/sub\-$sub_disp\.html") {
+			<a class="font-bold" href="sub-<% $sub_disp %>.html">$C-&gt;<% $sub_disp %>( )</a>
+%		}
+%		else {
+			$C-&gt;<% $sub_disp %>( )
+%		}
+	</li>
+% }
+
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-online-help">Feature Online Help</a></li>
+
+</ol>
+/XXX
+</%doc>

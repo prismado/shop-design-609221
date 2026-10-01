@@ -1,0 +1,41 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<div class="mt-10">
+	<tt>custom/algonetic/html/include/__basket.html</tt>
+</div><br><br>
+
+<a href="https://docs.ch2.be/w/prismado-shop/feat-basket">Wiki</a>
+
+<%doc>
+XXX:
+<ul class="mt-10 custom-list">
+	<li>
+		<a clasx="mt-0" href="/adx/custom-fonts.html"><h4 style="float:left;" class="mt-0">Schriftarten</h4></a><br clear="all" />
+		Aktuell:<br>
+		&bull; <b><% $font_1 %></b> (Produkte-Text) &middot; <a href="https://x.prismado.com/lab/web-fonts/?font=<% $font_1 %>">Vorschau</a><br>
+		&bull; <b><% $font_2 %></b> (Navigation)    &middot; <a href="https://x.prismado.com/lab/web-fonts/?font=<% $font_2 %>">Vorschau</a>
+	</li>
+</ul>
+/XXX
+</%doc>
+
+<hr class="mt-10" />
+<small>
+Siehe auch <a href="https://x.prismado.com/lab/layout2023/components-icons.html">Icons</a>
+</small>

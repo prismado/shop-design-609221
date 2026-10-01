@@ -1,0 +1,88 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<p class="mt-10">
+	Lange Beschreibung erweiterbar: <% $C->txt('design_product_trunc_desc', 'sys')+0 %>
+</p>
+
+<p class="mt-10">
+	<a href="/adx/manage-property.html?area=design_product">Einstellungen</a>
+</p>
+
+<%doc>
+XXX:
+<ul class="mt-10 custom-list">
+	<li>
+		<h4>Upload von Dateien</h4>
+		<p><a href="/adm_masterdata.html?pane=2">Upload</a></p>
+	</li>
+
+	<li class="mt-5">
+		<h4>Info Page</h4>
+		<p>Einstellung Bei Stückzahl-Verhalten auf "IP" stellen (= Info Page)<br><br>
+
+		Makros &middot; <small>(Kodierung bei <b>Kurzbeschreibung</b>. get_product ist nicht verf&uuml;gbar in langer Beschreibung)</small>
+		<div class="mt-4 w-3/4">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-html">%%get_product id=1064 into=a%%
+
+nur &lt;b&gt;CHF %%out a price_incl_vat%%&lt;/b&gt;
+anstatt &lt;s class="text-blue-gray-500"&gt;%%out a price_orig_incl_vat%%&lt;/s&gt;</code></pre>
+		</div>
+
+		Weitere Variablen
+		<div class="w-3/4">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-html">%%out a title%%
+&#37;%out a id%%
+noch %%out a count_product%% Stk. an Lager
+&#37;%out a description%%
+/product/%%out a title_enc%%/1064</code></pre>
+		</div>
+
+		Abruf von <a href="../../13/1/">Properties</a>, Beispiel <a href="/adx/manage-property.html?area=sub_slogan"><tt>sub_slogan</tt></a>:
+		<div class="w-3/4">
+			<pre clasx="line-numbers" data-start="10"><code
+				class="language-html">%%prop sub_slogan%%</code></pre>
+		</div>
+
+		&bull; <a target="_blank" href="https://docs.ch2.be/upload/macro_info_page_404261.text">Makro-Beispiel</a><br>
+		&bull; <a href="/adx/content.html">Abruf der aktuellen Info-Seiten</a>
+		</p>
+		<br>
+	</li>
+
+	<li class="mt-5">
+		<a clasx="" href="/adx/custom-fonts.html"><h4 style="float:left;" class="mt-0">Schriftarten</h4></a><br clear="all" />
+		Aktuell:<br>
+		&bull; <b><% $font_1 %></b> (Produkte-Text) &middot; <a
+			href="https://x.prismado.com/lab/web-fonts/?font=<% $font_1 %>">Vorschau</a>
+				&rarr; <a href="/adx/manage-property.html?area=sys_font_1">&Auml;ndern</a><br>
+
+		&bull; <b><% $font_2 %></b> (Navigation) &middot; <a
+			href="https://x.prismado.com/lab/web-fonts/?font=<% $font_2 %>">Vorschau</a>
+				&rarr; <a href="/adx/manage-property.html?area=sys_font_2">&Auml;ndern</a>
+	</li>
+</ul>
+/XXX
+</%doc>
+
+<hr class="mt-10" />
+<small>
+Siehe auch <a href="https://x.prismado.com/lab/layout2023/components-icons.html">Icons</a>
+</small>

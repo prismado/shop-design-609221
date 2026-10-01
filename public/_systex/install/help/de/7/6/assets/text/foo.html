@@ -1,0 +1,49 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h3>Funktion</h3>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">($rc, $msg) = $A-&gt;del_product($id);</code></pre>
+</div>
+
+<h4>Siehe auch: `condition`</h4>
+
+<ol class="custom-list">
+	<li>IN</li>
+	<li>IP</li>
+	<li>OR</li>
+	<li>SO</li>
+</ol>
+
+<%doc>
+XXX:
+<ol class="custom-list">
+	<li>Öffnen Sie als Administrator die <a href="/adx/products.html">Produkte-Seite</a></li>
+	<li>Wählen Sie oben eine Kategorie aus</li>
+	<li>Klicken Sie auf das eingerahmte Plus-Symbol <b>[ + ]</b></li>
+</ol>
+
+<p class="mt-8 mb-3">
+	Siehe auch <a href="../3/">Produkt kopieren</a>
+</p>
+
+% if ($perm->{is_devel}) {
+	<br><br>
+
+	<code class="text-xl font-bold text-gray-800 mt-8 mb-5">$A-&gt;copyproduct()</code><br>
+	X -- Method &uuml;berpr&uuml;fen / &uuml;berarbeiten! en und fr m&uuml;ssen ebenfalls eingepflegt werden!
+% }
+/XXX
+</%doc>

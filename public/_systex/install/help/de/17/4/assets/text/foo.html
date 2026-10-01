@@ -1,0 +1,50 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $font_1 = $C->txt('sys_font_1_family', 'sys');
+	my $font_2 = $C->txt('sys_font_2_family', 'sys');
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h4>Keywords f&uuml;r SEO (Suchmaschinenoptimierung)</h4>
+
+<p class="mt-10 mb-5">
+	<a href="/adx/special_keys.html?area=default">Keywords einstellen</a> &rarr; <small>default_description</small>
+</p>
+
+<h5>Aktuelle Werte</h5>
+
+<ul class="mt-3 custom-list">
+<li><tt><% $C->{CONFIG}->{default_description} %></tt></li>
+<li><tt><% $C->{CONFIG}->{default_keywords} %></tt></li>
+</ul>
+
+<%doc>
+XXX:
+<ul class="mt-10 custom-list">
+	<li>
+		<h4>Upload von Dateien</h4>
+		<p><a href="/adm_masterdata.html?pane=2">Upload</a></p>
+	</li>
+
+	<li class="mt-5">
+		&bull; <b><% $font_2 %></b> (Navigation)    &middot; <a href="https://x.prismado.com/lab/web-fonts/?font=<% $font_2 %>">Vorschau</a>
+	</li>
+</ul>
+
+<hr class="mt-10" />
+<small>
+Siehe auch <a href="https://x.prismado.com/lab/layout2023/components-icons.html">Icons</a>
+</small>
+/XXX
+</%doc>

@@ -1,0 +1,90 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h4 class="mt-5">&Uuml;bersicht</h4>
+
+<p>
+	<a href="https://docs.ch2.be/w/prismado-shop/feat-post-proc">Wiki</a> &ndash;
+	<a href="../4/?filter=post">Funktionen</a>
+</p>
+
+<a href="../4/?filter=deltavista">Deltavista</a> &rarr; <a href="/adx/special_keys.html?area=deltavista">Einstellungen</a><br>
+
+
+<p class="mt-5">
+	Konfigurations-Variable: <code>order_post_proc</code>
+</p>
+
+Inhalt: Z.B. <code>mermaid_post_order( order_id =&gt; $order_id )<br></code>
+
+<p><br>Die Verarbeitung der post_proc-Routine für <b>Kreditkartenzahlungen</b> findet innerhalb <code>_callback/complete_order.html</code>
+	statt, und zwar <u>vor</u> dem Versenden der E-Mails an Kunde und Händler.  Dadurch können neu gewonnene Daten wie z.B. 
+	Referenznummern externer Systeme 
+	von Drittanbietern in die E-Mail-Nachrichten eingespeist werden.
+</p>
+
+<h5>_callback/complete_order.html</h5>
+
+<div class="code-toolbar">
+<pre class="line-numbers  language-perl"><code class="  language-perl"><span class="token keyword keyword-my">my</span> <span class="token variable">$order_id</span> <span class="token operator">=</span> <span class="token variable">$refno</span><span class="token punctuation">;</span>
+<span class="token keyword keyword-eval">eval</span><span class="token punctuation">(</span> <span class="token string">"$A-&gt;$C-&gt;{CONFIG}-&gt;{order_post_proc};"</span> <span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><div class="toolbar"><div class="toolbar-item"><a>Copy</a></div></div></div><div class="code-toolbar"><div class="toolbar"><div class="toolbar-item"><a>Copy</a></div></div>
+</div>
+
+Für Die Abschlussverarbeitung bei Rechnungs- und Vorauszahlungen ist der Aufruf innerhalb <code>order_confirm.html</code> zu platzieren.<br>
+% # XXX <hr>
+
+<p>Siehe <a href="https://docs.ch2.be/publigate/config.html">docs.ch2.be/publigate/config.html</a></p>
+
+% # XXX <p></p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<%doc>
+XXX:
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-html">&lt;script src="assets/js/prism_dt.js" defer=""&gt;&lt;/script&gt;</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">adx/_ajax/webc_datatables.html</code></pre>
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">ll -t adx/_ajax/server_processing_*.html</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">vi adx/_ajax/server_processing_orders.html # -- adx/orders</code></pre>
+</div>
+
+<ol class="mt-10 custom-list">
+<li><a href="/adx/orders.html">Beispiel &lsaquo;orders&rsaquo;</a></li>
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Web Components</a></li>
+</ol>
+
+/XXX
+</%doc>

@@ -1,0 +1,37 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h3>Error 404</h3>
+
+<h5>Apache-Konfiguration</h5>
+
+<div class="w-1/2 mb-10">
+	<pre class="line-numbers" data-start="1"><code
+		class="language-perl">&lt;VirtualHost *:80&gt;
+	ErrorDocument 404 /info-not-found.html</code></pre>
+</div>
+
+<div class="w-1/2 mb-10">
+	<pre clasx="line-numbers" data-start="1"><code
+		class="language-shell">custom/algonetic/html/info-not-found.html</code></pre>
+</div>
+
+<h3>Siehe auch</h3>
+
+<ul class="custom-list">
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-errors">Errors / Warnings / Messages</a></li>
+	<li><a href="https://docs.ch2.be/_search.html?q=%2Berror%2A&wiki_50=1&narrow_search=1&wiki_29=1">Wiki-Suche</a></li>
+
+</ul>

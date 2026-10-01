@@ -1,0 +1,41 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $A    = $s{A};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h3>Integration</h3>
+
+<div class="w-3/4">
+	<pre clasx="line-numbers" data-start="10"><code
+class="language-perl">${ $A-&gt;modal( label=&gt;'Modal X', url=&gt;'/adx/_ajax/modal_bar.html?id=4321&css_id=402171_19&size=md', css_id=&gt;'402171_19') }</code></pre>
+</div>
+
+<h3>Verz&ouml;gerte Modals</h3>
+
+<h4 class="mt-3">Vorlage</h4>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code
+class="language-shell">custom/algonetic/html/_ajax/modal_shop_smarty_orig.html</code></pre>
+</div>
+
+<h4 class="mt-3">In Aktion</h4>
+
+<p><a target="_blank" href="/adx/dev-lab.html">Lab</a></p>
+
+<h3>Siehe auch</h3>
+
+<ul class="custom-list mt-5 XXXmb-5">
+	<li><a href="https://docs.ch2.be/w/prismado-shop/html-modal">Wiki: html-modal</a></li>
+</ul>

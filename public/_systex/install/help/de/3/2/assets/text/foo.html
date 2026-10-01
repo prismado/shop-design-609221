@@ -1,0 +1,27 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<a href="/adm_vouchers.html">Verwaltung</a>
+<%doc>
+XXX:
+<p class="mt-5">
+	<a href="/adx/manage-property.html?area=creditcard"><% $C->txt('creditcard', 'de') %></a>
+</p>
+
+<ul class="mt-10 custom-list">
+	<li><a target="_blank" href="https://docs.payrexx.com/developer/general-info/payment-method">Payrexx Docu</a></li>
+
+</ul>
+/XXX
+</%doc>

@@ -1,0 +1,46 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<h4 class="mt-5">Tools</h4>
+
+<ol class="custom-list">
+	<li><a target="_blank" href="https://pagespeed.web.dev/">PageSpeed Insights</a> (Google)</li>
+	<li><a target="_blank" href="https://pagespeed.web.dev/analysis?url=https%3A%2F%2F<% $C->{CONFIG}->{HTTP_HOST} %>%2F">Diese Seite</a></li>
+	<li><a target="_blank" href="https://www.webpagetest.org/">Web Page Test</a> (Catchpoint)</li>
+</ol>
+
+<h4>Tipps</h4>
+
+<p>
+	Wenn du <b>Lazy Loading</b> für nicht sichtbare und versteckte Bilder verwendest und sie zurückstellst, bis alle wichtigen Ressourcen geladen wurden,
+	kannst du die Zeit bis Interaktivität reduzieren. <a target="_blank"
+	href="https://developer.chrome.com/docs/lighthouse/performance/offscreen-images/?utm_source=lighthouse&utm_medium=lr">Weitere Informationen</a>. (LCP / FCP)
+</p>
+
+<h4>WordPress</h4>
+<p>
+	Ihr Hosting-Anbieter kann Ihnen mitteilen, ob ein persistenter Objekt-Cache für Ihre Website aktiviert werden kann.
+	Ihr Webhosting scheint die folgenden Dienste für das Zwischenspeichern von Objekten zu unterstützen:
+	<tt>APCu</tt> (Alternative PHP Cache User = PHP-Erweiterung).<br><br>
+
+	Für WordPress wird das Plugin <b>"Redis Object Cache"</b> und die Installation von redis auf dem Linux Server benötigt.
+
+<div class="w-1/2 mt-4">
+	<pre clasx="line-numbers" data-start="10"><code class="language-html">apt install redis-server -y</code></pre>
+</div>
+
+	<a target="_blank" href="https://developer.wordpress.org/advanced-administration/performance/optimization/#persistent-object-cache">Erfahren Sie mehr über das Zwischenspeichern persistenter Objekte</a>.
+</p>
+

@@ -1,0 +1,134 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	my $sub  = 1;
+
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)\/(\d+)/) {
+		$this = $1;
+		$sub  = $2;
+	}
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $hlprf = $C->get_online_help_refs();
+	my $title = $hlprf->{ref}->{"$this\/$sub"};
+	my $text  = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$this/$sub/assets/text", '^zz_trash_.+', 0, '!~');
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	$r->content_type("text/html; charset=utf-8");
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>Online-Hilfe: <% $title %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<p class="mt-8 float-right font-bold ml-3">
+%		if ($hlprf->{dsc}->{$this} eq '...') {
+%			$hlprf->{dsc}->{$this} = '';
+%		}
+%		else {
+			<span class="mr-2">&middot;</span>
+%		}
+%		if (length( $hlprf->{dsc}->{"$this/$sub"}) < 70) {
+			<% $hlprf->{dsc}->{"$this/$sub"} %>
+%		}
+%		else {
+%			(my $short = $hlprf->{dsc}->{"$this/$sub"} ) =~ s/\</&lt;/g;
+			<% substr($short, 0, 70) . '...' %>
+%		}
+
+%		if ($hlprf->{aud}->{"$this/$sub"} ne 'adm') {
+			<span class="ml-2 text-green-600 text-xl">{ <% uc $hlprf->{aud}->{"$this/$sub"} %> }</span>
+%		}
+	</p>
+	<p class="mt-8 float-right">
+%		if (length( $hlprf->{dsc}->{$this}) < 50) {
+			<% $hlprf->{dsc}->{$this} %>
+%		}
+%		else {
+%			(my $short = $hlprf->{dsc}->{$this} ) =~ s/\</&lt;/g;
+			<% substr($short, 0, 50) . '...' %>
+%		}
+	</p>
+
+	<a class="<% $href_cl %> no-underline" href="..">
+	<div class="flex items-center">
+		<svg class="mt-3 mr-3" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 100 100">
+			<circle cx="50" cy="50" r="50" fill="black"/>
+			<path d="M50 25 L75 65 H60 V75 H40 V65 H25 Z" fill="white"/>
+		</svg>
+		<h3 class="mb-5"><% $hlprf->{ref}->{$this} %></h3>
+	</div>
+	</a>
+
+	<div class="float-right">Bereich <% $this %>&ndash;<% $sub %></div>
+
+	<h1 class="text-4xl font-bold text-gray-800 mb-5"><% $title %></h1>
+
+	<p class="mb-3"><a class="<% $href_cl %>" href="..">&uarr; Aufw&auml;rts</a></p>
+
+%	foreach my $text_file (@{$text}) {
+%		next if $text_file =~ /\.swp$/;
+%		if ($perm->{is_devel}) {
+			<span class="float-right">
+				[ Dev ] &middot; <a href="assets/text/<% $text_file %>"><tt><% $text_file %></tt></a>
+			</span>
+%		}
+		<%perl>
+			my $tpl = $C->exec(
+				comp_file => $text_file,
+				theme     => 'algonetic',
+				perm      => $perm,
+				C         => $C,
+				A         => $A,
+				ts        => $C->now(1),
+				dir       => "help/de/$this/$sub/assets/text"
+			);
+
+			if ($hlprf->{aud}->{"$this/$sub"} eq 'dev' && !$perm->{is_admin}) {
+				$m->out(q~<h4>Zugriff verweigert / Access denied</h4>
+						<p>Mindeststufe Administrator erforderlich.</p>~);
+			}
+			else {
+				$m->out($tpl->{out});
+			}
+		</%perl>
+%	}
+
+%	if ($perm->{is_devel}) {
+		<hr class="mt-10">
+		<small>index-sub-area.html / Dev: REQUEST_URI <% $ENV{REQUEST_URI} %></small><br>
+%		if ($C->getSessData('debug')) {
+%		    foreach (sort keys %{ $HLP }) {
+%			next if /^web$/;
+			X -- <% $_ %> = <% $HLP->{$_} %><br>
+%		    }
+%		    foreach my $w (@{ $HLP->{web} }) {
+			X -- <% $w->{title}->{de} %><br>
+%			foreach (sort keys %{ $w }) {
+%				next if /^title$/;
+				[ web ] &middot; <% $_ %> = <% $w->{$_} %><br>
+%			}
+%		    }
+%		}
+%	}
+
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>

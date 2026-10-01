@@ -1,0 +1,68 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $sth = $C->{dbh}->prepare(q~select id, cat_id, xkey, xval from categ_meta where lang='sys' order by 3~);
+	   $sth->execute();
+
+	my $st2 = $C->{dbh}->prepare(q~select DISTINCT xkey from categ_meta where lang='sys' order by 1~);
+	   $st2->execute();
+
+	my %info = (
+		PERMISSION => 'Berechtigung: JSON-Struktur',
+		PURPOSE    => 'Zweck der Kategorie, Reservierte Werte: <tt>SERVICE-PORTAL</tt>'
+	);
+</%perl>
+
+<h4>Allgemein</h4>
+
+<p class="mb-5">
+	Spezial-Informationen bei einer Kategorie <small>(Aktuell <% $st2->rows() %> Varianten)</small>:
+</p>
+
+% while(my $r = $st2->fetch()) {
+	&bull; <% $r->[0] %>
+%		if ($info{$r->[0]}) {
+			&rarr; <% $info{$r->[0]} %>
+%		}
+	<br>
+% }
+<br />
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $cat_id, $key, $val) = @{$r};
+%	my $cat_name = $C->query("select label from categories where id=$cat_id and lang='de'")->[0];
+	DB-Id <a href="/adm_db_edit.html?table=categ_meta&wcl=id%3D<% $id %>"><% $id %></a> / <a
+		href="/adm_categ.html?id=<% $cat_id %>">Cat-ID <% $cat_id %></a> <% $cat_name %>: <b><% $key %></b> = <tt><% $val %></tt><br>
+% }
+
+<h4>Erstellen einer Kategorie für den Bereich "Service-Portal"</h4>
+
+<ol class="custom-list">
+	<li>Anlegen einer Hauptkategorie</li>
+	<li>Kategorie muss auf "unsichtbar" gesetzt sein <small>(visible=0)</small></li>
+	<li>Meta-Parameter: PURPOSE = "SERVICE-PORTAL"</li>
+</ol>
+
+<p class="mt-5">
+	Ausserdem müssen beim Benutzer <a href="../../1/1/">entsprechende Berechtigungen</a> gesetzt werden.
+</p>
+
+<%doc>
+XXX:
+<ul class="custom-list mt-3 w-2/3"> </ul>
+<p class="mb-3"> </p>
+/XXX
+</%doc>

@@ -1,0 +1,52 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<h3>Setup auf Windows</h3>
+
+<pre clasx="line-numbers" data-start="10"><code class="language-shell">docker run -dit --name "mrs-deb-407231" -v C:\Users\person\Documents\Docker\hello\welcome-algo-debian-latest:/var/www/html -p 8080:80 debian-407231</code></pre>
+
+<h3>Backup eines Containers</h3>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">docker ps</code></pre>
+</div>
+
+<pre>CONTAINER ID   IMAGE           COMMAND   CREATED          STATUS          PORTS                            NAMES
+4b8b8c211832   debian-407231   "bash"    24 minutes ago   Up 24 minutes   3000/tcp, 0.0.0.0:8080->80/tcp   mrs-deb-407231</pre>
+
+<h3>Image erstellen</h3>
+
+<div class="w-3/4">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-shell">docker commit mrs-deb-407231 debian-407231-2 # -- Vorheriges "docker stop" empfohlen</code></pre>
+</div>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">docker save -o debian-407231-2_0_01.tar debian-407231-2</code></pre>
+</div>
+
+
+<h3>Restore</h3>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">docker load -i /tmp/debian-407231-2_0_01-2.tar</code></pre>
+</div>
+
+<h4 class="mt-10">Siehe auch</h4>
+
+<ul class="custom-list mt-2">
+	<li><a href="https://docs.ch2.be/w/task-prismado/setup">Wiki: docker load</a></li>
+	<li><a href="https://docs.ch2.be/w/majas/backup">Wiki: Maja's</a></li>
+	<li><a href="https://docs.ch2.be/w/know-how/docker-windows">Wiki</a></li>
+</ul>

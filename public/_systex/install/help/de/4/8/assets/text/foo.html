@@ -1,0 +1,95 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $action = $C->query(q~SELECT action FROM log WHERE action LIKE 'N407191-27%qr_bill_cust_%' ORDER by id DESC LIMIT 1~)->[0];
+	my $pdf_ref = 0;
+	if ($action =~ /\bupload\/qr_bill_cust_rcpt_(\d+)_(\d+)\.pdf\b/) {
+		$action = $1;
+		$pdf_ref = $2;
+	}
+	else {
+		$m->out("No Match<br>");
+	}
+	$action += 0;
+
+	my $ord_items = $A->get_order_items(order_id=>$action, show_options=>1);
+	my @b_arr = ();
+	foreach my $row (@{ $ord_items->{item_rows} }) {
+		my %d = ( date=>'2024-10-06', text=>$row->{title}, quant=>$row->{count}, price=>$row->{unit_price_inc_vat} );
+		push(@b_arr, \%d);
+	}
+
+	my $sth = $C->{dbh}->prepare(q~SELECT id, xkey, xval FROM pdf_config ORDER by 2~);
+	   $sth->execute();
+</%perl>
+
+<p class="mt-10">
+	<a href="../../11/4/sub-create_pdf_bill.html">$A-&gt;create_pdf_bill( )</a><br><br>
+
+	<a href="../../11/4/?filter=pdf">Funktions-Liste</a>
+</p>
+
+<h4 class="mt-10">Tech Info</h4>
+
+<p>
+	F&uuml;r Aufstellung inklusive Mehrwertsteuer:
+</p>
+
+<div class="w-1/2 mt-3">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-perl">$C->create_pdf_bill(
+	vat_inc   =&gt; 1,
+	bill_data =&gt; {Array ref with hashes}
+);</code></pre>
+</div>
+
+<p class="mt-5 mb-5">
+	_includes/ajx_modal_show_pdf.html
+</p>
+
+% if ($perm->{is_devel}) {
+	<tt>$ord_items = $A-&gt;get_order_items(order_id=&gt;$action, show_options=&gt;1);</tt>
+	<div class="w-3/4 mt-5 mb-5">
+		<pre clasx="line-numbers" data-start="10"><code
+			class="language-perl">_includes/admix_order_detail.html # -- Suche nach: $bGenPDF</code></pre>
+	</div>
+
+%	foreach my $d (@b_arr) {
+%		foreach (sort keys %{ $d }) {
+			[ b_arr ] &middot; <b><% $_ %></b> = <% $d->{$_} %><br>
+%		}
+		<hr class="mt-3" />
+%	}
+% }
+
+<h3>PDF-Einstellungen</h3>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val) = @{$r};
+	&bull; <a href="/adm_db_edit.html?table=pdf_config&wcl=id%3D<% $id %>"><% $key %></a> = <% $val %><br>
+% }
+
+<h2 class="mt-10">Siehe auch</h2>
+
+<ul class="custom-list">
+	<li><a href="../../11/4/sub-mail_pdf_bill.html">$A-&gt;mail_pdf_bill( )</a></li>
+	<li><a href="../../11/4/?filter=get_order_statement">$A-&gt;get_order_statement( )</a></li>
+	<li>Log: <a href="/adm_log.html?importance=4&filter=N407191-27">N407191-27</a> &rarr;
+		<a href="/adm_order.html?id=<% $action %>">Order-ID <% $action %></a> &ndash;
+		<a href="/upload/qr_bill_cust_rcpt_<% $action %>_<% $pdf_ref %>.pdf">PDF-Kundenbeleg Nr. <% $action %></a></li>
+</ul>

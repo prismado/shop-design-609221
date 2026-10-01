@@ -1,0 +1,62 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $sth = $C->{dbh}->prepare(q~SELECT DISTINCT substr(xkey, 6, 31), xval FROM `users_details` WHERE xkey like 'perm\_%' ORDER by 1~);
+	   $sth->execute();
+</%perl>
+
+<h4>Neuen Benutzer erstellen</h4>
+
+<ol class="custom-list">
+<li>Öffnen Sie einen Browser im Incognito-Modus oder einem eigenen Profil</li>
+<li>Klicken Sie oben rechts auf <b>Anmelden</b></li>
+<li>Klicken auf <b>Registrieren</b></li>
+<li>Füllen Sie die Felder aus und klicken Sie auf <b>Registrieren</b></li>
+</ol>
+
+<h4>Neuen Administrator erstellen</h4>
+
+<ol class="custom-list">
+<li>Öffnen Sie nach der Registrierung (obere Schritte) als Administrator
+	die <a href="https://shopd.algonetic.ch/adx/customers.html">Kundenfunktion</a> und öffnen Sie den Benutzer
+</li>
+
+<li>Aktivieren Sie die Checkbox "[ X ] Admin"</li>
+<li>Klicken Sie auf "Update"</li>
+
+</ol>
+
+<h4>Spezielle Berechtigungen</h4>
+
+% while(my $r = $sth->fetch()) {
+	&bull; <% $r->[0] %> = <% $r->[1] %><br>
+% }
+
+<p class="mt-3">
+	Das Hinzufügen weiterer Berechtigungen erfolgt bei der Detailansicht eines Benutzers durch Klick auf "Permission".
+</p>
+
+<p class="mt-3">
+	<a href="/_systex/install/help/de/11/1/?filter=get_user">Funktionen</a><br><br>
+
+	select substr(xkey, 6, 31), xval from users_details where user_id=$uid and xkey like 'perm\_%'
+</p>
+
+<br>
+
+<h4>Siehe auch</h4>
+<a href="https://docs.ch2.be/w/prismado-shop/feat-user">Wiki Infos</a> &ndash;
+<a href="../../7/11/">Kategorie-Einstellungen</a>

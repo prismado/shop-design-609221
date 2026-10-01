@@ -1,0 +1,66 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<img src="../../../assets/images/pic-order-history.png">
+
+<h4>Legende</h4>
+
+<ul class="custom-list mt-3">
+<li>001 = New / 2 = Pending CC / 3 = Storno / 4 = Completed</li>
+<li>100 = QR Bill created</li>
+<li>101 = QR Bill sent to administrator</li>
+<li>102 = Send reminder (pending order)</li>
+<li>103 = Re-fill von Checkout (Fortsetzung einer pendenten Bestellung)</li>
+<li>104 = Delivery Note created (Lieferschein)</li>
+<li>105 = Order cancelled &middot; <a href="../../11/4/?filter=cancel">Entwickler-Infos</a></li>
+<li>110 = XXX<s>Order discarded (verworfen)</s> <small>04Jan2026</small></li>
+<li>200 = Order completed</li>
+<li>210 = Bestell-E-Mail an Händler gesendet (finalize_order)</li>
+<li>211 = Bestellung an Kunde gesendet (finalize_order)</li>
+<li>213 = Bestell-Bestätigung nochmalig an Kunde übermittelt</li>
+<li>220 = Bestellung abgeschlossen mit <a href="/w/prismado-shop/feat-tag-tracking">Prismado Tag(s)</a></li>
+<li>223 = cXML Order erstellt <small>(22Mar2025)</small></li>
+<li>224 = cXML Antwort <small>(27Jul2025)</small></li>
+<li>225 = EDI Order Response transferred &ndash; <a href="../../11/3/job-galaxus_orders_dg2partner.pl.html">Job</a></li>
+<li>226 = EDI Order Link</a></li>
+<li>228 = EDI Dispatch Notification created</li>
+<li>229 = EDI Dispatch Notification transmitted <a href="../../11/3/job-edi_transmit_dispatch.pl.html">Job</a></li>
+<li>235 = cXML-Antwort / Bestellbestätigung - <small>(14Oct2025)</small></li>
+<li>250 = Sendung unterwegs <small>(31May2025)</small></li>
+<li>251 = Sendung zugestellt <small>(31May2025)</small></li>
+<li>400 = DHL Package Infos (Link to more infos)</li>
+<li>500 = Handlungsbedarf / muss quittiert werden <small>(29Aug2024)</small></li>
+<li>700 = Serviceportal &ndash; KTAG <small>(25Mar2025)</small></li>
+<li>703 = Serviceportal &ndash; KTAG: Bestellung verworfen <small>(04Jan2026)</small></li>
+<li>705 = Serviceportal &ndash; KTAG: XML sent to M42 <small>(23Jul2025)</small></li>
+<li>710 = Serviceportal &ndash; KTAG: PKID-Autopilot-Registrierung angefordert <small>(30Aug2025)</small></li>
+<li>715 = Serviceportal - KTAG / PKID: Autopilot-Reg. best&auml;tigt <small>(05Sep2025)</small></li>
+<li>720 = Serviceportal - KTAG / Inventarfile m/Seriennummern hochgeladen <small>(22Sep2025)</small></li>
+<li>725 = Serviceportal - KTAG: Delivery State gesetzt bei Bestellposition "x" <small>(09Nov2025)</small></li>
+<li>726 = Serviceportal - KTAG: Delivery State gesetzt bei Bestellung, JSON-Struktur <small>(17Jan2026)</small></li>
+<li>800 = Individuell, siehe Text (11Feb2024)</li>
+<li>801 = Individuell, für Kunde einsehbar</li>
+<li>900 = Google Rating angefragt</li>
+<li>5000 = Temporäre Information <small>(23Jul2025)</small></li>
+<li>5001 = Temporäre Information, für Kunde einsehbar! <small>(23Jul2025)</small></li>
+</ul>
+
+<div class="mt-5 w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code
+		class="language-perl">$A-&gt;set_order_status({ORDER_ID}, {STATUS_ID}, '{TEXT}', '{SRC}')</code></pre>
+</div>
+
+<hr class="mt-5" />
+<a href="https://docs.ch2.be/w/prismado-shop/feat-order">Wiki Infos</a>

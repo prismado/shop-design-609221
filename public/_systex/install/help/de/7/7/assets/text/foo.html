@@ -1,0 +1,36 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+
+	my $latest_prod_id = $C->query("select id from products order by id desc limit 1")->[0];
+</%init>
+<img class="mb-5" src="../../../assets/images/products-history-407300.png">
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">custom/algonetic/html/_ajax/modal_show_prod_history_sow.html</code></pre>
+</div>
+
+<p>
+	<a href="/adx/edit-product.html?id=<% $latest_prod_id %>">Prod-ID <% $latest_prod_id %></a>
+</p>
+
+<h4 class="mt-10">Siehe auch</h4>
+
+<ol class="custom-list">
+	<li><a href="https://docs.ch2.be/w/prismado-shop/feat-product">Wiki</a></li>
+</ol>
+
+<%doc>
+XXX:
+/XXX
+</%doc>

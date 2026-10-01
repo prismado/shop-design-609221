@@ -1,0 +1,98 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	unless ($perm->{is_admin}) {
+		$m->out("Not Admin. Aborting. Please log in.");
+		return;
+	}
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+
+	my $host_env_prim = $C->get_safe_property('host_env_primary', 'sys');
+</%init>
+<h3>Allgemein</h3>
+
+<ol class="custom-list">
+<li>
+	Neue <a href="/adx/orders.html">Bestellungen</a> werden von Galaxus via FTP übermittelt:<br>
+	FTP-Verzeichnis: <b>/OrderData/<% $host_env_prim eq 'yes' ? 'Test' : 'Live' %>/dg2partner</b>
+</li>
+
+<li>
+	Der Auto-Job <a href="/adx/show.html?macro=prism_sys_jobs&q=edi">galaxus_orders_dg2partner</a>
+	<div class="w-1/2">
+		<pre clasx="line-numbers" data-start="10"><code class="language-shell">custom/algonetic/jobs/galaxus_orders_dg2partner.pl</code></pre>
+	</div>
+	holt die Bestellungen via SFTP ab und erstellt eine lokale Bestellung.<br>
+	Im Erfolgsfall wird in der <a href="/adm_log.html?importance=4">Log-Datei</a> <tt>N405301-103</tt> protokolliert
+</li>
+
+<li>
+	Bei einer neuen Bestellung wird zuerst ein lokaler Kunde erstellt { <code>$A-&gt;create_user( )</code> }:
+	<div class="w-3/4">
+		<pre class="line-numbers" data-start="90"><code
+			class="language-perl">my $edi = $C->parse_edi_xml(xml_path=&gt;"$C-&gt;{CONFIG}->{DOCUMENT_ROOT}/_systex/data/import/edi/$remote_file");
+...
+my $ord = &create_local_order(edi=&gt;$edi, remote_file=&gt;$remote_file);
+...
+
+sub create_local_order (%) {
+	my $ediparse = $args{edi};
+	...
+	my ($rc_cr, $msg_cr) = $A-&gt;create_user( $ediparse->{customer} );
+}</code></pre>
+	</div>
+</li>
+
+</ol>
+
+<h3>Admin-Funktion</h3>
+
+<p><a href="/adx/edi.html">adx/edi</a> &mdash; <a href="/adx/dev-edi-parse-order.html">Lab</a></p>
+
+<h3 clasx="mt-5">Eingehende Bestellungen (Order Placements)</h3>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">ll -t _systex/data/import/edi/G*.xml</code></pre>
+</div>
+
+
+<h4>Dispatch Notification</h4>
+
+<p>z.B. GDELR_10391065_119374861.xml</p>
+
+<tt>$A-&gt;create_edi_dispatch( )</tt>, dann <tt>$A-&gt;get_order_edi( )</tt><br>
+
+$A-&gt;create_edi_dispatch( ) wird aufgerufen innerhalb $A-&gt;set_order_status( status=&gt;104 )<br><br>
+
+Als Template für die DN wird <tt>edi_dispatch.xml</tt> verwendet.
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">vi custom/algonetic/macros/edi_dispatch.xml</code></pre>
+</div>
+
+<h3>EDI_SKIP</h3>
+
+<p>
+	Artikeleigenschaft <code>EDI_SKIP</code> mit Wert "1" hinzufügen,
+	um von Produkte-Export zu Partner auszuschliessen (Exclude-Wert, Gewicht -001) &rarr; <a href="https://docs.ch2.be/w/prismado-shop/feat-product">Wiki</a>.
+</p>
+
+
+<h4>Auto Jobs</h4>
+
+<a href="/adx/show.html?macro=prism_sys_jobs&q=edi">System Jobs</a>
+
+<hr class="mt-10">
+<ol class="mt-5 custom-list">
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-edi">EDI</a></li>
+</ol>

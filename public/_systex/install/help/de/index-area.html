@@ -1,0 +1,72 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)/) {
+		$this = $1;
+	}
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $refs  = $C->get_online_help_refs();
+	my $title = $refs->{ref}->{$this};
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>Hilfe <% $this %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<p class="float-right mt-8 font-bold"><% $refs->{dsc}->{$this} %></p>
+
+	<h1 class="text-4xl font-bold text-gray-800 mt-8 mb-5">Bereich <% $this %> &ndash; <% $title %></h1>
+
+	<p class="mb-3"><a class="<% $href_cl %>" href="..">Aufw&auml;rts</a></p>
+
+%	if ($perm->{is_devel}) {
+		<small>[ Dev: REQUEST_URI <% $ENV{REQUEST_URI} %> ]</small><br>
+%	}
+
+%	foreach my $h (@{ $HLP->{web} }) {
+%		next if $h->{audience} eq 'dev' && !$perm->{is_devel};
+		<a href="<% $h->{area_code} %>/" class="<% $href_cl %>">
+			<h2 class="text-2xl mt-3 mb-3 font-bold"><% $h->{title}->{de} %></h2>
+		</a>
+
+		<p class="mb-4 font-semibold"><% $h->{desc}->{de} %></p>
+
+		<p class="mb-4">
+			Referenz: <tt class="text-green-500"><% $h->{mnemonic} %></tt>
+%			if ($h->{audience} && $h->{audience} ne 'adm') {
+				&middot; Zielgruppe: <tt class="text-green-500"><% $h->{audience} %></tt> 
+%			}
+		</p>
+
+%		foreach my $w (sort keys %{ $h }) {
+%			next if $w =~ /^desc$/ or $w =~ /^title$/ or $w =~ /^area_code$/ or $w =~ /^url$/ or $w =~ /^mnemonic$/ or $w =~ /^audience$/;
+			XX ----------- <% $w %> = <% $h->{$w} %><br>
+%		}
+
+		<hr class="mt-5" />
+%	}
+
+%	if ($perm->{is_devel}) {
+		<hr class="mt-10">
+		<code><small>index-area.html</small></code>
+%	}
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>

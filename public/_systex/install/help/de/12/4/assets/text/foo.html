@@ -1,0 +1,73 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $sth = $C->{dbh}->prepare(q~select id, xkey, val, xdesc from newsletter_settings order by 2~);
+	   $sth->execute();
+
+	my $ip_mail_server = '127.0.0.1';
+	if (`ping -c 1 $C->{CONFIG}->{mail_relay}` =~ /\bPING $C->{CONFIG}->{mail_relay} \((.+?)\) .+/m) {
+		$ip_mail_server = $1;
+	}
+
+	my $ipinf = $C->get_ipinfo(ip=>$ip_mail_server);
+</%perl>
+
+<p class="mt-5">
+	<a href="/adm_newsletter_settings.html">Einstellungen</a>
+</p>
+
+<h4>Tabelle newsletter_settings</h4>
+
+<table class="mt-5 border md:table">
+% while(my $r = $sth->fetch()) {
+%	my ($id, $xkey, $xval, $xdesc) = @{$r};
+	<tr style="line-height:180%;">
+	<td class="pr-5"><b><% $xkey %></b></td>
+	<td class="pr-5">
+%		if ($xkey =~ /pass/i) {
+			********
+%		}
+%		else {
+			<tt><% $xval %></tt>
+%		}
+	</td>
+	<td class="pr-5"><% $xdesc %></td>
+	<td><a href="/adm_edit_newsletter_setting.html?id=<% $id %>">Edit</a></td>
+	</tr>
+% }
+</table>
+
+<h4>Siehe auch</h4>
+
+<ul class="custom-list">
+	<li><a href="/adx/special_keys.html?area=smtp">SMTP Mail Relay</a> &middot;
+		Einstellungen von <b><% $C->{CONFIG}->{smtp_user} %></b> via <b><% $C->{CONFIG}->{mail_relay} %></b> (<% $ip_mail_server %>), <% $ipinf->{info} %></li>
+	<li><a href="/adx/forward-message.html">Mail Relay</a> (Tests)</li>
+	<li><a href="../../11/4/?filter=newsl">Newsletter-Systemfunktionen</a></li>
+</ul>
+
+<h4>Dump</h4>
+
+<div class="w-3/4">
+	<pre clasx="line-numbers" data-start="10"><code class="language-sql">INSERT INTO newsletter_settings (id, tstamp, xkey, val, xdesc) VALUES
+(1, '2024-10-06 11:17:17', 'send_sleep', '11', 'Seconds. Not less than 37 in productive mode'),
+(2, '2019-07-12 13:14:50', 'preview_email', 'nl.preview.tkulturd@eshop.pub', ''),
+(3, '2019-08-13 12:46:46', 'smtp_conn_sec', '', '\'ssl\' / \'starttls\' (default) / undef'),
+(4, '2019-08-13 12:46:46', 'smtp_user', '', NULL),
+(5, '2019-08-13 12:46:46', 'smtp_pass', '', NULL),
+(6, '2019-08-13 12:46:46', 'smtp_port', '25', 'Submission Port, 25 or 587'),
+(7, '2019-08-13 12:46:46', 'mail_relay', 'localhost', NULL);</code></pre>
+</div>

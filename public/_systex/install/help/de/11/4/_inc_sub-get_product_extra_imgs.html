@@ -1,0 +1,52 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	use ScreenPoint::Auctionline;
+	my $A = ScreenPoint::Auctionline->new( $C );
+</%init>
+
+<%perl>
+	my $prod_id = $C->query('select max(id) from products')->[0];
+
+	my $img = $A->get_product_extra_imgs( id=>$prod_id, all=>1 );
+
+	my $ad_im = $A->get_ad_image(id=>$prod_id);
+</%perl>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">my $img = $A-&gt;get_product_extra_imgs( id=&gt;{Prod_ID} );
+# -- $img-&gt;{pics} = Array Ref</code></pre>
+</div>
+
+<h3>Prod-ID <a target="_blank" href="/adx/edit-product.html?id=12450"><% $prod_id %></a></h3>
+
+% foreach (sort keys %{ $img }) {
+	&bull; <b><% $_ %></b> = <code><% $img->{$_} %></code><br>
+% }
+<br>
+
+% foreach (@{ $img->{pics} }) {
+	[ pics ] &middot; <% $_ %><br>
+% }
+<br>
+
+% foreach (sort keys %{ $img->{excl} }) {
+	&bull; [ excl ] &middot; <b><% $_ %></b> = <tt><% $img->{excl}->{$_} %></tt><br>
+% }
+
+<h3>Ad Image</h3>
+
+<img style="width:120px;" src="<% $ad_im->{url} %>"><br>
+
+&bull; <a target="_blank" href="<% $ad_im->{url} %>"><% $ad_im->{url} %></a><br>
+&bull; <% $ad_im->{url_short} %><br><br>
+
+% foreach (sort keys %{ $ad_im }) {
+	&bull; <b><% $_ %></b> = <tt><% $ad_im->{$_} %></tt><br>
+% }
+
+% foreach (sort keys %{ $ad_im->{x_img} }) {
+	X -- <% $_ %> = <% $ad_im->{x_img}->{$_} %><br>
+% }

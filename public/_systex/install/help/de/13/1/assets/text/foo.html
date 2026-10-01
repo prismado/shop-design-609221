@@ -1,0 +1,82 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $API_KEY    = substr($C->get_safe_property('API_KEY_ChatGPT', 'sys'), 0, 15) . '...';
+	my $api_key_id = $C->{id};
+
+	my $sth = $C->{dbh}->prepare(q~SELECT DISTINCT page FROM properties WHERE page LIKE '\_%' and page != '_global' ORDER BY 1~);
+	   $sth->execute();
+</%perl>
+
+<h3><% $C->{CONFIG}->{site_title} %> &larr; <a href="/adx/special_keys.html?area=site"><small>Edit</small></a></h3>
+
+<ol class="custom-list">
+	<li><a href="/adm_masterdata.html">Stammdaten</a> (Shop-Titel, Firma, Adresse, Telefon <% $C->txt('site_phone', 'de') %>, ...)</li>
+	<li><a href="/adx/show.html?macro=master_data">(ADX) Master Data</a> (PDF-Konfiguration)</li>
+	<li><a href="/adx/special_keys.html?area=default">(ADX) Standard-Werte</a> (W&auml;hrung, Sprache, Tabelle config)</li>
+	<li><a href="/adm_masterdata.html?pane=2">Upload</a> (Zentrale Dokumente und Bilder)</li>
+	<li><a href="/adx/manage-property.html">Properties</a> (Textbausteine) &mdash;
+		<a href="/adm_safe_properties.html?lang=sys">Safe Properties</a> &middot; <a href="https://docs.ch2.be/w/publigate/properties">?</a><br>
+		AI API Key: <a href="/adm_safe_property.html?id=<% $api_key_id %>"><code><% $API_KEY %></code></a>
+	</li>
+	<li><a href="/adm_custom.html">Theme</a> (Legacy)</li>
+</ol>
+
+<h3 class="mt-5">Logo (&ouml;ffentlich)</h3>
+
+<p class="mt-4">
+	<img style="max-width:13%" src="/assets/images/logo/logo_pub.svg"><br>
+
+	<div class="w-3/4">
+		<pre clasx="line-numbers" data-start="10"><code
+			class="language-shell">custom/<% $C->{CONFIG}->{theme} %>/html/assets/images/logo/logo_pub.svg # -- www-data</code></pre>
+	</div>
+	<a href="/adm_custom.html">Upload</a>
+</p>
+
+<h3 class="mt-5">Properties</h3>
+
+<p><% $sth->rows %> spezielle Page-Bereiche f&uuml;r <b>Sys-Properties</b></p>
+
+<ul class="custom-list mt-3">
+% while(my $r = $sth->fetch()) {
+	<li><a href="/adx/manage-property.html?page=<% $r->[0] %>"><tt clasx="fs--15"><% $r->[0] %></tt></a>
+%		if ($r->[0] eq '_layout') {
+			&rarr; <a href="/adx/manage-property.html?area=sys">Beispiele</a>
+%		}
+%		elsif ($r->[0] eq '_ai') {
+			<br>
+			&rarr; <code><% $C->txt( 'prompt_product_desc', 'de', '_ai' ) %></code>
+			&rarr; <a href="/adx/manage-property.html?area=prompt_product_desc">Einstellungen</a>
+%		}
+%		elsif ($r->[0] eq '_macro' or $r->[0] eq '_redir' or $r->[0] eq '_control') {
+%			(my $area = $r->[0]) =~ s/^\_//;
+			&rarr; <a href="/adx/manage-property.html?area=<% $area %>">Beispiele</a>
+%		}
+	</li>
+% }
+</ul>
+
+<h3 class="mt-8">Siehe auch</h3>
+
+<ul class="custom-list mt-5">
+	<li><a href="../4/">E-Mail-Templates</a></li>
+	<li><a href="../5/">Artikeleigenschaften</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-properties">Properties</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-dhl">DHL</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-errors">Errors / Warnings / Messages</a></li>
+
+</ul>

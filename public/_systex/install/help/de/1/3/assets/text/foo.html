@@ -1,0 +1,45 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<%perl>
+	my $time_rfc = $C->format_time(format=>'rfc5322', localtime=>[localtime(time + 259200)]);
+</%perl>
+
+<p>
+	<a href="/signin.html">signin</a>
+</p>
+
+<div class="w-1/2 mt-5">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">_resend_login.html</code></pre>
+
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">my $res = $A-&gt;mail_login(uname=&gt;$user_safe, lang=&gt;'de');</code></pre>
+</div>
+
+<h3 class="mb-3">Via Admin:</h3>
+
+&bull; <a href="https://shopd.algonetic.ch/adm_user.html?id=1909&bSendPW=1">adm_user.html?id=1909&bSendPW=1</a> &rarr; mrxs@gmx.ch<br>
+&bull; <a href="https://shopd.algonetic.ch/API/?token=myfootoken&action=mail_login&uname=user1864">API/?token=<i>{TOKEN}</i>&action=mail_login&uname=user1864</a> &rarr; trash-1864@x.pgate.net
+
+<h3>Siehe auch</h3>
+
+<ol class="custom-list">
+	<li><a href="../../11/4/sub-mail_login.html">$A-&gt;mail_login( )</a></li>
+	<li><tt>$C-&gt;time_now(4, 86400)</tt> &rarr; <% $C->time_now(4, 86400) %><br>
+		RFC 5322 + 3d &rarr; <% $time_rfc->{time} %>
+	</li>
+</ol>
+
+<hr class="mt-10">
+<a href="https://docs.ch2.be/w/prismado-shop/feat-user">Wiki Infos</a>

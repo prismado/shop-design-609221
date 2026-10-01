@@ -1,0 +1,95 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<%perl>
+	my $jobname = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/custom/algonetic/jobs", '^z\_.+', 0, '!~');
+	push(@{ $jobname }, 'hourly_tasks.pl');
+
+	my $chap = my $subchap = 0;
+	if ($s{dir} =~ /^help\/de\/(\d+)\/(\d+)\/.+/) {
+		$chap    = $1;
+		$subchap = $2;
+	}
+</%perl>
+
+<h4 class="mt-2">Jobs &rarr; <% $chap %> / <% $subchap %></h4>
+
+<p><a href="job-hourly_tasks.pl.html">Hourly Jobs</a></p>
+
+<div class="w-1/2 mt-3">
+	<pre clasx="line-numbers" data-start="10"><code class="language-shell">cd custom/algonetic/jobs/</code></pre>
+</div>
+
+% my $tr_cl = 'py-1 px-4 border-b border-gray-800';
+<table>
+% foreach my $fn (@{ $jobname }) {
+%	next unless $fn =~ /.+\.pl$/;
+%	next if $fn =~ /^\_foo.+/;
+%	my ($jobid, $featkey) = @{$C->query("select id, SUBSTR(featkey, 10, 31) from config_prod_feat where featkey like 'job_path_%' and featname='$fn'")};
+%	my $par               = $C->get_job_params(id=>$jobid);
+%	my $is_active         = $C->query("select featname+0 from config_prod_feat where featkey='job_detail_$jobid\__is_active'")->[0];
+%	my $runs_every_min    = $C->query("select featname+0 from config_prod_feat where featkey='job_detail_$jobid\__runs_every'")->[0];
+%	if ($fn eq 'hourly_tasks.pl') {
+%		$jobid     = 99408211;
+%		$is_active = 1;
+%		$featkey   = 'tbd';
+%	}
+	<tr class="align-top">
+	<td class="<% $tr_cl %>">
+%		if ($jobid && !$is_active) {
+			<s><% $fn %></s>
+%		}
+%		else {
+			<b><% $fn %></b>
+%		}
+%		if (-e "$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$chap/$subchap/job\-$fn\.html") {
+			<a href="job-<% $fn %>.html">Info</a>
+%		}
+	</td>
+	<td class="<% $tr_cl %>">
+%		if ($jobid) {
+			<span class="float-right pl-5"><a href="/adm_job.html?id=<% $jobid %>"><% $jobid %></a></span>
+			<% $featkey %>
+%		}
+	</td>
+	<td class="pl-10 <% $tr_cl %>">
+%		if ($jobid) {
+			<table clasx="min-w-full">
+%			foreach (sort keys %{ $par }) {
+%				next if /^quiet$/ or /pass/;
+				<tr>
+				<td style="min-width:125px"><% $_ %></td><td><% $par->{$_} %></td>
+				</tr>
+%			}
+			</table>
+%		}
+	</td>
+	<td class="<% $tr_cl %> text-sm">
+%		if ($jobid) {
+			<% $is_active ? 'Aktiv' : 'Inaktiv' %>
+%		}
+	</td>
+	<td class="<% $tr_cl %> text-right">
+%		if ($runs_every_min) {
+			<% $runs_every_min %> Min
+%		}
+	</td>
+	</tr>
+% }
+</table>
+
+<ol class="mt-10 custom-list">
+<li><a href="/adx/show.html?macro=prism_sys_jobs">cronjobs</a> &ndash; <a href="/adx/show.html?macro=prism_sys_jobs&q=edi">EDI Jobs</a></li>
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-web-components">Web Components</a></li>
+</ol>

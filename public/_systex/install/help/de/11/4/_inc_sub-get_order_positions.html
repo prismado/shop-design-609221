@@ -1,0 +1,24 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	# XXX use ScreenPoint::Auctionline;
+	# XXX my $A = ScreenPoint::Auctionline->new( $C );
+</%init>
+
+<%perl>
+	my $order_id = $C->query('select max(id) from orders where status=4')->[0];
+</%perl>
+
+<p>
+	Helper-Funktion. Genutzt von <a href="./?filter=get_order_statement"><tt>get_order_statement</tt></a><br><br>
+
+	Order-ID <a target="_blank" href="/adm_order.html?id=<% $order_id %>"><% $order_id %></a>
+</p>
+
+<%doc>
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">tbd</code></pre>
+</div>
+</%doc>

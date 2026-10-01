@@ -1,0 +1,28 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm}; # -- $perm->{email}
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<p class="mb-3">
+	Öffnen Sie das zu kopierende Produkt und scrollen Sie an das Ende der Seite.<br>
+	Sie finden unten links den Link <b>"Produkt kopieren"</b> (siehe Pfeil).
+</p>
+
+<img src="../../../assets/images/pic-copy-product.png">
+
+% if ($perm->{is_devel}) {
+	<br><br>
+
+	<code class="text-xl font-bold text-gray-800 mt-8 mb-5">$A-&gt;copyproduct()</code><br>
+	X -- Method &uuml;berpr&uuml;fen / &uuml;berarbeiten! en und fr m&uuml;ssen ebenfalls eingepflegt werden!
+% }

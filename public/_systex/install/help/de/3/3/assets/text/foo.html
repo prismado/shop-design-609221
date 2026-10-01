@@ -1,0 +1,33 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+<p class="mt-10">
+	CH: <% $C->{CONFIG}->{vat_ch} %> % &rarr; <tt>$C->{CONFIG}->{vat_ch}</tt>
+</p>
+
+<ul class="mt-10 custom-list">
+	<li><a href="/adm_vat.html">Verwaltung</a></li>
+	<li><a href="/adx/special_keys.html?area=vat">Verwaltung #2</a></li>
+</ul>
+
+<%doc>
+XXX:
+<p class="mt-5">
+	<a href="/adx/manage-property.html?area=creditcard"><% $C->txt('creditcard', 'de') %></a>
+</p>
+
+	<li><a href="https://docs.ch2.be/_search.html?q=%2Bpayment%2A&wiki_50=1&narrow_search=1&wiki_29=1">Wiki-Suche</a></li>
+</ul>
+/XXX
+</%doc>

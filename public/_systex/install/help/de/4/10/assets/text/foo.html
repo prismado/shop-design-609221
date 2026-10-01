@@ -1,0 +1,54 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	$r->content_type('text/html; charset=utf-8');
+</%init>
+
+<p>
+	<a href="/adm_reports.html">Sales Report</a><br>
+	<a href="/adm_sales_report.html">Sales Report #2</a><br>
+	<img class="mt-5" src="/_systex/install/help/assets/images/screenshot-2024-11-26-144627.png">
+
+	<p class="mt-5">Total Product Value</p>
+	<div class="w-3/4 ZZmt-5">
+		<pre clasx="line-numbers" data-start="10"><code class="language-perl">SELECT SUM(p.count * p.price)
+FROM orders_products p, orders o, products q
+WHERE order_id=o.id AND q.id=prod_id
+AND o.instime between '2024-10-01 00:00:00' and '2024-10-31 23:59:59'
+AND status IN (4)</code></pre>
+	</div>
+
+	<p class="mt-5">Revnue Total</p>
+	<div class="w-3/4 ZZmt-5">
+		<pre clasx="line-numbers" data-start="10"><code class="language-perl">SELECT SUM(amount_incl_vat) FROM orders
+WHERE instime BETWEEN '2024-10-01 00:00:00' and '2024-10-31 23:59:59' AND status IN (4)</code></pre>
+	</div>
+</p>
+
+<h3 class="mt-10">Siehe auch</h3>
+
+<ul class="custom-list">
+	<li><a href="../5/">History / Verlauf</a></li>
+	<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-order-completion">Bestellabschluss</a></li>
+</ul>
+
+<%doc>
+	<div class="col-2 pl-0">
+		<pre clasx="line-numbers" data-start="10"><code class="language-shell">W407051-38</code></pre>
+	</div>
+
+	<img style="max-width:66%" class="mt-5" src="../../../assets/images/workflow-sale-407101.webp">
+</%doc>

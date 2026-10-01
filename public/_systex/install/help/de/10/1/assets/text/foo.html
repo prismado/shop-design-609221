@@ -1,0 +1,22 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+	my $perm = $s{perm};
+	my $ts   = $s{ts} || '2000-01-01 00:00:00';
+
+	my $age = $C->age_of_timestamp( $s{ts} );
+
+	if ($age > 3) {
+		$m->out("Aborting, assuming wrong usage or timeout ($age s)");
+		return;
+	}
+</%init>
+
+<ol class="custom-list mt-5">
+
+<li>Wiki: <a href="https://docs.ch2.be/w/prismado-shop/feat-online-help">Feature Online Help</a></li>
+<li><a href="/adm_masterdata.html?pane=2">Upload von Dateien</a><br>
+Danach verschieben nach: <tt>_systex/install/help/assets/images</tt></li>
+
+</ol>

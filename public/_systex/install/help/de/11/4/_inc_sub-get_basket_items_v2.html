@@ -1,0 +1,44 @@
+<%init>
+	my %s = %HTML::Mason::Commands::session;
+
+	my $C    = $s{C};
+
+	use ScreenPoint::Auctionline;
+
+	my $A = ScreenPoint::Auctionline->new( $C );
+</%init>
+
+<%perl>
+	my $last_oid = $C->query('select id from orders where status=4 order by 1 desc limit 1')->[0];
+
+	my $bask_itms = $A->get_basket_items_v2( order_id => $last_oid );
+</%perl>
+
+XX <% $last_oid %><br>
+
+<div class="w-1/2">
+	<pre clasx="line-numbers" data-start="10"><code class="language-perl">my $bask_itms = $A-&gt;get_basket_items_v2( order_id =&gt; {ORDER_ID} );</code></pre>
+</div>
+
+% foreach (sort keys %{ $bask_itms }) {
+	XX <% $_ %> = <% $bask_itms->{$_} %><br>
+% }
+<br>
+
+% foreach my $itm (@{ $bask_itms->{items} }) {
+%	foreach (sort keys %{ $itm }) {
+		X ----- <b><% $_ %></b> = <% $itm->{$_} %><br>
+%	}
+%	foreach (sort keys %{ $itm->{pdata} }) {
+%		next if /^desc_long$/ or /^\_.+/ or /^art_no/ or /^desc_keyw$/ or /feat$/;
+%		next unless length( $itm->{pdata}->{$_} );
+		XX ------- <% $_ %> = <% $itm->{pdata}->{$_} %><br>
+%	}
+%	foreach (sort keys %{ $itm->{pdata}->{pfeat} }) {
+		[ pfeat ] ----- <% $_ %> = <% $itm->{pdata}->{pfeat}->{$_} %><br>
+%	}
+%	foreach (sort keys %{ $itm->{pdata}->{feat} }) {
+		XX -------------------- <% $_ %> = <% $itm->{pdata}->{feat}->{$_} %><br>
+%	}
+	<br>
+% }

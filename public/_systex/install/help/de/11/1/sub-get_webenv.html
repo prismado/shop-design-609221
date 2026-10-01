@@ -1,0 +1,90 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $help = $C->get_online_help();
+
+	my $this = 4;
+	my $sub  = 1;
+
+	if ($ENV{REQUEST_URI} =~ /.+\/help\/de\/(\d+)\/(\d+)/) {
+		$this = $1;
+		$sub  = $2;
+	}
+
+	$C->redir('/signin.html') unless $perm->{is_admin}; # -- 21Nov2024
+
+	my $HLP   = $C->get_online_help(source=>"online_help_area_$this");
+	my $title = $C->get_online_help_refs()->{ref}->{"$this\/$sub"};
+
+	my $text = $C->readdir("$C->{CONFIG}->{DOCUMENT_ROOT}/_systex/install/help/de/$this/$sub/assets/text");
+
+	my $href_cl = 'text-blue-500 underline hover:text-blue-700 font-bold';
+
+	my $env = $C->get_webenv();
+	my $server_addr = $ENV{HTTP_X_SERVER_ADDR} || $ENV{SERVER_ADDR} || '127.0.0.1';
+</%init>
+<!doctype html>
+<html>
+<head>
+	<title>Online-Hilfe: <% $title %> | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<& _includes/inc_header.html &>
+<link rel="stylesheet" href="/adx/assets/css/prism-code-1-15.css" data-noprefix />
+<script src="/adx/assets/js/prism-code.js"></script>
+</head>
+
+<body class="p-11 bg-gray-100">
+	<& _includes/inc_top_nav.html, perm=>$perm, A=>$A, C=>$C &>
+
+	<h1 class="text-4xl font-bold text-gray-800 mt-8">Sub-Bereich <% $this %>&ndash;<% $sub %> &ndash; <% $title %></h1>
+
+	<h4 class="mt-3 mb-5"><% $C->get_short_file_name( $ENV{REQUEST_URI} ) %></h4>
+
+	<p class="mb-3"><a class="<% $href_cl %>" href=".">Aufw&auml;rts</a> &mdash; <a href="/adx/dev-lab.html">Dev Lab</a> &mdash;
+		<a href="/adm_db_edit.html?table=work&wcl=k=%27env_V<% $env->{VERSION} %>_os%27">env_V<% $env->{VERSION} %>_os</a></p>
+
+	<table stylx="">
+%	foreach (sort keys %{ $env }) {
+%		next if /^db_orig$/ or /^uname_all$/;
+		<tr style="border: 1px #a8a8a8 solid;">
+		<td class="font-bold"><% $_ %></td>
+		<td class="pl-5"><code><% $env->{$_} %></code>
+%			if (/^ip_info_hostname$/) {
+				&rarr; <a href="/adm_db_edit.html?table=work&wcl=k+LIKE+%27env_V%_os%27">Reset Workval</a>
+%			}
+		</td>
+		<tr>
+%	}
+	</table>
+
+	<div class="w-1/2 mt-10">
+		<pre clasx="line-numbers" data-start="10"><code
+			class="language-perl">my $server_addr = $ENV{HTTP_X_SERVER_ADDR} || $ENV{SERVER_ADDR} || '127.0.0.1';</code></pre>
+	</div>
+
+	<table class="mt-5">
+	<tr><td class="pr-3">HTTP_X_SERVER_ADDR:</td><td class="pr-3"><tt><% $ENV{HTTP_X_SERVER_ADDR} %></tt></td><td></td></tr>
+	<tr><td>Server IP:</td><td><tt><% $server_addr %></tt></td>
+		<td><a href="https://ipinfo.io/<% $server_addr %>/json">Info</a></td></tr>
+	<tr><td>Your IP:</td><td><tt><% $ENV{HTTP_X_REMOTE_ADDR} %></tt> &rarr; HTTP_X_REMOTE_ADDR</td>
+		<td><a href="https://ipinfo.io/<% $ENV{HTTP_X_REMOTE_ADDR} %>/json">Info</a></td></tr>
+	<tr><td>HTTP_USER_AGENT:</td><td colspan="2"><% $C->shorten_user_agent( $ENV{HTTP_USER_AGENT} ) %></td></tr>
+	</table>
+
+	<p class="mt-10">
+		Siehe auch $C-&gt;get_site_perl( ) &rarr; <% $C->get_site_perl() %>
+	</p>
+
+%	if ($perm->{is_devel}) {
+		<hr class="mt-8">
+		<small>Dev: REQUEST_URI <% $ENV{REQUEST_URI} %></small>
+%	}
+
+
+	<& _includes/inc_footer.html, perm=>$perm, A=>$A, C=>$C &>
+</body>
+</html>
