@@ -1,0 +1,88 @@
+<%init>
+        use ScreenPoint::Core;
+        use ScreenPoint::Auctionline;
+	use JSON;
+
+	# -- http://datatables.net/examples/data_sources/server_side.html
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $json = JSON->new();
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my @dbcols    = qw(id featkey featname);
+	my $sortcol   = $cgi->param('iSortCol_0');
+	my $direction = $cgi->param('sSortDir_0');
+	my $lang      = $cgi->param('lang');
+
+	my @json = ();
+	(my $order = "$dbcols[$sortcol] $direction") =~ s/tstamp/id/;
+
+	my $iDisplayLength = $cgi->param('iDisplayLength');
+	my $iDisplayStart  = $cgi->param('iDisplayStart');
+	my $sEcho          = $cgi->param('sEcho');
+	my $sSearch        = $cgi->param('sSearch');
+	my $filter         = $cgi->param('filter');
+
+	my @where_clause = ();
+	push(@where_clause, "lang='$lang'") if $lang;
+	push(@where_clause, "(featkey LIKE '%$sSearch%' OR featname LIKE '%$sSearch%')") if $sSearch;
+	push(@where_clause, "(featkey LIKE '%$filter%' OR featname LIKE '%$filter%')") if $filter;
+
+	my $wcl = join ' AND ', @where_clause;
+	   $wcl = "WHERE $wcl" if @where_clause;
+
+	my $limit  = $iDisplayLength ? "LIMIT $iDisplayLength" : '';
+	my $offset = $iDisplayStart  ? "OFFSET $iDisplayStart" : '';
+
+	my $area = '';
+	if ($iDisplayStart && $iDisplayLength != -1) {
+		$area = "LIMIT $iDisplayStart, $iDisplayLength";
+	}
+	elsif ($iDisplayLength) {
+		$area = "LIMIT $iDisplayLength";
+	}
+
+	$dbcols[1] = "UPPER( $dbcols[1] )" if $lang eq 'sys';
+
+	my $stmt = 'SELECT ' . (join ', ', @dbcols) . qq~ 
+			FROM 	config_prod_feat
+				$wcl
+			ORDER 	BY $order 
+			$area~;
+
+	if ($C->{CONFIG}->{debug_level} > 1) {
+		print STDERR "$stmt\n";
+	}
+
+	my $sth = $dbh->prepare($stmt);
+	   $sth->execute() or print STDERR "ERR $DBI::errstr $stmt\n";
+
+	my $count = $C->query("select COUNT(*) FROM config_prod_feat $wcl")->[0];
+
+	my %pay_meth_hr = ( 1=>'cc', 2=>'cod', 3=>'bill', 4=>'paypal', 5=>'postcard', 6=>'prepay', 7=>'pcd' );
+	my %status_hr = ( 1=>'new', 2=>'pending_cc', 3=>'cancelled', 4=>'okay' );
+
+	while(my $r = $sth->fetch()) {
+		my ($id, $key, $val, $tstamp) = @{$r};
+		$key =~ s/^$filter//i if $filter =~ /\_$/;
+		# XXX $key =~ s/^currency\_//;
+		$val =~ s|<.+?>||g; # -- Remove HTML tags
+		my @arr = ();
+		push(@arr, "<div style='text-align:center'><a href='adm_safe_property.html?id=$id'>$id</a></div>");
+		push(@arr, "<b>$key</b>");
+		push(@arr, substr($C->utf2iso($val), 0, 80));
+
+		push(@json, \@arr);
+	}
+
+	my $JSON = $json->encode(\@json);
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{"sEcho": <% $sEcho %>, "iTotalRecords": <% $count %>, "iTotalDisplayRecords": <% $count %>, "aaData": <% $JSON %> }
+<%doc>
+	 __METACLONING__
+</%doc>
