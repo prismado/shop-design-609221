@@ -36,8 +36,13 @@
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tbd xx</p>
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Warenkorb</h1>
 
+			<table>
+			<% $bsk->{out} %>
+			</table>
+
 			<p>
 %				foreach (sort keys %$bsk) {
+%					next if $_ eq 'out';
 					XX <% $_ %> = <% $bsk->{$_} %><br>
 %				}
 			</p>
