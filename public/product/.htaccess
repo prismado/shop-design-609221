@@ -12,4 +12,3 @@ RewriteEngine On
 # Von `lenovo-thinkvision-t32h-30-monitor/8` umleiten nach: `./?id=8`
 
 RewriteRule ^.*/(\d+)$				./?id=$1
-RewriteRule ^.*-.*-.*-.*-.*/(\d+)$		./?id=$1
