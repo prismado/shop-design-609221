@@ -9,7 +9,8 @@
 	my $imgs = $args{imgs};
 	my $id   = $args{id};
 
-	my $img_url = "../produkte/p$id\_large.jpg"; # -- https://placehold.co/450x450/d8d8d8/a8a8a8?text=Produkt-\nBild
+	my $img_url = $prod->{image}->{url};
+	# XX my $img_url = "../produkte/p$id\_large.jpg"; # -- https://placehold.co/450x450/d8d8d8/a8a8a8?text=Produkt-\nBild
 </%init>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
