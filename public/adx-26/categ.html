@@ -1,0 +1,93 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $cgi = $C->{CGI};
+	# XXX my $UID = $C->getUID();
+	my $perm = $C->get_user_perm(); # -- 07Jan2026
+	my $UID  = $perm->{uid};
+
+	my $id            = $cgi->param('id') + 0;
+	my $debug         = $cgi->param('debug') + 0;
+	my $bUpdate       = $cgi->param('bUpdate');
+	my $act           = $cgi->param('act');
+	my $delspecialkey = $cgi->param('delspecialkey') + 0;
+	my $delspecialsafekey = $cgi->param('delspecialsafekey') + 0;
+	my $special_key   = $C->trim($cgi->param('special_key'));
+	my $cb_prop_safe  = $cgi->param('cb_prop_safe');
+	my $msg = '';
+
+	if ($act eq 'create') {
+		my $l = $cgi->param('l') || 'de';
+		$C->{dbh}->do("insert into categories (id, parent_id, lang, label) values ($id, 0, '$l', '* New *')") or ($msg = "ERR $DBI::errstr");
+	}
+
+	if ($special_key) {
+		my $special_val = $C->trim($cgi->param('special_val'));
+		if ($cb_prop_safe) {
+			$C->set_safe_property("_categ_special_$id\_$special_key", $special_val, 'sys');
+		}
+		else {
+		$C->set_property('_global', "_categ_special_$id\_$special_key\_sys", $special_val);
+		}
+	}
+	elsif ($delspecialkey) {
+		$C->{dbh}->do("delete from properties where id=$delspecialkey");
+	}
+	elsif ($delspecialsafekey) {
+		$C->{dbh}->do("delete from config_prod_feat where id=$delspecialsafekey");
+	}
+
+	my $label = $C->query("select label FROM categories WHERE id=$id AND lang='de'")->[0];
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Adm <% $label %> &middot; <% $C->{CONFIG}->{HTTP_HOST} %></title>
+<&_includes/header_meta_theme.html&>
+<link href="/lib/bootstrap-toggle-buttons/static/stylesheets/bootstrap-toggle-buttons.css" rel="stylesheet">
+<script src="/lib/bootstrap-toggle-buttons/static/js/jquery.toggle.buttons.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(function() {
+	    $('#danger-toggle-button').toggleButtons({
+		style: {
+		    enabled: "info",
+		    disabled: "danger"
+		}
+	    });
+	});
+</script>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+		<& _includes/adm_categ.html, bUpdate=>$bUpdate, msg=>$msg, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
+		<& _includes/footer2.html, C => $C &>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

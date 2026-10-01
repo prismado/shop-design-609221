@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+
+	my $uinfo = $C->get_user_info($args{UID});
+</%init>
+<div class="navbar">
+	<div class="navbar-inner" style="background:white !important">
+	<ul class="nav pull-right">
+		<li><a href='#'><b><%$C->{CONFIG}->{site_title}%></b></a></li>
+	    <li id="fat-menu" class="dropdown">
+	    	<a href="#" role="button" class="dropdown-toggle"
+			data-toggle="dropdown"><i class="icon-user"></i> <%$uinfo->{firstname}%> <%$uinfo->{lastname}%><i
+				class="icon-caret-down"></i></a>
+		<ul class="dropdown-menu">
+		    <li><a tabindex="-1" href="account2.html">My Account</a></li>
+		    	<li class="divider"></li>
+		    <li><a tabindex="-1" class="visible-phone" href="#">Settings</a></li>
+		    	<li class="divider visible-phone"></li>
+		    <li><a tabindex="-1" href="signin.html">Sign in</a></li>
+		    <li><a href="#" onclick='JavaScript:document.logoutForm.submit()'><span>Logout <% $C->whoami() %></span></a></li>
+		</ul>
+	    </li>
+	</ul>
+	<a href="."><img border=0 src="/adx/assets/images/logo/logo-prismado-400x120.avif" style="margin-top:-1px; margin-right:3px" width="145"
+		title='Prismado &middot; E-Commerce'></a>
+% # XX	<a href="."><img border=0 src="/adx/assets/images/logo/logo_prismado_shop_white_bg.svg" style="margin-top:-1px; margin-right:3px" width="45"
+% # XX		title='Prismado &middot; E-Commerce'><img border="0" width=160 src="/adx/assets/images/logo/logo_prismado_shop_tx_white_bg.svg"></a>
+	</div>
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -1,0 +1,45 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C      = $args{C};
+	my $dummy  = $C->{M}->callers(1);
+	my $parent = $dummy->{path};
+
+	my $func   = $C->{CGI}->param('func');
+</%init>
+%
+<div id="main-menu">
+%
+% # XXX	<div id="phone-navigation"><&dashboard_phone_nav.html&></div>
+%
+<ul class="nav nav-tabs">
+<li<%$parent eq '/__dashboard.html' ? ' class="active"' : ''%>><a href="__dashboard.html"><i class="icon-dashboard"></i> <span>Dashboard</span></a></li>
+<li<%$parent eq '/adm_orders.html' ? ' class="active"' : ''%>><a href="adm_orders.html"><i class="icon-edit"></i> <span>Orders</span></a></li>
+<li<%$parent eq '/adm_items.html' ? ' class="active"' : ''%>><a href="/adx/show.html?macro=products"><i class="icon-umbrella"></i> <span>Products</span></a></li>
+<li<%$func eq 'options' ? ' class="active"' : ''%>><a href="admix.html?func=options&style=3"><i class="icon-reorder"></i> <span>Options</span></a></li>
+<li<%$parent eq '/customers.html' ? ' class="active"' : ''%>><a href="customers.html"><i class="icon-group"></i> <span>Customers</span></a></li>
+<li><a href="/adx/show.html?macro=promos"><i class="icon-star"></i> <span>Promos</span></a></li>
+% # XX <li<%$func eq 'promo' ? ' class="active"' : ''%>><a href="admix.html?func=promo"><i class="icon-star"></i> <span>Promos</span></a></li>
+% if ($C->is_devel()) {
+<li class="dropdown">
+<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> Settings <b class="caret"></b></a>
+	<ul class="dropdown-menu">
+	    <li><a href="adm_categs.html"><span>Categories</span></a></li>
+	    <li><a href="config2.html"><span>Configuration</span></a></li>
+	    <li><a href="signin.html"><span>Sign-in Page</span></a></li>
+	    <li><a href="users2.html"><span>Forgot Password Page</span></a></li>
+	    <li><a href="adm_shipping.html"><span>Shipping</span></a></li>
+	    <li><a href="adm_mail_tpl.html"><span>Mail Templates</span></a></li>
+	    <li><a href="adm_log.html"><span>Log</span></a></li>
+	    <li><a target=_blank
+		href="<%$C->{CONFIG}->{phpMyAdminURL}%>/index.php?db=<%$ENV{db_name}%>"><span>phpMyAdmin</span></a></li>
+	</ul>
+</li>
+% }
+<li class="pull-right" style='margin-right:15px'><%$C->now(3)%></li>
+</ul>
+%
+</div>
+<%doc>
+	__METACLONING__
+</%doc>

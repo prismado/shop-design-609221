@@ -1,0 +1,15 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C} || $args{CORE};
+</%init>
+<form method=post action='/account2.html?pid=<%$$%>' name='logoutForm'><input type=hidden name='action' value='logout'></form>
+<footer>
+    <hr>
+    <p class="pull-right"><a href="http://www.prismado.com" target="_blank">Prismado E-Commerce</a></p>
+% # -- 2011-2019
+    <p><%$C->{CONFIG}->{site_title}%> &middot; &copy; 2023 &middot; <a href="https://algonetic.com">algonetic Ltd</a> | <a
+	href="https://prismado.com/">Prismado E-Commerce</a></p>
+</footer>
+<%doc>
+	__METACLONING__
+</%doc>

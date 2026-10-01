@@ -1,0 +1,298 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $perm = $args{perm}; # -- 07Jan2026
+	my $msg = $args{msg};
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $id      = $cgi->param('id');
+	my $picture = $cgi->param('picture');
+
+	(my $ext = $C->get_file_extension($picture)) =~ tr/A-Z/a-z/;
+	my $filesize = 0;
+	my $cur_pic = $C->get_full_file_name("$ENV{DOCUMENT_ROOT}/produkte/categ_pic_$id\.");
+	my $fileinfo_cur_pic = $C->get_file_info($cur_pic);
+
+	if ($args{bUpdate}) {
+		my $label       = $cgi->param('label');
+		my $visible     = $cgi->param('visible');
+		my $weight      = $cgi->param('weight');
+		my $extra_label = $cgi->param('extra_label');
+		my $parent_id   = $cgi->param('parent_id') || 0;
+		my $new_id      = $cgi->param('new_id') || $id;
+		(my $desc       = $cgi->param('categ_desc')) =~ s/'/''/g;
+
+		$C->{dbh}->do(qq~	UPDATE	categories
+					SET	label='$label', extra_label='$extra_label',
+						parent_id=$parent_id, visible=$visible,
+						weight=$weight, id=$new_id
+					WHERE	id=$id
+						AND lang='$lang'~) or $m->out("ERROR $DBI::errstr<br>");
+		$C->set_property('_global', "_categ_desc_$id\_$lang", $desc);
+		if ($args{debug}) {
+			$m->out(qq~set_property: "_categ_desc_$id\_$lang" = "$desc"<br>~);
+		}
+
+		if ($picture) {
+			my $upload_tempfilename = $cgi->tmpFileName($cgi->param('picture'));
+			my $fileinfo = $C->get_file_info($upload_tempfilename);
+			$filesize = $fileinfo->{size_kb};
+			use File::Copy;
+			my $rc = copy $upload_tempfilename,
+				"$ENV{DOCUMENT_ROOT}/produkte/categ_pic_$id\.$ext" or $m->out("ERR $! $upload_tempfilename<br>");
+			$cur_pic = "$ENV{DOCUMENT_ROOT}/produkte/categ_pic_$id\.$ext";
+			$fileinfo_cur_pic = $C->get_file_info($cur_pic);
+		}
+		$m->redirect("adm_categ.html?id=$new_id") if $id != $new_id;
+	}
+	elsif ($cgi->param('bClone')) {
+		$A->clone_categ($id);
+		$m->redirect('adm_categs.html');
+	}
+	elsif ($cgi->param('bAdd')) {
+		my $next_id = $C->query("select MAX(id) + 1 FROM categories")->[0];
+		$C->{dbh}->do("INSERT INTO categories (id, lang, label) VALUES ($next_id, 'de', '* New Categ *')")
+			or $m->out("ERROR $DBI::errstr<br>");;
+	}
+
+	my ($exists, $parent_id, $visible, $label, $extra_label, $weight) = @{$C->query(qq~
+		select 	id, parent_id, visible, label, extra_label, weight
+		FROM 	categories
+		WHERE 	id=$id AND lang='$lang'~)};
+
+	my $categ_desc = $C->prp("_categ_desc_$id");
+	   $categ_desc = '' if $categ_desc eq "* [adm_categ] _categ_desc_$id ($lang) *";
+
+	my $sub_categs = $A->get_sub_categs($id, $lang);
+	my $sub_cat_count = $#{$sub_categs} + 1;
+
+	my $breadcrumb = $A->get_breadcrumb($id, $lang);
+	   $breadcrumb = $A->get_breadcrumb($id, 'de') unless @{$breadcrumb};
+
+	my $item_count = $C->query("select COUNT(*) FROM products2categ WHERE cat_id=$id")->[0];
+
+	unless ($exists) {
+		$label = $C->query("select label from categories where id=$id and lang='de'")->[0];
+		$label = "* $label *";
+	}
+
+	my $sth = $C->{dbh}->prepare("select id, substr(`key`, 16, 63), val, tstamp from properties where `key` like '\_categ\_special\_$id\_%\_sys'");
+	   $sth->execute();
+
+	my $st2 = $C->{dbh}->prepare("select id, substr(featkey, 16, 63), featname from config_prod_feat where featkey like '\_categ\_special\_$id\_%'");
+	   $st2->execute();
+
+	my $st3 = $C->{dbh}->prepare("select id, xkey, xval from categ_meta where cat_id=$id and lang='sys' order by 2");
+	   $st3->execute();
+</%init>
+<script language=JavaScript>
+	function del_categ(id) {
+		if (confirm('<%$sub_cat_count ? "$sub_cat_count child categs!!" : ''%> OK to delete Category ID ' + id)) {
+			document.location="adm_categs.html?delid="+id;
+		}
+	}
+</script>
+
+<span style='float:right; margin-top:9px'>
+% if ($C->{CONFIG}->{multi_lang}) {
+Language:
+<a style="<%$lang eq 'de' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=de">de</a> |
+<a style="<%$lang eq 'en' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=en">en</a> |
+<a style="<%$lang eq 'fr' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=fr">fr</a>
+% }
+% else {
+	No multi language
+% }
+% if ($args{debug}) {
+	| <a style="<%$lang eq 'sys' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=sys">sys</a>
+% }
+% if ($cur_pic) {
+<br><br>
+
+<img style="height:88px !important; margin-bottom:10px"
+	title="<%$fileinfo_cur_pic->{file_short}%>, <%$fileinfo_cur_pic->{mod}%>, <%$fileinfo_cur_pic->{size_kb}%> KB"
+		src="produkte/<% $fileinfo_cur_pic->{file_short} %>">
+% }
+</span>
+
+<h2><i class="icon-sitemap"></i> Category ID <%$id%> &middot; <%$label%></h2>
+
+<a href="adm_categs.html?visible=1">Up</a> &middot;
+% foreach (@{$breadcrumb}) {
+%	my ($id, $label) = split /\t/;
+	<a style="<% !$exists ? 'color:maroon' : ''%>" href="adm_categ.html?id=<%$id%>"><%$label%></a>&nbsp;&rsaquo;&nbsp;
+% }
+<b><%$label%></b><br><br>
+
+% if ($item_count) {
+	<a href="admix.html?func=items_expand&id=<%$id%>"><%$item_count%> Products</a>
+% }
+% else {
+	No products here &middot; <a href="admix.html?func=items_expand&id=<%$id%>&action=add_item">Add item</a>
+% }
+
+% unless ($exists) {
+	<div class="alert alert-warning">
+		Category ID <%$id%> does not exist with language code <b>&laquo;<%$lang%>&raquo;</b>
+	</div>
+
+	<a href="adm_categ.html?id=<%$id%>&act=create&l=<%$lang%>">Create?</a>
+% }
+	<br><br>
+
+<form method=post enctype="multipart/form-data" clasx="form-horizontal">
+<input type=hidden name=id value="<%$id%>">
+<input type=hidden name=debug value="<%$args{debug}%>">
+
+<table style="display:<% $exists ? '': 'none'%>" class='table'>
+
+<thead>
+	<th style='text-align:center'>ID</th>
+	<th style='text-align:center'>Parent ID</th>
+	<th>Label</th>
+	<th>Extra Label</th>
+	<th>Visible</th>
+	<th>Weight</th>
+	<th style='text-align:center'>Del</th>
+</thead>
+
+<tr>
+	<td style='text-align:center'><span rel="tooltip" data-original-title="Be sure to change this ID"
+		data-placement="bottom"><input type=text
+		name=new_id style="width:42px; text-align:center; font-weight:bold" value="<%$id%>"></span></td>
+	<td style='text-align:center' nowrap><input type=text name=parent_id value="<%$parent_id%>" style='width:42px; text-align:center'>
+%	if ($parent_id) {
+		<a href="adm_categ.html?id=<%$parent_id%>"><%$C->query("SELECT label FROM categories WHERE id=$parent_id and lang='$lang'")->[0]%></a>
+%	}
+	</td>
+	<td><input type=text name=label value="<%$label%>" style='width:290px; font-weight:bold'></td>
+	<td><input type=text name=extra_label value="<%$extra_label%>" style='width:255px'></td>
+	<td><input type=text name=visible value="<%$visible%>" style='width:15px; text-align:center'></td>
+	<td><input type=text name=weight value="<%$weight%>" style='width:25px; text-align:center'></td>
+	<td style='text-align:center'>
+	<input type=button class="btn btn-warning" onclick="del_categ(<%$id%>)" value="X" />
+	</td>
+</tr>
+
+<tr>
+	<td colspan="7">
+		<p style="margin-top:5px">Category Description &middot; (<%$lang%>)
+%			if ($perm->{is_devel}) {
+				&rarr; <a href="/adm_db_edit.html?table=properties&wcl=`key`%3D%27_categ_desc_<% $id %>_de%27">DB Edit</a>
+%			}
+		</p>
+		<textarea style="width:80%" name="categ_desc"
+			placeholder="Use $C->prop(&quot;_categ_desc_<%$id%>&quot;) to set this description anywhere on your website"
+				rows="2"><% $categ_desc %></textarea>
+	</td>
+</tr>
+
+<tr>
+	<td colspan="7">
+		<div class="pull-right">
+			<a onclick="JavaScript:document.getElementById('addSpecialKey').style.display=''" href="#">Add</a>
+		</div>
+		<b>Special Configuration</b><br><br>
+
+		<div id="addSpecialKey" style="display:none">
+		<div class="control-group">
+
+	    <div class="controls">
+		<input type="text" name="special_key" placeholder="Key">
+		<input type="text" name="special_val" placeholder="Value (max. 31 chars)">
+	    </div>
+
+		<div style="padding-bottom:5px">Property Restore-safe:</div>
+		<div id="danger-toggle-button" style="margin-right:1em">
+			<input name="cb_prop_safe" type="checkbox">
+		</div>
+
+		</div>
+		</div>
+
+		<table class="mytable table-hover">
+%		while(my $r = $st3->fetch()) {
+%			my ($id, $key, $val) = @{$r};
+			<tr>
+				<td style="width:25%;">[ categ_meta ] &middot; <b><% $key %></b></td>
+				<td>"<% $val %>" <small>(sys)</small></td>
+				<td style="text-align:right"><a href="/adm_db_edit.html?table=categ_meta&wcl=id%3D<% $id %>">E</a></td>
+			</tr>
+%		}
+%		while(my $r = $sth->fetch()) {
+%			my ($kid, $key, $val, $tstamp) = @{$r};
+%			$key =~ s/_sys$//;
+%			$key =~ s/^$id\_//;
+			<tr><td style="width:25% !important;">&bull; <b><%$key%></b></td><td>"<%$val%>" <small>(<a
+				href="/adx/manage-property.html?core=1">Property</a>)</small</td>
+			<td style="text-align:right"><a style="color:red"
+				href="adm_categ.html?id=<%$id%>&delspecialkey=<%$kid%>"><i class="icon-remove"></i></a></td>
+			</tr>
+%		}
+%		while(my $r = $st2->fetch()) {
+%			my ($kid, $key, $val) = @{$r};
+%			$key =~ s/^$id\_//;
+			<tr><td>[ <%$key%> ]</td><td>"<%$val%>"</td>
+			<td style="text-align:right"><a style="color:red"
+				href="adm_categ.html?id=<%$id%>&delspecialsafekey=<%$kid%>"><i class="icon-remove"></i></a></td>
+			</tr>
+%		}
+		</table>
+	</td>
+</tr>
+
+<tr>
+	<td colspan="7">
+		Picture: <input stylx='font-size:10px' type="file" name="picture" />
+	</td>
+</tr>
+
+</table>
+
+% if ($exists) {
+<input type=submit class='btn btn-primary' value='Update' name=bUpdate>
+<input type=submit style='margin-left:9px' class='btn btn-info' value='Clone' name=bClone>
+% }
+</form>
+
+% if ($args{debug}) {
+	<% $C->html_debug("select COUNT(*) FROM products2categ WHERE cat_id=$id") %>
+% }
+
+% if ($args{bAddSpecialKey}) {
+	<% $C->bootstrap_alert('Constr', 'success') %>
+% }
+
+% if ($args{bUpdate}) {
+%	my $msg = 'Updated.';
+%	if ($picture) {
+%		$msg .= qq~<br />Picture: <a href="produkte/categ_pic_$id\.$ext">$picture, $filesize KB</a>~;
+%	}
+	<% $C->bootstrap_alert($msg, 'success') %>
+% }
+% if ($args{msg}) {
+	<% $C->bootstrap_alert($args{msg}, 'success') %>
+% }
+
+% if ($sub_cat_count) {
+<%$sub_cat_count%> Child Categories
+% }
+% if ($sub_cat_count) {
+	<br><br>
+
+%	foreach my $cat_id (@{$sub_categs}) {
+%		my $label = $C->query("select label FROM categories WHERE id=$cat_id AND lang='$lang'")->[0];
+		&bull; <a href="adm_categ.html?id=<%$cat_id%>"><%$cat_id%></a> <%$label%><br>
+%	}
+	<br>
+
+	Delete Child Categories first!
+% }
+<%doc>
+	__METACLONING__
+</%doc>
