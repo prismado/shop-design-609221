@@ -1,0 +1,64 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid}
+	my $cgi   = $C->{CGI};
+
+	my $f_id_de = $cgi->param('f_id_de') + 0;
+	my $f_id_en = $cgi->param('f_id_en') + 0;
+	my $f_id_fr = $cgi->param('f_id_fr') + 0;
+	my $val_de  = $cgi->param('val_de');
+	my $val_en  = $cgi->param('val_en');
+	my $val_fr  = $cgi->param('val_fr');
+
+	my $redir_url = $ENV{HTTP_REFERER} || '/';
+
+	$m->redirect('/_error.html') unless $perm->{is_admin};
+
+	my $featname = $C->query("select featname from products_feat where id=$f_id_de")->[0];
+
+	(my $val_de_enc = $val_de) =~ s/'/''/g;
+	(my $val_en_enc = $val_en) =~ s/'/''/g;
+	(my $val_fr_enc = $val_fr) =~ s/'/''/g;
+
+	if ($featname eq '_exclude') {
+		$val_en_enc = $val_fr_enc = $val_de_enc;
+	}
+
+	my $errstr = '';
+	$C->{dbh}->do(qq~
+		update	products_feat
+		set	`description`='$val_de_enc', instime=NOW()
+		where	id=$f_id_de
+		limit	1
+	~) or $errstr = $DBI::errstr;
+
+	$C->{dbh}->do(qq~
+		update	products_feat
+		set	`description`='$val_en_enc', instime=NOW()
+		where	id=$f_id_en and lang='en'
+		limit	1
+	~) or $errstr = "$errstr $DBI::errstr";
+
+	$C->{dbh}->do(qq~
+		update	products_feat
+		set	`description`='$val_fr_enc', instime=NOW()
+		where	id=$f_id_fr and lang='fr'
+		limit	1
+	~) or $errstr = "$errstr $DBI::errstr";
+
+	my $msg = $errstr ? "Error $errstr" : "Eigenschaft $featname aktualisiert";
+
+	$C->create_toast_note(
+		body  => "$msg<br>(F-ID $f_id_de / $val_de)",
+		type  => $errstr ? 'error' : '',
+		delay => 5000
+	);
+
+	$m->redirect($redir_url);
+</%init>
+<%doc>
+	Created: 01Apr2024
+</%doc>
