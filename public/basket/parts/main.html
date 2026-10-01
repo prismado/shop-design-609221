@@ -31,6 +31,7 @@ XXX:
 			<p class="text-sm text-gray-600 leading-relaxed">Artikelliste</p>
 			<br />
 
+%			if ($bsk_itms->{item_count}) {
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 %			foreach my $d (@{$bsk_itms->{items}}) {
 				<div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
@@ -61,11 +62,11 @@ XXX:
 					</div>
 				</div>
 %			}
-
-%			unless ($bsk_itms->{item_count}) {
+			</div>
+%			}
+%			else {
 				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
 %			}
-			</div>
 
 			<div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-200">
 				<span class="text-sm text-gray-500"><% $bsk_itms->{item_count} %> Artikel</span>
