@@ -1,7 +1,14 @@
 RewriteEngine On
 
+# Muster:
+
+# Von `irgendwas-xxxx/1234`                  umleiten nach: `./?id=1234`
+# Von `irgendwas-xxxx-yyyy/4321`             umleiten nach: `./?id=4321`
+
+# Beispiele:
+
 # Von `robi-tobi-cam/7`                      umleiten nach: `./?id=7`
 # Von `lenovo-thinkvision-t32h-30-monitor/8` umleiten nach: `./?id=8`
 
 RewriteRule ^.*/(\d+)$				./?id=$1
-RewriteRule ^.*-(.*-.*-.*-.*)/(\d+)$		./?id=$2
+RewriteRule ^.*-.*-.*-.*-.*/(\d+)$		./?id=$1
