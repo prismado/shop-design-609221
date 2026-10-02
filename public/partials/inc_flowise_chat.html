@@ -8,7 +8,7 @@
 
 	my $chatflowid = $C->get_safe_property('fw_chat_id_1', 'sys');
 
-	my $header_bg_color     = '#0D1F1A'; # -- (1)
+	my $header_bg_color     = '#c92424'; # -- (1)
 	my $header_text_color   = '#00E5A0'; # -- (2)
 	   $header_text_color   = 'white';
 	my $message_bg_color    = '#112920'; # -- (3)
@@ -60,8 +60,10 @@
                 showTooltip: true,
 % #		tooltipMessage: 'Hallo 👋!',
 		tooltipMessage: '<% $hello->{hello} %>',
-		tooltipBackgroundColor: '#196719',
-		tooltipTextColor: 'lightgreen',
+% #		Sprechplase vor öffnen:
+		tooltipBackgroundColor: '#1c1512',
+		tooltipTextColor: 'white',
+% # XX		tooltipTextColor: 'lightgreen',
                 tooltipFontSize: 16
             },
 <%doc>
