@@ -12,6 +12,7 @@
 	my $perm = $C->get_user_perm();
 
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
+	my $cookie_consent = $C->get_cookie_consent();
 
 	my $this = $C->this(); # -- product/index
 	my @path_elems = split /\//, $this;
@@ -80,6 +81,7 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
 </section>
 
 	<& partials/daily_offer.html, C => $C &>
+	<& partials/inc_flowise_chat.html, C=>$C, cookie_consent=>$cookie_consent &>
 </div>
 
 	<& partials/footer.html, is_index => 1, C => $C &>
