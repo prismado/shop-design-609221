@@ -1,0 +1,191 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	use utf8;
+
+	my $C    = $args{C};
+	my $cookie_consent = $args{cookie_consent};
+
+	my $chatflowid = $C->get_safe_property('fw_chat_id_1', 'sys');
+
+	my $header_bg_color     = '#0D1F1A'; # -- (1)
+	my $header_text_color   = '#00E5A0'; # -- (2)
+	   $header_text_color   = 'white';
+	my $message_bg_color    = '#112920'; # -- (3)
+	my $message_text_color  = '#00E5A0'; # -- (4)
+	my $bot_window_color    = 'rgba(26,61,46,0.20)'; # -- (5)
+	my $user_text_bg_color  = '#5dffc1'; # -- (6)
+	my $text_input_bg_color = '#0A1A14'; # -- (7)
+	my $text_input_color    = 'lightgreen';
+
+	my $botAvatarSrc = 'https://ops.zspace.ch/upload/logo-algonetic-24-500x500.png';
+	   $botAvatarSrc = '/assets/images/icons/logo_algonetic_lightgreen.avif';
+	my $iconSrc      = '/assets/images/icons/chat-icon-transp_602271.png';
+	   $iconSrc      = '/assets/images/icons/chat-icon-transp_lightgreen.avif';
+	my $titleIconSrc = '/assets/images/icons/chat-icon-transp_502022.png';
+
+	my $openDelaySec = $cookie_consent->{decision} ? 50 : 120;
+
+	my $hello = $C->get_random_hello();
+</%init>
+
+<script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    Chatbot.init({
+	chatflowid: "<% $chatflowid %>",
+        apiHost: "https://fw1.h3.zspace.ch",
+        chatflowConfig: {
+            /* Chatflow Config */
+        },
+        observersConfig: {
+            /* Observers Config */
+        },
+        theme: {
+            button: {
+		backgroundColor: '<% $header_bg_color %>',
+                right: 20,
+                bottom: 50,
+                size: 48,
+                dragAndDrop: true,
+                iconColor: '<% $header_text_color %>',
+                customIconSrc: '<% $iconSrc %>',
+% #		customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                autoWindowOpen: {
+                    autoOpen: true,
+                    openDelay: <% $openDelaySec %>,
+                    autoOpenOnMobile: false
+                }
+            },
+            tooltip: {
+                showTooltip: true,
+% #		tooltipMessage: 'Hallo 👋!',
+		tooltipMessage: '<% $hello->{hello} %>',
+		tooltipBackgroundColor: '#196719',
+		tooltipTextColor: 'lightgreen',
+                tooltipFontSize: 16
+            },
+<%doc>
+            disclaimer: {
+                title: 'Datenschutz',
+                message: "Durch die Nutzung dieses Chatbots erklären Sie sich einverstanden mit den <a target=\"_blank\" href=\"/privacy.html\">Datenschutzbestimmungen</a>",
+                textColor: 'black',
+                buttonColor: '#3b82f6',
+                buttonText: 'Chat beginnen',
+                buttonTextColor: 'white',
+                blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
+                backgroundColor: 'white'
+            },
+</%doc>
+	    customCSS: `
+		/*
+		.text-input {
+			border-color: red !important;
+			color: yellow !important;
+		}
+		*/
+		textarea.text-input::placeholder {
+			color: #919191 !important;
+		}
+		.chatbot-container {
+			background-color: var(--fw-chat-bg, <% $bot_window_color %>) !important;
+		}
+	    `,
+            chatWindow: {
+                showTitle: true,
+                showAgentMessages: true,
+                title: 'ALGONETIC Bot',
+		titleAvatarSrc: '<% $titleIconSrc %>',
+% #		titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+% #		welcomeMessage: 'Hallo und herzlich willkommen!',
+		welcomeMessage: '<% $hello->{follow} %>',
+                errorMessage: 'Damit kann ich Ihnen im Augenblick leider nicht dienen.',
+		backgroundColor: '<% $bot_window_color %>',
+                backgroundImage: 'enter image path or link',
+% #		height: 750,
+		height: 620,
+                width: 600,
+                fontSize: 16,
+                starterPrompts: [
+                    "Unsere Dienstleistungen",
+		    "Informationen zu Onlineshops",
+		    "Unterstützung in Google Ads",
+                    "Wer sind Sie?",
+		    "Warum wir"
+                ],
+                starterPromptFontSize: 15,
+                clearChatOnReload: false,
+                sourceDocsTitle: 'Sources:',
+                renderHTML: true,
+                botMessage: {
+			backgroundColor: '<% $message_bg_color %>',
+			textColor: '<% $message_text_color %>',
+                    showAvatar: true,
+		    avatarSrc: '<% $botAvatarSrc %>'
+% #		    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                },
+                userMessage: {
+			backgroundColor: '<% $user_text_bg_color %>',
+			textColor: 'darkgreen',
+                    showAvatar: true,
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                },
+                textInput: {
+			placeholder: 'Stellen Sie hier Ihre Frage',
+			backgroundColor: '<% $text_input_bg_color %>',
+			textColor: '<% $text_input_color %>',
+                    sendButtonColor: 'darkgreen',
+                    maxChars: 90,
+                    maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 90 characters.',
+                    autoFocus: true,
+                    sendMessageSound: true,
+                    sendSoundLocation: '/assets/sounds/send_message.mp3',
+                    receiveMessageSound: true,
+                    receiveSoundLocation: '/assets/sounds/livechat-129007.mp3'
+                },
+                feedback: {
+                    color: '#303235'
+                },
+                dateTimeToggle: {
+                    date: true,
+                    time: true
+                },
+                footer: {
+                    textColor: 'lightgreen',
+                    text: 'Powered by',
+                    company: 'ALGONETIC',
+                    companyLink: 'https://algonetic.com'
+                }
+            }
+        }
+    })
+</script>
+
+<script>
+(function () {
+    var COLOR_SOLID  = 'rgba(26,61,46,0.70)';
+    var COLOR_TRANSP = '<% $bot_window_color %>';
+    var SCROLL_IN    = 20;   /* % → dunkel         */
+    var SCROLL_OUT   = 25;   /* % → hell (Hysterese) */
+    var current      = '';
+
+    /* CSS Custom Properties erben durch Shadow-DOM-Grenzen hinweg.
+       Die customCSS-Regel greift auf --fw-chat-bg zu und überschreibt
+       den von Solid.js gesetzten Inline-Style mit !important. */
+    function applyColor(color) {
+        if (current === color) return;
+        current = color;
+        document.documentElement.style.setProperty('--fw-chat-bg', color);
+    }
+
+    function getScrollPct() {
+        var h = document.documentElement.scrollHeight - window.innerHeight;
+        return h > 0 ? (window.scrollY / h) * 100 : 0;
+    }
+
+    window.addEventListener('scroll', function () {
+        var pct = getScrollPct();
+        if      (pct >= SCROLL_IN)  applyColor(COLOR_SOLID);
+        else if (pct <  SCROLL_OUT) applyColor(COLOR_TRANSP);
+    }, { passive: true });
+})();
+</script>
