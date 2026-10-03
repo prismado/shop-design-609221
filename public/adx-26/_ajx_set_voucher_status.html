@@ -1,0 +1,30 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id');
+
+	my $cur_status = $C->query("select status FROM vouchers WHERE id=$id")->[0];
+
+	unless ($cur_status) {
+		$C->{dbh}->do("UPDATE vouchers SET status=1 WHERE id=$id");
+	}
+	else {
+		$C->{dbh}->do("UPDATE vouchers SET status=0 WHERE id=$id");
+	}
+
+	# XXX my $prod_id = $C->{CGI}->param('prod_id'); 	# -- Product ID
+	# XXX my $oid     = $C->{CGI}->param('oid'); 		# -- Opt ID
+	# XXX my $opt     = $C->{CGI}->param('opt'); 		# -- 1 or 0
+
+	# my $checked = $C->getSessData("upprod_id_$prod_id\_$oid") ? 0 : 1;
+	# $C->saveSessData("upprod_id_$prod_id\_$oid", $checked);
+
+	$C->log( msg => "Voucher ID $id", service => 'ajx_set_voucher_status' );
+	# XXX $C->log( msg => "XXX " . $cgi->param('rand') );
+</%init>
