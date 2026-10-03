@@ -113,11 +113,16 @@
 			</div>
 
 %			if ($UID > 0) {
-			<div class="row">
-%				foreach (sort keys %$uaddr_bill) {
-					[Bill] <b><% $_ %></b> = <% $uaddr_bill->{$_} %><br>
-%				}
-			</div>
+				<div class="row">
+%					foreach (sort keys %$uaddr_bill) {
+						[Bill] <b><% $_ %></b> = <% $uaddr_bill->{$_} %><br>
+%					}
+				</div>
+				<div class="row">
+%					foreach (sort keys %$uaddr_deliv) {
+						[Deliv] <b><% $_ %></b> = <% $uaddr_deliv->{$_} %><br>
+%					}
+				</div>
 %			}
 
 			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4
