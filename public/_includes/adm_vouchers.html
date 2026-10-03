@@ -15,12 +15,14 @@
 			$C->{dbh}->do("INSERT INTO vouchers (vcode) VALUES ('V$now')") or $errstr = $DBI::errstr;
 		}
 		my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
-		$m->redirect("adm_voucher.html?id=$last_id");
+		$m->redirect("voucher.html?id=$last_id");
+		# XXX $m->redirect("adm_voucher.html?id=$last_id");
 	}
 </%init>
 <h2><i class="icon-gift"></i> E-Vouchers &middot; Online-Gutscheine</h2>
 
-<a href="adm_vouchers.html?bAdd=1"><i class="icon-plus"></i> Add Voucher</a><br>
+% # XXX <a href="adm_vouchers.html?bAdd=1"><i class="icon-plus"></i> Add Voucher</a><br>
+<a href="vouchers.html?bAdd=1"><i class="icon-plus"></i> Add Voucher</a><br>
 
 <div id="<% $this %>">
 
