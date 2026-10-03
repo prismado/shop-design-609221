@@ -74,7 +74,7 @@
 <& partials/header.html, A => $A, C => $C &>
 
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
-<div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
+<div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
 
 	<& partials/left_nav.html, A => $A, C => $C &>
 
@@ -83,7 +83,6 @@
 		<& parts/main.html, bsk_itms => $bsk_itms, A => $A, C => $C &>
 	</section>
 
-% #	<& partials/daily_offer.html, C => $C &>
 </div>
 
 % if (@msgs) {
