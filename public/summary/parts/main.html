@@ -119,17 +119,13 @@
 					<% $uaddr_bill->{street} %><br>
 					<% $uaddr_bill->{zip} %> <% $uaddr_bill->{city} %><br>
 					Tel. <% $uaddr_bill->{phone} %><br>
-%					foreach (sort keys %$uaddr_bill) {
-%						next if /name$/ or /^\_.+/;
-% # XXX						[Bill] <b><% $_ %></b> = <% $uaddr_bill->{$_} %><br>
-%					}
 				</div><br>
 				<div class="row">
+					<% $uaddr_deliv->{company} %><br>
 					<% $uaddr_deliv->{firstname} %> <% $uaddr_deliv->{lastname} %><br>
-%					foreach (sort keys %$uaddr_deliv) {
-%						next if /name$/ or /^\_.+/;
-						[Deliv] <b><% $_ %></b> = <% $uaddr_deliv->{$_} %><br>
-%					}
+					<% $uaddr_deliv->{street} %><br>
+					<% $uaddr_deliv->{zip} %> <% $uaddr_deliv->{city} %><br>
+					Tel. <% $uaddr_deliv->{phone} %><br>
 				</div>
 %			}
 
