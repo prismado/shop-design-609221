@@ -73,7 +73,8 @@
 		$company = $C->shorten_title($company, 30) if length($company) > 30;
 
 		my @row = ();
-		push(@row, qq~<a href='/adm_user.html?id=$id'><b>$id</b></a>~);
+		# XXX push(@row, qq~<a href='/adm_user.html?id=$id'><b>$id</b></a>~);
+		push(@row, qq~<a href='user.html?id=$id'><b>$id</b></a>~);
 		push(@row, $C->web_enc($first));
 		push(@row, "<b>$last</b>");
 		push(@row, $C->web_enc($company));
