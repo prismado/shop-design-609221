@@ -1,0 +1,27 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $A = $args{A};
+	my $C = $args{C};
+</%init>
+<%doc>
+<div style="margin-top:10px" class="pull-right">
+ 	<a href="user.html?id=<%$args{id}%>&opendet=1">Ust-ID</a> <% $args{UINF}->{ust_id} || 'N/A' %>
+%	if ( $args{UINF}->{eori_nr} ) {
+	<br>
+	<a href="user.html?id=<%$args{id}%>&opendet=1">EORI Nr.</a> <% $args{UINF}->{eori_nr} %>
+%	}
+</div>
+</%doc>
+
+% for (my $i=1; $i<3; $i++) {
+%	my $d = $A->get_address_by_id($args{id}, $i);
+%	$d->{email} = $args{UINF}->{email} if $i == 1;
+%	$d->{company} = $C->trim($d->{company});
+	<div style='margin-right:20px; margin-top:15px; width:290px; background-color:#f0f0f0' class="well pull-left">
+	<& inc_dashboard_user_addr_detail.html, id=>$args{id}, d=>$d, type=>$i, C=>$C &>
+	</div>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>

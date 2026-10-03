@@ -1,0 +1,40 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $id   = $args{id} + 0;
+	my $C    = $args{C};
+	my $A    = $args{A};
+	my $perm = $args{perm};
+
+	my $now9 = $C->now(9);
+
+	my $sth = $C->{dbh}->prepare(qq~
+		SELECT	id, SPLIT_STR( SUBSTR(xkey, 6, 15), '_', 1 ), xval, tstamp
+		FROM	users_details
+		WHERE	user_id=$id AND xkey LIKE 'hist\_%'
+		ORDER	BY id DESC
+		LIMIT	999
+	~);
+	$sth->execute();
+
+	return unless $sth->rows();
+</%init>
+<br />
+<h4>User History</h4>
+<table class="mytable table-hover">
+% while(my $r = $sth->fetch()) {
+%	my ($id, $key, $val, $ts) = @{$r};
+	<tr>
+	<td style="width:13%; padding:0px"><% $C->trans_date_short($ts) %></td>
+	<td style="width:15%"><% ucfirst $key %></td>
+	<td><% $val %>
+%	if ($perm->{is_devel}) {
+		&ndash; <a href="/adm_db_edit.html?table=users_details&wcl=id%3D<% $id %>"><i class="icon-edit"></i> <% $id %></a>
+%	}
+	</td>
+	</tr>
+% }
+</table>
+<%doc>
+	Created: 15Oct2023
+</%doc>

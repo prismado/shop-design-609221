@@ -1,0 +1,71 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+	my $license = $C->get_license();
+
+	my $debug     = $cgi->param('debug');
+	my $id        = $cgi->param('id');
+	my $bSendMail = $cgi->param('bSendMail');
+	my $bInvitation = $cgi->param('bInvitation');
+
+	if ($bSendMail) {
+		my $id       = $cgi->param('id')   + 0;
+		my $nlid     = $cgi->param('nlid') + 0;
+		my $UINF = $A->get_user_info($id);
+		(my $mailtext = $cgi->param('mailtext')) =~ s/\{\{email\}\}/$UINF->{email}/g;
+		    $mailtext =~ s/\{\{password\}\}/$UINF->{pass}/g;
+		my ($subject, $sender) = @{$C->query("select subject, sender_email from newsletter where id=$nlid")};
+
+		$C->mail_generic(
+			to            => $UINF->{email},
+			from_realname => $C->{CONFIG}->{HTTP_HOST},
+			sender        => $sender || $C->{CONFIG}->{order_email},
+			to_realname   => "$UINF->{firstname} $UINF->{lastname}",
+			subject       => $subject,
+			title         => 'dashboard_user',
+			data          => $mailtext
+		);
+
+		my $now = $C->now(1);
+		$C->set_user_detail($id, "mail_sent_$now", "$subject\t$nlid\t$UINF->{email}");
+	}
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>User Detail ID <%$id%> &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body onload="$('#ajx_docs').load('ajx_docs.html?uid=<%$id%>&pid=<%$$%><%$debug ? '&debug=1' : ''%>');" class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, func=>'user', license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+		<& _includes/adm_user.html, bSendMail=>$bSendMail, bInvitation=>$bInvitation, debug=>$debug, A=>$A, C=>$C &>
+	<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

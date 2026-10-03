@@ -1,0 +1,50 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $d = $args{d};
+	my $C = $args{C};
+
+	my $type_hr = $args{type} == 1 ? 'Billing' : 'Delivery';
+
+	my %salut = ( 1 => 'Herr', 2 => 'Frau', 3 => 'Firma' );
+</%init>
+<h2 style="margin-bottom:20px"><i onclick="edit_addr(<%$args{id}%>, <%$args{type}%>)" 
+	style='cursor:pointer' class="icon-pencil"></i> <%$type_hr%></h2>
+
+% if ($d->{gender} == 3) {
+	<b><%$d->{company}%></b><br>
+	<%$d->{firstname}%> <%$d->{lastname}%><br>
+% }
+% else {
+	<%$salut{$d->{gender}}%><br>
+	<b><%$d->{firstname}%> <%$d->{lastname}%></b><br>
+%	if ($d->{company}) {
+		<%$d->{company}%><br>
+%	}
+% }
+
+<%$d->{street}%><br>
+<%$d->{zip}%> <%$d->{city}%><br>
+<% $C->map_country($d->{country}) %><br>
+<br>
+
+% delete $d->{firstname};
+% delete $d->{lastname};
+% delete $d->{company};
+% delete $d->{street};
+% delete $d->{zip};
+% delete $d->{city};
+% delete $d->{country};
+% delete $d->{gender};
+
+% foreach (keys %{$d}) {
+%	next if (!$d->{$_} or $_ =~ /^\_/);
+%	my $label = (ucfirst $_) . ':';
+%	   $label = '<i class="icon-phone"></i>'    if $_ eq 'phone';
+%	   $label = '<i class="icon-envelope"></i>' if $_ eq 'email';
+	<nobr><% $label %> <% $C->shorten_title($d->{$_}, 37) %><br></nobr>
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>
