@@ -1,0 +1,43 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	$C->redir('/signin.html') unless $C->is_admin();
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+	my $area = $cgi->param('area');
+	my $debug = $cgi->param('debug');
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Adm VAT <%$area%> &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, C=>$C, license=>$license &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+	<&_includes/adm_vat.html, C=>$C, debug=>$debug&>
+	<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>
