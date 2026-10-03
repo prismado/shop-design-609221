@@ -176,7 +176,7 @@
 					border-t border-gray-200">
 				<div class="flex items-center justify-between sm:gap-6">
 					<span class="text-base text-gray-900">
-						Total inkl. MwSt.:
+						Total inkl. <% $grand_tot->{default_vat} %>% MwSt.:
 						<span class="ml-3 font-bold">
 							CHF <% $C->decimal_mark($grand_tot->{grand_total}) %>
 						</span>
