@@ -104,7 +104,8 @@
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Gutschein</h2>
 				<div class="flex gap-3 max-w-md">
-					CHF 0.00
+					<% $grand_tot->{voucher_code} %> &rarr; CHF <% $grand_tot->{voucher_value} %>
+% # XXX					CHF 0.00
 				</div>
 			</div>
 
