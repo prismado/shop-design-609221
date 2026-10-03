@@ -46,7 +46,8 @@
 						class="thumb-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden
 							border border-gray-200 bg-white hover:border-red-400 transition"
 						data-src="../<% $_ %>">
-						<img src="../<% $_ %>" class="w-full h-full object-cover" loading="lazy" alt="Produktbild">
+						<img src="../<% $_ %>" class="w-full h-full object-cover"
+										loading="lazy" alt="Produktbild">
 					</button>
 %				}
 				</div>
@@ -60,7 +61,8 @@
 						text-white/80 hover:text-white p-2" aria-label="Schliessen">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 							stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+							<path stroke-linecap="round" stroke-linejoin="round"
+											d="M6 18 18 6M6 6l12 12" />
 						</svg>
 					</button>
 					<button type="button" class="gallery-prev absolute left-2 sm:left-6
@@ -76,7 +78,8 @@
 						text-white/80 hover:text-white p-2" aria-label="Nächstes Bild">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 							stroke-width="2" stroke="currentColor" class="w-8 h-8">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+							<path stroke-linecap="round" stroke-linejoin="round"
+											d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 						</svg>
 					</button>
 				</div>
@@ -88,7 +91,7 @@
 					var modal     = document.getElementById('gallery-modal-<% $id %>');
 					if (!modal) return;
 
-					var thumbs  = thumbRoot ? Array.prototype.slice.call(thumbRoot.querySelectorAll('.thumb-btn')) : [];
+				var thumbs  = thumbRoot ? Array.prototype.slice.call(thumbRoot.querySelectorAll('.thumb-btn')) : [];
 					var sources = [];
 					if (mainBtn) sources.push(mainBtn.dataset.src);
 					thumbs.forEach(function (t) { sources.push(t.dataset.src); });
@@ -187,7 +190,6 @@
 			(function () {
 				var btn   = document.getElementById('add-to-basket-<% $id %>');
 				<& ../partials/toast_js.html &>
-
 				btn.addEventListener('click', function () {
 					var body = new URLSearchParams();
 					body.set('id', '<% $id %>');
