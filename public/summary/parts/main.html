@@ -3,11 +3,18 @@
 
 	my %args = $m->caller_args(0);
 
-	my $bsk_itms = $args{bsk_itms};
-	my $perm     = $args{perm};
-	my $C        = $args{C};
-	my $A        = $args{A};
+	my $bsk_itms  = $args{bsk_itms};
+	my $perm      = $args{perm};
+	my $C         = $args{C};
+	my $A         = $args{A};
 	my $grand_tot = $args{grand_tot};
+
+	my $lang = 'de';
+
+	my %pay_meth_hr = (
+		prx => 'Kreditkarte (Payrexx)',
+		pp  => 'PayPal'
+	);
 
 	my $basket_h     = $A->get_basket_items();
 	# XX my $prod_options = $A->get_basket_options();
@@ -77,7 +84,7 @@
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Zahlungsart</h2>
 				<div class="flex flex-col gap-2">
-					<% $args{pay_meth} %>
+					<% $args{pay_meth} %> = <% $pay_meth_hr{$args{pay_meth}} %>
 				</div>
 			</div>
 
