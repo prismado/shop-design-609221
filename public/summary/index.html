@@ -7,6 +7,7 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
+	my $lang = 'de';
 
 	my $cgi = $C->{CGI};
 
@@ -49,6 +50,70 @@
 	my $bsk_itms = $A->get_basket_items_v2();
 
 	# ------------- Summary -------------------------------------------------------------------------------
+	my @appmsgs = ();
+
+	$C->cgi2session();
+
+	my $ship_meth     = $C->{CGI}->param('ship_meth')            || $C->getSessData('ship_meth');
+	my $remarks       = $C->{CGI}->param('checkout_bemerkungen') || $C->getSessData('checkout_bemerkungen');
+	my $delivery_date = $C->{CGI}->param('checkout_liefer_date') || $C->getSessData('checkout_liefer_date');
+	my $referenz_text = $C->{CGI}->param('checkout_referenz')    || $C->getSessData('checkout_referenz');
+	   $referenz_text =~ tr/["<>]//d; # -- Against XSS
+	my $addr_deliv = $A->get_address(2);
+
+	my %ship_meth_hr_map = (
+		std => 'Standard',
+		ins => 'Versicherter Versand',
+		postpac_prio => $C->prp('delivery_method_title_postpac_prio'),
+		pic => 'Selbstabholung',
+	);
+
+	my $pay_meth = $C->{CGI}->param('checkout_zahlungsart_select') || $C->getSessData('checkout_zahlungsart_select');
+	   $pay_meth =~ tr/["<>]//d; # -- Against XSS
+	my $pay_meth_hr = $C->txt('creditcard', $lang);
+
+	my $ship_meth_hr = $ship_meth_hr_map{$ship_meth} || "* $ship_meth *";
+	$C->del_sess_key('flag_anon_buy'); # -- Reset flag
+
+	my $SID = $C->getSID();
+
+	my $order_okay = 1;
+	my $art_numbers = $A->get_products_art_no_from_session( $SID );
+	foreach my $prodid (keys %{$art_numbers}) {
+		my $stock_count = $C->query("select stock from options_details where ref='$art_numbers->{$prodid}'")->[0];
+		push(@appmsgs, "Prod-ID $prodid: Art No \"$art_numbers->{$prodid}\", Stock: $stock_count") if $debug;
+		next if $stock_count == -1 or length($art_numbers->{$prodid}) < 2; # -- Skip these abort conditions! (16Sep2023)
+		my $count_req   = $C->query("SELECT count FROM basket WHERE prod_id=$prodid and sid=$SID")->[0];
+		if ($count_req > $stock_count) {
+			my $prod_title = $C->query("select title from products_desc where product_id=$prodid and lang='$lang'")->[0];
+			my $stock_warn_msg = $C->prop('out_of_stock_warn');
+			   $stock_warn_msg =~ s/\{id\}/$prodid/g;
+			   $stock_warn_msg =~ s/\{avail\}/$stock_count/g;
+			push(@appmsgs, $stock_warn_msg);
+			push(@appmsgs, $C->prop('out_of_stock_hint'));
+			$C->log(msg=>'WARN: ' . $C->web_enc($C->utf2iso($stock_warn_msg)), importance=>1);
+			$order_okay = 0;
+		}
+	}
+
+	$C->saveSessData('ship_meth', $ship_meth); # -- To get a current result from the next method on case it has been updated
+	my $grand_tot = $A->get_order_grand_total(debug=>$debug); # -- Total inkl. Mwst.
+
+	my %voucher = ();
+	$voucher{val5}           = $A->get_cur_voucher_value(); # -- Supplies module var "voucher_info"
+	   $voucher{code}        = $C->trim($C->{CGI}->param('voucher')) || $C->trim($C->getSessData('voucher'));
+	   $voucher{val}         = sprintf('%.2f', $grand_tot->{voucher_value});
+	   $voucher{perc}        = $A->{voucher_info}->{perc};
+	   $voucher{valid}       = $A->{voucher_info}->{is_valid};
+	   $voucher{categ_id}    = $A->{voucher_info}->{categ_id};
+	   $voucher{_msg}        = $A->{voucher_info}->{_msg};
+	   $voucher{msg_dev}     = $A->{voucher_info}->{msg_409230};
+	   $voucher{dlv_country} = $addr_deliv->{country} || 'CH'; # -- 23Sep2024
+	   $voucher{tax_perc}    = $C->{CONFIG}->{'vat_' . lc $voucher{dlv_country}};
+
+	unless ($voucher{perc}) { # -- Voucher with an amount instead of percentage
+		$voucher{val5} = $C->round_amount( $voucher{val5} * (1 + $voucher{tax_perc} / 100) );
+	}
 	# ------------- /Summary -------------------------------------------------------------------------------
 </%init>
 <!DOCTYPE html>
