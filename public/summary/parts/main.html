@@ -7,10 +7,18 @@
 	my $perm      = $args{perm};
 	my $C         = $args{C};
 	my $A         = $args{A};
+	my $UID       = $args{UID};
 	my $grand_tot = $args{grand_tot};
 	my $appmsgs   = $args{appmsgs};
 
 	my $lang = 'de';
+
+	my $uaddr_bill;
+	my $uaddr_deliv;
+	if ($UID > 0) {
+		$uaddr_bill  = $A->get_address_by_id($UID, 1);
+		$uaddr_deliv = $A->get_address_by_id($UID, 2);
+	}
 
 	my %pay_meth_hr = (
 		prx => 'Kreditkarte / TWINT / Google Pay / Klarna',
@@ -103,6 +111,14 @@
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bemerkungen</h2>
 				<p>tbd</p>
 			</div>
+
+%			if ($UID > 0) {
+			<div class="row">
+%				foreach (sort keys %$uaddr_bill) {
+					[Bill] <b><% $_ %></b> = <% $uaddr_bill->{$_} %><br>
+%				}
+			</div>
+%			}
 
 			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4
 					border-t border-gray-200">
