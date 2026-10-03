@@ -63,19 +63,44 @@
 				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
 %			}
 
-			<div class="mt-6">
-				Zahlungsart:<br>
-				<input type=radio name="checkout_zahlungsart_select" value="prx" checked>
-					Kreditkarte / TWINT / Google Pay / Klarna<br>
-				<input type=radio name="checkout_zahlungsart_select" value="pp"> PayPal
+			<div class="mt-8">
+				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Zahlungsart</h2>
+				<div class="flex flex-col gap-2">
+					<label class="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3
+							cursor-pointer has-[:checked]:border-red-500 has-[:checked]:ring-1
+							has-[:checked]:ring-red-500 transition">
+						<input type="radio" name="checkout_zahlungsart_select" value="prx" checked
+							class="w-4 h-4 accent-red-600">
+						<span class="text-sm text-gray-800">Kreditkarte / TWINT / Google Pay / Klarna</span>
+					</label>
+					<label class="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3
+							cursor-pointer has-[:checked]:border-red-500 has-[:checked]:ring-1
+							has-[:checked]:ring-red-500 transition">
+						<input type="radio" name="checkout_zahlungsart_select" value="pp"
+							class="w-4 h-4 accent-red-600">
+						<span class="text-sm text-gray-800">PayPal</span>
+					</label>
+				</div>
 			</div>
 
-			<div class="mt-6">
-				Gutschein-Code: <input type="text" name="voucher">
+			<div class="mt-8">
+				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Gutschein</h2>
+				<div class="flex gap-3 max-w-md">
+					<input type="text" name="voucher" placeholder="Gutschein-Code"
+						class="flex-1 min-w-0 rounded-full border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+							placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+					<button type="button"
+						class="flex-shrink-0 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium
+							text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition">Einlösen</button>
+				</div>
 			</div>
 
-			<div class="mt-6">
-				<textarea name="checkout_bemerkungen" placeholder="Bemerkungen (optional)"></textarea>
+			<div class="mt-8">
+				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bemerkungen</h2>
+				<textarea name="checkout_bemerkungen" rows="3" placeholder="Bemerkungen (optional)"
+					class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800
+						placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500
+						transition resize-none"></textarea>
 			</div>
 
 			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4
