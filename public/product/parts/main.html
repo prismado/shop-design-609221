@@ -193,40 +193,6 @@ XXX:
 				<& ../partials/toast_js.html &>
 <%doc>
 XXX:
-				var toast = document.getElementById('toast-<% $id %>');
-				if (!btn || !toast) return;
-
-				var iconOk    = toast.querySelector('.toast-icon-success');
-				var iconError = toast.querySelector('.toast-icon-error');
-				var text      = toast.querySelector('.toast-text');
-				var cartBadge = document.getElementById('cart-count');
-				var hideTimer = null;
-
-				function showToast(ok, message) {
-					iconOk.classList.toggle('hidden', !ok);
-					iconError.classList.toggle('hidden', ok);
-					toast.classList.toggle('bg-green-50', ok);
-					toast.classList.toggle('border-green-200', ok);
-					toast.classList.toggle('bg-red-50', !ok);
-					toast.classList.toggle('border-red-200', !ok);
-					text.textContent = message;
-					text.className = 'toast-text text-sm leading-snug ' + (ok ? 'text-green-800' : 'text-red-700');
-
-					toast.classList.remove('hidden');
-					toast.classList.add('flex');
-					requestAnimationFrame(function () {
-						toast.classList.remove('opacity-0', '-translate-y-2');
-					});
-
-					clearTimeout(hideTimer);
-					hideTimer = setTimeout(function () {
-						toast.classList.add('opacity-0', '-translate-y-2');
-						setTimeout(function () {
-							toast.classList.add('hidden');
-							toast.classList.remove('flex');
-						}, 300);
-					}, 3000);
-				}
 /XXX
 </%doc>
 
