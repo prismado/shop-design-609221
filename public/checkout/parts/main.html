@@ -81,16 +81,52 @@
 
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Gutschein</h2>
-				<div class="flex gap-3 max-w-md">
-					<input type="text" name="voucher" placeholder="Gutschein-Code"
+				<div class="flex flex-wrap items-center gap-3 max-w-md">
+					<input type="text" name="voucher" id="voucher-input" placeholder="Gutschein-Code"
 						value="<% $args{voucher_code} %>"
 						class="flex-1 min-w-0 rounded-full border border-gray-300 px-4 py-2.5 text-sm text-gray-800
 						placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
-					<button type="button"
+					<button type="button" id="voucher-submit"
 						class="flex-shrink-0 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium
 							text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition">Einlösen</button>
+					<span id="voucher-result" class="text-sm font-medium"></span>
 				</div>
 			</div>
+
+			<script>
+			(function () {
+				var input  = document.getElementById('voucher-input');
+				var btn    = document.getElementById('voucher-submit');
+				var result = document.getElementById('voucher-result');
+				if (!input || !btn || !result) return;
+
+				btn.addEventListener('click', function () {
+					var code = input.value.trim();
+					result.textContent = '';
+					result.className = 'text-sm font-medium';
+					if (!code) return;
+
+					fetch('../dyn/get-voucher-info.html?code=' + encodeURIComponent(code))
+						.then(function (res) { return res.json(); })
+						.then(function (data) {
+							if (data.rc === 0) {
+								var discount = data.perc > 0
+									? '-' + data.perc + '%'
+									: 'CHF ' + data.amount + ' Rabatt';
+								result.textContent = discount + ' – ' + data.message;
+								result.className = 'text-sm font-medium text-green-700';
+							} else {
+								result.textContent = data.message;
+								result.className = 'text-sm font-medium text-red-600';
+							}
+						})
+						.catch(function () {
+							result.textContent = 'Gutschein konnte nicht geprüft werden.';
+							result.className = 'text-sm font-medium text-red-600';
+						});
+				});
+			})();
+			</script>
 
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bemerkungen</h2>
