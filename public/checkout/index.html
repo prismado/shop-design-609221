@@ -14,6 +14,11 @@
 	my $redo   = $cgi->param('redo') + 0; # -- Prod-ID
 	my $debug  = $cgi->param('debug');
 
+	my $remarks       = $C->getSessData('checkout_bemerkungen');
+	   $remarks       =~ s/\&/&amp;/g;
+	   $remarks       =~ s/\</&lt;/g;
+	   $remarks       =~ s/\>/&gt;/g;
+
 	my @msgs = ();
 	my $prod_id;
 
@@ -80,10 +85,14 @@
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, bsk_itms => $bsk_itms, A => $A, C => $C &>
+		<& parts/main.html,
+			bsk_itms => $bsk_itms,
+			remarks  => $remarks,
+			A        => $A,
+			C        => $C
+		&>
 	</section>
 
-% #	<& partials/daily_offer.html, C => $C &>
 </div>
 
 % if (@msgs) {
