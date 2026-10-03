@@ -1,0 +1,81 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+	my $perm= $C->get_user_perm();
+	my $UID = $perm->{uid};
+
+	$C->redir('/signin.html') unless $perm->{is_admin}; # -- 23Jan2025
+
+	my $id   = $cgi->param('id') + 0;
+	my $bUpd = $cgi->param('bUpd');
+
+	 my ($vcode, $instime, $amount, $perc, $valid_from, $valid_to,
+		$count_available, $count_used, $categ_id, $status) = @{$C->query(
+		"select vcode, instime, amount, perc, valid_from, valid_to,
+			count_available, count_used, categ_id, status FROM vouchers WHERE id=$id")};
+
+	my $date_frox = my $time_frox = my $time_from_db = '';
+	my $date_tx   = my $time_tx   = my $time_to_db = '';
+
+	my $vld_from_time = (split / /, $valid_from)[1];
+	my $vld_to_time   = (split / /, $valid_to)[1];
+
+	if ($bUpd) {
+		$date_frox     = $C->trim($cgi->param('date_frox'));
+		$time_frox     = $cgi->param('time_frox');
+		$time_from_db  = $C->trans_date_to_db("$date_frox $time_frox");
+		$vld_from_time = $time_frox;
+
+		$date_tx     = $C->trim($cgi->param('date_tx'));
+		$time_tx     = $cgi->param('time_tx');
+		$time_to_db  = $C->trans_date_to_db("$date_tx $time_tx");
+		$vld_to_time = $time_tx;
+	}
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Voucher Detail &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme.html&>
+<&_includes/header_toggle_buttons.html&>
+<script src="lib/datepicker/js/bootstrap-datepicker.js" type="text/javascript"></script>
+<script src="lib/bootstrap-timepicker/js/bootstrap-timepicker.js" type="text/javascript"></script>
+<script language="JavaScript">
+	$(function() {
+		$('.datepicker').datepicker({weekStart: 1});
+		$('.timepicker').timepicker({showMeridian: false, showSeconds: false, minuteStep: 15, defaultTime: '<% $vld_from_time %>'});
+		$('.timepickex').timepicker({showMeridian: false, showSeconds: false, minuteStep: 15, defaultTime: '<% $vld_to_time %>'});
+	});
+</script>
+<link href="lib/datepicker/css/datepicker.css" rel="stylesheet">
+<link href="lib/bootstrap-timepicker/compiled/timepicker.css" rel="stylesheet">
+</head>
+% # XXX <&_includes/meta_top.html&>
+<body class="">
+	<& _includes/adm_navbar.html, C=>$C, UID=>$UID &>
+	<& _includes/dashboard_mainmenu_hor.html, C=>$C &>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, func=>'voucher', license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+	<& _includes/adm_voucher.html, bUpd=>$bUpd, date_frox=>$date_frox, time_frox=>$time_frox, time_from_db=>$time_from_db, time_to_db=>$time_to_db, A=>$A, C=>$C &>
+	<& _includes/footer2.html, C=>$C &>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>

@@ -69,7 +69,8 @@
 		$valid_to = "<nobr>$valid_to_l$valid_to$valid_to_r</nobr>";
 		my @arr = ();
 
-		push(@arr, "<a style='font-weight:bold' href='adm_voucher.html?id=$id'>$vcode</a>");
+		# XXX push(@arr, "<a style='font-weight:bold' href='adm_voucher.html?id=$id'>$vcode</a>");
+		push(@arr, "<a style='font-weight:bold' href='voucher.html?id=$id'>$vcode</a>");
 		push(@arr, "<div style='text-align:right; padding-right:11px'>$id</div>");
 		push(@arr, $C->trans_date_short($valid_from));
 		push(@arr, $valid_to);
