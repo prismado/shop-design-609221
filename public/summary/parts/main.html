@@ -9,6 +9,7 @@
 	my $A         = $args{A};
 	my $UID       = $args{UID};
 	my $grand_tot = $args{grand_tot};
+	my $remarks   = $args{remarks};
 	my $appmsgs   = $args{appmsgs};
 
 	my $lang = 'de';
@@ -109,7 +110,7 @@
 
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bemerkungen</h2>
-				<p>tbd</p>
+				<p><% $remarks %></p>
 			</div>
 
 %			if ($UID > 0) {
