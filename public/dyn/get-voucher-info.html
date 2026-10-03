@@ -19,6 +19,6 @@
 {
   "rc": 0,
   "amount": <% $info->{amount} %>,
-  "perc": <% $info->{perc} %>,
-  "message": "valid=<% $info->{is_valid} %>"
+  "perc": <% $info->{perc} // 0 %>,
+  "message": "<% $info->{_msg} %>"
 }
