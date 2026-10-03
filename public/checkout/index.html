@@ -18,6 +18,7 @@
 	   $remarks       =~ s/\&/&amp;/g;
 	   $remarks       =~ s/\</&lt;/g;
 	   $remarks       =~ s/\>/&gt;/g;
+	my $voucher_code  = $C->getSessData('voucher');
 
 	my @msgs = ();
 	my $prod_id;
@@ -88,6 +89,7 @@
 		<& parts/main.html,
 			bsk_itms => $bsk_itms,
 			remarks  => $remarks,
+			voucher_code => $voucher_code,
 			A        => $A,
 			C        => $C
 		&>
