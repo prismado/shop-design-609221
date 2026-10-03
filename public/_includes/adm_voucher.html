@@ -16,7 +16,8 @@
 
 	if ($delid) {
 		$C->{dbh}->do("delete FROM vouchers WHERE id=$delid");
-		$m->redirect('adm_vouchers.html');
+		$m->redirect('vouchers.html');
+		# XXX $m->redirect('adm_vouchers.html');
 	}
 	elsif ($args{bUpd}) {
 		my $vcode  = $cgi->param('vcode'); $vcode =~ tr/a-z/A-Z/;
