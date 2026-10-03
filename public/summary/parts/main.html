@@ -33,6 +33,7 @@
 
 %			foreach (sort keys %$grand_tot) {
 %				next unless length($grand_tot->{$_});
+%				next if /^z.+/ or /^ship/ or $_ eq 'VERSION';
 				[grand_tot] - <b><% $_ %></b> = <% $grand_tot->{$_} %><br>
 %			}
 
