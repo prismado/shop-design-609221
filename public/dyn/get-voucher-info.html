@@ -17,7 +17,7 @@
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
-  "rc": 0,
+  "rc": <% $info->{is_valid} ? 0 : 1 %>,
   "amount": <% $info->{amount} %>,
   "perc": <% $info->{perc} // 0 %>,
   "message": "<% $info->{_msg} %>"
