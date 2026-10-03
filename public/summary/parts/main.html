@@ -74,9 +74,7 @@
 %			}
 			</div>
 
-			<div class="mt-8">
-				Total CHF <b><% $grand_tot->{grand_total} %></b>
-			</div>
+% # XXX			<div class="mt-8"> Total CHF <b><% $grand_tot->{grand_total} %></b> </div>
 
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Zahlungsart</h2>
@@ -103,7 +101,7 @@
 					<span class="text-base text-gray-900">
 						Total inkl. MwSt.:
 						<span class="ml-3 font-bold">
-							CHF <% $C->decimal_mark($bsk_itms->{basket_total}) %>
+							CHF <% $C->decimal_mark($grand_tot->{grand_total}) %>
 						</span>
 					</span>
 				</div>
