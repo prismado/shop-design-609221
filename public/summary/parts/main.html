@@ -115,6 +115,7 @@
 					</span>
 				</div>
 
+% #				----------------------------------------------------------------------------------------------------
 				<div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 					<a href="/checkout"
 						class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border
@@ -128,6 +129,7 @@
 						Zurück
 					</a>
 
+%					if ($args{UID} > 0) {
 					<a href="/checkout"
 						class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
 							hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
@@ -139,7 +141,12 @@
 										d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
 						</svg>
 					</a>
+%					}
+%					else {
+						<p>Wir benötigen Ihre Kunden- und Lieferadresse.</p>
+%					}
 				</div>
+% #				----------------------------------------------------------------------------------------------------
 			</div>
 		</div>
 	</div>
