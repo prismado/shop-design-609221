@@ -76,7 +76,7 @@ VAT Config of <%$C->{CONFIG}->{site_title}%>
 %	my $prod_count = $C->query("SELECT COUNT(*) FROM products where prod_type=$key_disp")->[0];
 	<tr>
 	<td style="text-align:center" data-order="<%$key_disp%>">
-		<a href='adm_vat.html?area=<%$key%>&id=<%$id%>'><%$key_disp%></a>
+		<a href='vat.html?area=<%$key%>&id=<%$id%>'><%$key_disp%></a>
 	</td>
 	<td style="text-align:right; padding-right:30px" data-order="<%$val%>">
 %	if ($key =~ /^pay_cost_/) {
