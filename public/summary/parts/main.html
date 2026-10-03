@@ -114,12 +114,16 @@
 
 %			if ($UID > 0) {
 				<div class="row">
+					<% $uaddr_bill->{firstname} %> <% $uaddr_bill->{lastname} %><br>
 %					foreach (sort keys %$uaddr_bill) {
+%						next if /name$/ or /^\_.+/;
 						[Bill] <b><% $_ %></b> = <% $uaddr_bill->{$_} %><br>
 %					}
-				</div>
+				</div><br>
 				<div class="row">
+					<% $uaddr_deliv->{firstname} %> <% $uaddr_deliv->{lastname} %><br>
 %					foreach (sort keys %$uaddr_deliv) {
+%						next if /name$/ or /^\_.+/;
 						[Deliv] <b><% $_ %></b> = <% $uaddr_deliv->{$_} %><br>
 %					}
 				</div>
