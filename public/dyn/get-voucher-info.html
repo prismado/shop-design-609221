@@ -13,13 +13,10 @@
 
 	my $info = $A->get_voucher_info($code);
 
-	# XXX my $id = $cgi->param('id') + 0;
-	# XXX my $sid = $C->getSID();
-
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
   "rc": 0,
-  "message": "perc=<% $info->{perc} %>, valid=<% $info->{is_valid} %>"
+  "message": "perc=<% $info->{perc} %>, amount=<% $info->{amount} %>, valid=<% $info->{is_valid} %>"
 }
