@@ -1,0 +1,28 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	# XXX my $lang = 'de';
+
+	my $cgi = $C->{CGI};
+
+	my $code = $cgi->param('code');
+
+	# XXX my $id = $cgi->param('id') + 0;
+	# XXX my $sid = $C->getSID();
+
+	# XXX my ($rc, $msg) = $A->add2basket_details(
+	# XXX ) if $id;
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": 0,
+  "message": "okay um <% $C->now(12) %>, <% $code %>"
+}
