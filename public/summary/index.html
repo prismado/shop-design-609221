@@ -58,6 +58,8 @@
 
 	my $ship_meth     = $C->{CGI}->param('ship_meth')            || $C->getSessData('ship_meth');
 	my $remarks       = $C->{CGI}->param('checkout_bemerkungen') || $C->getSessData('checkout_bemerkungen');
+	   $remarks       =~ s/\</&lt;/g;
+	   $remarks       =~ s/\>/&gt;/g;
 	my $delivery_date = $C->{CGI}->param('checkout_liefer_date') || $C->getSessData('checkout_liefer_date');
 	my $referenz_text = $C->{CGI}->param('checkout_referenz')    || $C->getSessData('checkout_referenz');
 	   $referenz_text =~ tr/["<>]//d; # -- Against XSS
