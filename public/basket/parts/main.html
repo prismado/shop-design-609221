@@ -20,7 +20,7 @@
 
 		<div class="mt-6">
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
-			<p class="text-sm text-gray-600 leading-relaxed">Artikelliste</p><br />
+			<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
 
 %			if ($bsk_itms->{item_count}) {
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
@@ -66,7 +66,7 @@
 			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4
 					border-t border-gray-200">
 				<div class="flex items-center justify-between sm:gap-6">
-					<span class="text-sm text-gray-500"><% $bsk_itms->{item_count} %> Artikel</span>
+% # XX					<span class="text-sm text-gray-500"><% $bsk_itms->{item_count} %> Artikel</span>
 					<span class="text-base text-gray-900">
 						Total inkl. MwSt.: <b>CHF <% $C->decimal_mark($bsk_itms->{basket_total}) %></b>
 					</span>
