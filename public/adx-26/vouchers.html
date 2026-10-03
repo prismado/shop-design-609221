@@ -1,0 +1,43 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+	my $UID  = $perm->{uid};
+
+	$C->redir('/signin.html') unless $perm->{is_admin}; # -- 23Jan2025
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>E-Vouchers &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme_wide.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<body class="">
+	<& _includes/adm_navbar.html, C=>$C, UID=>$UID &>
+	<& _includes/dashboard_mainmenu_hor.html, C=>$C &>
+
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+	<&_includes/adm_vouchers.html, C => $C, A => $A&>
+	<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+<&_includes/meta_bootstrap_bottom2.html&>
+</body>
+</html>
+<%doc>
+	Algo-23
+	__METACLONING__
+</%doc>
