@@ -47,6 +47,8 @@
 		}
 	}
 
+	my $UID = $C->getUID();
+
 	my $bsk_itms = $A->get_basket_items_v2();
 
 	# ------------- Summary -------------------------------------------------------------------------------
@@ -81,7 +83,7 @@
 	my $art_numbers = $A->get_products_art_no_from_session( $SID );
 	foreach my $prodid (keys %{$art_numbers}) {
 		my $stock_count = $C->query("select stock from options_details where ref='$art_numbers->{$prodid}'")->[0];
-		push(@appmsgs, "Prod-ID $prodid: Art No \"$art_numbers->{$prodid}\", Stock: $stock_count") if $debug;
+		# XX push(@appmsgs, "Prod-ID $prodid: Art No \"$art_numbers->{$prodid}\", Stock: $stock_count") if $debug;
 		next if $stock_count == -1 or length($art_numbers->{$prodid}) < 2; # -- Skip these abort conditions! (16Sep2023)
 		my $count_req   = $C->query("SELECT count FROM basket WHERE prod_id=$prodid and sid=$SID")->[0];
 		if ($count_req > $stock_count) {
@@ -152,6 +154,7 @@
 			bsk_itms  => $bsk_itms,
 			grand_tot => $grand_tot,
 			pay_meth  => $pay_meth,
+			appmsgs   => \@appmsgs,
 			A         => $A,
 			C         => $C
 		&>
