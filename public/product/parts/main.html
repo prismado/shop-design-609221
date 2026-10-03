@@ -181,6 +181,9 @@
 			</div>
 
 			<!-- Toast: Rückmeldung zum Warenkorb-Klick (oben mittig, temporär) -->
+			<& ../partials/inc_toast.html &>
+<%doc>
+XXX:
 			<div id="toast-<% $id %>"
 				class="fixed top-4 left-1/2 -translate-x-1/2 z-[60] hidden w-[90vw] max-w-sm items-start gap-3
 					rounded-xl border px-4 py-3 shadow-lg opacity-0 -translate-y-2 transition-all duration-300 ease-out">
@@ -199,10 +202,15 @@
 				</span>
 				<p class="toast-text text-sm leading-snug"></p>
 			</div>
+/XXX
+</%doc>
 
 			<script>
 			(function () {
 				var btn   = document.getElementById('add-to-basket-<% $id %>');
+				<& ../partials/toast_js.html &>
+<%doc>
+XXX:
 				var toast = document.getElementById('toast-<% $id %>');
 				if (!btn || !toast) return;
 
@@ -237,6 +245,8 @@
 						}, 300);
 					}, 3000);
 				}
+/XXX
+</%doc>
 
 				btn.addEventListener('click', function () {
 					var body = new URLSearchParams();
