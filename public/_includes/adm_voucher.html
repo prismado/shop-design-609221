@@ -7,7 +7,8 @@
 	my $cgi = $C->{CGI};
 	my $dbh = $C->{dbh};
 
-	$m->redirect('adm_vouchers.html') if $cgi->param('bCan');
+	$m->redirect('vouchers.html') if $cgi->param('bCan');
+	# XXX $m->redirect('adm_vouchers.html') if $cgi->param('bCan');
 
 	my @app_msgs = ();
 
@@ -17,7 +18,6 @@
 	if ($delid) {
 		$C->{dbh}->do("delete FROM vouchers WHERE id=$delid");
 		$m->redirect('vouchers.html');
-		# XXX $m->redirect('adm_vouchers.html');
 	}
 	elsif ($args{bUpd}) {
 		my $vcode  = $cgi->param('vcode'); $vcode =~ tr/a-z/A-Z/;
