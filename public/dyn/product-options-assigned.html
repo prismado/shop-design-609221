@@ -22,10 +22,12 @@
 		my $val = $C->query(
 		"select val from session where sid=$C->{sid} and `key`='prod_id_$prod_id\_$opt_id' order by id desc LIMIT 1")->[0];
 		next unless $val;
+
 		my ($lbl, $desc, $amount) = @{$C->query(
 		"select label, `description`, amount from voptions where id=$opt_id and lang='$lang' and ref='$val'")};
+
 		$amount = $A->add_vat($amount);
-		push(@result, qq~{ "lbl":"$lbl", "desc":"$desc", "amount":$amount }~);
+		push(@result, qq~{ "opt_id": "$opt_id", "lbl":"$lbl", "desc":"$desc", "amount":$amount }~);
 	}
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
@@ -35,7 +37,3 @@
   "rc": 0,
   "result": [<% join ",\n", @result %>]
 }
-<%doc>
-XXX:
-/XXX
-</%doc>
