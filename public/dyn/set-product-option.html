@@ -13,9 +13,11 @@
 	my $id     = $cgi->param('id') + 0; # -- Product-ID
 	my $opt    = $cgi->param('opt');
 
-	$C->log(msg => "XX Opt-ID $opt_id zu Prod-ID $id mit $opt", importance => 1);
+	# XX $C->log(msg => "XX Opt-ID $opt_id zu Prod-ID $id mit $opt", importance => 1);
 
 	$C->saveSessData("prod_id_$id\_$opt_id", $opt);
+
+	my $options_total = $A->get_cur_options_from_session($id); # -- Betrag / $id = Prod-ID
 
 	my $info;
 	   $info->{amount} = 9.99;
@@ -27,5 +29,6 @@
 {
   "rc": 0,
   "amount": <% $info->{amount} %>,
+  "surcharge_total": <% sprintf('%.2f', $options_total) %>,
   "message": "<% $info->{_msg} %>"
 }
