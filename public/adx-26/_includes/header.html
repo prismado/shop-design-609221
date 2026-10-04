@@ -11,7 +11,6 @@
 
 	unless ($perm->{is_admin}) {
 		$C->redir('/not_auth.html'); # -- 15Jul2026
-		# XX $C->redir('/_error.html');
 	}
 
 	my $t_notes = $C->get_toast_notes(); # -- 24Sep2023
@@ -51,8 +50,6 @@
 		<div class="align-items-start">
 %			if ($args{show_logo}) {
 				<a href="/adx/"><img style="min-width:50px; max-width:60px" src="/adx/assets/images/logo/logo-prismado-transp-110x110.webp"></a>
-% # XXX				<a href="/adx/"><img style="min-width:50px; max-width:60px" src="/adx/assets/images/logo/logo-prismado-512x512-transp.avif"></a>
-% # XXX				<a href="/adx/"><img style="min-width:50px; max-width:60px" src="/adx/assets/images/logo/logo_prismado_shop_white_bg.svg"></a>
 %			}
 
 		<!-- sidebar toggler -->
@@ -81,12 +78,11 @@
 			-->
 			<a class="navbar-brand d-inline-block d-lg-none text-white" href=".">
 				Dashboard
-% # XX				<img src="assets/images/logo/logo_light.svg" width="110" height="60" alt="...">
 			</a>
 		</div>
 
 		<& top_nav.html, C=>$C, perm=>$perm, debug=>$debug &>
-		<& ../../custom/algonetic/html/_includes/top_nav.html, C=>$C, A=>$A, perm=>$perm &>
+% # XX		<& ../../custom/algonetic/html/_includes/top_nav.html, C=>$C, A=>$A, perm=>$perm &>
 		<& options.html, perm=>$perm, C=>$C &>
 
 		</nav>
