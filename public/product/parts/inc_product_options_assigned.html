@@ -20,8 +20,7 @@
 	<tr>
 		<td><% $lbl %></td>
 		<td><% $opt_id %></td>
-% # XXX		<td><% $val %></td>
-		<td>CHF <% $amount %></td>
+		<td>CHF <% $A->add_vat($amount) %></td>
 	</tr>
 % }
 </table>
