@@ -172,8 +172,13 @@
 %			else {
 				<span class="text-3xl font-bold text-gray-900">CHF <% $prod->{price_incl_vat_fmt} %></span>
 %			}
-				XX + CHF <% $options_total %>
 			</div>
+
+%		if ($options_total) {
+			<div>
+				Zzgl. CHF <% $options_total %> für ausgew. Optionen
+			</div>
+%		}
 
 			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
 
