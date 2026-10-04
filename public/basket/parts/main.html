@@ -60,10 +60,10 @@
 				</div>
 %				while(my $r = $st_det->fetch()) {
 %					my ($feature_id, $ref, $price) = @{$r};
-%					my ($lbl, $desc) = @{$C->query(
-%						"select label, `description` from voptions where id=$feature_id and lang='de' limit 1")};
+%					my ($lbl, $desc, $amount) = @{$C->query(
+%					"select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
 					<% $lbl %>: <% $desc %><br>
-					<% $ref %>: CHF <% $price %><br>
+					<% $ref %>: CHF <% $A->add_vat($amount) %><br>
 %				}
 %			}
 			</div>
