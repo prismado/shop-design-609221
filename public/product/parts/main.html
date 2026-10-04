@@ -186,7 +186,9 @@
 			</div>
 
 			<script>
-				refreshAssignedOptions('<% $id %>');
+				document.addEventListener('DOMContentLoaded', function () {
+					refreshAssignedOptions('<% $id %>');
+				});
 			</script>
 
 			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
