@@ -15,6 +15,8 @@
 
 	$C->log(msg => "XX Opt-ID $opt_id zu Prod-ID $id mit $opt", importance => 1);
 
+	$C->saveSessData("prod_id_$id\_$opt_id", $opt);
+
 	my $info;
 	   $info->{amount} = 9.99;
 	   $info->{_msg}   = "XX constr, Opt-ID $opt_id";
