@@ -11,8 +11,13 @@
 
 	my $elems = $C->get_sess_array("prod_id_$prod_id");
 
-	# XXX my $cur_opts = $A->get_cur_options_from_session($prod_id);
+	my $opt_ids = $C->mquery(stmt => 'select id from options');
 </%init>
+
+% foreach (@{$opt_ids->{mrows}}) {
+	XX Opt-ID <% $_ %><br>
+% }
+-----------<br>
 
 % foreach my $d (@$elems) {
 	X -- <% $d %><br>
