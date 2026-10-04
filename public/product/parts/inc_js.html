@@ -1,0 +1,9 @@
+% use utf8;
+
+// Produkt-Optionen (z. B. Farbe/Grösse) — Auswahl asynchron an den Server melden
+function setProductOption(selectEl, optId, prodId) {
+	fetch('/dyn/set-product-option.html', {
+		method: 'POST',
+		body: new URLSearchParams({ opt_id: optId, id: prodId, opt: selectEl.value })
+	}).catch(() => {});
+}
