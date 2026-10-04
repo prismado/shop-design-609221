@@ -47,7 +47,7 @@ function refreshAssignedOptions(prodId) {
 
 				var tdLabel = document.createElement('td');
 				tdLabel.className = 'py-2 pl-4 pr-2 font-medium text-gray-800 whitespace-nowrap';
-				tdLabel.textContent = '+ ' + row.lbl;
+				tdLabel.textContent = row.lbl;
 
 				var tdDesc = document.createElement('td');
 				tdDesc.className = 'py-2 px-2 text-gray-500';
@@ -86,6 +86,13 @@ function refreshAssignedOptions(prodId) {
 				if (total.parentElement) {
 					total.parentElement.classList.toggle('hidden', sum <= 0);
 				}
+			}
+
+			var basePriceEl = document.getElementById('base_price');
+			var mainPriceEl = document.getElementById('main-price-' + prodId);
+			if (basePriceEl && mainPriceEl) {
+				var basePrice = parseFloat(basePriceEl.textContent) || 0;
+				mainPriceEl.textContent = 'CHF ' + (basePrice + sum).toFixed(2);
 			}
 		})
 		.catch(() => {});

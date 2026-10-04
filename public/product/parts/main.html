@@ -165,18 +165,18 @@
 
 			<div class="flex flex-wrap items-end gap-3 mb-1">
 %			if ($prod->{discount_perc}) {
-				<span class="text-3xl font-bold text-red-600">CHF <% $prod->{price_incl_vat_fmt} %></span>
+				<span id="main-price-<% $id %>" class="text-3xl font-bold text-red-600">CHF <% $prod->{price_incl_vat_fmt} %></span>
 				<span class="text-base text-gray-400 line-through mb-0.5">CHF <% $prod->{price_orig_incl_vat} %></span>
 				<span class="bg-red-600 text-white text-xs font-bold
 					px-2 py-1 rounded-full mb-0.5">-<% sprintf('%.1f', $prod->{discount_perc}) %>%</span>
 %			}
 %			else {
-				<span class="text-3xl font-bold text-gray-900">CHF <% $prod->{price_incl_vat_fmt} %></span>
+				<span id="main-price-<% $id %>" class="text-3xl font-bold text-gray-900">CHF <% $prod->{price_incl_vat_fmt} %></span>
 %			}
 			</div>
 
 			<div class="<% $options_total > 0 ? '' : 'hidden' %>">
-				Zzgl.	<span class="text-red-500">
+				Inklusive	<span class="text-red-500">
 						CHF <span id="opt_610041_179" class="text-red-500"><% $options_total %></span>
 					</span>
 				für ausgewählte Optionen
