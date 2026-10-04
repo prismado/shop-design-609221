@@ -62,7 +62,7 @@
 %					my ($feature_id, $ref, $price) = @{$r};
 %					my ($lbl, $desc) = @{$C->query(
 %						"select label, `description` from voptions where id=$feature_id and lang='de' limit 1")};
-					<% $lbl %><br>
+					<% $lbl %>: <% $desc %><br>
 					<% $ref %>: CHF <% $price %><br>
 %				}
 %			}
