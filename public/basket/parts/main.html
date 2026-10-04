@@ -61,7 +61,7 @@
 				</div>
 %				foreach (@{$bask_opts->{array}}) {
 %					my ($feature_id, $label, $desc, $ref, $amount) = split /\t/;
-					XX <span class="text-red-500">
+					&bull; <span class="text-red-500">
 						<% $feature_id %>
 						<% $label %>: <% $desc %>
 						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
