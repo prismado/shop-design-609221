@@ -14,8 +14,7 @@
 	XX - Opt-ID <% $opt_id %> <% $opt_label %><br>
 %	my $elems = $A->get_opt_details($opt_id, $lang, 0, 'ref ASC');
 %	foreach (@$elems) {
-%		my ($id, $style, $label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
-% # XXX		XX - [elem] <% $_ %><br>
-		XX ID <% $id %> / <% $label %>, CHF <% $amount %><br>
+%		my ($id, $style, $opt_label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
+		XX ID <% $id %>, <% $desc %>: CHF <% $amount %><br>
 %	}
 % }
