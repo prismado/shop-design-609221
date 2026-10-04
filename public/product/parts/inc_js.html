@@ -9,11 +9,83 @@ function setProductOption(selectEl, optId, prodId) {
 		.then(function (res) { return res.json(); })
 		.then(function (data) {
 			if (data.rc !== 0) return;
-			var el = document.getElementById('opt_610041_179');
-			if (!el) return;
-			el.textContent = data.surcharge_total;
-			if (el.parentElement) {
-				el.parentElement.classList.toggle('hidden', parseFloat(data.surcharge_total) <= 0);
+			refreshAssignedOptions(prodId);
+		})
+		.catch(() => {});
+}
+
+// Eine Produktoption entfernen, danach Tabelle + Zuschlagssumme neu laden
+function removeProductOption(prodId, optId) {
+	fetch('/dyn/remove-product-option.html', {
+		method: 'POST',
+		body: new URLSearchParams({ prod_id: prodId, opt_id: optId })
+	})
+		.then(function () { refreshAssignedOptions(prodId); })
+		.catch(() => {});
+}
+
+// Zentrale Quelle für Tabelle der zugewiesenen Optionen + Zuschlags-Summe
+// (aufgerufen beim initialen Laden, nach jeder Options-Änderung und nach jedem Entfernen)
+function refreshAssignedOptions(prodId) {
+	var tbody = document.getElementById('assigned-options-body-' + prodId);
+	var wrap  = document.getElementById('assigned-options-wrap-' + prodId);
+	var total = document.getElementById('opt_610041_179');
+	if (!tbody) return;
+
+	fetch('/dyn/product-options-assigned.html?prod_id=' + encodeURIComponent(prodId))
+		.then(function (res) { return res.json(); })
+		.then(function (data) {
+			if (data.rc !== 0) return;
+
+			tbody.innerHTML = '';
+			var sum = 0;
+
+			data.result.forEach(function (row) {
+				sum += parseFloat(row.amount) || 0;
+
+				var tr = document.createElement('tr');
+
+				var tdLabel = document.createElement('td');
+				tdLabel.className = 'py-2 pl-4 pr-2 font-medium text-gray-800 whitespace-nowrap';
+				tdLabel.textContent = '+ ' + row.lbl;
+
+				var tdDesc = document.createElement('td');
+				tdDesc.className = 'py-2 px-2 text-gray-500';
+				tdDesc.textContent = row.desc;
+
+				var tdAmount = document.createElement('td');
+				tdAmount.className = 'py-2 px-2 text-gray-800 whitespace-nowrap';
+				tdAmount.textContent = 'CHF ' + row.amount;
+
+				var tdRemove = document.createElement('td');
+				tdRemove.className = 'py-2 pr-4 text-right';
+				var removeLink = document.createElement('a');
+				removeLink.href = '#!';
+				removeLink.setAttribute('aria-label', 'Option entfernen');
+				removeLink.className = 'inline-flex items-center justify-center w-6 h-6 rounded-full italic'
+					+ ' font-serif text-lg leading-none text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+					+ ' transition';
+				removeLink.textContent = '×';
+				removeLink.addEventListener('click', function (e) {
+					e.preventDefault();
+					removeProductOption(prodId, row.opt_id);
+				});
+				tdRemove.appendChild(removeLink);
+
+				tr.appendChild(tdLabel);
+				tr.appendChild(tdDesc);
+				tr.appendChild(tdAmount);
+				tr.appendChild(tdRemove);
+				tbody.appendChild(tr);
+			});
+
+			if (wrap) wrap.classList.toggle('hidden', data.result.length === 0);
+
+			if (total) {
+				total.textContent = sum.toFixed(2);
+				if (total.parentElement) {
+					total.parentElement.classList.toggle('hidden', sum <= 0);
+				}
 			}
 		})
 		.catch(() => {});

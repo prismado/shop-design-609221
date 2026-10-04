@@ -176,8 +176,18 @@
 
 			<div class="<% $options_total > 0 ? '' : 'hidden' %>">
 				Zzgl. CHF <span id="opt_610041_179" class="text-red-500"><% $options_total %></span> für ausgew. Optionen
-				<& inc_product_options_assigned.html, prod_id => $id, A => $A, C => $C &>
 			</div>
+
+			<div id="assigned-options-wrap-<% $id %>"
+				class="hidden mt-3 rounded-xl border border-gray-200 bg-white overflow-hidden">
+				<table class="w-full text-left text-sm">
+					<tbody id="assigned-options-body-<% $id %>" class="divide-y divide-gray-100"></tbody>
+				</table>
+			</div>
+
+			<script>
+				refreshAssignedOptions('<% $id %>');
+			</script>
 
 			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
 
