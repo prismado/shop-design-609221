@@ -73,7 +73,7 @@
 %					my ($feature_id, $ref, $price) = @{$r};
 %					my ($lbl, $desc, $amount) = @{$C->query(
 %					"select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
-					XX <% $lbl %>: <% $desc %>: <% $ref %>: <b>CHF <% $A->add_vat($amount) %></b><br>
+% # XXX					XX hoe <% $lbl %>: <% $desc %>: <% $ref %>: <b>CHF <% $A->add_vat($amount) %></b><br>
 %				}
 %			}
 			</div>
