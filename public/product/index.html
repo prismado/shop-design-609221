@@ -19,6 +19,7 @@
 
 	my $prod = $A->get_product_v2(id => $id, public => 1);
 	my $imgs = $A->get_product_extra_imgs(id => $id);
+	my $opts = $A->get_opt_from_product($id);
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -51,7 +52,14 @@
 
 	<!-- Produkt (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, C => $C, perm => $perm, prod => $prod, imgs => $imgs, id => $id &>
+		<& parts/main.html,
+			C    => $C,
+			perm => $perm,
+			prod => $prod,
+			imgs => $imgs,
+			opts => $opts,
+			id   => $id
+		&>
 	</section>
 
 	<& partials/daily_offer.html, C => $C &>
