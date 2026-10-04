@@ -1,0 +1,26 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $opt_id = $cgi->param('opt_id') + 0;
+
+	# XXX my $info = $A->get_voucher_info($code);
+	my $info;
+	   $info->{amount} = 9.99;
+	   $info->{_msg}   = 'XX constr';
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": 0,
+  "amount": <% $info->{amount} %>,
+  "message": "<% $info->{_msg} %>"
+}
