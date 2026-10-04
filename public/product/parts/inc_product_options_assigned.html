@@ -14,7 +14,9 @@
 <br>
 % foreach my $opt_id (@{$opt_ids->{mrows}}) {
 %	my $val = $C->query("select val from session where `key`='prod_id_$prod_id\_$opt_id' order by id desc LIMIT 1")->[0];
-%	my $lbl = $C->query("select label from options_desc where option_id=$opt_id and lang='$lang' limit 1")->[0];
-	<% $lbl %>: <% $opt_id %> = <% $val %><br>
+%	# XX my $lbl = $C->query("select label from options_desc where option_id=$opt_id and lang='$lang' limit 1")->[0];
+%	my ($lbl, $desc, $amount) = @{$C->query(
+%		"select label, `description`, amount from voptions where id=$opt_id and lang='$lang' and ref='$val'")};
+	<% $lbl %>: <% $opt_id %> = <% $val %>: CHF <% $amount %><br>
 % }
 
