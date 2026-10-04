@@ -20,7 +20,7 @@
 		<td nowrap>+ <% $lbl %></td>
 		<td class="px-2"><% $desc %></td>
 		<td class="px-2">CHF <% $A->add_vat($amount) %></td>
-		<td><a href="#!">X</a></td>
+		<td><a href="../dyn/remove-product-option.html?prod_id=<% $prod_id %>&opt_id=<% $opt_id %>">X</a></td>
 	</tr>
 % }
 </table>
