@@ -20,7 +20,7 @@
 %			foreach (@$elems) {
 %				my ($id, $style, $opt_label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
 %				my $amnt_incl_vat = $A->add_vat($amount);
-				<option value="<% $ref %>"><% $desc %>: CHF <% $amnt_incl_vat %></option>
+				<option value="<% $ref %>"><% $desc %> - zzgl. CHF <% $amnt_incl_vat %></option>
 %			}
 		</select>
 	</div>
