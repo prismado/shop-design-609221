@@ -19,7 +19,7 @@
 			<option>Bitte auswählen</option>
 %			foreach (@$elems) {
 %			my ($id, $style, $opt_label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
-			<option><% $desc %>: CHF <% $amount %> (<% $ref %>)</option>
+			<option value="<% $ref %>"><% $desc %>: CHF <% $amount %></option>
 %			}
 		</select>
 	</div>
