@@ -9,7 +9,7 @@
 	my $imgs = $args{imgs};
 	my $opts = $args{opts};
 	my $id   = $args{id};
-	my $options_total = $args{options_total};
+	my $options_total = sprintf('%.2f', $args{options_total});
 
 	my $img_url = $prod->{image}->{url};
 </%init>
@@ -174,9 +174,9 @@
 %			}
 			</div>
 
-%		if ($options_total) {
+%		if ($options_total > 0) {
 			<div>
-				Zzgl. CHF <% $options_total %> für ausgew. Optionen
+				Zzgl. CHF <span id="opt_610041_179" class="text-red-500"><% $options_total %></span> für ausgew. Optionen
 			</div>
 %		}
 
