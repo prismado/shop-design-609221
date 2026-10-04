@@ -34,7 +34,7 @@
 <html lang="de" xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 	<meta charset="UTF-8">
-	<title>Adm Options | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+	<title>Adm | Options | <% $C->{CONFIG}->{HTTP_HOST} %></title>
 % #	<meta name="description" content="...">
 	<meta name="viewport" content="width=device-width, maximum-scale=5, initial-scale=1, user-scalable=0">
 	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
@@ -48,7 +48,6 @@
 	<link rel="stylesheet" href="assets/css/vendor_bundle.min.css">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap">
 	<link rel="shortcut icon" href="favicon.ico">
-% #	<link rel="apple-touch-icon" href="demo.files/logo/icon_512x512.png">
 	<link rel="manifest" href="assets/images/manifest/manifest.json">
 	<meta name="theme-color" content="#377dff">
 	<script src="/assets/js/prism_dialog_shadowRoot.js" defer=""></script>
@@ -58,7 +57,6 @@
 
 	<div id="wrapper" class="d-flex align-items-stretch flex-column">
 		<& _includes/header.html, perm => $perm, C => $C, A => $A, show_logo => $narrow ? 0 : 1, appenv => $appenv &>
-% # XXX		<& _includes/header.html, perm=>$perm, C=>$C, A=>$A, debug=>$debug &>
 
 		<div id="wrapper_content" class="d-flex flex-fill">
 %		    if ($narrow) {
