@@ -10,7 +10,11 @@ function setProductOption(selectEl, optId, prodId) {
 		.then(function (data) {
 			if (data.rc !== 0) return;
 			var el = document.getElementById('opt_610041_179');
-			if (el) el.textContent = data.surcharge_total;
+			if (!el) return;
+			el.textContent = data.surcharge_total;
+			if (el.parentElement) {
+				el.parentElement.classList.toggle('hidden', parseFloat(data.surcharge_total) <= 0);
+			}
 		})
 		.catch(() => {});
 }
