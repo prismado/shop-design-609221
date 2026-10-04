@@ -7,6 +7,10 @@
 	my $C       = $args{C};
 
 	my $lang = 'de';
+
+	my $elems = $C->get_sess_array("prod_id_$prod_id");
 </%init>
 
-UUU <% $prod_id %> <% $C->now(12) %>
+% foreach (@$elems) {
+	XX <% $_ %><br>
+% }
