@@ -20,6 +20,8 @@
 	my $prod = $A->get_product_v2(id => $id, public => 1);
 	my $imgs = $A->get_product_extra_imgs(id => $id);
 	my $opts = $A->get_opt_from_product($id);
+
+	my $options_total = $A->get_cur_options_from_session($id); # -- Betrag / $id = Prod-ID
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -59,7 +61,8 @@
 			prod => $prod,
 			imgs => $imgs,
 			opts => $opts,
-			id   => $id
+			id   => $id,
+			options_total => $options_total
 		&>
 	</section>
 
