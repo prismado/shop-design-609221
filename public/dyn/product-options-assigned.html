@@ -1,0 +1,41 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $prod_id = $cgi->param('prod_id') + 0;
+
+	my $SID = $C->getSID();
+	my $lang = 'de';
+
+	my $opt_ids = $C->mquery(stmt => 'select id from options');
+
+	my @result = ();
+
+	foreach my $opt_id (@{$opt_ids->{mrows}}) {
+		my $val = $C->query(
+		"select val from session where sid=$C->{sid} and `key`='prod_id_$prod_id\_$opt_id' order by id desc LIMIT 1")->[0];
+		next unless $val;
+		my ($lbl, $desc, $amount) = @{$C->query(
+		"select label, `description`, amount from voptions where id=$opt_id and lang='$lang' and ref='$val'")};
+		$amount = $A->add_vat($amount);
+		push(@result, qq~{ "lbl":"$lbl", "desc":"$desc", "amount":$amount }~);
+	}
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": 0,
+  "result": [<% join ",\n", @result %>]
+}
+<%doc>
+XXX:
+/XXX
+</%doc>
