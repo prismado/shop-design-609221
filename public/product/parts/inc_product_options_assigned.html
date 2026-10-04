@@ -14,6 +14,7 @@
 <br>
 % foreach my $opt_id (@{$opt_ids->{mrows}}) {
 %	my $val = $C->query("select val from session where `key`='prod_id_$prod_id\_$opt_id' order by id desc LIMIT 1")->[0];
-	X Opt-ID: <% $opt_id %> = <% $val %><br>
+%	my $lbl = $C->query("select label from options_desc where option_id=$opt_id and lang='$lang' limit 1")->[0];
+	<% $lbl %>: <% $opt_id %> = <% $val %><br>
 % }
 
