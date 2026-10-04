@@ -9,16 +9,12 @@
 
 	my $lang = 'de';
 
-	my $elems = $C->get_sess_array("prod_id_$prod_id");
-
 	my $opt_ids = $C->mquery(stmt => 'select id from options');
 </%init>
-
-% foreach (@{$opt_ids->{mrows}}) {
-	XX Opt-ID <% $_ %><br>
+<br>
+% foreach my $opt_id (@{$opt_ids->{mrows}}) {
+%	my $val = $C->query("select val from session where `key`='prod_id_$prod_id\_$opt_id' order by id desc LIMIT 1")->[0];
+	X Opt-ID: <% $opt_id %> = <% $val %><br>
+%	# XXX my $elems = $C->get_sess_array("prod_id_$prod_id\_$opt_id");
 % }
------------<br>
 
-% foreach my $d (@$elems) {
-	X -- <% $d %><br>
-% }
