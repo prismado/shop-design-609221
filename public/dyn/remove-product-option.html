@@ -1,0 +1,23 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = 'de';
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+	# XX my $sid = $C->getSID();
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": 0,
+  "message": "okay um <% $C->now(12) %>"
+}
