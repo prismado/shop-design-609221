@@ -9,6 +9,7 @@
 	my $imgs = $args{imgs};
 	my $opts = $args{opts};
 	my $id   = $args{id};
+	my $options_total = $args{options_total};
 
 	my $img_url = $prod->{image}->{url};
 </%init>
@@ -171,6 +172,7 @@
 %			else {
 				<span class="text-3xl font-bold text-gray-900">CHF <% $prod->{price_incl_vat_fmt} %></span>
 %			}
+				XX + CHF <% $options_total %>
 			</div>
 
 			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
