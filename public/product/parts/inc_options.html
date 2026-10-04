@@ -1,0 +1,12 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+
+	my $opts = $args{opts};
+	my $C    = $args{C};
+
+	my $lang = 'de';
+</%init>
+% foreach (sort keys %$opts) {
+	XX ------ opt <% $_ %><br>
+% }
