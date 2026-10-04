@@ -7,6 +7,8 @@
 
 	my $lang = 'de';
 </%init>
-% foreach (sort keys %$opts) {
-	XX ------ opt <% $_ %><br>
+
+% foreach my $opt_id (sort keys %$opts) {
+%	my $opt_label = $C->query("select label from options_desc where option_id=$opt_id and lang='$lang'")->[0] || 'N/A';
+	XX ------ opt <% $opt_id %> <% $opt_label %><br>
 % }
