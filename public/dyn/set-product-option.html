@@ -11,10 +11,9 @@
 
 	my $opt_id = $cgi->param('opt_id') + 0;
 
-	# XXX my $info = $A->get_voucher_info($code);
 	my $info;
 	   $info->{amount} = 9.99;
-	   $info->{_msg}   = 'XX constr';
+	   $info->{_msg}   = "XX constr, Opt-ID $opt_id";
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
