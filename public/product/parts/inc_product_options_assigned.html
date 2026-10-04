@@ -15,12 +15,12 @@
 % foreach my $opt_id (@{$opt_ids->{mrows}}) {
 %	my $val = $C->query(
 %	"select val from session where sid=$C->{sid} and `key`='prod_id_$prod_id\_$opt_id' order by id desc LIMIT 1")->[0];
+%	next unless $val;
 %	my ($lbl, $desc, $amount) = @{$C->query(
 %		"select label, `description`, amount from voptions where id=$opt_id and lang='$lang' and ref='$val'")};
 	<tr valign="top">
 		<td nowrap>+ <% $lbl %></td>
 		<td class="px-2"><% $desc %></td>
-		<td class="px-2"><% $val %></td>
 		<td class="px-2">CHF <% $A->add_vat($amount) %></td>
 		<td><a href="../dyn/remove-product-option.html?prod_id=<% $prod_id %>&opt_id=<% $opt_id %>">X</a></td>
 	</tr>
