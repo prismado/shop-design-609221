@@ -5,12 +5,17 @@
 
 	my $prod_id = $args{prod_id};
 	my $C       = $args{C};
+	my $A       = $args{A};
 
 	my $lang = 'de';
 
+	# XXX my $prod_options = $A->get_product_options($prod_id);
+
 	my $elems = $C->get_sess_array("prod_id_$prod_id");
+
+	my $cur_opts = $A->get_cur_options_from_session($prod_id);
 </%init>
 
-% foreach (@$elems) {
-	XX <% $_ %><br>
+% foreach my $d (@$elems) {
+	X -- "<% $d %>"<br>
 % }
