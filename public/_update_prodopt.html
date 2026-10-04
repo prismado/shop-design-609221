@@ -1,0 +1,109 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid}
+	my $SID   = $C->getSID();
+	my $check = $C->md5_secret($SID);
+	my $cgi   = $C->{CGI};
+
+	my $redir_url = $ENV{HTTP_REFERER} || '/';
+	my @msgs = ();
+
+	my $action   = $cgi->param('action');
+	my $id       = $cgi->param('id') + 0;
+	my $sig      = $cgi->param('sig');
+	my $debug    = $cgi->param('key_98') + 0;
+
+	my $passed = $check eq $sig ? 1 : 0;
+
+	$C->log(msg=>"Action: $action", service=>'_sub', importance=>3);
+
+	$C->redir('/_error.html') unless $perm->{is_admin};
+
+	if ($action eq 'mail_pdf_bill' && $passed) {
+	}
+	elsif ($action eq 'update') {
+		foreach ($cgi->all_parameters) {
+			next unless /^sel\_(\d+)\_(.+)/;
+			(my $val = $cgi->param($_)) =~ s/'/''/g;
+			my $details_id = $1;
+			my $lang       = $2;
+			if ($val =~ /^\* /) {
+				$val = $C->query("select `description` from options_feat where details_id=$details_id and lang='de'")->[0];
+			}
+			$C->{dbh}->do(qq~update options_feat set `description`='$val' where details_id=$details_id and lang='$lang'~);
+		}
+		foreach ($cgi->all_parameters) {
+			next unless /^ident\_(\d+)\_de$/;
+			(my $val = $cgi->param($_)) =~ s/'/''/g;
+			$C->{dbh}->do(qq~update options_details set ref='$val' where id=$1~);
+		}
+	}
+	elsif ($action eq 'add_sub_opt') {
+		my $res = $A->adm_add_sub_option(id=>$id);
+		if ($res->{rc}) {
+			$C->create_toast_note(body=>"<center>Error: Auswahl nicht hinzugef&uuml;gt bei Option-ID $id<br>$res->{msg}</center>",
+				type=>'danger', delay=>8000, width=>'550px');
+		}
+		else {
+			$C->create_toast_note(body=>"<center>N404172: Auswahl hinzugef&uuml;gt bei Option-ID $id</center>");
+		}
+		$m->redirect("/adx/options.html?open=$id");
+	}
+
+	my @paras = ();
+	foreach ($cgi->all_parameters) {
+		push(@paras, "$_ = " . $cgi->param($_));
+	}
+
+	foreach my $lang (split /,/, $C->{CONFIG}->{multi_lang_codes}) {
+		my $label = $cgi->param("label_$lang");
+		$C->{dbh}->do(
+			"update options_desc set label=? where option_id=? and lang=?",
+			undef, $label, $id, $lang
+		);
+	}
+
+	my $label_de = $cgi->param('label_de');
+	my $label_en = $cgi->param('label_en');
+	my $label_fr = $cgi->param('label_fr');
+
+	# XX $label_en = $label_de if $label_en =~ /^\* New /;
+	# XX $label_fr = $label_de if $label_fr =~ /^\* New /;
+
+	# XXX my $stmt_1 = qq~update options_desc set label='$label_de' where option_id=$id and lang='de'~ if $label_de;
+	# XXX my $stmt_2 = qq~update options_desc set label='$label_en' where option_id=$id and lang='en'~ if $label_en;
+	# XXX my $stmt_3 = qq~update options_desc set label='$label_fr' where option_id=$id and lang='fr'~ if $label_fr;
+	# XXX $C->{dbh}->do($stmt_1);
+	# XXX $C->{dbh}->do($stmt_2);
+	# XXX $C->{dbh}->do($stmt_3);
+
+	$C->create_toast_note(
+		title => "Hinweis - N604062",
+		body  => "<center>Action: $action / Option-ID $id aktualisiert</center>",
+		style => '.toast, .max-w-300 { max-width: 550px !important; opacity: 0.75; }',
+		delay => 6000
+	);
+
+	$m->redirect($redir_url) unless $debug;
+</%init>
+Check: <% $check %><br>
+% foreach ($cgi->all_parameters) {
+	[ CGI ] <% $_ %> = <% $cgi->param($_) %><br />
+% }
+<hr />
+% foreach (sort keys %{$perm}) {
+	[ perm ] <% $_ %> = <% $perm->{$_} %><br>
+% }
+<% join "<br>\n", @msgs %>
+<%doc>
+	Quelle: Metanet # 2
+
+	Created: 07Jan2024
+
+	__METACLONING__
+</%doc>
