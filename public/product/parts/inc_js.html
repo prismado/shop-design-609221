@@ -54,8 +54,8 @@ function refreshAssignedOptions(prodId) {
 				tdDesc.textContent = row.desc;
 
 				var tdAmount = document.createElement('td');
-				tdAmount.className = 'py-2 px-2 text-gray-800 whitespace-nowrap';
-				tdAmount.textContent = 'CHF ' + row.amount;
+				tdAmount.className = 'py-2 px-2 text-gray-800 whitespace-nowrap text-right';
+				tdAmount.textContent = 'CHF ' + (parseFloat(row.amount) || 0).toFixed(2);
 
 				var tdRemove = document.createElement('td');
 				tdRemove.className = 'py-2 pr-4 text-right';
