@@ -1,0 +1,138 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	unless ($C->is_admin()) { # -- AFTER getSessData!
+		$m->redirect('/not_auth.html?x=logout');
+	}
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+	my $license = $C->get_license();
+
+	# $C->redir('/not_auth.html') unless $license->{status} == 1;
+
+	my $func = $C->{CGI}->param('func');
+
+	$func = '' unless $license->{status} == 1;
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin &middot; <%$C->{CONFIG}->{site_title}%></title>
+% if ($func eq 'items_expand' or $func eq 'edit_item' or $func eq 'promo') {
+<&_includes/header_meta_theme_wide.html&>
+% }
+% else {
+<&_includes/header_meta_theme.html&>
+% }
+<script src="assets/js/bootstrap-typeahead.js"></script>
+</head>
+<&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, func=>$func, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+
+	<div class="row-fluid">
+%		unless  ($license->{status} == 1) {
+			<br />
+			<% $C->bootstrap_alert($license->{msg}, 'danger') %><br />
+			<% $C->get_property('content_lic_bcst', '_global') %><hr />
+%		}
+%	if ($func eq 'log') {
+		<& _includes/admix_log.html, CORE => $C &>
+%	}
+%	elsif ($func eq 'items') {
+		<& _includes/admix_items.html, CORE => $C &>
+%	}
+%	elsif ($func eq 'users') {
+		<& _includes/admix_users.html, CORE => $C, A => $A &>
+%	}
+%	elsif ($func eq 'options') {
+%		if ($C->{CGI}->param('id') or $C->{CGI}->param('delrefid')) {
+			<& _includes/admix_options_edit.html, CORE => $C, A => $A, lang => $lang &>
+%		}
+%		else {
+			<& _includes/admix_options.html, CORE => $C, A => $A, lang => $lang &>
+%		}
+%	}
+%	elsif ($func eq 'items_expand') {
+		<& _includes/admix_items_expand.html, CORE => $C &>
+%	}
+%	elsif ($func eq 'promo') {
+		<& _includes/admix_promo.html, A => $A, CORE => $C &>
+%	}
+%	elsif ($func eq 'discount') {
+%		if ($C->{CGI}->param('id')) {
+			<& _includes/admix_discount_detail.html, A => $A, CORE => $C &>
+%		}
+%		else {
+			<& _includes/admix_discount.html, A => $A, CORE => $C &>
+%		}
+%	}
+%	elsif ($func eq 'prozone_teaser') {
+%		if ($C->{CGI}->param('id')) {
+			<& _includes/admix_prozone_teaser_detail.html, A => $A, CORE => $C &>
+%		}
+%		else {
+			<& _includes/admix_prozone_teaser.html, A => $A, CORE => $C &>
+%		}
+%	}
+%	elsif ($func eq 'companies') {
+%		if ($C->{CGI}->param('edit')) {
+			<&_includes/admix_companies_edit.html, CORE=>$C, A=>$A&>
+%		}
+%		else {
+			<&_includes/admix_companies.html, CORE=>$C, A=>$A&>
+%		}
+%	}
+%	elsif ($func eq 'orders') {
+%		if ($C->{CGI}->param('id') or $C->{CGI}->param('delrefid')) {
+			<& _includes/admix_order_detail.html, CORE => $C, A => $A &>
+%		}
+%		else {
+			<& _includes/admix_orders.html, CORE => $C, A => $A &>
+%		}
+%	}
+%	elsif ($func eq 'hiddenshop') {
+%		if ($C->{CGI}->param('edit')) {
+			<& _includes/admix_hiddenshop_edit.html, CORE => $C &>
+%		}
+%		else {
+			<& _includes/admix_hiddenshop.html, CORE => $C &>
+%		}
+%	}
+%	elsif ($func eq 'edit_item') {
+		<& _includes/admix_edit_item.html, CORE => $C, A => $A, lang => $lang &>
+%	}
+%	elsif ($func eq 'config_items') {
+		<& _includes/admix_config_items.html, CORE => $C, A => $A, lang => $lang &>
+%	}
+
+	</div>
+
+	<&_includes/footer2.html, C => $C&>
+
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>
