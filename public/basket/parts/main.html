@@ -67,7 +67,7 @@
 						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
 					</span><br>
 %				}
-				Aufpreis (bask-id <% $d->{basket_id} %>): <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
+				Aufpreis (bask-id <tt><% $d->{basket_id} %></tt>): <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
 				----------<br>
 %				while(my $r = $st_det->fetch()) {
 %					my ($feature_id, $ref, $price) = @{$r};
