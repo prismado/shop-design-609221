@@ -59,8 +59,13 @@
 								leading-none transition">&times;</a>
 					</div>
 				</div>
-%				foreach my $d (@{$bask_opts->{array}}) {
-					XX <span class="text-red-500"><% $d %></span><br>
+%				foreach (@{$bask_opts->{array}}) {
+%					my ($feature_id, $label, $desc, $ref, $amount) = split /\t/;
+					XX <span class="text-red-500">
+						<% $feature_id %>
+						<% $label %>: <% $desc %>
+						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
+					</span><br>
 %				}
 				Aufpreis (bask-id <% $d->{basket_id} %>): <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
 				----------<br>
@@ -68,7 +73,7 @@
 %					my ($feature_id, $ref, $price) = @{$r};
 %					my ($lbl, $desc, $amount) = @{$C->query(
 %					"select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
-					&bull; <% $lbl %>: <% $desc %>: <% $ref %>: <b>CHF <% $A->add_vat($amount) %></b><br>
+					XX <% $lbl %>: <% $desc %>: <% $ref %>: <b>CHF <% $A->add_vat($amount) %></b><br>
 %				}
 %			}
 			</div>
