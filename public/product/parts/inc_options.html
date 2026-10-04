@@ -15,7 +15,7 @@
 		<% $opt_label %><br>
 
 %		my $elems = $A->get_opt_details($opt_id, $lang, 0, 'ref ASC');
-		<select class="mt-2" name="XX">
+		<select class="mt-2" name="opt_<% $opt_id %>">
 			<option>Bitte auswählen</option>
 %			foreach (@$elems) {
 %				my ($id, $style, $opt_label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
