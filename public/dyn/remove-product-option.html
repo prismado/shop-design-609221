@@ -11,13 +11,15 @@
 
 	my $cgi = $C->{CGI};
 
-	my $id = $cgi->param('id') + 0;
-	# XX my $sid = $C->getSID();
+	my $prod_id = $cgi->param('prod_id') + 0;
+	my $opt_id  = $cgi->param('opt_id')  + 0;
+
+	$C->del_sess_key("prod_id_$prod_id\_$opt_id");
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
   "rc": 0,
-  "message": "okay um <% $C->now(12) %>"
+  "message": "okay: prod_id_<% $prod_id %>_<% $opt_id %>"
 }
