@@ -220,9 +220,9 @@
 
 			<& inc_prod_spec.html, C => $C, prod => $prod, id => $id &>
 
-%			foreach (sort keys %$opts) {
-				XX opt <% $_ %><br>
-%			}
+			<& inc_options.html, C => $C, opts => $opts, prod_id => $id &>
+%			# XXX foreach (sort keys %$opts) {
+%			# XXX }
 
 %			if ($perm->{is_devel}) {
 			<ul class="mt-8 pt-6 border-t border-dashed border-gray-300 text-xs text-gray-400 space-y-1">
