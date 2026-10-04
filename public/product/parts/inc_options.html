@@ -11,10 +11,14 @@
 
 % foreach my $opt_id (sort keys %$opts) {
 %	my $opt_label = $C->query("select label from options_desc where option_id=$opt_id and lang='$lang'")->[0] || 'N/A';
-	XX - Opt-ID <% $opt_id %> <% $opt_label %><br>
+	<% $opt_label %><br>
 %	my $elems = $A->get_opt_details($opt_id, $lang, 0, 'ref ASC');
+
+	<select name="XX">
+	<option>Bitte auswählen</option>
 %	foreach (@$elems) {
 %		my ($id, $style, $opt_label, $desc, $ref, $amount, $stock, $det_id) = split /\t/;
-		XX ID <% $id %>, <% $desc %>: CHF <% $amount %><br>
+		<option><% $desc %>: CHF <% $amount %> (<% $ref %>)</option>
 %	}
+	</select>
 % }
