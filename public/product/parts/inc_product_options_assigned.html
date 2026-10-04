@@ -19,6 +19,7 @@
 %		"select label, `description`, amount from voptions where id=$opt_id and lang='$lang' and ref='$val'")};
 	<tr>
 		<td><% $lbl %></td>
+		<td class="px-2"><% $desc %></td>
 		<td class="px-2">CHF <% $A->add_vat($amount) %></td>
 		<td><a href="#!">X</a></td>
 	</tr>
