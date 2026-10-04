@@ -1,10 +1,12 @@
 <%init>
 	use utf8;
+
 	my %args = $m->caller_args(0);
 
 	my $prod_id = $args{prod_id};
+	my $C       = $args{C};
 
 	my $lang = 'de';
 </%init>
 
-UUU <% $prod_id %>
+UUU <% $prod_id %> <% $C->now(12) %>
