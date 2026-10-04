@@ -62,7 +62,7 @@
 %				foreach my $d (@{$bask_opts->{array}}) {
 					XX <span class="text-red-500"><% $d %></span><br>
 %				}
-				UUU Aufpreis (bask-id <% $d->{basket_id} %>): <% $A->add_vat($bask_opts->{price_total}) %><br>
+				Aufpreis (bask-id <% $d->{basket_id} %>): <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
 				----------<br>
 %				while(my $r = $st_det->fetch()) {
 %					my ($feature_id, $ref, $price) = @{$r};
