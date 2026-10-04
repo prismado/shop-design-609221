@@ -140,6 +140,8 @@
 					});
 				})();
 				</script>
+
+				<& inc_prod_spec.html, C => $C, prod => $prod, id => $id &>
 %			if ($perm->{is_devel}) {
 				<p class="mt-5">XX <% $C->{CONFIG}->{DOCUMENT_ROOT} %></p>
 				<p class="mt-5">XX <% $img_url %></p>
@@ -241,8 +243,6 @@
 				});
 			})();
 			</script>
-
-			<& inc_prod_spec.html, C => $C, prod => $prod, id => $id &>
 
 			<div class="mt-6">
 			<& inc_options.html, C => $C, A => $A, opts => $opts, prod_id => $id &>
