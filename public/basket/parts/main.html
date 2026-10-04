@@ -27,6 +27,7 @@
 %			foreach my $d (@{$bsk_itms->{items}}) {
 %				my $st_det = $C->{dbh}->prepare("select feature_id, ref, price from basket_details where basket_id=$d->{basket_id}");
 %				   $st_det->execute();
+%				my $bask_opts = $A->get_basket_options_by_basket_id_v2(basket_id => $d->{basket_id});
 				<div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
 					<a href="/product/?id=<% $d->{prod_id} %>"
 						class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200
@@ -58,12 +59,16 @@
 								leading-none transition">&times;</a>
 					</div>
 				</div>
+%				foreach my $d (@{$bask_opts->{array}}) {
+					XX <% $d %><br>
+%				}
+				UUU Aufpreis (bask-id <% $d->{basket_id} %>): <% $A->add_vat($bask_opts->{price_total}) %><br>
+				----------<br>
 %				while(my $r = $st_det->fetch()) {
 %					my ($feature_id, $ref, $price) = @{$r};
 %					my ($lbl, $desc, $amount) = @{$C->query(
 %					"select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
-					<% $lbl %>: <% $desc %><br>
-					<% $ref %>: CHF <% $A->add_vat($amount) %><br>
+					&bull; <% $lbl %>: <% $desc %>: <% $ref %>: CHF <% $A->add_vat($amount) %><br>
 %				}
 %			}
 			</div>
