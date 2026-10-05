@@ -274,7 +274,8 @@ function adjust_quant(id, quant, req_prod_id) {
 }
 function confirm_remove_order() {
 	if (confirm('+++ Okay to remove Order-ID <% $id %>? +++')) {
-		document.location='adm_order.html?id=<% $id %>&action=del';
+		document.location='order.html?id=<% $id %>&action=del';
+% # XXX		document.location='adm_order.html?id=<% $id %>&action=del';
 	}
 }
 % if ($bGenPDF or $bGenPDF2) {
