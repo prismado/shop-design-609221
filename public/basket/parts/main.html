@@ -26,7 +26,7 @@
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 %			foreach my $d (@{$bsk_itms->{items}}) {
 %				my $st_det = $C->{dbh}->prepare("select feature_id, ref, price from basket_details where basket_id=$d->{basket_id}");
-%				   $st_det->execute();
+%				# XXX    $st_det->execute();
 %				my $bask_opts = $A->get_basket_options_by_basket_id_v2(basket_id => $d->{basket_id});
 				<div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
 					<a href="/product/?id=<% $d->{prod_id} %>"
@@ -67,11 +67,9 @@
 						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
 					</span><br>
 %				}
-				Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
-% # XXX				----------<br>
-%				while(my $r = $st_det->fetch()) {
-%					# XXX my ($feature_id, $ref, $price) = @{$r};
-%				}
+				Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b> zu <% $d->{price} %><br>
+%				# XXX while(my $r = $st_det->fetch()) {
+%				# XXX }
 %			}
 			</div>
 %			}
