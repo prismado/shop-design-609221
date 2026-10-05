@@ -43,40 +43,50 @@ function refreshAssignedOptions(prodId) {
 			data.result.forEach(function (row) {
 				sum += parseFloat(row.amount) || 0;
 
-				var tr = document.createElement('tr');
+				// Zeile als Flexbox statt <tr>: Text (Label/Beschreibung) darf umbrechen/schrumpfen,
+				// Betrag + Entfernen-Button bleiben als fixe Einheit immer sichtbar (auch auf schmalen Screens).
+				var row_el = document.createElement('div');
+				row_el.className = 'flex items-start justify-between gap-3 p-3';
 
-				var tdLabel = document.createElement('td');
-				tdLabel.className = 'py-2 pl-4 pr-2 font-medium text-gray-800 whitespace-nowrap';
-				tdLabel.textContent = row.lbl;
+				var textCol = document.createElement('div');
+				textCol.className = 'flex-1 min-w-0';
 
-				var tdDesc = document.createElement('td');
-				tdDesc.className = 'py-2 px-2 text-gray-500';
-				tdDesc.textContent = row.desc;
+				var lblEl = document.createElement('div');
+				lblEl.className = 'text-sm font-medium text-gray-800';
+				lblEl.textContent = row.lbl;
 
-				var tdAmount = document.createElement('td');
-				tdAmount.className = 'py-2 px-2 text-gray-800 whitespace-nowrap font-semibold text-right';
-				tdAmount.textContent = 'CHF ' + (parseFloat(row.amount) || 0).toFixed(2);
+				var descEl = document.createElement('div');
+				descEl.className = 'text-xs text-gray-500';
+				descEl.textContent = row.desc;
 
-				var tdRemove = document.createElement('td');
-				tdRemove.className = 'py-2 pr-4 text-right';
+				textCol.appendChild(lblEl);
+				textCol.appendChild(descEl);
+
+				var actionCol = document.createElement('div');
+				actionCol.className = 'flex items-center gap-2 flex-shrink-0';
+
+				var amountEl = document.createElement('span');
+				amountEl.className = 'text-sm font-semibold text-gray-800 whitespace-nowrap';
+				amountEl.textContent = 'CHF ' + (parseFloat(row.amount) || 0).toFixed(2);
+
 				var removeLink = document.createElement('a');
 				removeLink.href = '#!';
 				removeLink.setAttribute('aria-label', 'Option entfernen');
-				removeLink.className = 'inline-flex items-center justify-center w-6 h-6 rounded-full italic'
-					+ ' font-serif text-lg leading-none text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-					+ ' transition';
+				removeLink.className = 'flex-shrink-0 inline-flex items-center justify-center w-6 h-6'
+					+ ' rounded-full italic font-serif text-lg leading-none text-gray-400 hover:text-gray-600'
+					+ ' hover:bg-gray-100 transition';
 				removeLink.textContent = '×';
 				removeLink.addEventListener('click', function (e) {
 					e.preventDefault();
 					removeProductOption(prodId, row.opt_id);
 				});
-				tdRemove.appendChild(removeLink);
 
-				tr.appendChild(tdLabel);
-				tr.appendChild(tdDesc);
-				tr.appendChild(tdAmount);
-				tr.appendChild(tdRemove);
-				tbody.appendChild(tr);
+				actionCol.appendChild(amountEl);
+				actionCol.appendChild(removeLink);
+
+				row_el.appendChild(textCol);
+				row_el.appendChild(actionCol);
+				tbody.appendChild(row_el);
 			});
 
 			if (wrap) wrap.classList.toggle('hidden', data.result.length === 0);
@@ -90,7 +100,7 @@ function refreshAssignedOptions(prodId) {
 			}
 
 			var surchargeHint = document.getElementById('surcharge-hint-610051');
-			    surchargeHint.classList.toggle('hidden', sum > 0);
+			if (surchargeHint) surchargeHint.classList.toggle('hidden', sum > 0);
 
 			var basePriceEl = document.getElementById('base_price');
 			var mainPriceEl = document.getElementById('main-price-' + prodId);
