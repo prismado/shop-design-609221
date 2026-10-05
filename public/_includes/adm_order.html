@@ -34,7 +34,8 @@
 		$dbh->do("DELETE FROM orders_details WHERE order_id=$id");
 		$dbh->do("DELETE FROM orders_products WHERE order_id=$id");
 		$dbh->do("DELETE FROM orders_status   WHERE order_id=$id");
-		$m->redirect('adm_orders.html');
+		$m->redirect('orders.html');
+		# XXX $m->redirect('adm_orders.html');
 	}
 	elsif ($action eq 'update_notes') {
 		my $merchant_notes = $C->{CGI}->param('merchant_notes');
