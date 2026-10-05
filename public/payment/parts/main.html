@@ -5,7 +5,9 @@
 
 	my $perm     = $args{perm};
 	my $C        = $args{C};
-	my $order_id = $args{order_id};
+	my $msgs     = $args{msgs};
+	my $data     = $args{data};
+	# XXX my $order_id = $args{order_id};
 
 	my $cgi = $C->{CGI};
 </%init>
@@ -13,12 +15,20 @@
 <div>
 
 	<div class="mt-6">
-		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Order-ID <% $order_id %></h2>
+		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Order-ID <% $data->{order_id} %></h2>
 
 		<p class="text-sm text-gray-600 leading-relaxed">tbd xx</p>
 
 		<div>
 			checkout_zahlungsart_select = <% $C->getSessData('checkout_zahlungsart_select') %><br>
+
+%			foreach (@$msgs) {
+				[msg] - <% $_ %><br>
+%			}
+
+%			foreach (sort keys %$data) {
+				[data] - <% $_ %> = <% $data->{$_} %><br>
+%			}
 
 %			foreach ($cgi->all_parameters) {
 				X -- <% $_ %> = <% $cgi->param($_) %><br>
