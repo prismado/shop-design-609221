@@ -11,6 +11,12 @@
 
 	my $cgi = $C->{CGI};
 
+	my $order_id = $data->{order_id} + 0;
+
+	my $total = $C->query("select amount_incl_vat FROM orders WHERE id=$order_id")->[0];
+	   $total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
+	(my $total_no_dot = $total) =~ tr/\.//d;
+
 	my $order_stmt = $A->get_order_statement(order_id => $data->{order_id}, XXout_str=>'1');
 </%init>
 
@@ -31,7 +37,7 @@
 	<div class="mt-6">
 		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Order-ID <% $data->{order_id} %></h2>
 
-		<p class="text-sm text-gray-600 leading-relaxed">tbd xx</p>
+		<p class="text-sm text-gray-600 leading-relaxed">Total <% $total_no_dot %></p>
 
 		<div>
 			checkout_zahlungsart_select = <% $C->getSessData('checkout_zahlungsart_select') %><br>
