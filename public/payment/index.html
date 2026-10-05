@@ -9,7 +9,14 @@
 
 	my $perm = $C->get_user_perm();
 
-	my $order_id = $A->save_order();
+	$m->redirect('/summary/') unless $perm->{uid} > 0;
+
+	my $sid = $C->getSID();
+
+	my $ready_order_id = $C->query("select id from orders where sid=$sid order by 1 desc limit 1")->[0];
+
+	my $order_id = $ready_order_id || $A->save_order();
+# XXX my $order_id = $ready_order_id;
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
