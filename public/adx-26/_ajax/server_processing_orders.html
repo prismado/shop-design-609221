@@ -109,7 +109,7 @@
 		my $stat_hr = $status_hr{$status} || "* $status *";
 		   $stat_hr = "<span class='badge $badge_type fs--13 w--80 float-right mr-1'>$stat_hr</span>";
 		my @row = ();
-		push(@row, qq~<a href='/adm_order.html?id=$id'><b>$id</b></a>~);
+		push(@row, qq~<a href='order.html?id=$id'><b>$id</b></a>~);
 		push(@row, '<nobr>' . $C->trans_date_short($instime) . "$dn_cr</nobr>");
 		push(@row, '<b>' . $C->web_enc($C->shorten_title($name, 33)) . "</b>$guest_ord");
 		push(@row, $C->utf2iso($A->get_products_html_compact($id, 35)));

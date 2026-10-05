@@ -1,0 +1,60 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	unless ($C->is_admin()) { # -- AFTER getSessData!
+		$m->redirect('/not_auth.html?x=logout');
+	}
+
+	my $cgi     = $C->{CGI};
+	my $UID     = $C->getUID();
+	my $license = $C->get_license();
+
+	my $id = $cgi->param('id') + 0;
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Order-ID <% $id %> | Adm &middot; <%$C->{CONFIG}->{HTTP_HOST}%></title>
+	<&_includes/header_meta_theme.html&>
+	<script src="assets/js/bootstrap-typeahead.js"></script>
+</head>
+% # XXX <&_includes/meta_top.html&>
+
+<body>
+	<& _includes/adm_navbar.html, C=>$C, UID=>$UID &>
+	<& _includes/dashboard_mainmenu_hor.html, C=>$C &>
+
+	<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, func=>'orders', license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+
+	<div class="row-fluid">
+%		unless  ($license->{status} == 1) {
+			<br />
+			<% $C->bootstrap_alert($license->{msg}, 'danger') %><br />
+			<% $C->get_property('content_lic_bcst', '_global') %><hr />
+%		}
+		<& _includes/adm_order.html, id=>$id, CORE=>$C, A=>$A &>
+	</div>
+
+	<&_includes/footer2.html, C => $C&>
+
+	    </div>
+	</div>
+</div>
+
+	<& _includes/meta_bootstrap_bottom.html &>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>
