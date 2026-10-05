@@ -8,6 +8,7 @@
 	my $A        = $args{A};
 	my $msgs     = $args{msgs};
 	my $data     = $args{data};
+	my $uid      = $args{UID};
 
 	my $cgi = $C->{CGI};
 
@@ -32,6 +33,15 @@
 <div>
 	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $csum %></p>
 	<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Zahlung</h1>
+
+	<form method="post" action="../_do.html">
+	<input type="hidden" name="action"      value="payrexx_start_payment">
+	<input type="hidden" name="amount"      value="<% $total_no_dot %>" />
+	<input type="hidden" name="uid"         value="<% $uid %>" />
+	<input type="hidden" name="referenceId" value="<% $order_id %>" />
+	<input type="hidden" name="csum"        value="<% $csum %>" />
+	<input type="submit" value="Jetzt zahlen">
+	</form>
 </div>
 
 <div>
