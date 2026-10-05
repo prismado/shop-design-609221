@@ -1,0 +1,149 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+
+	my $redir_url = $ENV{HTTP_REFERER};
+
+	my $action = $cgi->param('action');
+	my $uid    = $cgi->param('uid') + 0;
+	my $csum   = $cgi->param('csum');
+	my $lang   = $cgi->param('lang') || 'de';
+
+	my $secret = $C->md5_secret($uid);
+
+	if ($action eq 'send_reg_invitation' && $csum eq $secret) {
+		my $res = $A->send_register_invitation(id=>$uid, lang=>$lang);
+		$C->log(msg=>"Send register invitation to UID $uid from $ENV{HTTP_REFERER}", service=>'_do');
+		$redir_url = '/';
+	}
+	elsif ($action eq 'edit_mode') {
+		my $perm = $C->get_user_perm();
+		my $cur_edit_mode = $C->getSessData('adm_edit_mode') + 0;
+		if ($cur_edit_mode) {
+			$A->activate_edit(mode=>0);
+			$C->create_toast_note(body=>'<center>Editier-Modus ausgeschaltet</center>', type=>'success', fs=>25,
+				style=>'.toast, .max-w-300 { max-width: 350px !important; opacity: 0.45; }');
+		}
+		else {
+			$A->activate_edit(mode=>1) if $perm->{is_admin};
+			$C->create_toast_note(body=>'<center>Editier-Modus eingeschaltet</center>', type=>'pink', fs=>25,
+				style=>'.toast, .max-w-300 { max-width: 350px !important; opacity: 0.45; }');
+		}
+	}
+	elsif ($action eq 'payrexx_start_payment' && $csum eq $secret) {
+		my $amount      = $cgi->param('amount') + 0;
+		my $referenceId = $cgi->param('referenceId');
+		my $purpose     = $cgi->param('purpose') || 'Online-Einkauf';
+		my $pm          = $cgi->param('pm')      || $C->{CONFIG}->{payrexx_paymentMethods}; # -- twint,mastercard,visa,google-pay
+		my $phone       = $cgi->param('phone') // ''; # -- 10Mar2026
+		my $instance    = $C->{CONFIG}->{payrexx_instance};
+		my $secret      = $C->{CONFIG}->{payrexx_secret};
+
+		my $uinf = $C->get_user(id=>$uid);
+
+		my $res = $A->payrexx_create_paylink(
+			amount      => $amount,
+			sku         => "O-ID\-$referenceId\-$C->{CONFIG}->{HTTP_HOST}",
+			purpose     => $purpose,
+			forename    => $uinf->{firstname},
+			surname     => $uinf->{lastname},
+			email       => $uinf->{email},
+			referenceId => $referenceId,
+			pm          => $pm, # -- Comma-separated
+			instance    => $instance,
+			secret      => $secret,
+			successRedirectUrl => $C->{CONFIG}->{payrexx_successRedirectUrl},
+			debug       => 0
+		);
+
+		if ( $phone or length($uinf->{phone}) < 7 ) {
+			$A->set_user_property(
+				property => 'phone',
+				value    => $phone || $uinf->{phone},
+				user_id  => $uid,
+				type     => 2
+			);
+		}
+
+		$C->log(msg=>"N310202-2: [ payrexx_create_paylink ] Order-ID $referenceId $res->{pm} $res->{instance}, status = $res->{status}", service=>'_do');
+		$C->log(msg=>"N310202-3: [ payrexx_create_paylink ] Order-ID $referenceId Going to redirect to $res->{json_link}", service=>'_do');
+
+		unless ($res->{status} eq 'success') {
+			foreach (sort keys %{$res}) {
+				$C->log(msg=>"N310310-69: [ payrexx_create_paylink ] $_ = $res->{$_}", service=>'_do');
+			}
+			$C->create_toast_note(body=>$res->{message}, title=>'Fehler', type=>'danger', delay=>20000);
+		}
+
+		open(RES, ">$C->{CONFIG}->{DOCUMENT_ROOT}/upload/zz_trash_out_$referenceId\.txt");
+		print RES  ${$res->{res_req}};
+		close(RES);
+
+		$C->log(msg=>"Error E311101-81: No redirection link from Payrexx, Order-ID $referenceId", importance=>1, service=>'_do') unless $res->{json_link};
+
+		$redir_url = $res->{json_link} || '/summary.html';
+	}
+	elsif ($action eq 'request_new_password') { # -- 23Mar2026
+		my $uname   = $cgi->param('uname') // '';
+		my $pw_link = $A->generate_forgot_password_link(uname=>$uname)->{url};
+		my $res     = $A->mail_password_request(uname => $uname, url => $pw_link);
+		# XXX my $res     = $A->mail_password_request(uname => 'user2028', url => $pw_link);
+		$C->log(msg=>"N603231: $uname: New password request - rc $res->{rc}", importance=>1);
+		foreach (sort keys %$res) {
+			# XXX $C->log(msg=>"XX [res] $_ = $res->{$_}", service=>'_do / request_new_password', importance=>1);
+		}
+	}
+	elsif ($action eq 'send_new_password') { # -- 23Mar2026
+		my $uname = $cgi->param('uname') // '';
+		my $t     = $cgi->param('t')     // ''; # -- e.g. YYYYMMDD-HHMNSS
+		my $tc    = $cgi->param('tc')    // '';
+
+		my $check_sum_verify = $C->decrypt( $csum );
+		if ( $uname eq $check_sum_verify ) {
+			my $tc_check = $C->md5_secret($t);
+			my $tc_check_ok = 0;
+			if ( $tc eq $tc_check ) {
+				$tc_check_ok = 1;
+			}
+			if ( $tc_check_ok ) {
+				my $uid      = $C->query("select id from users where uname='$uname' or email='$uname' limit 1")->[0];
+				my $new_pass = $C->generate_password(length => 10)->{password};
+# XXX $uid = 2028;
+				$C->{dbh}->do("UPDATE users SET pass='$new_pass' WHERE id=$uid");
+				$C->log(msg=>"XX -----Crypt okay and time okay // UID $uid / $new_pass", importance=>1);
+				# -- $C->set_password2(uid=>$uid, new_pass=>$new_pass);
+				$A->mail_login(uname => $uname);
+				# XXX $A->mail_login(uname => 'user2028');
+				# -- $C->{dbh}->do("UPDATE users SET pass='' WHERE id=$uid"); # -- Empty temporary password
+			}
+			else {
+				$C->log(msg=>"W603231: $uname: Crypt okay but time not okay", importance=>1);
+			}
+		}
+		else {
+			$C->log(msg=>"XX NOT okay", importance=>1);
+		}
+	}
+	else {
+		my $referer = $ENV{HTTP_REFERER} || $ENV{SCRIPT_URL};
+		my $uid_info = $uid ? "$uid/$UID" : $UID;
+		$C->log(msg=>"ERROR: Unknown call $action by UID $uid_info $referer", importance=>1, service=>'_do');
+		foreach ($cgi->all_parameters) {
+			$C->log(msg=>"[ CGI ] $_ = " . $cgi->param($_), service=>'_do');
+		}
+	}
+
+	$m->redirect($redir_url);
+</%init>
+<%doc>
+	Diese Quelle: Metanet # 2
+
+	Algo-23
+	__METACLONING__
+</%doc>
