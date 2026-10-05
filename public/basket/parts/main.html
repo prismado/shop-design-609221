@@ -18,39 +18,39 @@
 		<img src="https://placehold.co/600x100/d8d8d8/a8a8a8?text=Kein%0ABild"
 			class="w-full rounded-2xl object-cover border border-gray-200 bg-white" loading="lazy">
 
-			<h2 class="mt-6 text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
-			<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
+		<h2 class="mt-6 text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
+		<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
 
-%			if ($bsk_itms->{item_count}) {
-				<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
-					<& basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
-				</div>
-%			}
-%			else {
-				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
-%			}
+%		if ($bsk_itms->{item_count}) {
+			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
+				<& basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
+			</div>
+%		}
+%		else {
+			<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
+%		}
 
-%			if ($bsk_itms->{item_count}) {
-			    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4 border-t border-gray-200">
-				<div class="flex items-center justify-between sm:gap-6">
-					<span class="text-base text-gray-900">
-						Total inkl. MwSt.:
-						<span class="ml-3 font-bold">
-							CHF <% $C->decimal_mark($bsk_itms->{basket_total}) %>
-						</span>
+%		if ($bsk_itms->{item_count}) {
+		    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4 border-t border-gray-200">
+			<div class="flex items-center justify-between sm:gap-6">
+				<span class="text-base text-gray-900">
+					Total inkl. MwSt.:
+					<span class="ml-3 font-bold">
+						CHF <% $C->decimal_mark($bsk_itms->{basket_total}) %>
 					</span>
-				</div>
+				</span>
+			</div>
 
-				<a href="/checkout" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
+			<a href="/checkout" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
 							hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
 							shadow transition-colors">Zur Kasse
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-						stroke-width="2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-					</svg>
-				</a>
-			    </div>
-%			}
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+					stroke-width="2" stroke="currentColor" class="w-4 h-4">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+				</svg>
+			</a>
+		    </div>
+%		}
 	</div>
 
 </div>
