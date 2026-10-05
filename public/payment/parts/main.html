@@ -14,6 +14,10 @@
 	my $order_stmt = $A->get_order_statement(order_id => $data->{order_id}, XXout_str=>'1');
 </%init>
 
+<style>
+% #	.row_small { color: red; }
+</style>
+
 <div>
 
 	<div class="mt-6">
@@ -24,7 +28,7 @@
 		<div>
 			checkout_zahlungsart_select = <% $C->getSessData('checkout_zahlungsart_select') %><br>
 
-			<table>
+			<table style="width:95%">
 			<% ${$order_stmt->{out}} %>
 			</table>
 
