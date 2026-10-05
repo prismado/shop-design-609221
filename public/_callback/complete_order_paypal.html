@@ -1,0 +1,80 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	(my $callback_host = $C->{CONFIG}->{HTTP_HOST}) =~ tr/\./_/;
+
+	my $refno        = $cgi->param('invoice') + 0;
+
+	# XXX my ($cur_status, $exists) = @{$C->query("SELECT status, id FROM orders WHERE id=$refno")};
+	my ($cur_status, $exists, $email) = @{$C->query("SELECT status, id, email FROM vorders WHERE id=$refno")};
+
+	if ($cur_status == 4) {
+		$C->log( service => 'complete_order', importance => 2,
+			msg => "W310141: Order ID $refno already completed" );
+	}
+	else {
+		if ($exists) {
+			$A->complete_order(refno=>$refno);
+
+			$A->put_order_detail($refno, 'pay_resPayPal_txn_id',   $cgi->param('txn_id'));
+			$A->put_order_detail($refno, 'pay_resPayPal_payer_id', $cgi->param('payer_id'));
+			$A->put_order_detail($refno, 'pay_resPayPal_mc_gross', $cgi->param('mc_gross'));
+
+			if ($C->{CONFIG}->{order_post_proc}) {
+				my $order_id = $refno;
+				eval( "\$A->$C->{CONFIG}->{order_post_proc};" );
+				if ($@) {
+					$C->log(msg=>"Error E308162 $@", service=>'complete_order_paypal', importance=>1);
+				}
+			}
+
+			$C->log( module => 'Shop', service => 'complete_order_paypal', importance => 2,
+				msg => "N310040: Order-ID $refno completed" );
+
+			sleep 3; # -- Wait for DHL Tracking Number (29Sep2023)
+			# -- 04Oct2024 -- $A->mail_order2cust(id => $refno);
+
+			my $cart_symb = $C->get_safe_property('unicode_cart_128722', 'sys');
+			my $subj      = $C->base64("$cart_symb Ihre Online-Bestellung Nr $refno"); chomp $subj;
+			   $subj      = "=?UTF-8?B?$subj?=";
+			my $res_batch = $C->call_batch(
+				call=>qq~\\\$A->mail_pdf_bill(order_id=>$refno, to=>'$email', comp_file=>'confirm_cust_inc.html', subject=>'$subj');~
+			);
+
+			$A->mail_order2merchant(id => $refno);
+		}
+	}
+
+	open(TMP, ">/tmp/z_paygw_ret_$callback_host\_$refno\.log") or $m->out("ERR $!<br>");
+	foreach ($cgi->all_parameters) {
+		print TMP "$_\t", $cgi->param($_), "\n";
+	}
+	print TMP "_QUERY_STRING        $ENV{QUERY_STRING}\n";
+	foreach (sort keys %ENV) {
+		next if /\_pass$/;
+		print TMP "(ENV) $_ = $ENV{$_}\n";
+	}
+	close(TMP);
+
+	$m->redirect("http://$ENV{HTTP_HOST}/order_detail.html?id=$refno&x=success");
+</%init>
+% foreach ($cgi->all_parameters) {
+	<%$_%> = <%$cgi->param($_)%><br>
+% }
+
+<hr noshade size=1>
+
+% foreach (sort keys %ENV) {
+%       next if $_ =~ /pass/i;
+	<%$_%> = <%$ENV{$_}%><br>
+% }
+
+<%doc>
+	Test it:
+	https://shopd.algonetic.ch/_callback/complete_order_paypal.html?invoice=386
+</%doc>

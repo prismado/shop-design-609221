@@ -1,0 +1,29 @@
+<%init>
+	use ScreenPoint::Core;
+	# XXX use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	# XXX my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $refno = ($cgi->param('refno') * 1) || 0;
+	my $now   = $cgi->param('now');
+	# XXX my $payment_host_flat = $cgi->param('payment_host_flat');
+
+	$C->log( msg=>"Callback Post", service=>'post_back' );
+</%init>
+
+% foreach ($cgi->all_parameters) {
+	<%$_%> = <%$cgi->param($_)%><br>
+% }
+
+<hr noshade size=1>
+
+% foreach (sort keys %ENV) {
+%       next if $_ =~ /pass/i;
+	<%$_%> = <%$ENV{$_}%><br>
+% }
+<%doc>
+	__METACLONINx__
+</%doc>

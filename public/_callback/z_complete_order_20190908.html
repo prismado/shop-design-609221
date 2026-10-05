@@ -1,0 +1,113 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $refno = ($cgi->param('refno') * 1) || 0;
+	my $now   = $cgi->param('now');
+	my $payment_host_flat = $cgi->param('payment_host_flat');
+
+	unless ($refno) {
+		$C->log( service => 'complete_order', importance => 1,
+			msg => 'ERROR: No Order ID' );
+		$m->redirect('../contact.html?msg=error');
+	}
+
+	$C->log( msg=>"Going to complete Order-ID $refno of $now via $payment_host_flat", service=>'complete_order' );
+
+	my $cur_status = $C->query("SELECT status FROM orders WHERE id=$refno")->[0];
+	my $UID = 0;
+
+	if ($cur_status == 4) {		# -- Status 4 = Okay
+		$UID = $C->getUID();
+		$UID = $C->getSessData('_anon_uid') if $UID == -1;
+
+		$C->log( service => 'complete_order', importance => 1,
+			msg => "ERROR E1000: Order ID $refno already completed (Remote call: $ENV{REMOTE_ADDR}, UID $UID)" );
+	}
+	else {
+		my $pay_meth = $C->query("select xval from orders_details where order_id=$refno and xkey='checkout_zahlungsart_select'")->[0];
+		my $payment_rc = 0;
+		if ($pay_meth eq 'six') {
+			$C->log( msg=>"Checking Saferpay payment status of Order ID $refno", service=>'complete_order' );
+			my $result = $A->check_six_payment(order_id => $refno);
+			$payment_rc = $result->{rc};
+			foreach (sort keys %{$result}) {
+				next if $_ eq 'six_Transaction' or $_ eq 'six_Payer' or $_ eq 'six_PaymentMeans';
+				$C->log(msg=>"(result) $_ = $result->{$_}", service=>'complete_order', importance=>3);
+			}
+			foreach (sort keys %{$result->{six_Transaction}}) {
+				next if $_ eq 'Amount';
+				$C->log(msg=>"Result Transaction $_ = $result->{six_Transaction}->{$_}", service=>'check_six_payment', importance=>2);
+			}
+			foreach (sort keys %{$result->{six_Payer}}) {
+				$C->log(msg=>"Result Payer: $_ = $result->{six_Payer}->{$_}", service=>'check_six_payment', importance=>2);
+			}
+			foreach (sort keys %{$result->{six_PaymentMeans}}) {
+				$C->log(msg=>"Result PaymentMeans: $_ = $result->{six_PaymentMeans}->{$_}",
+					service=>'check_six_payment', importance=>2);
+			}
+			foreach (sort keys %{$result->{six_Transaction}->{Amount}}) {
+				$C->log(msg=>"Result Transaction Amount: $_ = $result->{six_Transaction}->{Amount}->{$_}",
+					service=>'check_six_payment', importance=>2);
+			}
+			$A->put_order_detail($refno, 'six_Transaction_Id'    , $result->{six_Transaction}->{Id});
+			$A->put_order_detail($refno, 'six_Transaction_Amount', $result->{six_Transaction}->{Amount}->{Value});
+		}
+		elsif ($pay_meth eq 'pc3' or $pay_meth eq 'twi' or $pay_meth eq 'pc') {
+			my $result = $A->check_pc3_payment(now=>$now, order_id=>$refno, payment_host_flat=>$payment_host_flat);
+			foreach (keys %{$result}) {
+				$A->put_order_detail($refno, "pay_$_", $result->{$_});
+			}
+		}
+
+		unless ($payment_rc) {
+			$A->set_order_status($refno, 4); # -- Okay
+
+			# ==============================================================================
+			if (length($C->{CONFIG}->{order_post_proc}) > 1) {
+				my $order_id = $refno;
+				eval( "\$A->$C->{CONFIG}->{order_post_proc};" );
+				if ($@) {
+					$C->log(msg=>"ERROR Post Proc: $C->{CONFIG}->{order_post_proc}", service=>'complete_order', importance=>1);
+				}
+				else {
+					$C->log(msg=>"Post Proc: $C->{CONFIG}->{order_post_proc}", service=>'complete_order');
+				}
+			}
+			# ==============================================================================
+
+			$A->mail_order2cust(id => $refno);
+			$A->mail_order2merchant(id => $refno);
+			$C->log( msg=>"Marked Order-ID $refno [$pay_meth] as complete. E-Mails sent", service=>'complete_order' );
+		}
+	}
+
+	$C->session_dump(caller=>'complete_order') if $C->{CONFIG}->{debug_level};
+
+	$A->empty_basket();
+	$C->del_sess_key('order_id');
+
+	$C->log( module=>'Shop', service=>'complete_order', importance=>2,
+		msg => "N1000: Order-ID $refno has been completed" );
+
+	$m->redirect("../order_detail.html?id=$refno&origin=complete_order");
+</%init>
+
+% foreach ($cgi->all_parameters) {
+	<%$_%> = <%$cgi->param($_)%><br>
+% }
+
+<hr noshade size=1>
+
+% foreach (sort keys %ENV) {
+%       next if $_ =~ /pass/i;
+	<%$_%> = <%$ENV{$_}%><br>
+% }
+<%doc>
+	__METACLONINx__
+</%doc>

@@ -1,0 +1,46 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $VERSION = 0.8002;
+
+	my $cgi = $C->{CGI};
+
+	my $now = $C->now(10); # -- or now(9) what is longer
+
+	my $data = $cgi->param('POSTDATA');
+
+	my $res = $C->json_decode(data=>\$data);
+
+	my $id = $res->{result}->{data}->{object}->{payment_intent};
+
+	open(TMP, ">/tmp/zz_trash_stripe_$id\.txt");
+	# XXX open(TMP, ">/tmp/zz_trash_stripe_$now\.txt");
+
+	print TMP "VERSION\t$VERSION\n";
+
+	foreach (keys %{ $res->{result} }) {
+		print TMP "$_\t$res->{result}->{$_}\n";
+	}
+
+	foreach (keys %{ $res->{result}->{data}->{object} }) {
+		next unless length( $res->{result}->{data}->{object}->{$_} );
+		print TMP "[ data / object ] -- $_\t$res->{result}->{data}->{object}->{$_}\n";
+	}
+
+	print TMP "\n";
+
+	print TMP $data; # -- Raw JSON
+
+	close(TMP);
+
+	$r->content_type('text/plain; charset=utf-8');
+</%init>
+{
+	"status": "success",
+	"message": "Zahlung erfolgreich erhalten: <% $now %>"
+}
+<%doc>
+	__METACLONING__
+</%doc>

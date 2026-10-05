@@ -1,0 +1,65 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $payment_host = $cgi->param('payment_host') || 'none.local';
+	my $refno        = $cgi->param('refno') + 0;
+	my $now          = $C->now(5);
+
+	(my $payment_host_flat = $payment_host) =~ tr/\./_/;
+
+	open(TMP, ">/tmp/z_paygw_ret_$payment_host_flat\_$refno\_$now\.log") or $m->out("ERR $!<br>");
+	foreach ($cgi->all_parameters) {
+		print TMP "$_\t", $cgi->param($_), "\n";
+	}
+	print TMP "_QUERY_STRING	$ENV{QUERY_STRING}\n";
+	close(TMP);
+
+	if ($payment_host eq 'spag.local' or $payment_host eq 'optik.pgate.net') {
+		if ($ENV{QUERY_STRING} =~ /x=success/) {
+			$m->redirect("http://$payment_host/_callback/complete_order.html?x=foo&refno=$refno");
+		}
+		else {
+			$m->redirect("http://$payment_host/payment.html?agb_check=accept&msg=Transaction+aborted");
+		}
+	}
+	elsif ($payment_host eq 'www.linsendirekt.ch') {
+		if ($ENV{QUERY_STRING} =~ /x=success/) {
+			$m->redirect("http://$payment_host/_callback/complete_order.html?x=foo&refno=$refno");
+		}
+		else {
+			$m->redirect("http://$payment_host/payment.html?agb_check=accept&msg=Transaction+aborted");
+		}
+	}
+	else {
+		open(TMP, ">>/tmp/z_paygw_ret_$payment_host_flat\_$refno\_$now\.log") or print STDERR "ERR $!\n";
+		print TMP "HTTP_HOST\t$ENV{HTTP_HOST}\n";
+		close(TMP);
+		my $s = $ENV{HTTPS} ? 's' : '';
+		if ($ENV{QUERY_STRING} =~ /x=success/) {
+			$m->redirect("http$s://$ENV{HTTP_HOST}/_callback/complete_order.html?x=foo&refno=$refno&payment_host_flat=$payment_host_flat&now=$now");
+		}
+		else {
+			$m->redirect("http$s://$ENV{HTTP_HOST}/payment.html?agb_check=accept&msg=Transaction+aborted");
+		}
+	}
+</%init>
+
+Payment Host "<%$payment_host%>"<br>
+
+% foreach ($cgi->all_parameters) {
+	<%$_%> = <%$cgi->param($_)%><br>
+% }
+
+<hr noshade size=1>
+
+% foreach (sort keys %ENV) {
+%       next if $_ =~ /pass/i;
+	<%$_%> = <%$ENV{$_}%><br>
+% }
+<%doc>
+	__METACLONING__
+</%doc>

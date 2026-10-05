@@ -1,0 +1,127 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $VERSION = 0.8003;
+
+	my $cgi = $C->{CGI};
+
+	my $data = $cgi->param('POSTDATA');
+
+	my $now = $C->now(10); # -- or now(9) what is longer
+	my $res = $C->json_decode(data=>\$data);
+
+	my $id = $now;
+
+	my $ofile = "/tmp/zz_trash_generic_$id\.txt";
+	if ($ENV{HTTP_USER_AGENT} =~ /Payrexx/i) {
+		$id    = $res->{result}->{transaction}->{referenceId} || $now;
+		$ofile = "/tmp/zz_trash_payrexx_$id\.txt";
+	}
+
+	open(TMP, ">$ofile");
+
+	print TMP "VERSION\t$VERSION\n";
+
+	foreach (keys %{ $res->{result} }) {
+		print TMP "$_\t$res->{result}->{$_}\n";
+	}
+
+	if ($ENV{HTTP_USER_AGENT} =~ /Payrexx/i) {
+		foreach (keys %{ $res->{result}->{transaction} }) {
+			next unless length( $res->{result}->{transaction}->{$_} );
+			next if $_ eq 'invoice';
+			print TMP "[ JSON: transaction ] -- $_\t$res->{result}->{transaction}->{$_}\n";
+		}
+		foreach (keys %{ $res->{result}->{transaction}->{invoice} }) {
+			next unless length( $res->{result}->{transaction}->{invoice}->{$_} );
+			print TMP "[ transaction/invoice ] -- $_\t$res->{result}->{transaction}->{invoice}->{$_}\n";
+		}
+		foreach (keys %{ $res->{result}->{transaction}->{payment} }) {
+			print TMP "[ transaction/payment ] -- $_\t$res->{result}->{transaction}->{payment}->{$_}\n";
+		}
+		foreach (keys %{ $res->{result}->{transaction}->{invoice}->{products}->[0] }) {
+			print TMP "[ transaction/invoice/products ] -- $_ = $res->{result}->{transaction}->{invoice}->{products}->[0]->{$_}\n";
+		}
+	}
+	else {
+	    foreach (keys %{ $res->{result}->{data}->{object} }) {
+		next unless length( $res->{result}->{data}->{object}->{$_} );
+		print TMP "[ data / object ] -- $_\t$res->{result}->{data}->{object}->{$_}\n";
+	    }
+	}
+
+	print TMP "\n";
+
+	print TMP "$data\n---------------------------\n"; # -- Raw JSON
+
+	foreach ($cgi->all_parameters) {
+		print TMP "[ CGI ] $_ = ", $cgi->param($_), "\n";
+	}
+	foreach (sort keys %ENV) {
+		next if /pass$/;
+		print TMP "[ ENV ] $_ = $ENV{$_}\n";
+	}
+
+	close(TMP);
+
+	if ($ENV{HTTP_USER_AGENT} =~ /Payrexx/i) {
+		$C->log(msg=>"N309241: Payrexx sku $res->{result}->{transaction}->{invoice}->{products}->[0]->{sku} vs $C->{CONFIG}->{HTTP_HOST}",
+				service=>'callback/webhook_generic');
+
+		my $pass = 1;
+		if ($res->{result}->{transaction}->{invoice}->{products}->[0]->{sku} !~ /$C->{CONFIG}->{HTTP_HOST}/i) {
+			$pass = 0;
+			$C->log(msg=>"WARN: $res->{result}->{transaction}->{invoice}->{products}->[0]->{sku} does not match $C->{CONFIG}->{HTTP_HOST}",
+				importance=>1, service=>'callback/webhook_generic');
+		}
+
+		if ($res->{result}->{transaction}->{status} eq 'confirmed' && $pass) {
+			my $order_id = $res->{result}->{transaction}->{referenceId} || 0;
+			my $res_batch = $C->call_batch(call=>"\\\$A->finalize_order( id=>$order_id, caller=>'_callback/webhook_generic' );");
+
+			if ($C->{CONFIG}->{order_post_proc}) {
+				$C->log(msg=>"DN308041: Post proc $C->{CONFIG}->{order_post_proc} for Order-ID $order_id",
+					service=>'webhook_generic', module=>'callback');
+				eval( "\$A->$C->{CONFIG}->{order_post_proc};" );
+				if ($@) {
+					$C->log(msg=>"Error E308042 $@", service=>'webhook_generic', importance=>1);
+				}
+			}
+
+			$A->complete_order(refno=>$res->{result}->{transaction}->{referenceId});
+			# XX 22May2024 -- sleep 3; # -- Wait for DHL Tracking Number (26Sep2023)
+			# XX 22May2024 -- $A->mail_order2cust(id => $res->{result}->{transaction}->{referenceId});
+			# XX 22May2024 -- $A->mail_order2merchant(id => $res->{result}->{transaction}->{referenceId});
+
+			$A->put_order_detail($res->{result}->{transaction}->{referenceId}, 'pay_resPaymentBrand', $res->{result}->{transaction}->{payment}->{brand});
+			$A->put_order_detail($res->{result}->{transaction}->{referenceId}, 'pay_resAcquirer', 'Payrexx');
+			$A->put_order_detail($res->{result}->{transaction}->{referenceId}, 'pay_resuuid', $res->{result}->{transaction}->{uuid});
+			$A->put_order_detail($res->{result}->{transaction}->{referenceId}, 'pay_resstatus', $res->{result}->{transaction}->{status});
+			$A->put_order_detail($res->{result}->{transaction}->{referenceId}, 'pay_resoriginalAmount',
+				$res->{result}->{transaction}->{invoice}->{originalAmount});
+			$A->put_order_detail($res->{result}->{transaction}->{referenceId}, 'pay_rescurrency', $res->{result}->{transaction}->{invoice}->{currency});
+
+			my $sid = $C->query("SELECT sid FROM orders WHERE id=$res->{result}->{transaction}->{referenceId}")->[0];
+			$C->{dbh}->do("DELETE FROM basket  WHERE sid=$sid");
+			$C->{dbh}->do("DELETE FROM session WHERE sid=$sid AND `key` like 'prod\_id\_%';");
+			$C->{dbh}->do("DELETE FROM session WHERE sid=$sid AND `key`='order_id'");
+		}
+	}
+
+	$r->content_type('text/plain; charset=utf-8');
+</%init>
+{
+	"status": "success",
+	"message": "Zahlung erfolgreich verarbeitet: Ref <% $id %>-2"
+}
+<%doc>
+	[ ENV ] HTTP_USER_AGENT = Payrexx Webhook
+
+	shop.algonetic @ Metanet #2
+
+	__METACLONING__
+</%doc>
