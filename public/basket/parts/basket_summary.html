@@ -32,9 +32,9 @@
 				<ul class="mt-2 pl-3 border-l-2 border-gray-100 space-y-1">
 %				foreach (@{$bask_opts->{array}}) {
 %					my ($feature_id, $label, $desc, $ref, $amount) = split /\t/;
-					<li class="text-xs text-gray-500">
-						<% $feature_id %> <% $label %>: <% $desc %> <% $ref %>:
-						<span class="font-semibold text-gray-700">
+					<li class="flex items-baseline justify-between gap-3 text-xs text-gray-500">
+						<span><% $feature_id %> <% $label %>: <% $desc %> <% $ref %>:</span>
+						<span class="flex-shrink-0 font-semibold text-gray-700 whitespace-nowrap">
 							CHF <% sprintf('%.2f', $A->add_vat($amount)) %>
 						</span>
 					</li>
