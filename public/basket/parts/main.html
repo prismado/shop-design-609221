@@ -67,12 +67,10 @@
 						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
 					</span><br>
 %				}
-				Aufpreis (bask-id <tt><% $d->{basket_id} %></tt>): <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
-				----------<br>
+				Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b><br>
+% # XXX				----------<br>
 %				while(my $r = $st_det->fetch()) {
-%					my ($feature_id, $ref, $price) = @{$r};
-%					# XXX my ($lbl, $desc, $amount) = @{$C->query(
-%					# XXX "select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
+%					# XXX my ($feature_id, $ref, $price) = @{$r};
 %				}
 %			}
 			</div>
