@@ -11,12 +11,29 @@
 
 	$m->redirect('/summary/') unless $perm->{uid} > 0;
 
-	my $sid = $C->getSID();
+	my @msgs = ();
 
-	my $ready_order_id = $C->query("select id from orders where sid=$sid order by 1 desc limit 1")->[0];
+	my %data = ();
+	$data{anon_uid}     = $C->getSessData('_anon_uid');
+	$data{cur_order_id} = $C->getSessData('order_id');
 
-	my $order_id = $ready_order_id || $A->save_order();
-# XXX my $order_id = $ready_order_id;
+	if ($C->getSessData('flag_anon_buy') or $data{anon_uid}) {
+		if ($data{anon_uid}) {
+			push(@msgs, "NOTE: Anon user already created: UID $data{anon_uid}");
+			$C->log( msg => "NOTE: Anon user already created: UID $data{anon_uid}", service => 'payment' );
+		}
+		else {
+			push(@msgs, 'NOTE: Anon user must be created.');
+			$C->log( msg => "NOTE: Anon user must be created", service => 'payment' );
+		}
+	}
+	else {
+		push(@msgs, "Einkauf durch reg. User: UID $perm->{uid}");
+	}
+
+	$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
+
+	$C->saveSessData('order_id', $data{order_id});
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -24,7 +41,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zahlung | <% $C->{CONFIG}->{HTTP_HOST} %></title>
-<meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -42,12 +58,11 @@
 
 <& partials/header.html, perm => $perm, A => $A, C => $C &>
 
-<!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8">
 
 	<section>
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-			<& parts/main.html, order_id => $order_id, C => $C &>
+			<& parts/main.html, data => \%data, msgs => \@msgs, C => $C &>
 		</div>
 	</section>
 
