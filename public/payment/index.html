@@ -9,9 +9,8 @@
 
 	my $perm = $C->get_user_perm();
 
-	my $cgi = $C->{CGI};
-
-	my $debug = $cgi->param('debug');
+	# XXX my $cgi = $C->{CGI};
+	# XXX my $debug = $cgi->param('debug');
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -35,7 +34,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
 
-<& partials/header.html, A => $A, C => $C &>
+<& partials/header.html, perm => $perm, A => $A, C => $C &>
 
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
