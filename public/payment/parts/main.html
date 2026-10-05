@@ -17,6 +17,8 @@
 	   $total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
 	(my $total_no_dot = $total) =~ tr/\.//d;
 
+	my $csum = $C->md5_secret($args{UID});
+
 	my $order_stmt = $A->get_order_statement(order_id => $data->{order_id}, XXout_str=>'1');
 </%init>
 
@@ -28,7 +30,7 @@
 </style>
 
 <div>
-	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tbd xx</p>
+	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $csum %></p>
 	<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Zahlung</h1>
 </div>
 
