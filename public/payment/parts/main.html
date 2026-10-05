@@ -5,11 +5,13 @@
 
 	my $perm     = $args{perm};
 	my $C        = $args{C};
+	my $A        = $args{A};
 	my $msgs     = $args{msgs};
 	my $data     = $args{data};
-	# XXX my $order_id = $args{order_id};
 
 	my $cgi = $C->{CGI};
+
+	my $order_stmt = $A->get_order_statement(order_id => $data->{order_id}, XXout_str=>'1');
 </%init>
 
 <div>
@@ -21,6 +23,10 @@
 
 		<div>
 			checkout_zahlungsart_select = <% $C->getSessData('checkout_zahlungsart_select') %><br>
+
+			<table>
+			<% ${$order_stmt->{out}} %>
+			</table>
 
 %			foreach (@$msgs) {
 				[msg] - <% $_ %><br>
