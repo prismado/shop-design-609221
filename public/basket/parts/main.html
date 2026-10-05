@@ -24,6 +24,9 @@
 
 %			if ($bsk_itms->{item_count}) {
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
+				<& basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
+<%doc>
+XXX:
 %			foreach my $d (@{$bsk_itms->{items}}) {
 %				my $bask_opts = $A->get_basket_options_by_basket_id_v2(basket_id => $d->{basket_id});
 				<div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
@@ -69,6 +72,8 @@
 					Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b> zu <% sprintf('%.2f', $d->{price}) %>
 %				}
 %			}
+/XXX
+</%doc>
 			</div>
 %			}
 %			else {
