@@ -27,13 +27,32 @@
 				<span class="inline-block mt-1.5 bg-red-600 text-white text-[11px] font-bold
 				px-2 py-0.5 rounded-full">-<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</span>
 %			}
+
+%			if ($bask_opts->{price_total}) {
+				<ul class="mt-2 pl-3 border-l-2 border-gray-100 space-y-1">
+%				foreach (@{$bask_opts->{array}}) {
+%					my ($feature_id, $label, $desc, $ref, $amount) = split /\t/;
+					<li class="text-xs text-gray-500">
+						<% $feature_id %> <% $label %>: <% $desc %> <% $ref %>:
+						<span class="font-semibold text-gray-700">
+							CHF <% sprintf('%.2f', $A->add_vat($amount)) %>
+						</span>
+					</li>
+%				}
+				</ul>
+%			}
 		</div>
 
 		<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
 			<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
 
-			<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
+			<div class="flex flex-col items-end">
 				<span class="text-sm text-gray-500"><% sprintf('%.2f', $d->{price}) %></span>
+%				if ($bask_opts->{price_total}) {
+					<span class="text-xs text-gray-400 whitespace-nowrap">
+						Aufpreis <% sprintf('%.2f', $A->add_vat($bask_opts->{price_total})) %>
+					</span>
+%				}
 			</div>
 
 			<span class="text-base font-bold text-gray-900 whitespace-nowrap">
@@ -46,17 +65,5 @@
 						leading-none transition">&times;</a>
 		</div>
 	</div>
-
-%	if ($bask_opts->{price_total}) {
-%		foreach (@{$bask_opts->{array}}) {
-%			my ($feature_id, $label, $desc, $ref, $amount) = split /\t/;
-			&bull; <span class="text-xs">
-				<% $feature_id %>
-				<% $label %>: <% $desc %> <% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
-			</span><br>
-%		}
-
-		Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b>
-%	}
 
 % }
