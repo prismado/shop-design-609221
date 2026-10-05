@@ -9,6 +9,8 @@
 
 	my $perm = $C->get_user_perm();
 
+	# my $order_id = $C->save_order();
+
 	# XXX my $cgi = $C->{CGI};
 	# XXX my $debug = $cgi->param('debug');
 </%init>
@@ -37,16 +39,19 @@
 <& partials/header.html, perm => $perm, A => $A, C => $C &>
 
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
-<div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
+% # XXX <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
+<div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
 
-	<& partials/left_nav.html, A => $A, C => $C &>
+% #	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, C => $C &>
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+			<& parts/main.html, C => $C &>
+		</div>
 	</section>
 
-	<& partials/daily_offer.html, C => $C &>
+% # XX	<& partials/daily_offer.html, C => $C &>
 </div>
 
 <& partials/footer.html, C => $C &>
