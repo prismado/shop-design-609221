@@ -9,7 +9,7 @@
 
 	my $perm = $C->get_user_perm();
 
-	# my $order_id = $C->save_order();
+	my $order_id = $A->save_order();
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -40,7 +40,7 @@
 
 	<section>
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-			<& parts/main.html, C => $C &>
+			<& parts/main.html, order_id => $order_id, C => $C &>
 		</div>
 	</section>
 
