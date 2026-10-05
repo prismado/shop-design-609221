@@ -61,7 +61,7 @@
 				</div>
 %				foreach (@{$bask_opts->{array}}) {
 %					my ($feature_id, $label, $desc, $ref, $amount) = split /\t/;
-					&bull; <span class="text-red-500">
+					&bull; <span class="text-xs">
 						<% $feature_id %>
 						<% $label %>: <% $desc %>
 						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
@@ -71,9 +71,8 @@
 				----------<br>
 %				while(my $r = $st_det->fetch()) {
 %					my ($feature_id, $ref, $price) = @{$r};
-%					my ($lbl, $desc, $amount) = @{$C->query(
-%					"select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
-% # XXX					XX hoe <% $lbl %>: <% $desc %>: <% $ref %>: <b>CHF <% $A->add_vat($amount) %></b><br>
+%					# XXX my ($lbl, $desc, $amount) = @{$C->query(
+%					# XXX "select label, `description`, amount from voptions where id=$feature_id and lang='de' limit 1")};
 %				}
 %			}
 			</div>
