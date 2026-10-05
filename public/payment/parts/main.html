@@ -12,13 +12,11 @@
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
 		<div>
-% # XXX			<img src="https://placehold.co/400x200/d8d8d8/a8a8a8?text=Kein%0ABild"
-% # XXX				class="w-full rounded-2xl object-cover border border-gray-200 bg-white"
-% # XXX				loading="lazy">
 
 			<div class="mt-6">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed">tbd</p>
+				X -- checkout_zahlungsart_select = <% $C->getSessData('checkout_zahlungsart_select') %><br>
 %				foreach ($cgi->all_parameters) {
 					XX <% $_ %> = <% $cgi->param($_) %><br>
 %				}
