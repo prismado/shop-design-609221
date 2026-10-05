@@ -66,7 +66,9 @@
 						<% $ref %>: <b>CHF <% $A->add_vat($amount) %></b>
 					</span><br>
 %				}
-				Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b> zu <% sprintf('%.2f', $d->{price}) %><br>
+%				if ($bask_opts->{price_total}) {
+					Aufpreis: <b><% $A->add_vat($bask_opts->{price_total}) %></b> zu <% sprintf('%.2f', $d->{price}) %>
+%				}
 %			}
 			</div>
 %			}
