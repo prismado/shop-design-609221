@@ -89,6 +89,9 @@ function refreshAssignedOptions(prodId) {
 				surchargeLine.classList.toggle('hidden', sum <= 0);
 			}
 
+			var surchargeHint = document.getElementById('surcharge-hint-610051');
+			    surchargeHint.classList.toggle('hidden', sum > 0);
+
 			var basePriceEl = document.getElementById('base_price');
 			var mainPriceEl = document.getElementById('main-price-' + prodId);
 			if (basePriceEl && mainPriceEl) {

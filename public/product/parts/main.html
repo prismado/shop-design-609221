@@ -177,6 +177,11 @@
 %			}
 			</div>
 
+%			if (keys %$opts) {
+				<div class="text-xs" id="surcharge-hint-610051">
+					Aufpreis-Möglichkeit(en)
+				</div>
+%			}
 			<div id="options-surcharge-line-<% $id %>"
 				class="text-xs <% $options_total > 0 ? '' : 'hidden' %>">
 				Im Preis enthalten:
