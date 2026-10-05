@@ -191,6 +191,17 @@
 				für ausgewählte Optionen
 			</div>
 
+			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
+
+			<div class="flex flex-wrap gap-3 mb-8">
+				<button type="button" id="add-to-basket-<% $id %>" class="inline-flex items-center justify-center
+					gap-2 bg-[#1c1512] hover:bg-red-600 text-white text-sm font-medium px-6 py-3
+					rounded-full transition shadow">In den Warenkorb</button>
+				<a href="#!" class="inline-flex items-center justify-center gap-2
+					border border-gray-300 hover:border-red-300 hover:text-red-700 text-sm
+					font-medium px-6 py-3 rounded-full transition">In die Merkliste</a>
+			</div>
+
 			<div id="assigned-options-wrap-<% $id %>"
 				class="hidden mt-3 mb-3 rounded-xl border border-gray-200 bg-white overflow-hidden">
 				<table class="w-full text-left text-sm">
@@ -203,17 +214,6 @@
 					refreshAssignedOptions('<% $id %>');
 				});
 			</script>
-
-			<p class="text-sm text-gray-500 mb-6"><% $prod->{count_product} %> Stk. verfügbar</p>
-
-			<div class="flex flex-wrap gap-3 mb-8">
-				<button type="button" id="add-to-basket-<% $id %>" class="inline-flex items-center justify-center
-					gap-2 bg-[#1c1512] hover:bg-red-600 text-white text-sm font-medium px-6 py-3
-					rounded-full transition shadow">In den Warenkorb</button>
-				<a href="#!" class="inline-flex items-center justify-center gap-2
-					border border-gray-300 hover:border-red-300 hover:text-red-700 text-sm
-					font-medium px-6 py-3 rounded-full transition">In die Merkliste</a>
-			</div>
 
 			<!-- Toast: Rückmeldung zum Warenkorb-Klick (oben mittig, temporär) -->
 			<& ../partials/inc_toast.html &>
