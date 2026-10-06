@@ -39,8 +39,6 @@
 XXX:
 %		if ($debug) {
 			<span class="text-xs text-red-500">
-				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=products">prod</a> |
-				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc">desc</a>
 			</span>
 %		}
 /XXX
@@ -69,7 +67,7 @@ XXX:
 	</div>
 
 %	if ($prod->{mand_count}) {
-		<a href="XXX?mando=1">
+		<a href="product?id=<%  $id %>">
 %	}
 %	else {
 		<a href="#!">
