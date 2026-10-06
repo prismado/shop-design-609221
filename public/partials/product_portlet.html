@@ -35,12 +35,16 @@
           </button>
         </div>
         <div class="p-4 flex flex-col flex-1">
+<%doc>
+XXX:
 %		if ($debug) {
 			<span class="text-xs text-red-500">
 				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=products">prod</a> |
 				<a href="/adm_db_edit?wcl=product_id%3D<% $id %>&table=products_desc">desc</a>
 			</span>
 %		}
+/XXX
+</%doc>
 		<a href="product?id=<%  $id %>">
 			<h3 class="font-semibold text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
 				<% $prod->{title} %>
