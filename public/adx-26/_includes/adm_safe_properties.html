@@ -12,7 +12,6 @@
 			or $m->out("ERR $DBI::errstr<hr>");
 		my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
 		$m->redirect("safe-property.html?id=$last_id");
-		# XXX $m->redirect("adm_safe_property.html?id=$last_id");
 	}
 
 	my $this = $C->this();
@@ -25,7 +24,7 @@ Language:
 <a style="<%$lang eq 'fr' ? 'font-weight:bold; color:black' : ''%>" href="_change_lang.html?lang=fr">fr</a>
 % }
 % else {
-	No multi language
+	No multi language (CONFIG: multi_lang)
 % }
 &mdash; <a href="adm_safe_properties.html?debug=1">More</a>
 % if ($args{debug}) {
