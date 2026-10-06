@@ -25,6 +25,6 @@
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
-  "rc": 0,
-  "message": "okay um <% $C->now(12) %>, SID <% $C->{sid} %>"
+  "rc": <% $rc %>,
+  "message": "<% $msg %> um <% $C->now(12) %>, SID <% $C->{sid} %>"
 }
