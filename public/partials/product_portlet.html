@@ -7,7 +7,7 @@
 	my $id    = $args{id};
 	my $debug = $args{debug};
 
-	my $prod = $A->get_product_v2(id => $id, public => 1);
+	my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
 
 	my $img_url = $prod->{image}->{url};
 	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
@@ -64,6 +64,12 @@
 %	  }
 	</div>
 
+%	if ($prod->{mand_count}) {
+		<a href="XXX?mando=1">
+%	}
+%	else {
+		<a href="#!">
+%	}
             <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5
 			rounded-full transition shadow" aria-label="In den Warenkorb">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -71,6 +77,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
               </svg>
             </button>
+	</a>
           </div>
         </div>
 </article>
