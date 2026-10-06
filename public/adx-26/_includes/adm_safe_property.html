@@ -24,7 +24,8 @@
 	}
 	elsif ($cgi->param('bDelete')) {
 		$C->{dbh}->do("delete FROM config_prod_feat WHERE id=$id") or $m->out("ERR<br>");
-		$m->redirect('adm_safe_properties.html');
+		$m->redirect('safe-properties.html');
+		# XXX $m->redirect('adm_safe_properties.html');
 	}
 
 	($page, $key, $val, my $last_mod) = @{$C->query("select 0, featkey, featname, 0 FROM config_prod_feat WHERE id=$id")};
