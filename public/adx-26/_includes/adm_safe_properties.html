@@ -11,7 +11,8 @@
 		$C->{dbh}->do("insert into config_prod_feat (featkey, featname, lang) VALUES ('new_$ts', 'new', '$lang')")
 			or $m->out("ERR $DBI::errstr<hr>");
 		my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
-		$m->redirect("adm_safe_property.html?id=$last_id");
+		$m->redirect("safe-property.html?id=$last_id");
+		# XXX $m->redirect("adm_safe_property.html?id=$last_id");
 	}
 
 	my $this = $C->this();
