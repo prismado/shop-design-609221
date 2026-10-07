@@ -13,6 +13,9 @@
 
 	my $cgi = $C->{CGI};
 
+	my $rc  = 0;
+	my $msg = 'constr';
+
 	my $sid = $C->getSID();
 	my $uid = $C->getUID();
 
@@ -23,19 +26,24 @@
 		# -- Benutzer existiert noch nicht
 		$C->log(msg => "N610071: Benutzer existiert noch nicht",
 				service => 'set-customer-address', importance => 1);
+		my %data = ();
+		foreach my $key ($cgi->all_parameters) {
+			(my $key_new = $key) =~ s/\_[12]$//;
+			$data{"cust_$key_new"} = $cgi->param($key);
+		}
+		# $data{cust_email} ||= "cust$$\@eshop.pub";
+		($rc, $msg) = $A->create_user(\%data);
+		$C->log(msg => "RC $rc $msg", importance => 1);
 	}
 
 	foreach ($cgi->all_parameters) {
-		$C->log(msg => "XX $_ = " . $cgi->param($_), service => 'set-customer-address', XXimportance => 1);
+		# XX $C->log(msg => "XX $_ = " . $cgi->param($_), service => 'set-customer-address', XXimportance => 1);
 	}
-
-	my $rc  = 0;
-	my $msg = 'constr';
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
   "rc": <% $rc %>,
-  "message": "<% $msg %> um <% $C->now(12) %>, SID <% $C->{sid} %>"
+  "message": "<% $msg %>, SID <% $C->{sid} %>"
 }
