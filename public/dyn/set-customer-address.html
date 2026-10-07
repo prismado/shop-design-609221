@@ -36,6 +36,7 @@
 		}
 		($rc, $msg) = $A->create_user(\%data);
 		$C->log(msg => "RC $rc $msg, UID $A->{uid}", importance => 1);
+		$C->framework_login(uname => $data{cust_email}) unless $rc;
 	}
 
 	foreach ($cgi->all_parameters) {
