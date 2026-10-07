@@ -34,9 +34,8 @@
 			(my $key_new = $key) =~ s/\_[12]$//;
 			$data{"cust_$key_new"} = $cgi->param($key);
 		}
-		# XXX $data{cust_email} ||= "cust$$\@eshop.pub";
 		($rc, $msg) = $A->create_user(\%data);
-		$C->log(msg => "RC $rc $msg", importance => 1);
+		$C->log(msg => "RC $rc $msg, UID $A->{uid}", importance => 1);
 	}
 
 	foreach ($cgi->all_parameters) {
