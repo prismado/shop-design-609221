@@ -187,6 +187,10 @@ XXX:
 				</div>
 %			}
 
+%			unless ($args{UID} > 0) {
+				<& ../partials/inc_alert.html, msg => 'XX nicht eingeloggt', type => 'info' &>
+%			}
+
 			<form method="post" action="/payment/">
 			<input type="hidden" name="bogus_pid" value="<% $$ %>">
 % #			============================================================================================================
