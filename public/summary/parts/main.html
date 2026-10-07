@@ -30,6 +30,11 @@
 	# XX my $prod_options = $A->get_basket_options();
 
 	my $vouch_inf = $A->get_voucher_info($grand_tot->{voucher_code});
+
+	my $addr_modal_body = $m->scomp('../partials/inc_address_form_deliv.html',
+		id      => 'addr-deliv',
+		on_save => 'saveDeliveryAddress'
+	);
 </%init>
 <div class="flex flex-col gap-6">
 	<div>
@@ -188,14 +193,23 @@ XXX:
 %			}
 
 %			unless ($args{UID} > 0) {
-				<div class="mt-8" id="missing_addr_610071">
-					<& ../partials/inc_alert.html, type => 'warning',
-						msg => 'Wir benötigen Ihre Kunden- und Lieferadresse.' &>
+				<div id="addr_capture_section_610071">
+					<div class="mt-8" id="missing_addr_610071">
+						<& ../partials/inc_alert.html, type => 'warning',
+							msg => 'Wir benötigen Ihre Kunden- und Lieferadresse.' &>
+					</div>
+					<div class="mt-4">
+						<button type="button" onclick="openModal('addr-deliv')"
+							class="inline-flex items-center justify-center gap-2 bg-[#1c1512]
+								hover:bg-red-600 text-white text-sm font-semibold px-6 py-3
+								rounded-full transition shadow">
+							Adresse(n) erfassen
+						</button>
+					</div>
 				</div>
-				<div class="mt-4">
-					<input type="button" value="Adresse(n) erfassen"
-						onclick="document.getElementById('missing_addr_610071').style.display='none';">
-				</div>
+
+				<& ../partials/inc_modal.html, id => 'addr-deliv', title => 'Lieferadresse erfassen',
+					body_html => $addr_modal_body &>
 %			}
 
 			<form method="post" action="/payment/">
@@ -263,5 +277,47 @@ XXX:
 		form.appendChild(input);
 		document.body.appendChild(form);
 		form.submit();
+	}
+
+	<& ../partials/modal_js.html &>
+
+	// Rein textbasiertes Escaping für sicheres Einfügen von Nutzereingaben via innerHTML
+	function escapeHtml(str) {
+		var div = document.createElement('div');
+		div.textContent = str || '';
+		return div.innerHTML;
+	}
+
+	function renderDeliveryAddress(form) {
+		var data = new FormData(form);
+		var html = '<div class="rounded-2xl border border-gray-200 bg-white p-5 max-w-sm">'
+			+ '<div class="flex items-center gap-2 mb-3 font-semibold text-gray-900">Lieferadresse</div>'
+			+ '<address class="not-italic text-sm text-gray-600 leading-relaxed">'
+			+ (data.get('company_2') ? escapeHtml(data.get('company_2')) + '<br>' : '')
+			+ escapeHtml(data.get('firstname_2')) + ' ' + escapeHtml(data.get('lastname_2')) + '<br>'
+			+ escapeHtml(data.get('street_2')) + '<br>'
+			+ escapeHtml(data.get('zip_2')) + ' ' + escapeHtml(data.get('city_2'))
+			+ '</address></div>';
+
+		var section = document.getElementById('addr_capture_section_610071');
+		if (section) section.innerHTML = html;
+	}
+
+	function saveDeliveryAddress(form) {
+		var body = new URLSearchParams(new FormData(form));
+
+		fetch('/dyn/set-customer-address.html', { method: 'POST', body: body })
+			.then(function (res) { return res.json(); })
+			.then(function (data) {
+				if (data.rc !== 0) {
+					showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+					return;
+				}
+				closeModal('addr-deliv');
+				renderDeliveryAddress(form);
+			})
+			.catch(function () {
+				showToast(false, 'Adresse konnte nicht gespeichert werden.');
+			});
 	}
 </script>

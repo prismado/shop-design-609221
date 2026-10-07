@@ -1,0 +1,34 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+
+	my $id        = $args{id};
+	my $title     = $args{title};
+	my $body_html = $args{body_html};
+</%init>
+
+<!-- Generisches Modal-Grundgerüst — Inhalt wird per body_html (z.B. via $m->scomp()) übergeben,
+     damit dieselbe Hülle für beliebige künftige Modals wiederverwendet werden kann. -->
+<div id="modal-<% $id %>"
+	class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4
+		opacity-0 transition-opacity duration-300 ease-out">
+	<div class="modal-panel w-full max-w-md bg-white rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto
+			scale-95 opacity-0 transition-all duration-300 ease-out">
+		<div class="flex items-center justify-between mb-4">
+			<h2 class="text-lg font-bold text-gray-900"><% $title %></h2>
+			<button type="button" onclick="closeModal('<% $id %>')" aria-label="Schliessen"
+				class="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1.5 rounded-full
+					hover:bg-gray-100 transition">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+					stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+		<div id="modal-body-<% $id %>">
+% if (defined $body_html) {
+			<% $body_html %>
+% }
+		</div>
+	</div>
+</div>

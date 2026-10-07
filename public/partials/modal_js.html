@@ -1,0 +1,43 @@
+% use utf8;
+
+// Generisches Modal-Verhalten (öffnen/schliessen) — wiederverwendbar für beliebige Modal-Instanzen,
+// die mit partials/inc_modal.html gerendert wurden. Mehrfach includierbar: Funktionen werden idempotent
+// neu definiert, es wird aber nichts dupliziert ausgeführt (kein globaler State ausser den DOM-Elementen).
+
+function openModal(id) {
+	var modal = document.getElementById('modal-' + id);
+	if (!modal) return;
+	var panel = modal.querySelector('.modal-panel');
+
+	modal.classList.remove('hidden');
+	modal.classList.add('flex');
+	requestAnimationFrame(function () {
+		modal.classList.remove('opacity-0');
+		if (panel) panel.classList.remove('scale-95', 'opacity-0');
+	});
+}
+
+function closeModal(id) {
+	var modal = document.getElementById('modal-' + id);
+	if (!modal) return;
+	var panel = modal.querySelector('.modal-panel');
+
+	modal.classList.add('opacity-0');
+	if (panel) panel.classList.add('scale-95', 'opacity-0');
+	setTimeout(function () {
+		modal.classList.add('hidden');
+		modal.classList.remove('flex');
+	}, 300);
+}
+
+document.addEventListener('click', function (e) {
+	if (!e.target.id || e.target.id.indexOf('modal-') !== 0) return;
+	closeModal(e.target.id.slice('modal-'.length));
+});
+
+document.addEventListener('keydown', function (e) {
+	if (e.key !== 'Escape') return;
+	document.querySelectorAll('[id^="modal-"]:not(.hidden)').forEach(function (modal) {
+		closeModal(modal.id.slice('modal-'.length));
+	});
+});
