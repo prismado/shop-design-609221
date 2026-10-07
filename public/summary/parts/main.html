@@ -95,9 +95,7 @@
 %			}
 			</div>
 
-			<div class="mt-8">
-				Voucher: -<% $grand_tot->{voucher_value_incl_vat} %> CHF
-			</div>
+% # XXX			<div class="mt-8"> Voucher: -<% $grand_tot->{voucher_value_incl_vat} %> CHF </div>
 
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Zahlungsart</h2>
@@ -113,7 +111,7 @@
 %					if ($vouch_inf->{perc}) {
 						&ndash;<% $vouch_inf->{perc} %>%
 %					}
-					&rarr; CHF <% $grand_tot->{voucher_value} %>
+					<span>Wert: CHF <% sprintf('%.2f', $grand_tot->{voucher_value_incl_vat}) %></span>
 				</div>
 			</div>
 
