@@ -150,7 +150,7 @@ VAT Config of <%$C->{CONFIG}->{site_title}%>
 <br clear="all" />
 	Apply Swiss VAT: <b>[ <% $apply_vat_ch ? 'Yes' : 'No' %> ]</b>
 % if ($apply_vat_ch_id) {
-	<a href="adm_safe_property.html?id=<% $apply_vat_ch_id %>"><i class="icon-edit"></i></a>
+	<a href="safe-property.html?id=<% $apply_vat_ch_id %>"><i class="icon-edit"></i></a>
 % }
 % else {
 	<a href="adm_safe_properties.html">(Sys Property)</a>
