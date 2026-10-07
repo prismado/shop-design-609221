@@ -188,9 +188,13 @@ XXX:
 %			}
 
 %			unless ($args{UID} > 0) {
-				<div class="mt-8">
-				<& ../partials/inc_alert.html, type => 'warning',
-					msg => 'Wir benötigen Ihre Kunden- und Lieferadresse.' &>
+				<div class="mt-8" id="missing_addr_610071">
+					<& ../partials/inc_alert.html, type => 'warning',
+						msg => 'Wir benötigen Ihre Kunden- und Lieferadresse.' &>
+				</div>
+				<div class="mt-4">
+					<input type="button" value="Adresse(n) erfassen"
+						onclick="document.getElementById('missing_addr_610071').style.display='none';">
 				</div>
 %			}
 
