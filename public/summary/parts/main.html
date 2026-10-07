@@ -48,8 +48,7 @@
 
 
 %			while(my $r = $basket_h->fetch()) {
-%				my ($prod_id, $count, $basket_id) = @{$r};
-%				# XXX my $d = $A->get_product_v2(id=>$prod_id, public=>1);
+%				# XXX my ($prod_id, $count, $basket_id) = @{$r};
 %			}
 
 %			foreach (sort keys %$grand_tot) {
@@ -114,7 +113,14 @@ XXX:
 %					if ($vouch_inf->{perc}) {
 						&ndash;<% $vouch_inf->{perc} %>%
 %					}
-					<span>Wert: CHF <% sprintf('%.2f', $grand_tot->{voucher_value_incl_vat}) %></span>
+					<span>Wert: CHF 
+%						if ($C->{CONFIG}->{round5}) {
+							<% $C->round_amount($grand_tot->{voucher_value_incl_vat}) %>
+%						}
+%						else {
+							<% sprintf('%.2f', $grand_tot->{voucher_value_incl_vat}) %>
+%						}
+					</span>
 				</div>
 			</div>
 
