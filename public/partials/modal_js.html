@@ -30,14 +30,16 @@ function closeModal(id) {
 	}, 300);
 }
 
+// Bewusst über die Klasse .modal-root statt über ein ID-Präfix selektiert: Der innere
+// Body-Container trägt die ID "modal-body-<id>", die fälschlich auch auf "modal-" matchen würde.
 document.addEventListener('click', function (e) {
-	if (!e.target.id || e.target.id.indexOf('modal-') !== 0) return;
+	if (!e.target.classList.contains('modal-root')) return;
 	closeModal(e.target.id.slice('modal-'.length));
 });
 
 document.addEventListener('keydown', function (e) {
 	if (e.key !== 'Escape') return;
-	document.querySelectorAll('[id^="modal-"]:not(.hidden)').forEach(function (modal) {
+	document.querySelectorAll('.modal-root:not(.hidden)').forEach(function (modal) {
 		closeModal(modal.id.slice('modal-'.length));
 	});
 });
