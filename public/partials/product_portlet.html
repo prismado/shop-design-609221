@@ -59,9 +59,11 @@
 	</div>
 
 %	if ($prod->{mand_count}) {
+%		# -- Dem Produkt sind Pflichtoptionen zugewiesen, welche in der Detailansicht ausgewählt werden müssen
 		<a href="product?id=<% $id %>">
 %	}
 %	else {
+%		# -- Das Produkt kann direkt in den Warenkorb gelegt werden
 		<a href="#!">
 %	}
             <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5
