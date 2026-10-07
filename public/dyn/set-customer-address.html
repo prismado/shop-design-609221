@@ -1,0 +1,29 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang = 'de';
+
+	my $cgi = $C->{CGI};
+
+	my $sid = $C->getSID();
+
+	foreach ($cgi->all_parameters) {
+		$C->log(msg => "XX $_ = " . $cgi->param($_), service => 'set-customer-address', importance => 1);
+	}
+
+	my $rc  = 0;
+	my $msg = 'constr';
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": <% $rc %>,
+  "message": "<% $msg %> um <% $C->now(12) %>, SID <% $C->{sid} %>"
+}
