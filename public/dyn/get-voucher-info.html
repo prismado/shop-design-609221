@@ -12,6 +12,7 @@
 	my $code = $cgi->param('code');
 
 	my $info = $A->get_voucher_info($code);
+	   $info->{_msg} ||= 'gültig';
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
