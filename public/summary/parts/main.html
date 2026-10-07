@@ -286,7 +286,10 @@
 				//    nachzubauen.
 				showToast(true, 'Adresse gespeichert.', 2000);
 				setTimeout(function () {
-					window.location.reload();
+					// -- Bewusst kein location.reload(): /summary/ wurde ursprünglich per POST
+					//    aufgerufen, ein reload() würde diesen POST erneut senden und der Browser
+					//    fragt dann "Formular erneut senden?". Stattdessen frische GET-Navigation.
+					window.location.href = window.location.pathname;
 				}, 900);
 			})
 			.catch(function () {
