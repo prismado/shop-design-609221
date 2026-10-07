@@ -279,6 +279,15 @@
 				}
 				closeModal('addr-deliv');
 				renderDeliveryAddress(form);
+
+				// -- Konto wurde serverseitig soeben angelegt/eingeloggt (anonym -> eingeloggt).
+				//    Header, Bezahlen-Button etc. hängen am serverseitigen Login-Status, daher
+				//    kurz die Erfolgsmeldung zeigen und danach neu laden, statt den Zustand clientseitig
+				//    nachzubauen.
+				showToast(true, 'Adresse gespeichert.', 2000);
+				setTimeout(function () {
+					window.location.reload();
+				}, 900);
 			})
 			.catch(function () {
 				showToast(false, 'Adresse konnte nicht gespeichert werden.');
