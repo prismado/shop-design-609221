@@ -88,6 +88,9 @@
 				<span onclick="document.location='/adx-26'">Adm</span> &middot;
 %			}
 			<% $C->shorten_title((split /\@/, $perm->{email})[0], 15) %>
+%			# -- Profilmenü bei Mouseover über Profil-Icon implementieren:
+%			#    - "(passendes icon) Profil" -> Link zu URL: /profile
+%			#    - "(passendes icon) Logout" -> Link zu URL: /_logout
 		</span>
 %	}
 %	else {
