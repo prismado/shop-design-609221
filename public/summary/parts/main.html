@@ -51,10 +51,8 @@
 
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 
-
-%			while(my $r = $basket_h->fetch()) {
-%				# XXX my ($prod_id, $count, $basket_id) = @{$r};
-%			}
+%			# XXX while(my $r = $basket_h->fetch()) {
+%			# XXX }
 
 %			foreach (sort keys %$grand_tot) {
 %				next unless length($grand_tot->{$_});
@@ -64,12 +62,8 @@
 
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl	overflow-hidden	bg-white">
 				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
-				qqq UID <% $UID %>
 			</div>
-<%doc>
-XXX:
-/XXX
-</%doc>
+
 			</div>
 
 			<div class="mt-8">
