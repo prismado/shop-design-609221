@@ -291,7 +291,7 @@ XXX:
 	function renderDeliveryAddress(form) {
 		var data = new FormData(form);
 		var html = '<div class="rounded-2xl border border-gray-200 bg-white p-5 max-w-sm">'
-			+ '<div class="flex items-center gap-2 mb-3 font-semibold text-gray-900">Lieferadresse</div>'
+			+ '<div class="flex items-center gap-2 mb-3 font-semibold text-gray-900">Rechnungs- und Lieferadresse</div>'
 			+ '<address class="not-italic text-sm text-gray-600 leading-relaxed">'
 			+ (data.get('company_2') ? escapeHtml(data.get('company_2')) + '<br>' : '')
 			+ escapeHtml(data.get('firstname_2')) + ' ' + escapeHtml(data.get('lastname_2')) + '<br>'
