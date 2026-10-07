@@ -27,11 +27,14 @@
 		$C->log(msg => "N610071: Benutzer existiert noch nicht",
 				service => 'set-customer-address', importance => 1);
 		my %data = ();
+		   $data{cust_name}    = $cgi->param('firstname_2') // '';
+		   $data{cust_surname} = $cgi->param('lastname_2')  // '';
+
 		foreach my $key ($cgi->all_parameters) {
 			(my $key_new = $key) =~ s/\_[12]$//;
 			$data{"cust_$key_new"} = $cgi->param($key);
 		}
-		# $data{cust_email} ||= "cust$$\@eshop.pub";
+		# XXX $data{cust_email} ||= "cust$$\@eshop.pub";
 		($rc, $msg) = $A->create_user(\%data);
 		$C->log(msg => "RC $rc $msg", importance => 1);
 	}
