@@ -1,0 +1,29 @@
+
+# Generell:
+
+- email
+- phone
+
+
+# Lieferadresse:
+
+- gender_2
+- firstname_2
+- lastname_2
+- company_2
+- street_2
+- zip_2
+- city_2
+- country_2 (Feldwert in Auswahl: CH + LI)
+
+
+# Rechnungsadresse:
+
+- gender_1
+- firstname_1
+- lastname_1
+- company_1
+- street_1
+- zip_1
+- city_1
+- country_1 (Feldwert in Auswahl: CH + LI)
