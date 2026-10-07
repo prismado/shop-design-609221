@@ -50,7 +50,7 @@
 %			while(my $r = $basket_h->fetch()) {
 %				my ($prod_id, $count, $basket_id) = @{$r};
 %				my $d = $A->get_product_v2(id=>$prod_id, public=>1);
-				XX Prod-ID <% $prod_id %>: <% $d->{title} %><br>
+% # XXX				XX Prod-ID <% $prod_id %>: <% $d->{title} %><br>
 %			}
 
 %			foreach (sort keys %$grand_tot) {
