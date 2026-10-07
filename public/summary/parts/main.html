@@ -188,7 +188,8 @@ XXX:
 %			}
 
 %			unless ($args{UID} > 0) {
-				<& ../partials/inc_alert.html, msg => 'XX nicht eingeloggt', type => 'info' &>
+				<& ../partials/inc_alert.html, type => 'warning',
+					msg => 'Wir benötigen Ihre Kunden- und Lieferadresse.' &>
 %			}
 
 			<form method="post" action="/payment/">
