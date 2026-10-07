@@ -1,6 +1,8 @@
 <%init>
 	use utf8;
 
+	# -- dyn/set-customer-address
+
 	use ScreenPoint::Core;
 	use ScreenPoint::Auctionline;
 
@@ -12,9 +14,19 @@
 	my $cgi = $C->{CGI};
 
 	my $sid = $C->getSID();
+	my $uid = $C->getUID();
+
+	if ($uid > 0) {
+		# -- Existierender Benutzer ist eingeloggt
+	}
+	else {
+		# -- Benutzer existiert noch nicht
+		$C->log(msg => "N610071: Benutzer existiert noch nicht",
+				service => 'set-customer-address', importance => 1);
+	}
 
 	foreach ($cgi->all_parameters) {
-		$C->log(msg => "XX $_ = " . $cgi->param($_), service => 'set-customer-address', importance => 1);
+		$C->log(msg => "XX $_ = " . $cgi->param($_), service => 'set-customer-address', XXimportance => 1);
 	}
 
 	my $rc  = 0;
