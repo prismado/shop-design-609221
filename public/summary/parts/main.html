@@ -264,7 +264,9 @@ XXX:
 			+ (data.get('company_2') ? escapeHtml(data.get('company_2')) + '<br>' : '')
 			+ escapeHtml(data.get('firstname_2')) + ' ' + escapeHtml(data.get('lastname_2')) + '<br>'
 			+ escapeHtml(data.get('street_2')) + '<br>'
-			+ escapeHtml(data.get('zip_2')) + ' ' + escapeHtml(data.get('city_2'))
+			+ escapeHtml(data.get('zip_2')) + ' ' + escapeHtml(data.get('city_2')) + '<br>'
+			+ '<span class="text-gray-400">E-Mail</span> ' + escapeHtml(data.get('email')) + '<br>'
+			+ '<span class="text-gray-400">Tel.</span> ' + escapeHtml(data.get('phone'))
 			+ '</address></div>';
 
 		var section = document.getElementById('addr_capture_section_610071');
