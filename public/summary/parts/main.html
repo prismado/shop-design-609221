@@ -49,8 +49,7 @@
 
 %			while(my $r = $basket_h->fetch()) {
 %				my ($prod_id, $count, $basket_id) = @{$r};
-%				my $d = $A->get_product_v2(id=>$prod_id, public=>1);
-% # XXX				XX Prod-ID <% $prod_id %>: <% $d->{title} %><br>
+%				# XXX my $d = $A->get_product_v2(id=>$prod_id, public=>1);
 %			}
 
 %			foreach (sort keys %$grand_tot) {
@@ -110,10 +109,11 @@
 			<div class="mt-8">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Gutschein</h2>
 				<div class="flex gap-3 max-w-md">
-					<% $grand_tot->{voucher_code} %> &rarr; CHF <% $grand_tot->{voucher_value} %>
-% foreach (sort keys %$vouch_inf) {
-% # XXX	[voucher] - <% $_ %> = <% $vouch_inf->{$_} %><br>
-% }
+					<b><% $grand_tot->{voucher_code} %></b>
+%					if ($vouch_inf->{perc}) {
+						&ndash;<% $vouch_inf->{perc} %>%
+%					}
+					&rarr; CHF <% $grand_tot->{voucher_value} %>
 				</div>
 			</div>
 
