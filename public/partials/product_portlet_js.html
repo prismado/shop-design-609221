@@ -1,0 +1,29 @@
+% use utf8;
+
+// "In den Warenkorb" für Produkt-Portlets (product_portlet.html) — kann mehrfach pro Seite
+// eingebunden sein, daher liegt diese Funktion zentral hier statt in der Komponente selbst.
+function addProductToBasket(el, prodId) {
+	var body = new URLSearchParams();
+	body.set('id', prodId);
+
+	fetch('/dyn/add-to-basket.html', { method: 'POST', body: body })
+		.then(function (res) { return res.json(); })
+		.then(function (data) {
+			var cartBadge = document.getElementById('cart-count');
+			if (data.rc === 0) {
+				showToast(true, 'Der Artikel wurde hinzugefügt.', 6000);
+				if (cartBadge) {
+					var n = (parseInt(cartBadge.textContent, 10) || 0) + 1;
+					cartBadge.textContent = n;
+					cartBadge.classList.remove('pop');
+					void cartBadge.offsetWidth;
+					cartBadge.classList.add('pop');
+				}
+			} else {
+				showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+			}
+		})
+		.catch(function () {
+			showToast(false, 'Der Artikel konnte nicht hinzugefügt werden.');
+		});
+}

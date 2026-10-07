@@ -65,9 +65,9 @@
 %	else {
 %		# -- Das Produkt kann direkt im Warenkorb gespeichert werden via POST zu /dyn/add-to-basket.html
 %		#    Implementierung siehe @product/parts/main.html Zeile 227
-		<a href="#!">
+		<a href="#!" onclick="event.preventDefault(); addProductToBasket(this, <% $id %>)">
 %	}
-            <button class="cart-btn bg-[#1c1512] hover:bg-red-600 text-white p-2.5
+            <button class="bg-[#1c1512] hover:bg-red-600 text-white p-2.5
 			rounded-full transition shadow" aria-label="In den Warenkorb">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 			stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
