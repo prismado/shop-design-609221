@@ -64,42 +64,10 @@
 
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl	overflow-hidden	bg-white">
 				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
+				qqq UID <% $UID %>
 			</div>
 <%doc>
 XXX:
-%			foreach my $d (@{$bsk_itms->{items}}) {
-				<div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
-					<a href="/product/?id=<% $d->{prod_id} %>"
-						class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200
-							bg-white self-start sm:self-center">
-						<img src="<% $d->{pdata}->{image}->{url} %>" class="w-full h-full object-cover"
-							loading="lazy" alt="<% $d->{pdata}->{title} %>">
-					</a>
-
-					<div class="flex-1 min-w-0">
-						<a href="/product/?id=<% $d->{prod_id} %>" class="font-semibold text-gray-900 text-sm
-						sm:text-base hover:text-red-600 transition line-clamp-2"><% $d->{pdata}->{title} %></a>
-						<p class="text-xs text-gray-400 mt-0.5">Art.-Nr. <% $d->{pdata}->{art_no} %></p>
-						<p class="text-xs text-gray-500 mt-1 line-clamp-1"><% $d->{pdata}->{desc_keyw} %></p>
-%						if ($d->{pdata}->{discount_perc}) {
-							<span class="inline-block mt-1.5 bg-red-600 text-white text-[11px] font-bold
-						px-2 py-0.5 rounded-full">-<% sprintf('%.0f', $d->{pdata}->{discount_perc}) %>%</span>
-%						}
-					</div>
-
-					<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
-						<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
-						<span class="text-base font-bold text-gray-900 whitespace-nowrap">
-							CHF <% $d->{pdata}->{price_incl_vat_fmt} %>
-						</span>
-						<a href="#!" onclick="removeFromBasket(<% $d->{basket_id} %>)"
-											aria-label="Artikel entfernen"
-							class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full
-							text-gray-400 hover:text-gray-600 hover:bg-gray-100 italic font-serif text-lg
-								leading-none transition">&times;</a>
-					</div>
-				</div>
-%			}
 /XXX
 </%doc>
 			</div>
