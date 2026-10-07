@@ -20,7 +20,7 @@
 
 	my $csum = $C->md5_secret($args{UID});
 
-	my $order_stmt = $A->get_order_statement(order_id => $data->{order_id}, XXout_str=>'1');
+	my $order_stmt = $A->get_order_statement(order_id => $data->{order_id}, add_vat => 1);
 </%init>
 
 <style>
