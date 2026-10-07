@@ -34,6 +34,21 @@
 		</div>
 	</div>
 
+	<div class="grid grid-cols-2 gap-3">
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="<% $id %>-email">E-Mail</label>
+			<input id="<% $id %>-email" name="email" type="email" required
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="<% $id %>-phone">Telefon</label>
+			<input id="<% $id %>-phone" name="phone" type="tel" required
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+	</div>
+
 	<div>
 		<label class="block text-sm font-medium text-gray-700 mb-1" for="<% $id %>-company_2">
 			Firma <span class="text-gray-400 font-normal">(optional)</span>
