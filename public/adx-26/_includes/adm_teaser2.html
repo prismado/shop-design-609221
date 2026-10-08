@@ -1,1 +1,114 @@
-../../_includes/adm_teaser2.html
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $bUpdate = $cgi->param('bUpdate');
+	my $delid = $cgi->param('delid');
+	my $updID = $cgi->param('bUpdID');
+	my $updTxt = $cgi->param('bUpdTxt');
+	my $extradir = '';
+	my @appmsgs = ();
+	my $lang = $args{lang};
+	my $act_lang = "style='color:black; font-weight:bold'";
+
+	my $prop_inf = $C->get_table_infos( schema => $ENV{db_name}, table => 'teaser' );
+	my %teaser_schema = ();
+	foreach (@$prop_inf) {
+		my ($col, $type, $len) = split /\t/;
+		$teaser_schema{$col} = "$type\t$len";
+	}
+
+	unless ($teaser_schema{lang}) {
+		push(@appmsgs, q~No attribut lang defined yet<br>ALTER TABLE teaser ADD lang CHAR(3) NOT NULL DEFAULT 'de' AFTER id;~);
+		$C->{dbh}->do(q~ALTER TABLE teaser ADD lang CHAR(3) NOT NULL DEFAULT 'de' AFTER id~);
+	}
+
+	if ($bUpdate) {
+		use File::Copy;
+		my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+		$dbh->do(qq~insert into teaser (prod_id, xtext) VALUES (0, '')~) or $m->out("ERR $DBI::errstr<br>");
+		my $db_id = $C->query('select LAST_INSERT_ID()')->[0];
+		my $rc = copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/img_slides/s$db_id\.jpg" or $m->out("ERR $!<br>");
+		$m->redirect("adm_edit_teaser.html?id=$db_id");
+	}
+	elsif ($updID) {
+		my $id = $cgi->param('id');
+		my $prod_id = $cgi->param('prod_id');
+		$dbh->do("update teaser SET prod_id=$prod_id WHERE id=$id") or $m->out("ERR $DBI::errstr<br>");
+		$m->out("X -- Prod ID $prod_id &rarr; ID $id<br>");
+	}
+	elsif ($updTxt) {
+		my $id = $cgi->param('id');
+		(my $txt = $cgi->param('txt')) =~ s/'/''/g;
+		$dbh->do("update teaser SET xtext='$txt' WHERE id=$id");
+		$m->out("Text of ID $id updated<br>");
+	}
+	elsif ($delid) {
+		unlink "$ENV{DOCUMENT_ROOT}/img_slides/s$delid\.jpg" or $m->out("ERR $!<br>");
+		$dbh->do("delete FROM teaser WHERE id=$delid");
+		$m->out("Deleted: ID $delid<br>");
+	}
+
+	my $appmsg = join '<br>', @appmsgs;
+</%init>
+<div style="margin-top:10px" class="pull-right">
+	<a <% $lang eq 'de' ? $act_lang : '' %> href="_change_lang.html?lang=de">de</a> &middot; 
+	<a <% $lang eq 'en' ? $act_lang : '' %> href="_change_lang.html?lang=en">en</a> &middot; 
+	<a <% $lang eq 'fr' ? $act_lang : '' %> href="_change_lang.html?lang=fr">fr</a>
+</div>
+<h2>Update Teaser &middot; Front Page</h2>
+
+<script language=JavaScript>
+	function del_slide(id) {
+		if (confirm(' OK to delete Slide ID ' + id)) {
+			document.location="adm_teaser.html?delid="+id;
+		}
+	}
+</script>
+
+<div class="fancy-tab-container">
+	<ul class="nav nav-tabs two-tabs fancy">
+		<li class="active"><a href="#fancy-upgrade" data-toggle="tab">Teaser List</a></li>
+		<li><a href="#fancy-whyupgrade" data-toggle="tab">Add another Teaser</a></li>
+	</ul>
+
+    <div class="tab-content">
+	<div class="tab-pane fade in active" id="fancy-upgrade">
+		<&inc_teaser_list.html, lang=>$lang, A=>$A, C=>$C, teaser_count=>$args{teaser_count}&>
+	</div>
+	<div class="tab-pane fade" id="fancy-whyupgrade">
+		<br />
+		<form enctype="multipart/form-data" method=post>
+		<input style='font-size:10px' type="file" name="file" />
+		<input type=submit class='btn btn-primary' value="Upload Picture" name=bUpdate><br>
+		</form>
+		<ul class="cards">
+		<li>Best picture size: 1470px x 500px</li>
+		<li>Recommended format: JPG</li>
+		</ul>
+	</div>
+    </div>
+
+% if ($appmsg) {
+	<% $C->bootstrap_alert("<b>WARN</b> $appmsg", 'danger') %>
+% }
+</div>
+
+
+% if ($args{debug}) {
+	<small>(Debug)</small><br>
+	<tt><%$C->{CONFIG}->{DOCUMENT_ROOT}%>/img_slides<br><br>
+
+	foreach @{ $A->slide_ids_multilang("<%$lang%>") }</tt><br>
+%	foreach my $id (@{$A->slide_ids_multilang($lang)}) {
+		<a style="color:red" href="adm_teaser.html?delid=<%$id%>">del</a> -- <a href="img_slides/s<%$id%>.jpg">s<%$id%></a>
+			- <a href="adm_edit_teaser.html?id=<%$id%>">edit</a><br>
+%	}
+% }
+
+<%doc>
+	__METACLONING__
+</%doc>
