@@ -5,7 +5,7 @@
 	my $C = $args{C};
 	my $A = $args{A};
 
-	my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 3');
+	my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 4');
 	   $sth->execute() or $m->out("Err $DBI::errstr<br>");
 </%init>
 <!-- Tagesangebote (rechts, ca. 15%) -->
@@ -39,6 +39,8 @@
 		</a>
 %	}
 
+<%doc>
+XXX:
       <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
         <div class="relative mb-2 overflow-hidden rounded-lg">
           <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Kopfhörer" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
@@ -57,8 +59,6 @@
         <p class="text-sm font-bold text-red-600">CHF 29.–</p>
         <p class="text-[11px] text-gray-400 line-through">CHF 49.–</p>
       </a>
-<%doc>
-XXX:
 /XXX
 </%doc>
     </div>
