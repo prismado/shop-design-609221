@@ -55,7 +55,11 @@
 			class="w-full sm:w-[55%] md:w-[45%] flex-shrink-0 rounded-xl object-cover"
 			loading="lazy">
 		<div>
-			<h1 class="text-xl md:text-2xl font-bold text-gray-900">Aktuell.</h1>
+			<h1 class="text-xl md:text-2xl font-bold text-gray-900">Aktuell.
+%				if ($perm->{is_devel}) {
+					<a href="adx/manage-property.html?area=product_promo_header">E</a>
+%				}
+			</h1>
 			<p class="mt-3 text-sm text-gray-600"><% $C->txt('product_promo_header_text', $lang) %></p>
 		</div>
 	</div>
