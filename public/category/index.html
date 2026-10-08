@@ -11,6 +11,19 @@
 
 	my $id = $cgi->param('id') + 0;
 
+	my $sth = $C->{dbh}->prepare(qq~
+			select	id, price, title
+			from	vproducts
+			where	cat_id=$id and lang='de' and `count` > 0~);
+	   $sth->execute();
+
+	my @result = ();
+	while(my $r = $sth->fetch()) {
+		my %d = ();
+		($d{id}, $d{price}, $d{title}) = @$r;
+		push(@result, \%d);
+	}
+
 	my $debug = $cgi->param('debug');
 </%init>
 <!DOCTYPE html>
@@ -44,7 +57,7 @@
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, id => $id, C => $C &>
+		<& parts/main.html, id => $id, result => \@result, C => $C &>
 	</section>
 
 	<& partials/daily_offer.html, C => $C &>
