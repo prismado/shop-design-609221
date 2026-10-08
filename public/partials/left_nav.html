@@ -4,7 +4,11 @@
 
 	my $C = $args{C};
 	my $A = $args{A};
-	my $v = $args{v};
+	# XXX my $v = $args{v};
+
+	my $lang = 'de';
+
+	my ($categ_ids, $label) = $A->get_categ_nav($lang);
 
 	my $title = $C->{CONFIG}->{site_title};
 	my $daily_title = 'Tagesangebote am Dienstag';
