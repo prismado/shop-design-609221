@@ -23,6 +23,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
 
 %	while(my $r = $sth->fetch()) {
+%		my $id = $r->[0];
 		<a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
 			<div class="relative mb-2 overflow-hidden rounded-lg">
 				<img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Kopfhörer" loading="lazy"
@@ -30,7 +31,7 @@
 				<span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px]
 					font-bold px-1.5 py-0.5 rounded-full">-35%</span>
 			</div>
-			<p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">qqqIn-Ear Kopfhörer SoundDot</p>
+			<p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">qqq prod-id <% $id %></p>
 			<p class="text-sm font-bold text-red-600">CHF 39.–</p>
 			<p class="text-[11px] text-gray-400 line-through">CHF 59.–</p>
 		</a>
@@ -56,24 +57,6 @@
       </a>
 <%doc>
 XXX:
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Maus" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-25%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">Kabellose Maus ClickPro</p>
-        <p class="text-sm font-bold text-red-600">CHF 19.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 25.–</p>
-      </a>
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot USB-Hub" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-15%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">USB-C Hub ConnectAll 7-in-1</p>
-        <p class="text-sm font-bold text-red-600">CHF 34.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 39.–</p>
-      </a>
 /XXX
 </%doc>
     </div>
