@@ -31,7 +31,7 @@
 				<img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Kopfhörer" loading="lazy"
 					class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500">
 				<span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px]
-					font-bold px-1.5 py-0.5 rounded-full">-35%</span>
+					font-bold px-1.5 py-0.5 rounded-full">-<% sprintf('%.0f', $prod->{discount_perc}) %>%</span>
 			</div>
 			<p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1"><% $prod->{title} %></p>
 			<p class="text-sm font-bold text-red-600">CHF <% $prod->{price_incl_vat_fmt} %></p>
