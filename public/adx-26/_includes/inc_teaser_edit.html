@@ -1,1 +1,100 @@
-../../_includes/inc_teaser_edit.html
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my ($is_active, $lang, $weight, $prod_id, $last_mod,
+		$last_user, $valid_from, $valid_to, $url, $xtext) =
+		@{$C->query(qq~
+			SELECT	is_active, lang, weight, prod_id, last_mod, 
+				last_user, valid_from, valid_to, url, xtext 
+			FROM 	teaser
+			WHERE	id=$args{id}
+	~)};
+	my $sth = $dbh->prepare(q~select id, label FROM categories WHERE lang='de' AND parent_id=0 AND visible=1~);
+	   $sth->execute();
+
+	(my $cur_categ_id = $url) =~ s/^category-(\d+)-.+\.html$/$1/;
+
+	my $prod_title = $C->query("select title from products_desc where product_id=$prod_id")->[0] || '';
+</%init>
+<img style='width:500px' title="<%$lang%>" src="img_slides/s<%$args{id}%>.jpg?r=<%rand()%>"><br><br>
+
+<form name="teaserForm" method="post">
+<input type=hidden name=id value="<%$args{id}%>">
+<% $xtext || '(No text)' %><br><br>
+
+<textarea style='width:99%; height:90px' placeholder="Set teaser text (optional)" name="xtext"><%$xtext%></textarea><br>
+
+<table class="mytable" style="margin-bottom:20px">
+
+<tr>
+<td style="width:155px">
+	<span rel="tooltip" data-original-title="0 = No product link" data-placement="top">Link to Product-ID</span>
+</td>
+<td>
+<input style='margin-top:5px; width:58px; text-align:center' placeholder="No prod" type=text name="prod_id" value="<%$prod_id%>">
+% if ($prod_id) {
+	<a target="_blank" href="product.html?id=<%$prod_id%>">
+% if (length($prod_title) < 22) {
+	<%$prod_title%>
+% }
+% else {
+	<span rel="tooltip" data-original-title="<%$prod_title%>" data-placement="top">
+	<%substr($prod_title, 0, 22) . '...'%>
+	</span>
+% }
+</a>
+% }
+</td></tr>
+
+<tr>
+<td>Link to category</td>
+<td>
+	<select style='margin-top:5px' onchange="document.teaserForm.prod_id.value=0" name=categ_id>
+<option value="0">&middot; Please select</option>
+% while(my $r = $sth->fetch()) {
+%	my ($id, $label) = @{$r};
+%	my $selected = $id == $cur_categ_id ? ' selected' : '';
+	<option<%$selected%> value="<%$id%>"><%$label%></option>
+%	foreach my $sub_id (@{$A->get_sub_categs($id)}) {
+%		my $selected = $sub_id == $cur_categ_id ? ' selected' : '';
+		<option<%$selected%> value="<%$sub_id%>">&nbsp;&rarr;
+			<%$C->query("select label from categories where id=$sub_id")->[0]%></option>
+%	}
+% }
+</select>
+</td>
+</tr>
+
+<tr>
+<td>URL</td>
+<td><input type=text name="any_url" style="width:98%; margin-top:5px" placeholder="Any URL" value="<% $url %>"></td>
+</tr>
+
+<tr><td>Language</td>
+<td>
+	<input style="width:33px; text-align:center; margin-top:5px" type=text name="lang" value="<% $lang %>">
+</td>
+</tr>
+
+<tr>
+<td>Status</td>
+<td><input style="width:33px; text-align:center; margin-top:5px; margin-right:10px"
+	type=text name="is_active" value="<% $is_active %>"> <tt>1</tt>=active / <tt>0</tt>=inactive</td>
+</tr>
+
+</table>
+
+<input type=submit class="btn btn-primary" name=bUpdate value="Update">
+<input type=button class="btn btn-danger" name=bDelete onclick="JavaScript:del_slide(<%$args{id}%>)" value="Delete" style="margin-left:20px">
+<input type=button class="btn" onclick="JavaScript:document.location='adm_teaser.html'" value="Back to List" style="margin-left:20px">
+</form>
+
+<%doc>
+	__METACLONING__
+</%doc>
