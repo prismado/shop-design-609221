@@ -9,6 +9,7 @@
 	my $lang           = $cgi->param('lang') || 'de';
 	my $show_all       = $cgi->param('show_all');
 	my $bAddCat        = $cgi->param('bAddCat');
+	my $bAddSubCat     = $cgi->param('bAddSubCat');
 	my $bAddMeta       = $cgi->param('bAddMeta');
 	my $id             = $cgi->param('id') + 0;
 
@@ -29,6 +30,21 @@
 		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'en', '$label_en')~);
 		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'fr', '$label_fr')~);
 		$C->create_toast_note(body=>"Neue Kategorie ID $max_id<br>$label_de<br>$label_en<br>$label_fr");
+	}
+	elsif ($bAddSubCat) {
+		my $parid = $cgi->param('parent_id') || 0;
+		my $next_id = $C->query("select MAX(id) + 1 FROM categories")->[0];
+		my $errstr = '';
+		$C->{dbh}->do("INSERT INTO categories (id, parent_id, lang, label, ref) VALUES ($next_id, $parid, '$lang', '* New Cat *', '')")
+			or ($errstr = $DBI::errstr);
+		unless ($errstr) {
+			my $cat_id = $C->query('select MAX(id) FROM categories')->[0];
+			$m->redirect("categ.html?id=$cat_id");
+			# XX $m->out("New Categ ID $cat_id added<br>");
+		}
+		else {
+			$m->out("Error $errstr<hr>");
+		}
 	}
 	elsif ($bAddMeta) {
 		$C->{dbh}->do(qq~insert into categ_meta (cat_id, xkey, lang) values ($id, 'new$$', '$lang')~);
