@@ -27,12 +27,14 @@
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Tbd xx</p>
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">XX Kategorie <% $id %></h1>
 %			foreach my $d (@$result) {
-				<a href="/product/?id=<% $d->{id} %>"><% $d->{title} %></a><br>
+				&bull; <a href="/product/?id=<% $d->{id} %>"><% $d->{title} %></a>
+					für CHF <% $d->{price} %>
+				<hr />
+				<br>
 %				foreach (sort keys %$d) {
 %					next if $_ eq 'id' or $_ eq 'title';
-					X <b><% $_ %></b> = <% $d->{$_} %><br>
+% # XXX					X <b><% $_ %></b> = <% $d->{$_} %><br>
 %				}
-				--------------<br><br>
 %			}
 		</div>
 
