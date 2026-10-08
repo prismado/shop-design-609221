@@ -58,6 +58,20 @@
     });
   });
 
+  // Scroll-to-top: erscheint erst nach etwas Scroll-Distanz, links vom Chatbot-Bubble
+  const scrollTopBtn = document.getElementById('scroll-top-btn');
+  if (scrollTopBtn) {
+    window.addEventListener('scroll', () => {
+      const show = window.scrollY > 400;
+      scrollTopBtn.classList.toggle('hidden', !show);
+      scrollTopBtn.classList.toggle('flex', show);
+    }, { passive: true });
+
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   // Scroll-Reveal-Animation
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
