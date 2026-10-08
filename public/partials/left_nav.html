@@ -25,12 +25,13 @@
 
 %	foreach my $cat_id (@{$categ_ids}) {
 %		my @ids = split /\t/, $cat_id;
-%		my $url_frndly = $C->url_friendly($label->{$cat_id});
+%		# XXX my $url_frndly = $C->url_friendly($label->{$cat_id});
 %		my @cat_group = split /\t/, $cat_id;
 %		my $level = 0;
 %		foreach my $cid_elem (@cat_group) {
 %			$level++;
-			<a href="#!<% $url_frndly %>" class="flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
+%			my $url_frndly = $C->url_friendly($label->{$cid_elem});
+			<a href="#!<% $cid_elem %>-<% $url_frndly %>" class="flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
 					lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
 					lg:px-3 lg:border-l-2 lg:border-transparent
 					hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
