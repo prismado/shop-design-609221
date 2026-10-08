@@ -1,0 +1,67 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+
+	my $cgi = $C->{CGI};
+	my $debug = $C->{CGI}->param('debug');
+	my $UID = $C->getUID();
+
+	my $teaser_count = $C->query('select COUNT(*) FROM teaser')->[0];
+	my $t_table_exists = $C->{query_rows} == 1 ? 1 : 0;
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Adm | Teaser Overview &middot; <%$C->{CONFIG}->{HTTP_HOST}%></title>
+	<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<& _includes/adm_navbar.html, C=>$C, UID=>$UID &>
+<& _includes/dashboard_mainmenu_hor.html, C=>$C &>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+
+<div class="main-content">
+% if ($t_table_exists) {
+%	if ($debug) {
+		(Debug) Table &laquo;teaser&raquo; exists<br>
+%	}
+	<&_includes/adm_teaser2.html, lang=>$lang, C=>$C, A=>$A, teaser_count=>$teaser_count, debug=>$debug&>
+% }
+% else {
+	<&_includes/adm_teaser.html, C => $C, A => $A&>
+% }
+</div>
+
+<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	Host:    rc20s2506.dnh.net | Metanet #2
+	Project: shopd.algonetic.ch
+
+	__METACLONING__
+</%doc>
