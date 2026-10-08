@@ -76,26 +76,35 @@
             <span class="hidden sm:inline">Tagesangebote</span>
           </a>
           <div class="relative group">
-            <a href="<% $perm->{uid} > 0 ? '/profile' : '/signin' %>"
-              class="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-white hover:bg-white/10 transition">
+%	if ($perm->{uid} > 0) {
+            <!-- Kein <a> hier: "Profil" ist bereits als eigener Link im Hover-Menü unten vorhanden.
+                 Verschachtelte <a>-Tags (für "Adm") sind laut HTML-Spec ungültig und führten dazu,
+                 dass die äussere Navigation die innere überstimmt hat. -->
+            <div class="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-white
+              hover:bg-white/10 transition cursor-default">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
               </svg>
-%	if ($perm->{uid} > 0) {
 		<span class="hidden sm:inline">
 %			if ($perm->{is_devel}) {
 				Dev
 %			}
 %			if ($perm->{is_admin}) {
-				<span onclick="document.location='/adx-26'">Adm</span> &middot;
+				<a href="/adx-26" onclick="event.stopPropagation()" class="hover:underline">Adm</a> &middot;
 %			}
 			<% $C->shorten_title((split /\@/, $perm->{email})[0], 15) %>
 		</span>
+            </div>
 %	}
 %	else {
+            <a href="/signin"
+              class="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-white hover:bg-white/10 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              </svg>
 		<span class="hidden sm:inline">Anmelden</span>
-%	}
             </a>
+%	}
 
 %	if ($perm->{uid} > 0) {
             <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100
