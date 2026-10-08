@@ -20,7 +20,7 @@
 
 			<div class="mt-6">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
-				<p class="text-sm text-gray-600 leading-relaxed">tbd</p>
+% #				<p class="text-sm text-gray-600 leading-relaxed">tbd</p>
 			</div>
 		</div>
 
@@ -30,7 +30,7 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+	<div class="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 %		foreach my $d (@$result) {
 			<& ../../partials/product_portlet.html, id => $d->{id}, A => $A, C => $C &>
 %		}
