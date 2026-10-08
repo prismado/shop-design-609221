@@ -65,6 +65,14 @@
 	<& partials/daily_offer.html, C => $C &>
 </div>
 
+% # -------------------- Add to basket ----------------------
+	<& partials/inc_toast.html &>
+	<script>
+		<& partials/toast_js.html &>
+		<& partials/product_portlet_js.html &>
+	</script>
+% # ---------------------------------------------------------
+
 <& partials/footer.html, C => $C &>
 <& partials/footer_js.html, C => $C &>
 
