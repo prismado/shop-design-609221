@@ -22,7 +22,7 @@
 
 	my $prod_title = $C->query("select title from products_desc where product_id=$prod_id")->[0] || '';
 </%init>
-<img style='width:500px' title="<%$lang%>" src="img_slides/s<%$args{id}%>.jpg?r=<%rand()%>"><br><br>
+<img style='width:500px' title="<%$lang%>" src="../img_slides/s<%$args{id}%>.jpg?r=<%rand()%>"><br><br>
 
 <form name="teaserForm" method="post">
 <input type=hidden name=id value="<%$args{id}%>">
