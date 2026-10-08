@@ -1,0 +1,49 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid}
+	my $cgi   = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $redir_url = $ENV{HTTP_REFERER} || '/';
+
+	$m->redirect('/_error.html') unless $perm->{is_admin};
+
+	my @cat_ids = ();
+	foreach ($cgi->all_parameters) {
+		next unless /^cb_cat_(\d+)$/;
+		push(@cat_ids, $1);
+	}
+
+	my $curdat = $A->get_product_v2(id=>$id);
+	   $curdat->{cat_ids} = join ',', @cat_ids;
+
+	my $res = $A->update_product_categs(id=>$id, cat_ids=>\@cat_ids); # -- 27Aug2024
+	my $rc  = $res->{rc};
+	my $msg = $res->{msg};
+
+	# XXX my ($rc, $msg) = $A->update_product($id, $curdat);
+	# XXX          $msg = 'Erfolgreich gespeichert' unless $rc;
+
+	my $cdat2 = $A->get_product_v2(id=>$id);
+
+		$msg .= "<br>VP: CHF $curdat->{price_incl_vat} / $cdat2->{price_incl_vat}";
+
+	$C->create_toast_note(
+		body  => "Kategorien-IDs: " . (join ' / ', @cat_ids) . qq~<br>RC $rc $msg~,
+		style => '.toast, .max-w-300 { max-width: 600px !important; opacity: 0.95; }',
+		delay => 7000
+	);
+
+	$m->redirect($redir_url);
+</%init>
+<%doc>
+	Created: 17Mar2024
+
+	__METACLONING__
+</%doc>
