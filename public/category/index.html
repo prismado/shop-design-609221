@@ -20,7 +20,6 @@
 	my @result = ();
 	while(my $r = $sth->fetch()) {
 		my %d = ();
-		# XXX ($d{id}, $d{price}, $d{title}) = @$r;
 		my $id = $r->[0];
 		my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
 		$prod->{id} = $id;
@@ -60,7 +59,7 @@
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, id => $id, result => \@result, C => $C &>
+		<& parts/main.html, id => $id, result => \@result, C => $C, A => $A &>
 	</section>
 
 	<& partials/daily_offer.html, C => $C &>
