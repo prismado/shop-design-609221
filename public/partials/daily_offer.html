@@ -5,6 +5,9 @@
 	my $C = $args{C};
 	my $A = $args{A};
 
+	my $prod_highlight = $A->get_product_highlights(shuffle => 1)->{ids};
+	# XXX my $random_hl_id   = $prod_highlight->{ids}->[0]->{id};
+
 	my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 3');
 	   $sth->execute() or $m->out("Err $DBI::errstr<br>");
 </%init>
@@ -23,8 +26,10 @@
 
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
 
-%	while(my $r = $sth->fetch()) {
-%		my $id = $r->[0];
+%	# XXX while(my $r = $sth->fetch()) {
+%	foreach my $hl (@{ $prod_highlight }) {
+%		# XXX my $id = $r->[0];
+%		my $id = $hl->{id};
 %		my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
 %		my $img_url = $prod->{image}->{url};
 %		my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
