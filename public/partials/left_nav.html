@@ -31,7 +31,6 @@
 %		foreach my $cid_elem (@cat_group) {
 %			next if $memo{$cid_elem};
 %			my $is_main_cat = $C->query("select parent_id from categories where id=$cid_elem")->[0] ? 0 : 1;
-%			# XXX $level{$cat_group[0]}++;
 %			my $url_frndly = $C->url_friendly($label->{$cid_elem});
 %			if ($is_main_cat) {
 				<a href="#!<% $cid_elem %>-<% $url_frndly %>" class="flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
