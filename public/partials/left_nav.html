@@ -36,10 +36,10 @@
 					lg:px-3 lg:border-l-2 lg:border-transparent
 					hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 %				if ($level{$cat_group[0]} > 2) {
-					gt2
+					&rarr;&rarr;
 %				}
 %				elsif ($level{$cat_group[0]} > 1) {
-					gt1
+					&rarr;
 %				}
 				<% $C->shorten_title($label->{$cid_elem}, 25) %>
 			</a>
