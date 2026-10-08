@@ -6,10 +6,9 @@
 	my $A = $args{A};
 
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1)->{ids};
-	# XXX my $random_hl_id   = $prod_highlight->{ids}->[0]->{id};
 
-	my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 3');
-	   $sth->execute() or $m->out("Err $DBI::errstr<br>");
+	# XXX my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 3');
+	# XXX    $sth->execute() or $m->out("Err $DBI::errstr<br>");
 </%init>
 <!-- Tagesangebote (rechts, ca. 15%) -->
 <aside id="tagesangebote" class="mt-10 lg:mt-0 lg:sticky lg:self-start scroll-mt-24"
@@ -26,9 +25,7 @@
 
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
 
-%	# XXX while(my $r = $sth->fetch()) {
 %	foreach my $hl (@{ $prod_highlight }) {
-%		# XXX my $id = $r->[0];
 %		my $id = $hl->{id};
 %		my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
 %		my $img_url = $prod->{image}->{url};
