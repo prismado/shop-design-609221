@@ -12,7 +12,7 @@
 	my $id = $cgi->param('id') + 0;
 
 	my $sth = $C->{dbh}->prepare(qq~
-			select	id, price, title
+			select	id
 			from	vproducts
 			where	cat_id=$id and lang='de' and `count` > 0~);
 	   $sth->execute();
@@ -20,8 +20,10 @@
 	my @result = ();
 	while(my $r = $sth->fetch()) {
 		my %d = ();
-		($d{id}, $d{price}, $d{title}) = @$r;
-		my $prod = $A->get_product_v2(id => $d{id}, public => 1, opts => 1);
+		# XXX ($d{id}, $d{price}, $d{title}) = @$r;
+		my $id = $r->[0];
+		my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
+		$prod->{id} = $id;
 		push(@result, $prod);
 	}
 
