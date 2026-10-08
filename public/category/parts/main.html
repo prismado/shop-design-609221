@@ -32,7 +32,7 @@
 					für CHF <% $d->{price_incl_vat_fmt} %><br>
 				Mandatory Options: <% $d->{mand_count} %><br>
 %				foreach (sort keys %{$d->{image}}) {
-					XX <% $_ %><br>
+					[image] - <b><% $_ %></b> = <% $d->{image}->{$_} %><br>
 %				}
 				<hr />
 				<br>
