@@ -5,7 +5,7 @@
 	my $C = $args{C};
 	my $A = $args{A};
 
-	my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 4');
+	my $sth = $C->{dbh}->prepare('select product_id from promo_prods where is_active < 0 order by 1 desc limit 3');
 	   $sth->execute() or $m->out("Err $DBI::errstr<br>");
 </%init>
 <!-- Tagesangebote (rechts, ca. 15%) -->
