@@ -11,6 +11,8 @@
 
 	my $id = $cgi->param('id') + 0;
 
+	my $cat_label = $C->query("select label from categories where id=$id and lang='de'")->[0];
+
 	my $sth = $C->{dbh}->prepare(qq~
 			select	id
 			from	vproducts
@@ -59,7 +61,13 @@
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, id => $id, result => \@result, C => $C, A => $A &>
+		<& parts/main.html,
+			id        => $id,
+			cat_label => $cat_label,
+			result    => \@result,
+			C         => $C,
+			A         => $A
+		&>
 	</section>
 
 	<& partials/daily_offer.html, C => $C &>
