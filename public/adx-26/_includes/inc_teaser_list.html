@@ -35,7 +35,7 @@
 %	my $prod_title = $C->query("select title FROM products_desc WHERE product_id=$prod_id AND lang='$args{lang}'")->[0] || '';
 	<tr><td style='text-align:left'>
 	<a href="adm_edit_teaser.html?id=<%$id%>"><img style='width:350px'
-		title="ID <%$id%>" src="img_slides/s<%$id%>.jpg?r=<%rand()%>" /></a>
+		title="ID <%$id%>" src="../img_slides/s<%$id%>.jpg?r=<%rand()%>" /></a>
 	</td>
 	<td><%$xtext%></td>
 	<td>
