@@ -47,6 +47,7 @@
 						data-parent-id="<% $parent_id %>"
 % 					}
 					>
+					<% $cid_elem == $cur_cat_id ? 'XX aktiv' : '' %>
 					<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>"
 						class="whitespace-nowrap text-sm font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
 							hover:text-red-700 transition-colors">
