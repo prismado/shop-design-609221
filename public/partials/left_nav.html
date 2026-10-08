@@ -4,7 +4,7 @@
 
 	my $C = $args{C};
 	my $A = $args{A};
-	my $cat_id = $args{cat_id};
+	my $cur_cat_id = $args{cat_id}; # -- Aktiv ausgewählte Kategorie-ID
 
 	my $lang = 'de';
 
@@ -16,7 +16,7 @@
   <!-- Navigation (links, ca. 15%) -->
   <aside class="mb-8 lg:mb-0 lg:sticky lg:self-start" style="top: var(--header-h, 0px)">
 
-    <h2 class="hidden lg:block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Kategorien qqq <% $cat_id %></h2>
+    <h2 class="hidden lg:block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Kategorien</h2>
 
     <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
@@ -51,7 +51,7 @@
 						class="whitespace-nowrap text-sm font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
 							hover:text-red-700 transition-colors">
 						<% $depth_arrow %>
-						<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
+				<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
 					</a>
 					<button type="button" data-cat-id="<% $cid_elem %>" aria-expanded="false"
 						aria-label="Unterkategorien anzeigen"
@@ -65,6 +65,7 @@
 				</div>
 %			}
 %			else {
+				<% $cid_elem == $cur_cat_id ? 'XX aktiv' : '' %>
 				<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>" data-cat-id="<% $cid_elem %>"
 % 					if (!$is_main_cat) {
 						data-parent-id="<% $parent_id %>"
