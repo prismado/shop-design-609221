@@ -7,8 +7,9 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
+	my $cgi  = $C->{CGI};
 
-	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id') + 0;
 
 	my $debug = $cgi->param('debug');
 </%init>
@@ -17,7 +18,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kategorie | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
+<title>Kategorie <% $id %> | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -43,7 +44,7 @@
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
-		<& parts/main.html, C => $C &>
+		<& parts/main.html, id => $id, C => $C &>
 	</section>
 
 	<& partials/daily_offer.html, C => $C &>
