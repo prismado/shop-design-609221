@@ -31,6 +31,10 @@
 		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'fr', '$label_fr')~);
 		$C->create_toast_note(body=>"Neue Kategorie ID $max_id<br>$label_de<br>$label_en<br>$label_fr");
 	}
+	elsif ($cgi->param('delid')) {
+		my $id = $cgi->param('delid');
+		$C->{dbh}->do("DELETE FROM categories WHERE id=$id");
+	}
 	elsif ($bAddSubCat) {
 		my $parid = $cgi->param('parent_id') || 0;
 		my $next_id = $C->query("select MAX(id) + 1 FROM categories")->[0];
