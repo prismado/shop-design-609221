@@ -46,7 +46,7 @@
 						data-parent-id="<% $parent_id %>"
 % 					}
 					>
-					<a href="/category/#!<% $cid_elem %>-<% $url_frndly %>"
+					<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>"
 						class="whitespace-nowrap text-sm font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
 							hover:text-red-700 transition-colors">
 						<% $depth_arrow %>
@@ -64,7 +64,7 @@
 				</div>
 %			}
 %			else {
-				<a href="/category#!<% $cid_elem %>-<% $url_frndly %>" data-cat-id="<% $cid_elem %>"
+				<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>" data-cat-id="<% $cid_elem %>"
 % 					if (!$is_main_cat) {
 						data-parent-id="<% $parent_id %>"
 % 					}
