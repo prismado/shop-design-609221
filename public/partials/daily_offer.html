@@ -34,22 +34,13 @@
 					font-bold px-1.5 py-0.5 rounded-full">-35%</span>
 			</div>
 			<p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1"><% $prod->{title} %></p>
-			<p class="text-sm font-bold text-red-600">CHF 39.–</p>
+			<p class="text-sm font-bold text-red-600">CHF <% $prod->{price_incl_vat_fmt} %></p>
 			<p class="text-[11px] text-gray-400 line-through">CHF 59.–</p>
 		</a>
 %	}
 
 <%doc>
 XXX:
-      <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
-        <div class="relative mb-2 overflow-hidden rounded-lg">
-          <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Kopfhörer" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <span class="absolute top-1.5 left-1.5 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">-35%</span>
-        </div>
-        <p class="text-xs font-medium text-gray-800 line-clamp-2 mb-1">In-Ear Kopfhörer SoundDot</p>
-        <p class="text-sm font-bold text-red-600">CHF 39.–</p>
-        <p class="text-[11px] text-gray-400 line-through">CHF 59.–</p>
-      </a>
       <a href="#" class="group block bg-white rounded-xl border border-gray-200 p-2.5 hover:shadow-md hover:border-red-300 transition">
         <div class="relative mb-2 overflow-hidden rounded-lg">
           <img src="https://placehold.co/250x250?text=Angebot" alt="Tagesangebot Powerbank" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
