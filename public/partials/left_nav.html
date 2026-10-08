@@ -29,30 +29,45 @@
 %		my @cat_group = split /\t/, $cat_id;
 %		foreach my $cid_elem (@cat_group) {
 %			next if $memo{$cid_elem};
-%			my $is_main_cat = $C->query("select parent_id from categories where id=$cid_elem")->[0] ? 0 : 1;
+%			my $parent_id   = $C->query("select parent_id from categories where id=$cid_elem")->[0];
+%			my $is_main_cat = $parent_id ? 0 : 1;
 %			my $url_frndly = $C->url_friendly($label->{$cid_elem});
-%			if ($is_main_cat) {
-%				my $has_children = $C->query("select count(*) from categories where parent_id=$cid_elem")->[0];
-				<a href="#!<% $cid_elem %>-<% $url_frndly %>" class="flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
-					lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
-					lg:px-3 lg:border-l-2 lg:border-transparent
-					hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
-					<% $has_children ? '&rsaquo;' : '' %>
-					<% $C->shorten_title($label->{$cid_elem}, 25) %>
-				</a>
+%			my $has_children = $C->query("select count(*) from categories where parent_id=$cid_elem")->[0];
+%			my $hidden_cls   = $is_main_cat ? '' : 'hidden ';
+%			my $depth_arrow  = '';
+%			unless ($is_main_cat) {
+%				if ($#cat_group > 1) { $depth_arrow = '&rarr;&rarr;'; }
+%				elsif ($#cat_group)  { $depth_arrow = '&rarr;'; }
+%			}
+%			if ($has_children) {
+				<button type="button" data-cat-id="<% $cid_elem %>"
+% 					if (!$is_main_cat) {
+						data-parent-id="<% $parent_id %>"
+% 					}
+					aria-expanded="false" onclick="toggleCategory(<% $cid_elem %>)"
+					class="<% $hidden_cls %>flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
+						lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
+						lg:px-3 lg:border-l-2 lg:border-transparent inline-flex items-center gap-1
+						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+					<% $depth_arrow %>
+					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+						stroke="currentColor" class="chevron-icon w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200">
+						<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+					</svg>
+				</button>
 %			}
 %			else {
-				<a href="#!<% $cid_elem %>-<% $url_frndly %>" class="flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
-					lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
-					lg:px-3 lg:border-l-2 lg:border-transparent
-					hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
-%					if ($#cat_group > 1) {
-						&rarr;&rarr;
-%					}
-%					elsif ($#cat_group) {
-						&rarr;
-%					}
-					<% $C->shorten_title($label->{$cid_elem}, 25) %> Level-<% $#cat_group + 1 %>
+				<a href="#!<% $cid_elem %>-<% $url_frndly %>" data-cat-id="<% $cid_elem %>"
+% 					if (!$is_main_cat) {
+						data-parent-id="<% $parent_id %>"
+% 					}
+					class="<% $hidden_cls %>flex-shrink-0 whitespace-nowrap bg-gray-100 text-gray-600
+						lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
+						lg:px-3 lg:border-l-2 lg:border-transparent
+						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+					<% $depth_arrow %>
+					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
 				</a>
 %			}
 %			$memo{$cid_elem} = 1;
@@ -80,3 +95,42 @@ XXX:
 
     </nav>
   </aside>
+
+  <script>
+    // Kategorien mit Unterkategorien per Klick auf-/zuklappen. Beim Zuklappen werden auch bereits
+    // offene, tieferliegende Unterkategorien mitgeschlossen, damit keine "verwaisten" offenen Äste
+    // zurückbleiben.
+    function toggleCategory(catId) {
+      var btn = document.querySelector('[data-cat-id="' + catId + '"]');
+      var children = document.querySelectorAll('[data-parent-id="' + catId + '"]');
+      if (!btn || !children.length) return;
+
+      var expand = btn.getAttribute('aria-expanded') !== 'true';
+
+      children.forEach(function (child) {
+        child.classList.toggle('hidden', !expand);
+        if (!expand) {
+          var childCatId = child.getAttribute('data-cat-id');
+          if (childCatId) collapseCategory(childCatId);
+        }
+      });
+
+      btn.setAttribute('aria-expanded', expand ? 'true' : 'false');
+      var chevron = btn.querySelector('.chevron-icon');
+      if (chevron) chevron.classList.toggle('rotate-90', expand);
+    }
+
+    function collapseCategory(catId) {
+      var btn = document.querySelector('[data-cat-id="' + catId + '"]');
+      document.querySelectorAll('[data-parent-id="' + catId + '"]').forEach(function (child) {
+        child.classList.add('hidden');
+        var childCatId = child.getAttribute('data-cat-id');
+        if (childCatId) collapseCategory(childCatId);
+      });
+      if (btn) {
+        btn.setAttribute('aria-expanded', 'false');
+        var chevron = btn.querySelector('.chevron-icon');
+        if (chevron) chevron.classList.remove('rotate-90');
+      }
+    }
+  </script>
