@@ -1,1 +1,114 @@
-../../_includes/adm_teaser.html
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cgi = $C->{CGI};
+	my $dbh = $C->{dbh};
+
+	my $bUpdate = $cgi->param('bUpdate');
+	my $delid = $cgi->param('delid');
+	my $updID = $cgi->param('bUpdID');
+	my $updTxt = $cgi->param('bUpdTxt');
+	my $extradir = '';
+
+	if ($bUpdate) {
+		use File::Copy;
+		(my $now = $C->now(5)) =~ s/\-//; $now =~ s/^20//;
+		$now = substr($now, 0, 10);
+		my $upload_tempfilename = $cgi->tmpFileName($cgi->param('file'));
+		if ($C->{CONFIG}->{custom}) {
+			my $theme = $C->{CONFIG}->{theme};
+			$extradir = "/custom/$theme/html";
+		}
+		my $rc = copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}/img_slides/s$now\.jpg" or $m->out("ERR $!<br>");
+		# my $rc = copy $upload_tempfilename, "$ENV{DOCUMENT_ROOT}$extradir/images/zz_trash_foo.png" or $m->out("ERR $!<br>");
+	}
+	elsif ($updID) {
+		my $id = $cgi->param('id');
+		my $id_current = $cgi->param('id_current');
+		rename "$ENV{DOCUMENT_ROOT}/img_slides/s$id_current\.jpg", "$ENV{DOCUMENT_ROOT}/img_slides/s$id\.jpg";
+		$m->out("X -- ID $id_current &rarr; $id<br>");
+	}
+	elsif ($updTxt) {
+		my $id = $cgi->param('id');
+		my $txt = $cgi->param('txt');
+		open(F, ">$C->{CONFIG}->{DOCUMENT_ROOT}/img_slides/info$id\.txt") or $m->out("ERR $!<br>");
+		print F "$txt";
+		close(F);
+		$m->out("Text of ID $id updated<br>");
+	}
+	elsif ($delid) {
+		unlink "$ENV{DOCUMENT_ROOT}/img_slides/s$delid\.jpg" or $m->out("ERR $!<br>");
+		$m->out("Deleted: ID $delid<br>");
+	}
+
+	my $slide_ids_ref = $A->slide_ids();
+</%init>
+<div class="alert fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+		<strong>Notice</strong> &middot; Legacy!
+		Please create a table &laquo;teaser&raquo; for more functionalities like time control and more
+</div>
+
+<h2>Update Teaser &middot; Front Page</h2>
+
+<script language=JavaScript>
+	function del_slide(id) {
+		if (confirm(' [N610XXX] - OK to delete Slide ID ' + id)) {
+			document.location="adm_teaser.html?delid="+id;
+		}
+	}
+</script>
+
+<form enctype="multipart/form-data" method=post>
+<input style='font-size:10px' type="file" name="file" />
+
+<input type=submit class='btn btn-primary' value="Upload Picture" name=bUpdate><br><br>
+
+Best picture size: 1470px x 500px
+</form>
+
+<table class="table table-hover">
+<thead>
+<tr>
+	<th>Preview</th>
+	<th>Text</th>
+	<th>Product ID</th>
+	<th>Delete</th>
+</tr>
+</thead>
+<tbody>
+% foreach (@{$slide_ids_ref}) {
+%	my $txt = $C->slurp_file("$C->{CONFIG}->{DOCUMENT_ROOT}/img_slides/info$_\.txt");
+	<tr><td style='text-align:left'>
+	<img style='width:350px' title="ID <%$_%>" src="img_slides/s<%$_%>.jpg" /></td>
+	<td><form method="post">
+		<div class="pull-right">
+		<input type=submit class="btn btn-mini btn-primary" name="bUpdTxt" value="Update">
+		</div>
+		<input type=hidden name="id" value="<%$_%>">
+		<textarea name="txt"><%${$txt}%></textarea>
+		</form>
+	</td>
+	<td><form method="post">
+		<div class="pull-right">
+		<input type=submit class="btn btn-mini btn-primary" name="bUpdID" value="Update">
+		</div>
+		<input type=hidden name="id_current" value="<%$_%>">
+		<input type=text value="<%$_%>" style='width:80px; margin-tox:10px; text-align:center' name="id">
+		</form>
+	</td>
+	<td style='text-align:center'>
+		<a href="#" onclick="JavaScript:del_slide(<%$_%>)"><span rel="tooltip" data-original-title="Delete"
+			data-placement="bottom"><i style='color:red' class="icon-remove"></i></span></a>
+	</td></tr>
+% }
+% unless (@{$slide_ids_ref}) {
+	<tr><td colspan="4" style='text-align:center'>No front teaser right now</td></tr>
+% }
+</tbody>
+</table>
+
+<%doc>
+	__METACLONING__
+</%doc>
