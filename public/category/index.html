@@ -23,7 +23,6 @@
 		($d{id}, $d{price}, $d{title}) = @$r;
 		my $prod = $A->get_product_v2(id => $d{id}, public => 1, opts => 1);
 		push(@result, $prod);
-		# XXX push(@result, \%d);
 	}
 
 	my $debug = $cgi->param('debug');
