@@ -51,8 +51,7 @@
 %				elsif ($level{$cat_group[0]} > 1) {
 					&rarr;
 %				}
-					sub XXX
-					<% $C->shorten_title($label->{$cid_elem}, 25) %> qqq <% $#cat_group + 1 %>
+					<% $C->shorten_title($label->{$cid_elem}, 25) %> Level-<% $#cat_group + 1 %>
 				</a>
 %			}
 %			$memo{$cid_elem} = 1;
