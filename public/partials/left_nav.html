@@ -35,10 +35,10 @@
 %			my $has_children = $C->query("select count(*) from categories where parent_id=$cid_elem")->[0];
 %			my $hidden_cls   = $is_main_cat ? '' : 'hidden ';
 %			my $depth_arrow  = '';
-%			unless ($is_main_cat) {
-%				if ($#cat_group > 1) { $depth_arrow = '&rarr;&rarr;'; }
-%				elsif ($#cat_group)  { $depth_arrow = '&rarr;'; }
-%			}
+%			# XXX unless ($is_main_cat) {
+%			# XXX	if ($#cat_group > 1) { $depth_arrow = '&rarr;&rarr;'; }
+%			# XXX	elsif ($#cat_group)  { $depth_arrow = '&rarr;'; }
+%			# XXX }
 %			if ($has_children) {
 				<button type="button" data-cat-id="<% $cid_elem %>"
 % 					if (!$is_main_cat) {
