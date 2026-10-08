@@ -10,6 +10,7 @@
 	my $debug = $cgi->param('debug');
 
 	my $perm = $C->get_user_perm();
+	my $lang = 'de';
 
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
 	my $cookie_consent = $C->get_cookie_consent();
@@ -55,11 +56,7 @@
 			loading="lazy">
 		<div>
 			<h1 class="text-xl md:text-2xl font-bold text-gray-900">Aktuell.</h1>
-			<p class="mt-3 text-sm text-gray-600">
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br><br>
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-			</p>
+			<p class="mt-3 text-sm text-gray-600"><% $C->txt('product_promo_header_text', $lang) %></p>
 		</div>
 	</div>
 	<hr class="mb-5 border-gray-200" />
