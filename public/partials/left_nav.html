@@ -15,7 +15,7 @@
 
 	# -- Nur aktiv, solange keine Kategorie ausgewählt ist
 	my $daily_active_cls = $cur_cat_id
-		? 'bg-gray-100 text-gray-600 lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
+		? 'bg-gray-100 text-gray-900 lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
 		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
 </%init>
   <!-- Navigation (links, ca. 15%) -->
@@ -27,7 +27,7 @@
 		lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
 	<a href="#" class="flex-shrink-0 whitespace-nowrap <% $daily_active_cls %> lg:bg-transparent
-		text-sm font-medium px-3 py-2 rounded-full lg:rounded-none lg:px-3
+		text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none lg:px-3
 		lg:border-l-2 transition-colors"><% $daily_title %></a>
 
 %	my %memo = ();
@@ -45,7 +45,7 @@
 %			my $is_active    = ($cur_cat_id && $cid_elem == $cur_cat_id) ? 1 : 0;
 %			my $active_cls   = $is_active
 %				? 'bg-red-50 text-red-700 lg:border-red-600'
-%				: 'bg-gray-100 text-gray-600 lg:border-transparent';
+%				: 'bg-gray-100 text-gray-900 lg:border-transparent';
 %			if ($has_children) {
 				<!-- Zwei getrennte Klick-Ziele: Label navigiert zur Kategorie-Seite (dort auch
 					erreichbar für "verwaiste" Artikel ohne eigene Unterkategorie), Chevron klappt
@@ -58,7 +58,7 @@
 % 					}
 					>
 					<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>"
-						class="whitespace-nowrap text-sm font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
+						class="whitespace-nowrap text-[15.4px] font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
 							hover:text-red-700 transition-colors">
 						<% $depth_arrow %>
 				<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
@@ -80,7 +80,7 @@
 						data-parent-id="<% $parent_id %>"
 % 					}
 					class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 whitespace-nowrap
-						lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
+						lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
 						lg:px-3 lg:border-l-2
 						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 					<% $depth_arrow %>
@@ -93,8 +93,8 @@
 
 % #	============================================ PRO-Zone ============================================
 	<a href="/prozone.html" ZZdata-cat-id="9913"
-		class="bg-gray-100 text-gray-600 lg:border-transparent flex-shrink-0 whitespace-nowrap
-			lg:bg-transparent text-sm font-medium px-3 py-2 rounded-full lg:rounded-none
+		class="bg-gray-100 text-gray-900 lg:border-transparent flex-shrink-0 whitespace-nowrap
+			lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
 			lg:px-3 lg:border-l-2
 			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 		PRO-Zone
@@ -107,9 +107,9 @@
 
     <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
-      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-gray-500 lg:bg-transparent text-sm px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Unternehmen</a>
-      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-gray-500 lg:bg-transparent text-sm px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Kontakt</a>
-      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-gray-500 lg:bg-transparent text-sm px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Newsletter</a>
+      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-gray-900 lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Unternehmen</a>
+      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-gray-900 lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Kontakt</a>
+      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-gray-900 lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Newsletter</a>
 
     </nav>
   </aside>
