@@ -28,5 +28,17 @@
 
 	</div>
 
-		<& ../partials/daily_offer.html, C => $C, A => $A &>
+	<!-- daily_offer.html wird hier ausserhalb der sonst üblichen 3-Spalten-Sidebar als volle Breite
+		eingebunden. Damit die Tagesangebote-Karten trotzdem nebeneinander statt riesig untereinander
+		erscheinen, wird NUR von hier aus die interne Grid-Spaltenzahl überschrieben — daily_offer.html
+		selbst bleibt unverändert. -->
+	<style>
+		@media (min-width: 1024px) {
+			#tagesangebote .grid {
+				grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+			}
+		}
+	</style>
+
+	<& ../partials/daily_offer.html, C => $C, A => $A &>
 
