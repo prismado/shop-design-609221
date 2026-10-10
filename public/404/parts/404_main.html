@@ -5,6 +5,7 @@
 
 	my $perm = $args{perm};
 	my $C    = $args{C};
+	my $A    = $args{A};
 </%init>
 
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
@@ -26,4 +27,6 @@
 		</div>
 
 	</div>
+
+		<& ../partials/daily_offer.html, C => $C, A => $A &>
 
