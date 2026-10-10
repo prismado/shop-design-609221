@@ -54,11 +54,11 @@
   ::-webkit-scrollbar-track { background: transparent; }
 </style>
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased">
+<body class="bg-gray-100 text-gray-800 antialiased min-h-screen flex flex-col">
 
 <& partials/header.html, perm => $perm, A => $A, C => $C &>
 
-<div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8">
+<div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8">
 
 	<section>
 		<& parts/main.html, data => \%data, UID => $perm->{uid}, msgs => \@msgs, A => $A, C => $C &>
