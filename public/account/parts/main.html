@@ -56,6 +56,9 @@
 						<a href="/product/?id=<% $prod_id %>" class="font-semibold text-gray-900 text-sm
 							sm:text-base hover:text-red-600 transition line-clamp-2"><% $prd->{title} %></a>
 
+% #					Von Wishlist enfernen: Das "X" bitte oben rechts in der Wishlist-Box:
+					<i>X</i>
+
 						<div class="flex items-center gap-2 mt-1">
 							<span class="text-base font-bold text-gray-900">CHF <% $prd->{price_incl_vat_fmt} %></span>
 %				if ($prd->{price_incl_vat} != $wishlist->{price}) {
