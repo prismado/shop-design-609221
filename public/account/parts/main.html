@@ -7,7 +7,7 @@
 	my $C    = $args{C};
 
 	my $sth = $C->{dbh}->prepare(qq~
-		select	xkey, xval
+		select	SUBSTR(xkey, 15, 10), xval
 		from	users_details
 		where	user_id=$perm->{uid} and xkey like 'wishlist_prod_%'
 		limit	9999
@@ -25,10 +25,10 @@
 
 			<div class="mt-6">
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
-				<p class="text-sm text-gray-600 leading-relaxed">tbd <% $sth->rows() %></p>
+				<p class="text-sm text-gray-600 leading-relaxed"><% $sth->rows() %> Artikel in Ihrer Merkliste.</p>
 %				while(my $r = $sth->fetch()) {
 %					my ($key, $val) = @{$r};
-					XX <% $key %> = <% $val %><br>
+					X -- <% $key %> = <% $val %><br>
 %				}
 			</div>
 		</div>
