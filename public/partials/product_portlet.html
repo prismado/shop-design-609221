@@ -26,7 +26,8 @@
           <span class="absolute top-3 left-3 bg-red-600 text-white text-xs
 			font-bold px-2 py-1 rounded-full">-<% sprintf('%.0f', $prod->{discount_perc}) %>%</span>
 %	}
-          <button class="wishlist-btn absolute top-3 right-3 bg-white/90 backdrop-blur p-2
+          <button type="button" onclick="saveToWishlist(this, <% $id %>)"
+			class="absolute top-3 right-3 bg-white/90 backdrop-blur p-2
 			rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 		stroke-width="1.5" stroke="currentColor" class="w-4.5 h-4.5 w-[18px] h-[18px] text-gray-600">

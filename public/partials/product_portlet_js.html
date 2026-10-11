@@ -27,3 +27,38 @@ function addProductToBasket(el, prodId) {
 			showToast(false, 'Der Artikel konnte nicht hinzugefügt werden.');
 		});
 }
+
+// "Zur Wunschliste hinzufügen" für Produkt-Portlets — aus demselben Grund zentral hier definiert.
+function saveToWishlist(el, prodId) {
+	var body = new URLSearchParams();
+	body.set('prod_id', prodId);
+
+	fetch('/dyn/save-to-wishlist.html', { method: 'POST', body: body })
+		.then(function (res) { return res.json(); })
+		.then(function (data) {
+			if (data.rc === 0) {
+				showToast(true, 'Artikel wurde zu Ihrer Wunschliste hinzugefügt.', 6000);
+
+				var svg = el.querySelector('svg');
+				if (svg) {
+					svg.classList.add('text-red-500');
+					svg.classList.remove('text-gray-600');
+					svg.setAttribute('fill', 'currentColor');
+				}
+
+				var wishlistBadge = document.getElementById('wishlist-count');
+				if (wishlistBadge) {
+					var n = (parseInt(wishlistBadge.textContent, 10) || 0) + 1;
+					wishlistBadge.textContent = n;
+					wishlistBadge.classList.remove('pop');
+					void wishlistBadge.offsetWidth;
+					wishlistBadge.classList.add('pop');
+				}
+			} else {
+				showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+			}
+		})
+		.catch(function () {
+			showToast(false, 'Artikel konnte nicht zur Wunschliste hinzugefügt werden.');
+		});
+}
