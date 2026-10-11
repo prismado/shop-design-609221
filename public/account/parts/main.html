@@ -1,5 +1,6 @@
 <%init>
 	use utf8;
+	use JSON;
 
 	my %args = $m->caller_args(0);
 
@@ -32,14 +33,10 @@
 %					my ($prod_id, $json) = @{$r};
 %					my $prd     = $A->get_product_v2(id => $prod_id, public => 1);
 %					my $img_url = $prd->{image}->{url};
+%					my $wishlist = eval { JSON->new->decode($json) } || {};
 
-<%doc>
-					Inhalt von $json ist JSON: z.B. {"price": 107.55}
-					Dies soll geparst und in das Hash $wishlist (oder Hash-Referenz?) gespeichert werden,
-					damit mit einem Wert wie z.B. $wishlist->{price} gearbeitet werden kann.
-</%doc>
 					<% $json %><br>
-					Der Preis war $wishlist->{price}<br>
+					Der Preis war <% $wishlist->{price} %><br>
 
 					<img src="<% $img_url %>" style="width:80px;">
 					<a class="text-blue-500" href="/product/?id=<% $prod_id %>"><% $prd->{title} %></a>
