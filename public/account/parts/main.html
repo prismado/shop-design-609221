@@ -28,10 +28,12 @@
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed"><% $sth->rows() %> Artikel in Ihrer Merkliste.</p>
 %				while(my $r = $sth->fetch()) {
-%					my ($prod_id, $val) = @{$r};
+%					my ($prod_id, $json) = @{$r};
 %					my $prd = $A->get_product_v2(id => $prod_id, public => 1);
-					<% $val %>
-					<a class="text-blue-500" href="/product/?id=<% $prod_id %>"><% $prd->{title} %></a><br>
+% #					JSON: z.B. {"price": 107.55}
+					<% $json %>
+					<a class="text-blue-500" href="/product/?id=<% $prod_id %>"><% $prd->{title} %></a>
+						CHF <% $prd->{price_incl_vat_fmt} %><br><br>
 %				}
 			</div>
 		</div>
