@@ -37,18 +37,40 @@
 %					my $img_url  = $prd->{image}->{url};
 %					my $wishlist = eval { JSON->new->decode($json) } || {};
 
-					<img src="<% $img_url %>" style="width:80px;">
-					<a class="text-blue-500" href="/product/?id=<% $prod_id %>"><% $prd->{title} %></a><br>
-					<b>CHF <% $prd->{price_incl_vat_fmt} %></b>
-%					if ($prd->{price_incl_vat} !=  $wishlist->{price}) {
-						(vormals <% $wishlist->{price} %>)
+					<div class="flex items-center gap-4 p-3 mb-3 rounded-xl border border-gray-200 bg-white">
+						<a href="/product/?id=<% $prod_id %>"
+							class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white">
+							<img src="<% $img_url %>" class="w-full h-full object-cover" loading="lazy"
+								alt="<% $prd->{title} %>">
+						</a>
+
+						<div class="flex-1 min-w-0">
+							<a href="/product/?id=<% $prod_id %>" class="font-semibold text-gray-900 text-sm
+								sm:text-base hover:text-red-600 transition line-clamp-2"><% $prd->{title} %></a>
+
+							<div class="flex items-center gap-2 mt-1">
+								<span class="text-base font-bold text-gray-900">CHF <% $prd->{price_incl_vat_fmt} %></span>
+%					if ($prd->{price_incl_vat} != $wishlist->{price}) {
+								<span class="text-xs text-gray-400 line-through">
+									CHF <% sprintf('%.2f', $wishlist->{price}) %>
+								</span>
 %					}
-					<br>
+							</div>
+
 %					if ($prd->{price_incl_vat} < $wishlist->{price}) {
-%						my $diff =  $wishlist->{price} - $prd->{price_incl_vat};
-						Der Preis wurde um CHF <% sprintf('%.2f', $diff) %> reduziert.<br>
+%						my $diff = $wishlist->{price} - $prd->{price_incl_vat};
+							<span class="inline-flex items-center gap-1 mt-1.5 bg-green-50 text-green-700
+								text-[11px] font-bold px-2 py-0.5 rounded-full">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+									stroke-width="2" stroke="currentColor" class="w-3 h-3">
+									<path stroke-linecap="round" stroke-linejoin="round"
+										d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.519l2.74-1.22m0 0-5.94-2.28m5.94 2.28-2.28 5.941" />
+								</svg>
+								Preis um CHF <% sprintf('%.2f', $diff) %> gesunken
+							</span>
 %					}
-					<br><br>
+						</div>
+					</div>
 %				}
 
 			</div>
