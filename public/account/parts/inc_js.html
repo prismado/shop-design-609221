@@ -1,0 +1,34 @@
+% use utf8;
+
+// "Von Merkliste entfernen" (account/parts/main.html) — Seite wird nur einmal eingebunden,
+// daher liegt diese Funktion hier statt in der Wishlist-Karte selbst.
+function removeFromWishlist(el, prodId) {
+	var body = new URLSearchParams();
+	body.set('prod_id', prodId);
+
+	fetch('/dyn/remove-from-wishlist.html', { method: 'POST', body: body })
+		.then(function (res) { return res.json(); })
+		.then(function (data) {
+			if (data.rc === 0) {
+				var card = el.closest('.wishlist-item');
+				if (card) {
+					card.style.transition = 'opacity .25s ease';
+					card.style.opacity = '0';
+					setTimeout(function () { card.remove(); }, 250);
+				}
+
+				var wishlistBadge = document.getElementById('wishlist-count');
+				if (wishlistBadge) {
+					var n = Math.max(0, (parseInt(wishlistBadge.textContent, 10) || 0) - 1);
+					wishlistBadge.textContent = n;
+				}
+
+				showToast(true, 'Artikel wurde von der Merkliste entfernt.');
+			} else {
+				showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+			}
+		})
+		.catch(function () {
+			showToast(false, 'Artikel konnte nicht entfernt werden.');
+		});
+}

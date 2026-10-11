@@ -45,22 +45,22 @@
 %				my $img_url  = $prd->{image}->{url};
 %				my $wishlist = eval { JSON->new->decode($json) } || {};
 
-				<div class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 bg-white">
+				<div class="wishlist-item relative flex items-center gap-4 p-3 rounded-xl border border-gray-200 bg-white">
+					<button type="button" onclick="removeFromWishlist(this, <% $prod_id %>)"
+						aria-label="Von Merkliste entfernen"
+						class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full
+							text-gray-400 hover:text-gray-600 hover:bg-gray-100 italic font-serif text-lg
+							leading-none transition">&times;</button>
+
 					<a href="/product/?id=<% $prod_id %>"
 						class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white">
 						<img src="<% $img_url %>" class="w-full h-full object-cover" loading="lazy"
 							alt="<% $prd->{title} %>">
 					</a>
 
-					<div class="flex-1 min-w-0">
+					<div class="flex-1 min-w-0 pr-5">
 						<a href="/product/?id=<% $prod_id %>" class="font-semibold text-gray-900 text-sm
 							sm:text-base hover:text-red-600 transition line-clamp-2"><% $prd->{title} %></a>
-<%doc>
-					Neue Funktion "Artikel von Wishlist enfernen":
-					Das "X" bitte oben rechts in der Wishlist-Box.
-					Ein Klick soll per JS "/dyn/remove-from-wishlist" aufrufen.
-</%doc>
-					<i>X</i>
 
 						<div class="flex items-center gap-2 mt-1">
 							<span class="text-base font-bold text-gray-900">CHF <% $prd->{price_incl_vat_fmt} %></span>
@@ -89,3 +89,4 @@
 		</div>
 	</div>
 
+	<& ../partials/inc_toast.html &>
