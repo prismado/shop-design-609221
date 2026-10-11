@@ -31,7 +31,7 @@
 					<% $sth->rows() %> Artikel in Ihrer Merkliste.
 				</p>
 
-				<div class="grid grid-cols-1 2xl:grid-cols-2 gap-3">
+				<div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3">
 %				while(my $r = $sth->fetch()) {
 %					my ($prod_id, $json) = @{$r};
 %					my $prd      = $A->get_product_v2(id => $prod_id, public => 1);
