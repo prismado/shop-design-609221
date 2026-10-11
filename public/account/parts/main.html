@@ -5,6 +5,7 @@
 
 	my $perm = $args{perm};
 	my $C    = $args{C};
+	my $A    = $args{A};
 
 	my $sth = $C->{dbh}->prepare(qq~
 		select	SUBSTR(xkey, 15, 10), xval
@@ -27,8 +28,9 @@
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed"><% $sth->rows() %> Artikel in Ihrer Merkliste.</p>
 %				while(my $r = $sth->fetch()) {
-%					my ($key, $val) = @{$r};
-					X -- <% $key %> = <% $val %><br>
+%					my ($prod_id, $val) = @{$r};
+%					my $prd = $A->get_product_v2(id => $prod_id, public => 1);
+					Prod-ID <% $prod_id %>: <% $val %> <% $prd->{title} %><br>
 %				}
 			</div>
 		</div>
