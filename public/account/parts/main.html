@@ -31,13 +31,14 @@
 					<% $sth->rows() %> Artikel in Ihrer Merkliste.
 				</p>
 
+				<div class="grid grid-cols-1 2xl:grid-cols-2 gap-3">
 %				while(my $r = $sth->fetch()) {
 %					my ($prod_id, $json) = @{$r};
 %					my $prd      = $A->get_product_v2(id => $prod_id, public => 1);
 %					my $img_url  = $prd->{image}->{url};
 %					my $wishlist = eval { JSON->new->decode($json) } || {};
 
-					<div class="flex items-center gap-4 p-3 mb-3 rounded-xl border border-gray-200 bg-white">
+					<div class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 bg-white">
 						<a href="/product/?id=<% $prod_id %>"
 							class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white">
 							<img src="<% $img_url %>" class="w-full h-full object-cover" loading="lazy"
@@ -72,6 +73,7 @@
 						</div>
 					</div>
 %				}
+				</div>
 
 			</div>
 		</div>
