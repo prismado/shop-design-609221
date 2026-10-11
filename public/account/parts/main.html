@@ -43,7 +43,8 @@
 %					}
 					<br>
 %					if ($prd->{price_incl_vat} < $wishlist->{price}) {
-						Der Preis wurde von CHF <% sprintf('%.2f', $wishlist->{price}) %> reduziert.<br>
+%						my $diff =  $wishlist->{price} - $prd->{price_incl_vat};
+						Der Preis wurde um CHF <% sprintf('%.2f', $diff) %> reduziert.<br>
 %					}
 					<br><br>
 %				}
