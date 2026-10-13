@@ -14,13 +14,28 @@
 
 	my $id  = $cgi->param('id') + 0;
 
-	my $rc  = 0;
-	my $msg = "XX constr: UID $perm->{uid}";
+	# XX my $rc  = 0;
+	my $msg = "Updated UID $perm->{uid}";
+
+	my $rc_upd = $A->set_address_by_id(
+		$perm->{uid}, 1,
+		{
+			gender    => $cgi->param('gender'),
+			firstname => $cgi->param('firstname'),
+			lastname  => $cgi->param('lastname'),
+			company   => $cgi->param('company'),
+			street    => $cgi->param('street'),
+			zip       => $cgi->param('zip'),
+			city      => $cgi->param('city'),
+			country   => $cgi->param('country'),
+			phone     => $cgi->param('phone')
+		}
+	);
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
-  "rc": <% $rc %>,
+  "rc": <% $rc_upd %>,
   "message": "<% $msg %> um <% $C->now(12) %>"
 }
