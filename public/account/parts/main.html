@@ -21,11 +21,23 @@
 	$sth->execute() or $m->out("Err $DBI::errstr<hr>");
 </%init>
 
-	<div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 lg:gap-10 items-center">
+	<div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 lg:gap-10 items-start">
 
-		<img src="/assets/images/icons/default-avatar-610131.svg" loading="lazy"
-			style="max-width:100px;"
-			class="w-full rounded-2xl object-cover border border-gray-200 bg-white">
+		<div>
+			<img src="/assets/images/icons/default-avatar-610131.svg" loading="lazy"
+				style="max-width:100px;"
+				class="rounded-2xl object-cover border border-gray-200 bg-white">
+
+			<div class="mt-4">
+				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Benutzerinformation</h2>
+				<p>
+					<% $uinf->{firstname} %> <% $uinf->{lastname} %> <% $uinf->{company} %><br>
+					Benutzername: <% $uinf->{uname} %><br>
+					E-Mail: <% $uinf->{email} %><br>
+					Telefon: <% $uinf->{phone} %><br>
+				</p>
+			</div>
+		</div>
 
 		<div>
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Konto &middot; Profil</p>
@@ -34,18 +46,9 @@
 
 	</div>
 
-	<!-- Beschreibung / Merkliste -->
+	<!-- Adressen / Merkliste -->
 	<div class="mt-8">
-		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Benutzerinformation</h2>
-
-		<p>
-			<% $uinf->{firstname} %> <% $uinf->{lastname} %> <% $uinf->{company} %><br>
-			Benutzername: <% $uinf->{uname} %><br>
-			E-Mail: <% $uinf->{email} %><br>
-			Telefon: <% $uinf->{phone} %><br>
-		</p>
-
-		<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
 			<div class="sm:pr-6">
 				<h3 class="font-bold mb-1">Rechnungsanschrift</h3>
 				<p>
