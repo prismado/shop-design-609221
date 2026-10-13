@@ -5,6 +5,7 @@
 	my %args = $m->caller_args(0);
 
 	my $perm = $args{perm};
+	my $uinf = $args{uinf};
 	my $C    = $args{C};
 	my $A    = $args{A};
 
@@ -34,6 +35,11 @@
 	<!-- Beschreibung / Merkliste -->
 	<div class="mt-8">
 		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
+
+%		foreach (sort keys %$uinf) {
+			XX <% $_ %> = <% $uinf->{$_} %><br>
+%		}
+
 		<p class="text-sm mb-6 text-gray-600 leading-relaxed">
 			<% $sth->rows() %> Artikel in Ihrer Merkliste.
 		</p>
