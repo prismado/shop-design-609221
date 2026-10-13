@@ -30,7 +30,12 @@
 			country   => $cgi->param('country'),
 			phone     => $cgi->param('phone')
 		}
-	);
+	) if $perm->{uid} > 0;
+
+	unless ($perm->{uid} > 0) {
+		$rc_upd = 10;
+		$msg    = 'Not logged in.';
+	}
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
