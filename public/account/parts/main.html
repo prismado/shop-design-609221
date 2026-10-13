@@ -63,12 +63,16 @@ X -- zip = 8001
 			<% $bill_addr->{street} %><br>
 			<% $bill_addr->{zip} %> <% $bill_addr->{city} %>
 		</p>
-%		foreach (sort keys %$bill_addr) {
-% # XXX			X -- <% $_ %> = <% $bill_addr->{$_} %><br>
-%		}
 		<hr />
+		<h3 class="font-bold">Lieferadresse</h3>
+		<p>
+			<% $dlvr_addr->{company} %>
+			<% $dlvr_addr->{firstname} %> <% $dlvr_addr->{lastname} %><br>
+			<% $dlvr_addr->{street} %><br>
+			<% $dlvr_addr->{zip} %> <% $dlvr_addr->{city} %>
+		</p>
 %		foreach (sort keys %$dlvr_addr) {
-			XX <% $_ %> = <% $dlvr_addr->{$_} %><br>
+% # XXX			XX <% $_ %> = <% $dlvr_addr->{$_} %><br>
 %		}
 
 		<p class="text-sm mb-6 text-gray-600 leading-relaxed">
