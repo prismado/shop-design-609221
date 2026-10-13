@@ -33,10 +33,10 @@
 <%doc>
 XX profile_pic = profile_pic_1_ad.jpg
 </%doc>
-		<p>
+		<p class="mt-4">
 %			foreach (sort keys %$uinf) {
 %				next unless /^perm_is_(.+)/;
-				Perm: <% $1 %><br>
+				Berechtigung: <% uc $1 %><br>
 %			}
 		</p>
 	</div>
