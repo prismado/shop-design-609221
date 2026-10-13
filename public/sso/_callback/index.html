@@ -1,0 +1,125 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $perm = $C->get_user_perm();
+
+	my $cgi  = $C->{CGI};
+
+	my $code  = $cgi->param('code') || '';
+	my $state = $cgi->param('state');
+
+	my $is_logged_in = $C->is_logged_in();
+
+	if ($is_logged_in && $ENV{NODE_ENV} ne 'development') {
+		$m->redirect('/');
+	}
+
+	my @msgs = ();
+	my $null = '';
+	my $res = \$null;
+	my $res2 = \$null;
+	my $decoded;
+	my $jwt = {};
+
+	my $ms_client_id     = $C->get_safe_property('sso_ms_client_id',     'sys');
+	my $ms_client_secret = $C->get_safe_property('sso_ms_client_secret', 'sys');
+	my $proto            = $C->{CONFIG}->{HTTP_HOST} eq 'localhost' ? 'http' : 'https';
+
+	if ($code) {
+		my $redirect_uri  = $C->uri_esc("$proto://$C->{CONFIG}->{HTTP_HOST}/sso/_callback/");
+		my $client_secret = $ms_client_secret;
+		my $data          = "client_id=$ms_client_id&client_secret=$client_secret" .
+					"&grant_type=authorization_code&code=$code&scope=openid+profile&redirect_uri=$redirect_uri";
+
+		$res = $C->lwp_post_raw_v2(
+			URL          => 'https://login.microsoftonline.com/organizations/oauth2/v2.0/token',
+			content_type => 'application/x-www-form-urlencoded',
+			debug        => 0, # -- 0, 1, or 2
+			data         => \$data
+		);
+
+		$decoded = $C->json_decode(data=>$res)->{result};
+		eval { $jwt = $C->auth_verify(id_token=>$decoded->{id_token}); };
+	}
+
+	my $log_event_ident = $jwt->{oid} || "no_oid_$$";
+	open(LOG, ">/opt/bin/logs/zz_trash_sso_login_$log_event_ident\.txt") or print STDERR "Error E605301 $!\n";
+	foreach (sort keys %$jwt) {
+		print LOG "$_ = $jwt->{$_}\n";
+	}
+	close(LOG);
+
+	my ($uid, $uname) = @{$C->query("select id, uname from users where email='$jwt->{login}' limit 1")};
+
+	if ($uid) {
+		# -- Authentifizierung war erfolgreich
+		$C->establish_web_session(uname=>$uname);
+		$C->saveSessData('signin_sso', 1); # -- 22Dec2025
+		$m->redirect('/') unless $ENV{NODE_ENV} eq 'development';
+	}
+	elsif ($jwt->{rc} == 0) {
+		# -- JWT akzeptiert, aber Benutzer noch nicht lokal
+		push(@msgs, 'JWT akzeptiert, aber Benutzer ' . $jwt->{name} . ' noch nicht lokal');
+		my $cust_pwd  = $C->generate_password()->{password};
+		my ($first, $last) = split / /, $jwt->{name};
+		my $email          = $jwt->{login};
+		my $SID            = $C->getSID();
+		my $real_ip        = $ENV{HTTP_X_REAL_IP};
+		my $res_batch = $C->call_batch(call=>"\\\$A->register_and_send_login( email=>'$email', sid=>$SID,
+				x_dept_d=>'KTAG tbd', x_reg_ip=>'$real_ip', suppress_welcome_mail=>1,
+				firstname=>'$first', surname=>'$last', cust_pwd=>'$cust_pwd', caller=>'sso/_callback' );");
+	}
+</%init>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>SSO - <% $is_logged_in %></title>
+	<link rel="stylesheet" type="text/css" href="/dist/output.min.css">
+</head>
+
+<body class="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
+<div class="w-full max-w-sm">
+
+	<a href="/"><img src="/assets/images/logo_transp.webp" class="mx-auto mb-6 w-40"></a>
+
+%	if ($uid) {
+		Login UID <% $uid %> / <% $uname %> akzeptiert / SSO: <% $C->getSessData('signin_sso') + 0 %><br>
+%	}
+%	else {
+%		if ($jwt->{rc}) {
+			<h1 class="text-xl font-semibold text-gray-800 mb-3">Zugriff verweigert</h1>
+			RC <% $jwt->{rc} %> <% $jwt->{msg} %><br>
+%		}
+%		else {
+			<h1 class="text-xl font-semibold text-gray-800 mb-3">Ihr Konto wird erstellt</h1>
+			Benutzer &laquo;<% $jwt->{login} %>&raquo;<br><br>
+
+			Bitte warten Sie einen Moment und <a href="/auth/oidc">starten Sie diese Sitzung</a> neu.<br><br>
+
+			<script>setTimeout(function(){ window.location.href = '/auth/oidc'; }, 5000);</script>
+%		}
+% #		Bitte <a href="/register">registrieren Sie sich</a> zuerst.<br>
+		<div class="text-sm text-gray-500">
+		<% join "<br>\n", @msgs %>
+		</div>
+%	}
+
+%	if ($ENV{NODE_ENV} eq 'development') {
+		<table class="w-full border border-zinc-200 text-xs mt-8">
+%		foreach (sort keys %{$jwt}) {
+%			next unless length($jwt->{$_});
+			<tr class="border-b border-zinc-100 last:border-0">
+				<td nowrap class="px-3 py-1.5 whitespace-nowrap text-zinc-400 font-mono">[ JWT ] <span 
+					class="font-bold text-zinc-600"><% $_ %></span></td>
+				<td class="px-3 py-1.5 text-zinc-700"><% $C->shorten_title($jwt->{$_}, 42) %></td>
+			</tr>
+%		}
+		</table>
+% # XX		<% $decoded->{id_token} %>
+% 	}
+
+</div>
+</body>
+</html>
