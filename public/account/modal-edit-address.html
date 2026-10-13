@@ -28,8 +28,9 @@
 	Als CGI-Feldnamen bitte den identischen Variablennamen verwenden.
 </%doc>
 
-<form method="post" action="/account" class="space-y-4">
+<form onsubmit="event.preventDefault(); saveAddress(this);" class="space-y-4">
 
+	<input type="hidden" name="id" value="<% $addr_id %>">
 	<input type="hidden" name="type" value="<% $type %>">
 
 	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1"><% $title %></p>

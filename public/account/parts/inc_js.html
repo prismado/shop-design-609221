@@ -50,3 +50,23 @@ function openEditAddressModal(type) {
 			body.innerHTML = '<p class="text-sm text-red-600">Formular konnte nicht geladen werden.</p>';
 		});
 }
+
+// Speichern im Adress-Bearbeiten-Modal — POST an dyn/update-user-address.html,
+// erwartet { rc, message } wie die übrigen dyn/*-Endpunkte in diesem Theme.
+function saveAddress(form) {
+	var body = new URLSearchParams(new FormData(form));
+
+	fetch('/dyn/update-user-address.html', { method: 'POST', body: body })
+		.then(function (res) { return res.json(); })
+		.then(function (data) {
+			if (data.rc === 0) {
+				showToast(true, 'Adresse wurde aktualisiert.');
+				closeModal('edit-address');
+			} else {
+				showToast(false, data.message);
+			}
+		})
+		.catch(function () {
+			showToast(false, 'Adresse konnte nicht gespeichert werden.');
+		});
+}
