@@ -39,8 +39,14 @@
 	<div class="mt-8">
 		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 
+		<p>
+			<% $uinf->{firstname} %> <% $uinf->{lastname} %> <% $uinf->{company} %><br>
+			Benutzername: <% $uinf->{uname} %><br>
+			E-Mail: <% $uinf->{email} %><br>
+			Telefon: <% $uinf->{phone} %><br>
+		</p>
 %		foreach (sort keys %$uinf) {
-			X -- <b><% $_ %></b> = <% $uinf->{$_} %><br>
+% # XXX			X -- <b><% $_ %></b> = <% $uinf->{$_} %><br>
 %		}
 %		foreach (sort keys %$bill_addr) {
 			XX <% $_ %> = <% $bill_addr->{$_} %><br>
