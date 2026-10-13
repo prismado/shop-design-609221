@@ -19,8 +19,8 @@
 
 	if ($perm->{uid} > 0 && $addr_type_id > 0) {
 		$rc_upd = $A->set_address_by_id(
-		$perm->{uid}, $addr_type_id,
-		{
+			$perm->{uid}, $addr_type_id,
+			{
 			gender    => $cgi->param('gender'),
 			firstname => $cgi->param('firstname'),
 			lastname  => $cgi->param('lastname'),
@@ -30,7 +30,7 @@
 			city      => $cgi->param('city'),
 			country   => $cgi->param('country'),
 			phone     => $cgi->param('phone')
-		}
+			}
 		);
 
 		$msg = $rc_upd ? 'Error E610131' : "Updated UID $perm->{uid}";
