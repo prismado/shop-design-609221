@@ -60,8 +60,11 @@ function saveAddress(form) {
 		.then(function (res) { return res.json(); })
 		.then(function (data) {
 			if (data.rc === 0) {
-				showToast(true, 'Adresse wurde aktualisiert.');
+				showToast(true, 'Adresse wurde aktualisiert.', 2000);
 				closeModal('edit-address');
+				setTimeout(function () {
+					window.location.href = window.location.pathname;
+				}, 900);
 			} else {
 				showToast(false, data.message);
 			}
