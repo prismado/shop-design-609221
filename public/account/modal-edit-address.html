@@ -13,12 +13,19 @@
 
 	my $debug = $cgi->param('debug');
 
-	my $type    = $cgi->param('type') eq 'delivery' ? 'delivery' : 'bill';
-	my $addr_id = $type eq 'delivery' ? 2 : 1;
+	my $addr_type_id = $cgi->param('addr_type_id') + 0;
+	   $addr_type_id ||= 1;
 
-	my $addr  = $A->get_address_by_id($perm->{uid}, $addr_id);
-	my $title = $type eq 'delivery' ? 'Lieferadresse' : 'Rechnungsanschrift';
-	my $phone = $type eq 'delivery' ? $addr->{phone} : $uinf->{phone};
+	# -- Titel je Adress-Type-ID; für weitere Adresskanäle (Filiale, Geschenk, ...)
+	#    reicht ein zusätzlicher Eintrag hier, der Rest des Templates ist generisch.
+	my %titles = (
+		1 => 'Rechnungsanschrift',
+		2 => 'Lieferadresse',
+	);
+
+	my $addr  = $A->get_address_by_id($perm->{uid}, $addr_type_id);
+	my $title = $titles{$addr_type_id} || 'Adresse';
+	my $phone = $addr_type_id == 1 ? $uinf->{phone} : $addr->{phone};
 </%init>
 <%doc>
 	Die Namen für die Eingabefelder, um sie hier zu rendern,
@@ -30,8 +37,7 @@
 
 <form onsubmit="event.preventDefault(); saveAddress(this);" class="space-y-4">
 
-	<input type="hidden" name="addr_type_id" value="<% $addr_id %>">
-	<input type="hidden" name="type" value="<% $type %>">
+	<input type="hidden" name="addr_type_id" value="<% $addr_type_id %>">
 
 	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1"><% $title %></p>
 

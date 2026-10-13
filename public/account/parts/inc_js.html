@@ -33,17 +33,18 @@ function removeFromWishlist(el, prodId) {
 		});
 }
 
-// Adress-Bearbeiten-Modal (Rechnungsanschrift / Lieferadresse, account/parts/main.html) — Inhalt
-// hängt davon ab, welcher Stift-Button geklickt wurde, daher wird das Formular erst bei Bedarf
-// per Fetch von account/modal-edit-address.html nachgeladen statt serverseitig fix vorgerendert.
-function openEditAddressModal(type) {
+// Adress-Bearbeiten-Modal (account/parts/main.html) — Inhalt hängt von der Adress-Type-ID des
+// geklickten Stift-Buttons ab (1=Rechnung, 2=Lieferung, weitere Kanäle möglich), daher wird das
+// Formular erst bei Bedarf per Fetch von account/modal-edit-address.html nachgeladen statt
+// serverseitig fix vorgerendert.
+function openEditAddressModal(addrTypeId) {
 	var body = document.getElementById('modal-body-edit-address');
 	if (!body) return;
 
 	body.innerHTML = '<p class="text-sm text-gray-400">Lädt…</p>';
 	openModal('edit-address');
 
-	fetch('/account/modal-edit-address.html?type=' + encodeURIComponent(type))
+	fetch('/account/modal-edit-address.html?addr_type_id=' + encodeURIComponent(addrTypeId))
 		.then(function (res) { return res.text(); })
 		.then(function (html) { body.innerHTML = html; })
 		.catch(function () {
