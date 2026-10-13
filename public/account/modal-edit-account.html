@@ -1,0 +1,53 @@
+<%init>
+	use utf8;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm = $C->get_user_perm();
+	my $uinf = $A->get_user_info();
+
+	my $cgi = $C->{CGI};
+
+	# XX my $debug = $cgi->param('debug');
+
+	# XXX my $addr_type_id = $cgi->param('addr_type_id') + 0;
+
+	# XXX my %titles = ();
+
+	# XXX my $addr  = $A->get_address_by_id($perm->{uid}, $addr_type_id);
+	# XXX my $title = $titles{$addr_type_id} || 'Adresse';
+	# XXX my $phone = $addr_type_id == 1 ? $uinf->{phone} : $addr->{phone};
+</%init>
+
+<form onsubmit="event.preventDefault(); saveAddress(this);" class="space-y-4">
+
+% # XX	<input type="hidden" name="addr_type_id" value="<% $addr_type_id %>">
+
+	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1">Konto</p>
+
+	<div>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Anrede</label>
+		<p>tbd</p>
+	</div>
+
+	<div class="grid grid-cols-2 gap-3">
+	</div>
+
+	<div class="flex justify-end gap-3 pt-2">
+		<button type="button" onclick="closeModal('edit-address')"
+			class="inline-flex items-center justify-center border border-gray-300 hover:border-gray-400
+				hover:bg-gray-50 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-full
+				transition-colors">
+			Abbrechen
+		</button>
+		<button type="submit"
+			class="inline-flex items-center justify-center bg-[#1c1512] hover:bg-red-600 text-white
+				text-sm font-semibold px-6 py-2.5 rounded-full shadow transition-colors">
+			Speichern
+		</button>
+	</div>
+
+</form>
