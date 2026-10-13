@@ -65,16 +65,16 @@ function openEditAccountModal() {
 	loadEditModal('Benutzerinformation bearbeiten', '/account/modal-edit-account.html');
 }
 
-// Speichern im Adress-Bearbeiten-Modal — POST an dyn/update-user-address.html,
-// erwartet { rc, message } wie die übrigen dyn/*-Endpunkte in diesem Theme.
-function saveAddress(form) {
+// Gemeinsame Submit-Logik für die Edit-Modals (Adresse / Konto) — beide dyn/*-Endpunkte liefern
+// dasselbe { rc, message }-Format und das Modal reagiert in beiden Fällen identisch.
+function submitEditModal(form, url, successMsg) {
 	var body = new URLSearchParams(new FormData(form));
 
-	fetch('/dyn/update-user-address.html', { method: 'POST', body: body })
+	fetch(url, { method: 'POST', body: body })
 		.then(function (res) { return res.json(); })
 		.then(function (data) {
 			if (data.rc === 0) {
-				showToast(true, 'Adresse wurde aktualisiert.', 2000);
+				showToast(true, successMsg, 2000);
 				closeModal('edit-address');
 				setTimeout(function () {
 					window.location.href = window.location.pathname;
@@ -84,6 +84,16 @@ function saveAddress(form) {
 			}
 		})
 		.catch(function () {
-			showToast(false, 'Adresse konnte nicht gespeichert werden.');
+			showToast(false, 'Änderungen konnten nicht gespeichert werden.');
 		});
+}
+
+// Speichern im Adress-Bearbeiten-Modal — POST an dyn/update-user-address.html.
+function saveAddress(form) {
+	submitEditModal(form, '/dyn/update-user-address.html', 'Adresse wurde aktualisiert.');
+}
+
+// Speichern im Konto-Bearbeiten-Modal — POST an dyn/update-user-account.html.
+function saveAccount(form) {
+	submitEditModal(form, '/dyn/update-user-account.html', 'Benutzerinformation wurde aktualisiert.');
 }
