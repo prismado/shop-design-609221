@@ -86,7 +86,7 @@
 				<% $bill_addr->{street} %><br>
 				<% $bill_addr->{country} %>-<% $bill_addr->{zip} %> <% $bill_addr->{city} %><br><br>
 
-				Telefon: <% $uinf->{phone} %>
+				Telefon: <% $uinf->{phone} || '&ndash;' %>
 			</p>
 		</div>
 
