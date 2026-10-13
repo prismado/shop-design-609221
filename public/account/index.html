@@ -40,14 +40,14 @@
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
 
-	<& partials/left_nav.html, A => $A, C => $C &>
+% # XXX	<& partials/left_nav.html, A => $A, C => $C &>
+	<& parts/left_nav_account.html, A => $A, C => $C &>
 
 	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
 		<& parts/main.html, perm => $perm, uinf => $uinf, C => $C, A => $A &>
 	</section>
 
-% # XX	<& partials/daily_offer.html, C => $C, A => $A &>
 </div>
 
 <& partials/footer.html, C => $C &>
