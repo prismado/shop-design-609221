@@ -1,0 +1,28 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	# ----- Created: 22Dec2025 ----- #
+
+	my $cgi = $C->{CGI};
+
+	my $debug = $cgi->param('debug');
+
+	my $client_id     = $C->get_safe_property('sso_ms_client_id', 'sys');
+	my $response_type = 'code';
+	my $scope         = $C->uri_esc('openid profile');
+	my $proto         = $C->{CONFIG}->{HTTP_HOST} eq 'localhost' ? 'http' : 'https';
+	my $redirect_uri  = $C->uri_esc("$proto://$C->{CONFIG}->{HTTP_HOST}/sso/_callback/");
+	my $state         = 'x605171state';
+	my $nonce         = 'x605171none';
+
+	my $link = "https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize?client_id=$client_id&nonce=$nonce&redirect_uri=$redirect_uri&scope=$scope&state=$state&response_type=$response_type";
+
+	$m->redirect($link) unless $debug;
+</%init>
+<a href="<% $link %>">Link</a>
+
+% if ($debug) {
+	<a href="https://login.microsoftonline.com/67a4e131-2364-4d11-ac1b-4b295cae0309/oauth2/v2.0/logout?post_logout_redirect_uri=https://<% $C->{CONFIG}->{HTTP_HOST} %>/proto/sso/_callback/">Logout</a>
+% }
