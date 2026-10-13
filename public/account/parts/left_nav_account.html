@@ -1,0 +1,156 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+	my $cur_cat_id = $args{cat_id}; # -- Aktiv ausgewählte Kategorie-ID
+
+	my $lang = 'de';
+
+	my ($categ_ids, $label) = $A->get_categ_nav($lang);
+
+	my $title = $C->{CONFIG}->{site_title};
+	my $daily_title = 'Tagesangebote am Dienstag';
+
+	# -- Nur aktiv, solange keine Kategorie ausgewählt ist
+	my $daily_active_cls = $cur_cat_id
+		? 'bg-gray-100 text-[#1c1512] lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
+		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
+</%init>
+  <!-- Navigation (links, ca. 15%) -->
+  <aside class="mb-8 lg:mb-0 lg:sticky lg:self-start" style="top: var(--header-h, 0px)">
+
+    <h2 class="hidden lg:block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Benutzerkonto</h2>
+
+    <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 mb-12
+		lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
+
+	<a href="#" class="flex-shrink-0 whitespace-nowrap <% $daily_active_cls %> lg:bg-transparent
+		text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none lg:px-3
+		lg:border-l-2 transition-colors"><% $daily_title %></a>
+
+%	my %memo = ();
+%	foreach my $cat_id (@{$categ_ids}) {
+%		my @ids = split /\t/, $cat_id;
+%		my @cat_group = split /\t/, $cat_id;
+%		foreach my $cid_elem (@cat_group) {
+%			next if $memo{$cid_elem};
+%			my $parent_id    = $C->query("select parent_id from categories where id=$cid_elem")->[0];
+%			my $is_main_cat  = $parent_id ? 0 : 1;
+%			my $url_frndly   = $C->url_friendly($label->{$cid_elem});
+%			my $has_children = $C->query("select count(*) from categories where parent_id=$cid_elem")->[0];
+%			my $hidden_cls   = $is_main_cat ? '' : 'hidden ';
+%			my $depth_arrow  = '';
+%			my $is_active    = ($cur_cat_id && $cid_elem == $cur_cat_id) ? 1 : 0;
+%			my $active_cls   = $is_active
+%				? 'bg-red-50 text-red-700 lg:border-red-600'
+%				: 'bg-gray-100 text-[#1c1512] lg:border-transparent';
+%			if ($has_children) {
+				<!-- Zwei getrennte Klick-Ziele: Label navigiert zur Kategorie-Seite (dort auch
+					erreichbar für "verwaiste" Artikel ohne eigene Unterkategorie), Chevron klappt
+					nur die Unterkategorien auf/zu. -->
+				<div class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 inline-flex items-center
+						lg:bg-transparent rounded-full lg:rounded-none lg:border-l-2
+						hover:lg:border-red-600 transition-colors"
+% 					if (!$is_main_cat) {
+						data-parent-id="<% $parent_id %>"
+% 					}
+					>
+					<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>"
+						class="whitespace-nowrap text-[15.4px] font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
+							hover:text-red-700 transition-colors">
+						<% $depth_arrow %>
+				<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
+					</a>
+					<button type="button" data-cat-id="<% $cid_elem %>" aria-expanded="false"
+						aria-label="Unterkategorien anzeigen"
+						onclick="event.stopPropagation(); toggleCategory(<% $cid_elem %>)"
+						class="flex-shrink-0 p-2 pr-3 lg:pr-2.5 hover:text-red-700 transition-colors">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+						stroke="currentColor" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200">
+							<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+						</svg>
+					</button>
+				</div>
+%			}
+%			else {
+				<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>" data-cat-id="<% $cid_elem %>"
+% 					if (!$is_main_cat) {
+						data-parent-id="<% $parent_id %>"
+% 					}
+					class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 whitespace-nowrap
+						lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
+						lg:px-3 lg:border-l-2
+						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+					<% $depth_arrow %>
+					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
+				</a>
+%			}
+%			$memo{$cid_elem} = 1;
+%		}
+%	}
+
+% #	============================================ PRO-Zone ============================================
+	<a href="/prozone.html" ZZdata-cat-id="9913"
+		class="bg-gray-100 text-[#1c1512] lg:border-transparent flex-shrink-0 whitespace-nowrap
+			lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
+			lg:px-3 lg:border-l-2
+			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+		PRO-Zone
+	</a>
+    </nav>
+
+    <hr class="my-3 lg:my-4 border-gray-200">
+
+    <h2 class="hidden lg:block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Über uns</h2>
+
+    <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
+
+      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-[#1c1512] lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Unternehmen</a>
+      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-[#1c1512] lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Kontakt</a>
+      <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-[#1c1512] lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Newsletter</a>
+
+    </nav>
+  </aside>
+
+  <script>
+    // Kategorien mit Unterkategorien per Klick auf-/zuklappen. Beim Zuklappen werden auch bereits
+    // offene, tieferliegende Unterkategorien mitgeschlossen, damit keine "verwaisten" offenen Äste
+    // zurückbleiben.
+    function toggleCategory(catId) {
+      var btn = document.querySelector('[data-cat-id="' + catId + '"]');
+      var children = document.querySelectorAll('[data-parent-id="' + catId + '"]');
+      if (!btn || !children.length) return;
+
+      var expand = btn.getAttribute('aria-expanded') !== 'true';
+
+      children.forEach(function (child) {
+        child.classList.toggle('hidden', !expand);
+        if (!expand) {
+          var inner = child.hasAttribute('data-cat-id') ? child : child.querySelector('[data-cat-id]');
+          if (inner) collapseCategory(inner.getAttribute('data-cat-id'));
+        }
+      });
+
+      btn.setAttribute('aria-expanded', expand ? 'true' : 'false');
+      var chevron = btn.querySelector('.chevron-icon');
+      if (chevron) chevron.classList.toggle('rotate-90', expand);
+    }
+
+    function collapseCategory(catId) {
+      var btn = document.querySelector('[data-cat-id="' + catId + '"]');
+      document.querySelectorAll('[data-parent-id="' + catId + '"]').forEach(function (child) {
+        child.classList.add('hidden');
+        // "child" ist entweder selbst das Element mit data-cat-id (einfacher Link ohne eigene
+        // Kinder) oder ein Wrapper-Div, dessen Toggle-Button das Attribut trägt.
+        var inner = child.hasAttribute('data-cat-id') ? child : child.querySelector('[data-cat-id]');
+        if (inner) collapseCategory(inner.getAttribute('data-cat-id'));
+      });
+      if (btn) {
+        btn.setAttribute('aria-expanded', 'false');
+        var chevron = btn.querySelector('.chevron-icon');
+        if (chevron) chevron.classList.remove('rotate-90');
+      }
+    }
+  </script>
