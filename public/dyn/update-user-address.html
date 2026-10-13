@@ -1,0 +1,26 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm = $C->get_user_perm();
+	my $lang = 'de';
+
+	my $cgi = $C->{CGI};
+
+	my $id  = $cgi->param('id') + 0;
+
+	my $rc  = 0;
+	my $msg = "XX constr: UID $perm->{uid}";
+
+	# -- JSON-Ausgabe mit UTF-8-Kodierung
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": <% $rc %>,
+  "message": "<% $msg %> um <% $C->now(12) %>"
+}
