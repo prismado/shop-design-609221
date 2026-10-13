@@ -66,14 +66,12 @@ X -- zip = 8001
 		<hr />
 		<h3 class="font-bold">Lieferadresse</h3>
 		<p>
-			<% $dlvr_addr->{company} %>
+			<% $dlvr_addr->{company} %> <% $dlvr_addr->{company} ? '<br>' : '' %>
+			<% $dlvr_addr->{gender} == 2 ? 'Frau' : 'Herr' %>
 			<% $dlvr_addr->{firstname} %> <% $dlvr_addr->{lastname} %><br>
 			<% $dlvr_addr->{street} %><br>
 			<% $dlvr_addr->{zip} %> <% $dlvr_addr->{city} %>
 		</p>
-%		foreach (sort keys %$dlvr_addr) {
-% # XXX			XX <% $_ %> = <% $dlvr_addr->{$_} %><br>
-%		}
 
 		<p class="text-sm mb-6 text-gray-600 leading-relaxed">
 			<% $sth->rows() %> Artikel in Ihrer Merkliste.
