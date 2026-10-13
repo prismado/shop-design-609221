@@ -23,8 +23,10 @@
 	my $decoded;
 	my $jwt = {};
 
-	my $ms_client_id     = $C->get_safe_property('sso_ms_client_id',     'sys');
-	my $ms_client_secret = $C->get_safe_property('sso_ms_client_secret', 'sys');
+	# XXX my $ms_client_id     = $C->get_safe_property('sso_ms_client_id',     'sys');
+	my $ms_client_id     = $C->{CONFIG}->{sso_entra_client_id};
+	my $ms_client_secret = $C->{CONFIG}->{sso_entra_secret};
+	# XXX my $ms_client_secret = $C->get_safe_property('sso_ms_client_secret', 'sys');
 	my $proto            = $C->{CONFIG}->{HTTP_HOST} eq 'localhost' ? 'http' : 'https';
 
 	if ($code) {
