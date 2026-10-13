@@ -3,6 +3,8 @@
 	use ScreenPoint::Core;
 	use ScreenPoint::Auctionline;
 
+	# ---------- Stub
+
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
@@ -10,21 +12,9 @@
 	my $uinf = $A->get_user_info();
 
 	my $cgi = $C->{CGI};
-
-	# XX my $debug = $cgi->param('debug');
-
-	# XXX my $addr_type_id = $cgi->param('addr_type_id') + 0;
-
-	# XXX my %titles = ();
-
-	# XXX my $addr  = $A->get_address_by_id($perm->{uid}, $addr_type_id);
-	# XXX my $title = $titles{$addr_type_id} || 'Adresse';
-	# XXX my $phone = $addr_type_id == 1 ? $uinf->{phone} : $addr->{phone};
 </%init>
 
 <form onsubmit="event.preventDefault(); saveAddress(this);" class="space-y-4">
-
-% # XX	<input type="hidden" name="addr_type_id" value="<% $addr_type_id %>">
 
 	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1">Konto</p>
 
