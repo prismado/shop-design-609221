@@ -33,23 +33,36 @@ function removeFromWishlist(el, prodId) {
 		});
 }
 
-// Adress-Bearbeiten-Modal (account/parts/main.html) — Inhalt hängt von der Adress-Type-ID des
-// geklickten Stift-Buttons ab (1=Rechnung, 2=Lieferung, weitere Kanäle möglich), daher wird das
-// Formular erst bei Bedarf per Fetch von account/modal-edit-address.html nachgeladen statt
-// serverseitig fix vorgerendert.
-function openEditAddressModal(addrTypeId) {
-	var body = document.getElementById('modal-body-edit-address');
+// Beide Edit-Modals (Adresse / Konto, account/parts/main.html) teilen sich dieselbe Hülle
+// (id="edit-address") — nur Titel und nachgeladene URL unterscheiden sich, daher ein
+// gemeinsamer Loader statt doppeltem Fetch/Inject-Code.
+function loadEditModal(title, url) {
+	var titleEl = document.getElementById('modal-title-edit-address');
+	var body    = document.getElementById('modal-body-edit-address');
 	if (!body) return;
 
+	if (titleEl) titleEl.textContent = title;
 	body.innerHTML = '<p class="text-sm text-gray-400">Lädt…</p>';
 	openModal('edit-address');
 
-	fetch('/account/modal-edit-address.html?addr_type_id=' + encodeURIComponent(addrTypeId))
+	fetch(url)
 		.then(function (res) { return res.text(); })
 		.then(function (html) { body.innerHTML = html; })
 		.catch(function () {
 			body.innerHTML = '<p class="text-sm text-red-600">Formular konnte nicht geladen werden.</p>';
 		});
+}
+
+// Adress-Bearbeiten-Modal — Inhalt hängt von der Adress-Type-ID des geklickten Stift-Buttons ab
+// (1=Rechnung, 2=Lieferung, weitere Kanäle möglich).
+function openEditAddressModal(addrTypeId) {
+	loadEditModal('Adresse bearbeiten',
+		'/account/modal-edit-address.html?addr_type_id=' + encodeURIComponent(addrTypeId));
+}
+
+// Konto-/Benutzerinformation-Bearbeiten-Modal.
+function openEditAccountModal() {
+	loadEditModal('Benutzerinformation bearbeiten', '/account/modal-edit-account.html');
 }
 
 // Speichern im Adress-Bearbeiten-Modal — POST an dyn/update-user-address.html,

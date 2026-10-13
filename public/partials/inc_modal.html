@@ -15,7 +15,7 @@
 	<div class="modal-panel w-full max-w-md bg-white rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto
 			scale-95 opacity-0 transition-all duration-[750ms] ease-out">
 		<div class="flex items-center justify-between mb-4">
-			<h2 class="text-lg font-bold text-gray-900"><% $title %></h2>
+			<h2 id="modal-title-<% $id %>" class="text-lg font-bold text-gray-900"><% $title %></h2>
 			<button type="button" onclick="closeModal('<% $id %>')" aria-label="Schliessen"
 				class="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1.5 rounded-full
 					hover:bg-gray-100 transition">
