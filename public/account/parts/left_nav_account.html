@@ -31,65 +31,8 @@
 		lg:border-l-2 transition-colors"><% $daily_title %></a>
 
 %	my %memo = ();
-%	foreach my $cat_id (@{$categ_ids}) {
-%		my @ids = split /\t/, $cat_id;
-%		my @cat_group = split /\t/, $cat_id;
-%		foreach my $cid_elem (@cat_group) {
-%			next if $memo{$cid_elem};
-%			my $parent_id    = $C->query("select parent_id from categories where id=$cid_elem")->[0];
-%			my $is_main_cat  = $parent_id ? 0 : 1;
-%			my $url_frndly   = $C->url_friendly($label->{$cid_elem});
-%			my $has_children = $C->query("select count(*) from categories where parent_id=$cid_elem")->[0];
-%			my $hidden_cls   = $is_main_cat ? '' : 'hidden ';
-%			my $depth_arrow  = '';
-%			my $is_active    = ($cur_cat_id && $cid_elem == $cur_cat_id) ? 1 : 0;
-%			my $active_cls   = $is_active
-%				? 'bg-red-50 text-red-700 lg:border-red-600'
-%				: 'bg-gray-100 text-[#1c1512] lg:border-transparent';
-%			if ($has_children) {
-				<!-- Zwei getrennte Klick-Ziele: Label navigiert zur Kategorie-Seite (dort auch
-					erreichbar für "verwaiste" Artikel ohne eigene Unterkategorie), Chevron klappt
-					nur die Unterkategorien auf/zu. -->
-				<div class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 inline-flex items-center
-						lg:bg-transparent rounded-full lg:rounded-none lg:border-l-2
-						hover:lg:border-red-600 transition-colors"
-% 					if (!$is_main_cat) {
-						data-parent-id="<% $parent_id %>"
-% 					}
-					>
-					<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>"
-						class="whitespace-nowrap text-[15.4px] font-medium pl-3 pr-1 py-2 lg:pl-3 lg:pr-1.5
-							hover:text-red-700 transition-colors">
-						<% $depth_arrow %>
-				<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
-					</a>
-					<button type="button" data-cat-id="<% $cid_elem %>" aria-expanded="false"
-						aria-label="Unterkategorien anzeigen"
-						onclick="event.stopPropagation(); toggleCategory(<% $cid_elem %>)"
-						class="flex-shrink-0 p-2 pr-3 lg:pr-2.5 hover:text-red-700 transition-colors">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-						stroke="currentColor" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200">
-							<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-						</svg>
-					</button>
-				</div>
-%			}
-%			else {
-				<a href="/category/?id=<% $cid_elem %>&frnd=<% $url_frndly %>" data-cat-id="<% $cid_elem %>"
-% 					if (!$is_main_cat) {
-						data-parent-id="<% $parent_id %>"
-% 					}
-					class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 whitespace-nowrap
-						lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-						lg:px-3 lg:border-l-2
-						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
-					<% $depth_arrow %>
-					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
-				</a>
-%			}
-%			$memo{$cid_elem} = 1;
-%		}
-%	}
+%	# XXX foreach my $cat_id (@{$categ_ids}) {
+%	# XXX }
 
 % #	============================================ PRO-Zone ============================================
 	<a href="/prozone.html" ZZdata-cat-id="9913"
