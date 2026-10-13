@@ -45,24 +45,14 @@
 			E-Mail: <% $uinf->{email} %><br>
 			Telefon: <% $uinf->{phone} %><br>
 		</p>
-<%doc>
-X -- city = Zurigo
-X -- company = CCC
-X -- country = CH
-X -- firstname = Admin
-X -- gender = 1
-X -- lastname = SSP
-X -- phone = 555
-X -- street = M8
-X -- zip = 8001
-</%doc>
+
 		<h3 class="font-bold">Rechnungsanschrift</h3>
 		<p>
 			<% $bill_addr->{company} %> <% $bill_addr->{company} ? '<br>' : '' %>
 			<% $bill_addr->{gender} == 2 ? 'Frau' : 'Herr' %>
 			<% $bill_addr->{firstname} %> <% $bill_addr->{lastname} %><br>
 			<% $bill_addr->{street} %><br>
-			<% $bill_addr->{zip} %> <% $bill_addr->{city} %>
+			<% $bill_addr->{country} %>-<% $bill_addr->{zip} %> <% $bill_addr->{city} %>
 		</p>
 		<hr />
 		<h3 class="font-bold">Lieferadresse</h3>
@@ -71,7 +61,7 @@ X -- zip = 8001
 			<% $dlvr_addr->{gender} == 2 ? 'Frau' : 'Herr' %>
 			<% $dlvr_addr->{firstname} %> <% $dlvr_addr->{lastname} %><br>
 			<% $dlvr_addr->{street} %><br>
-			<% $dlvr_addr->{zip} %> <% $dlvr_addr->{city} %><br>
+			<% $dlvr_addr->{country} %>-<% $dlvr_addr->{zip} %> <% $dlvr_addr->{city} %><br>
 			<% $dlvr_addr->{phone} %>
 		</p>
 
