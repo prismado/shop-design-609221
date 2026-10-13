@@ -21,10 +21,38 @@
 
 	<div>
 		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Benutzername</label>
-		<p><input type="text" name="uname" value="tbd"></p>
+		<p>Benutzername: <input type="text" name="uname" value="<% $uinf->{uname} %>"></p>
+		<p>E-Mail: <input type="text" name="uname" value="<% $uinf->{email} %>"></p>
 		<p>
 %			foreach (sort keys %$uinf) {
-				XX <% $_ %> = <% $uinf->{$_} %><br>
+				X -- <% $_ %> = <% $uinf->{$_} %><br>
+%			}
+		</p>
+<%doc>
+XX 2fa_enabled = 0
+XX 2fa_secret_enc =
+XX _addr_exists = 1
+XX city = Zürich
+XX company = ACMEY-HEYiiii GmbH
+XX dept_d = 13-DRZN
+XX email = admin.local@eshop.pub
+XX firstname = Vor
+XX gender = 1
+XX is_admin = 1
+XX last_mod = 2026-09-26 18:22:30
+XX lastname = Nach
+XX perm_is_csp = 1
+XX perm_is_ssg = 1
+XX phone =
+XX profile_pic = profile_pic_1_ad.jpg
+XX status = 2
+XX street = Moussonstrasse 8
+XX zip = 8044
+</%doc>
+		<p>
+%			foreach (sort keys %$uinf) {
+%				next unless /^perm_is_(.+)/;
+				Perm: <% $1 %><br>
 %			}
 		</p>
 	</div>
