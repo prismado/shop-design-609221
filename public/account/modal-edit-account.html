@@ -9,7 +9,8 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
-	my $uinf = $A->get_user_info();
+	# XX my $uinf = $A->get_user_info();
+	my $uinf = $C->get_user_info($perm->{uid});
 
 	my $cgi = $C->{CGI};
 </%init>
@@ -19,8 +20,13 @@
 	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1">Konto</p>
 
 	<div>
-		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Anrede</label>
-		<p>tbd</p>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Benutzername</label>
+		<p><input type="text" name="uname" value="tbd"></p>
+		<p>
+%			foreach (sort keys %$uinf) {
+				XX <% $_ %> = <% $uinf->{$_} %><br>
+%			}
+		</p>
 	</div>
 
 	<div class="grid grid-cols-2 gap-3">
