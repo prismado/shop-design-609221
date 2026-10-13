@@ -9,6 +9,9 @@
 	my $C    = $args{C};
 	my $A    = $args{A};
 
+	my $bill_addr = $A->get_address_by_id($perm->{uid}, 1);
+	my $dlvr_addr = $A->get_address_by_id($perm->{uid}, 2);
+
 	my $sth = $C->{dbh}->prepare(qq~
 		select	SUBSTR(xkey, 15, 10), xval
 		from	users_details
@@ -37,7 +40,10 @@
 		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 
 %		foreach (sort keys %$uinf) {
-			XX <% $_ %> = <% $uinf->{$_} %><br>
+			X -- <b><% $_ %></b> = <% $uinf->{$_} %><br>
+%		}
+%		foreach (sort keys %$bill_addr) {
+			XX <% $_ %> = <% $bill_addr->{$_} %><br>
 %		}
 
 		<p class="text-sm mb-6 text-gray-600 leading-relaxed">
