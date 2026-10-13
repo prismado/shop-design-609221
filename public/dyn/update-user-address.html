@@ -13,11 +13,12 @@
 	my $cgi = $C->{CGI};
 
 	my $addr_type_id   = $cgi->param('addr_type_id') + 0;
-	   $addr_type_id ||= 1;
 
-	my $msg = "Updated UID $perm->{uid}";
+	my $rc_upd = 0;
+	my $msg    = '';
 
-	my $rc_upd = $A->set_address_by_id(
+	if ($perm->{uid} > 0 && $addr_type_id > 0) {
+		$rc_upd = $A->set_address_by_id(
 		$perm->{uid}, $addr_type_id,
 		{
 			gender    => $cgi->param('gender'),
@@ -30,11 +31,13 @@
 			country   => $cgi->param('country'),
 			phone     => $cgi->param('phone')
 		}
-	) if $perm->{uid} > 0;
+		);
 
-	unless ($perm->{uid} > 0) {
+		$msg = $rc_upd ? 'Error E610131' : "Updated UID $perm->{uid}";
+	}
+	else {
 		$rc_upd = 10;
-		$msg    = 'Not logged in.';
+		$msg    = 'Not logged in or no address type id.';
 	}
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
@@ -42,5 +45,5 @@
 </%init>
 {
   "rc": <% $rc_upd %>,
-  "message": "<% $msg %> um <% $C->now(12) %>"
+  "message": "<% $msg %>"
 }
