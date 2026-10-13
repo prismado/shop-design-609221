@@ -25,26 +25,13 @@
 		<p>E-Mail: <input type="text" name="uname" value="<% $uinf->{email} %>"></p>
 		<p>Admin: <input type="text" name="uname" value="<% $uinf->{'is_admin'} %>"></p>
 		<p>2FA: <input type="text" name="uname" value="<% $uinf->{'2fa_enabled'} %>"></p>
-		<p>
-%			foreach (sort keys %$uinf) {
-% # XXX				X -- <% $_ %> = <% $uinf->{$_} %><br>
-%			}
-		</p>
+		<p>Letzte Änderung: <% $uinf->{'last_mod'} %></p>
+% # XXX		<p> </p>
 <%doc>
-XX city = Zürich
-XX company = ACMEY-HEYiiii GmbH
 XX firstname = Vor
-XX gender = 1
-XX is_admin = 1
-XX last_mod = 2026-09-26 18:22:30
-XX lastname = Nach
-XX perm_is_csp = 1
-XX perm_is_ssg = 1
 XX phone =
 XX profile_pic = profile_pic_1_ad.jpg
 XX status = 2
-XX street = Moussonstrasse 8
-XX zip = 8044
 </%doc>
 		<p>
 %			foreach (sort keys %$uinf) {
