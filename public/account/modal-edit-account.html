@@ -23,13 +23,10 @@
 		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Benutzername</label>
 		<p>Benutzername: <input type="text" name="uname" value="<% $uinf->{uname} %>"></p>
 		<p>E-Mail: <input type="text" name="uname" value="<% $uinf->{email} %>"></p>
-		<p>Admin: <input type="text" name="uname" value="<% $uinf->{'is_admin'} %>"></p>
-		<p>2FA: <input type="text" name="uname" value="<% $uinf->{'2fa_enabled'} %>"></p>
+		<p>Administrator: <% $uinf->{'is_admin'} ? 'Ja' : 'Nein' %></p>
+		<p>2FA aktiv: <% $uinf->{'2fa_enabled'} %></p>
 		<p>Letzte Änderung: <% $uinf->{'last_mod'} %></p>
-% # XXX		<p> </p>
 <%doc>
-XX firstname = Vor
-XX phone =
 XX profile_pic = profile_pic_1_ad.jpg
 XX status = 2
 </%doc>
