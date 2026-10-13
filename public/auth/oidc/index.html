@@ -3,13 +3,14 @@
 
 	my $C = ScreenPoint::Core->new($r, $m);
 
-	# ----- Created: 22Dec2025 ----- #
+	# ----- auth/oidc / Created: 22Dec2025 ----- #
 
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
 
-	my $client_id     = $C->get_safe_property('sso_ms_client_id', 'sys');
+	# XX my $client_id= $C->get_safe_property('sso_ms_client_id', 'sys');
+	my $client_id     = $C->{CONFIG}->{sso_entra_client_id};
 	my $response_type = 'code';
 	my $scope         = $C->uri_esc('openid profile');
 	my $proto         = $C->{CONFIG}->{HTTP_HOST} eq 'localhost' ? 'http' : 'https';
