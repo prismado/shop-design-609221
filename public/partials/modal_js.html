@@ -11,6 +11,13 @@ function openModal(id) {
 
 	modal.classList.remove('hidden');
 	modal.classList.add('flex');
+
+	// Erzwungener Reflow: Ohne diesen Zwischenschritt rendert der Browser den
+	// "opacity-0"-Ausgangszustand teils gar nie und bündelt ihn mit dem nächsten
+	// Klassenwechsel ins selbe Frame — die Transition wird dann übersprungen
+	// (bei kurzer Dauer kaum bemerkbar, bei 750ms sehr auffällig als "Sofort-Snap").
+	void modal.offsetWidth;
+
 	requestAnimationFrame(function () {
 		modal.classList.remove('opacity-0');
 		if (panel) panel.classList.remove('scale-95', 'opacity-0');
