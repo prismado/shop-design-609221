@@ -3,13 +3,12 @@
 	use ScreenPoint::Core;
 	use ScreenPoint::Auctionline;
 
-	# ---------- Stub
+	# ---------- /account/modal-edit-account
 
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
-	# XX my $uinf = $A->get_user_info();
 	my $uinf = $C->get_user_info($perm->{uid});
 
 	my $cgi = $C->{CGI};
