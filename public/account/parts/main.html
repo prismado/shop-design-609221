@@ -37,7 +37,7 @@
 
 	<!-- Beschreibung / Merkliste -->
 	<div class="mt-8">
-		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
+		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Benutzerinformation</h2>
 
 		<p>
 			<% $uinf->{firstname} %> <% $uinf->{lastname} %> <% $uinf->{company} %><br>
@@ -46,7 +46,7 @@
 			Telefon: <% $uinf->{phone} %><br>
 		</p>
 
-		<h3 class="font-bold">Rechnungsanschrift</h3>
+		<h3 class="mt-4 font-bold">Rechnungsanschrift</h3>
 		<p>
 			<% $bill_addr->{company} %> <% $bill_addr->{company} ? '<br>' : '' %>
 			<% $bill_addr->{gender} == 2 ? 'Frau' : 'Herr' %>
@@ -55,7 +55,7 @@
 			<% $bill_addr->{country} %>-<% $bill_addr->{zip} %> <% $bill_addr->{city} %>
 		</p>
 		<hr />
-		<h3 class="font-bold">Lieferadresse</h3>
+		<h3 class="mt-4 font-bold">Lieferadresse</h3>
 		<p>
 			<% $dlvr_addr->{company} %> <% $dlvr_addr->{company} ? '<br>' : '' %>
 			<% $dlvr_addr->{gender} == 2 ? 'Frau' : 'Herr' %>
