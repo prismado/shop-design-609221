@@ -12,8 +12,14 @@
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
+
+	my $type    = $cgi->param('type') eq 'delivery' ? 'delivery' : 'bill';
+	my $addr_id = $type eq 'delivery' ? 2 : 1;
+
+	my $addr  = $A->get_address_by_id($perm->{uid}, $addr_id);
+	my $title = $type eq 'delivery' ? 'Lieferadresse' : 'Rechnungsanschrift';
+	my $phone = $type eq 'delivery' ? $addr->{phone} : $uinf->{phone};
 </%init>
-XX construction
 <%doc>
 	Die Namen für die Eingabefelder, um sie hier zu rendern,
 	kannst du aus account/parts/main.html entnehmen:
@@ -21,3 +27,106 @@ XX construction
 
 	Als CGI-Feldnamen bitte den identischen Variablennamen verwenden.
 </%doc>
+
+<form method="post" action="/account" class="space-y-4">
+
+	<input type="hidden" name="type" value="<% $type %>">
+
+	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1"><% $title %></p>
+
+	<div>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Anrede</label>
+		<select id="edit-address-gender" name="gender"
+			class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+				focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+			<option value="1" <% $addr->{gender} == 2 ? '' : 'selected' %>>Herr</option>
+			<option value="2" <% $addr->{gender} == 2 ? 'selected' : '' %>>Frau</option>
+		</select>
+	</div>
+
+	<div class="grid grid-cols-2 gap-3">
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-firstname">Vorname</label>
+			<input id="edit-address-firstname" name="firstname" type="text" required
+				value="<% $addr->{firstname} %>"
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-lastname">Nachname</label>
+			<input id="edit-address-lastname" name="lastname" type="text" required
+				value="<% $addr->{lastname} %>"
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+	</div>
+
+	<div>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-company">
+			Firma <span class="text-gray-400 font-normal">(optional)</span>
+		</label>
+		<input id="edit-address-company" name="company" type="text"
+			value="<% $addr->{company} %>"
+			class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+				focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+	</div>
+
+	<div>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-street">Strasse, Nr.</label>
+		<input id="edit-address-street" name="street" type="text" required
+			value="<% $addr->{street} %>"
+			class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+				focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+	</div>
+
+	<div class="grid grid-cols-3 gap-3">
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-zip">PLZ</label>
+			<input id="edit-address-zip" name="zip" type="text" required
+				value="<% $addr->{zip} %>"
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+		<div class="col-span-2">
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-city">Ort</label>
+			<input id="edit-address-city" name="city" type="text" required
+				value="<% $addr->{city} %>"
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+	</div>
+
+	<div class="grid grid-cols-2 gap-3">
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-country">Land</label>
+			<select id="edit-address-country" name="country"
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+				<option value="CH" <% $addr->{country} eq 'LI' ? '' : 'selected' %>>Schweiz</option>
+				<option value="LI" <% $addr->{country} eq 'LI' ? 'selected' : '' %>>Liechtenstein</option>
+			</select>
+		</div>
+		<div>
+			<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-phone">Telefon</label>
+			<input id="edit-address-phone" name="phone" type="tel"
+				value="<% $phone %>"
+				class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+					focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+		</div>
+	</div>
+
+	<div class="flex justify-end gap-3 pt-2">
+		<button type="button" onclick="closeModal('edit-address')"
+			class="inline-flex items-center justify-center border border-gray-300 hover:border-gray-400
+				hover:bg-gray-50 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-full
+				transition-colors">
+			Abbrechen
+		</button>
+		<button type="submit"
+			class="inline-flex items-center justify-center bg-[#1c1512] hover:bg-red-600 text-white
+				text-sm font-semibold px-6 py-2.5 rounded-full shadow transition-colors">
+			Speichern
+		</button>
+	</div>
+
+</form>

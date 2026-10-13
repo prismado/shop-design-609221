@@ -32,3 +32,21 @@ function removeFromWishlist(el, prodId) {
 			showToast(false, 'Artikel konnte nicht entfernt werden.');
 		});
 }
+
+// Adress-Bearbeiten-Modal (Rechnungsanschrift / Lieferadresse, account/parts/main.html) — Inhalt
+// hängt davon ab, welcher Stift-Button geklickt wurde, daher wird das Formular erst bei Bedarf
+// per Fetch von account/modal-edit-address.html nachgeladen statt serverseitig fix vorgerendert.
+function openEditAddressModal(type) {
+	var body = document.getElementById('modal-body-edit-address');
+	if (!body) return;
+
+	body.innerHTML = '<p class="text-sm text-gray-400">Lädt…</p>';
+	openModal('edit-address');
+
+	fetch('/account/modal-edit-address.html?type=' + encodeURIComponent(type))
+		.then(function (res) { return res.text(); })
+		.then(function (html) { body.innerHTML = html; })
+		.catch(function () {
+			body.innerHTML = '<p class="text-sm text-red-600">Formular konnte nicht geladen werden.</p>';
+		});
+}
