@@ -58,7 +58,8 @@ X -- zip = 8001
 </%doc>
 		<h3 class="font-bold">Rechnungsanschrift</h3>
 		<p>
-			<% $bill_addr->{company} %>
+			<% $bill_addr->{company} %> <% $bill_addr->{company} ? '<br>' : '' %>
+			<% $bill_addr->{gender} == 2 ? 'Frau' : 'Herr' %>
 			<% $bill_addr->{firstname} %> <% $bill_addr->{lastname} %><br>
 			<% $bill_addr->{street} %><br>
 			<% $bill_addr->{zip} %> <% $bill_addr->{city} %>
