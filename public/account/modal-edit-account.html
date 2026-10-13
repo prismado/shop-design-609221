@@ -25,10 +25,10 @@
 		<p>E-Mail: <input type="text" name="uname" value="<% $uinf->{email} %>"></p>
 		<p>Administrator: <% $uinf->{'is_admin'} ? 'Ja' : 'Nein' %></p>
 		<p>2FA aktiv: <% $uinf->{'2fa_enabled'} %></p>
-		<p>Letzte Änderung: <% $uinf->{'last_mod'} %></p>
+		<p>Status-Code: <% $uinf->{status} %></p>
+		<p>Letzte Änderung: <% $C->trans_date_short($uinf->{'last_mod'}) %></p>
 <%doc>
 XX profile_pic = profile_pic_1_ad.jpg
-XX status = 2
 </%doc>
 		<p>
 %			foreach (sort keys %$uinf) {
