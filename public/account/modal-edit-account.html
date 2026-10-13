@@ -12,35 +12,59 @@
 	my $uinf = $C->get_user_info($perm->{uid});
 
 	my $cgi = $C->{CGI};
+
+	my @perms = sort map { /^perm_is_(.+)/ ? uc($1) : () } keys %$uinf;
 </%init>
-
-<form onsubmit="event.preventDefault(); saveAccount(this);" class="space-y-4">
-
-	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1">Konto</p>
-
-	<div>
-		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-address-gender">Benutzername</label>
-		<p><input type="text" name="uname" value="<% $uinf->{uname} %>"></p>
-
-		<p class="mt-3">E-Mail: <input type="text" name="email" value="<% $uinf->{email} %>"></p>
-
-		<hr />
-		<p>Administrator: <% $uinf->{'is_admin'} ? 'Ja' : 'Nein' %></p>
-		<p>2FA aktiv: <% $uinf->{'2fa_enabled'} %></p>
-		<p>Status-Code: <% $uinf->{status} %></p>
-		<p>Letzte Änderung: <% $C->trans_date_short($uinf->{'last_mod'}) %></p>
 <%doc>
 XX profile_pic = profile_pic_1_ad.jpg
 </%doc>
-		<p class="mt-4">
-%			foreach (sort keys %$uinf) {
-%				next unless /^perm_is_(.+)/;
-				Berechtigung: <% uc $1 %><br>
-%			}
-		</p>
+
+<form onsubmit="event.preventDefault(); saveAccount(this);" class="space-y-5">
+
+	<p class="text-xs font-bold uppercase tracking-wider text-gray-400 -mt-1 mb-1">Zugangsdaten</p>
+
+	<div>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-account-uname">Benutzername</label>
+		<input id="edit-account-uname" name="uname" type="text" required
+			value="<% $uinf->{uname} %>"
+			class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+				focus:outline-none focus:ring-2 focus:ring-red-500 transition">
 	</div>
 
-	<div class="grid grid-cols-2 gap-3">
+	<div>
+		<label class="block text-sm font-medium text-gray-700 mb-1" for="edit-account-email">E-Mail</label>
+		<input id="edit-account-email" name="email" type="email" required
+			value="<% $uinf->{email} %>"
+			class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+				focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+	</div>
+
+	<div class="bg-gray-50 rounded-xl p-4">
+		<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Kontoinformationen</p>
+
+		<dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+			<dt class="text-gray-400">Administrator</dt>
+			<dd class="text-gray-700 font-medium"><% $uinf->{is_admin} ? 'Ja' : 'Nein' %></dd>
+
+			<dt class="text-gray-400">2FA aktiv</dt>
+			<dd class="text-gray-700 font-medium"><% $uinf->{'2fa_enabled'} ? 'Ja' : 'Nein' %></dd>
+
+			<dt class="text-gray-400">Status-Code</dt>
+			<dd class="text-gray-700 font-medium"><% $uinf->{status} %></dd>
+
+			<dt class="text-gray-400">Letzte Änderung</dt>
+			<dd class="text-gray-700 font-medium"><% $C->trans_date_short($uinf->{'last_mod'}) %></dd>
+		</dl>
+
+%		if (@perms) {
+			<p class="text-xs text-gray-400 mt-3 mb-1.5">Berechtigungen</p>
+			<div class="flex flex-wrap gap-1.5">
+%			foreach my $p (@perms) {
+				<span class="inline-flex items-center bg-white border border-gray-200 text-gray-700
+					text-xs font-medium px-2.5 py-1 rounded-full"><% $p %></span>
+%			}
+			</div>
+%		}
 	</div>
 
 	<div class="flex justify-end gap-3 pt-2">
