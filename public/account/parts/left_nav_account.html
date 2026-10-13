@@ -11,7 +11,7 @@
 	my ($categ_ids, $label) = $A->get_categ_nav($lang);
 
 	my $title = $C->{CONFIG}->{site_title};
-	my $daily_title = 'Tagesangebote am Dienstag';
+	# XXX my $daily_title = 'Tagesangebote am Dienstag';
 
 	# -- Nur aktiv, solange keine Kategorie ausgewählt ist
 	my $daily_active_cls = $cur_cat_id
@@ -28,11 +28,9 @@
 
 	<a href="#" class="flex-shrink-0 whitespace-nowrap <% $daily_active_cls %> lg:bg-transparent
 		text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none lg:px-3
-		lg:border-l-2 transition-colors"><% $daily_title %></a>
+		lg:border-l-2 transition-colors">Übersicht</a>
 
-%	my %memo = ();
-%	# XXX foreach my $cat_id (@{$categ_ids}) {
-%	# XXX }
+%	# XXX my %memo = ();
 
 % #	============================================ PRO-Zone ============================================
 	<a href="/prozone.html" ZZdata-cat-id="9913"
