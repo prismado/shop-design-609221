@@ -12,13 +12,13 @@
 
 	my $cgi = $C->{CGI};
 
-	my $id  = $cgi->param('id') + 0;
+	my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+	   $addr_type_id ||= 1;
 
-	# XX my $rc  = 0;
 	my $msg = "Updated UID $perm->{uid}";
 
 	my $rc_upd = $A->set_address_by_id(
-		$perm->{uid}, 1,
+		$perm->{uid}, $addr_type_id,
 		{
 			gender    => $cgi->param('gender'),
 			firstname => $cgi->param('firstname'),
