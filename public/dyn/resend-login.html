@@ -19,10 +19,9 @@
 	my $msg = 'XX constr';
 
 	foreach ($cgi->all_parameters) {
-		$C->log(msg => "XX $_ = " . $cgi->param($_), importance => 1);
+		$C->log(msg => "$_ = " . $cgi->param($_), service => 'dyn/resend-login', importance => 1);
 	}
 
-	# XXX my $id = $cgi->param('id') + 0;
 	# my $sid = $C->getSID();
 
 	my $sth = $C->{dbh}->prepare("select uname from users where email = ? OR uname = ? order by id limit 1");
