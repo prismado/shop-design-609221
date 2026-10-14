@@ -42,7 +42,8 @@
 			<% $C->bootstrap_alert($license->{msg}, 'danger') %><br />
 			<% $C->get_property('content_lic_bcst', '_global') %><hr />
 %		}
-		<& _includes/adm_order.html, id=>$id, CORE=>$C, A=>$A &>
+		<& _includes/order.html, id => $id, CORE => $C, A => $A &>
+% # XXX		<& _includes/adm_order.html, id=>$id, CORE=>$C, A=>$A &>
 	</div>
 
 	<&_includes/footer2.html, C => $C&>
