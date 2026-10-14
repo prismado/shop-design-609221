@@ -16,6 +16,10 @@
 	my $rc  = 0;
 	my $msg = 'XX constr';
 
+	foreach ($cgi->all_parameters) {
+		$C->log(msg => "XX $_ = " . $cgi->param($_), importance => 1);
+	}
+
 	my $id = $cgi->param('id') + 0;
 	# my $sid = $C->getSID();
 
