@@ -21,6 +21,11 @@
 	   $sth->execute();
 </%init>
 
+<style>
+	.row_small { color: red; }
+	.td_410051 { color: green; }
+</style>
+
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
 		<div>
@@ -41,8 +46,7 @@
 						XX <% $_ %><br>
 %					}
 %					while(my $r = $sth->fetch()) {
-%						my $key = $r->[0];
-% # XXX						<% $key %><br>
+%						# XXX my $key = $r->[0];
 %					}
 				</p>
 				<table>
