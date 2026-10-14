@@ -20,9 +20,81 @@
 </%init>
 
 <style>
-	.row_small { color: red; }
-	.td_410051 { color: green; }
-	.hidden-xs { color: maroon; }
+	/* Die Bestelltabelle wird fix-fertig inkl. Inline-Styles von get_order_statement_incl_vat
+	   (Perl) geliefert — die Zeilen/Zellen selbst können hier nicht angepasst werden. Daher
+	   gezielte Überschreibung via !important auf den vom Modul mitgelieferten Hooks
+	   (row_small, td_410051, hidden-xs) sowie stabilen style-/Struktur-Signaturen. */
+
+	.order-table { border-collapse: collapse; }
+
+	.order-table thead tr {
+		background-color: #fafafa !important;
+		border-bottom: 1px solid #e5e7eb;
+	}
+	.order-table thead td {
+		padding: 10px 12px !important;
+		color: #9ca3af !important;
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.order-table tbody tr.row_small {
+		color: #374151 !important;
+		border-bottom: 1px solid #f3f4f6;
+	}
+	.order-table tbody td { padding: 14px 12px !important; }
+
+	/* Pos-Spalte: dezent grau, auf Smartphones ausgeblendet (zu schmal für 7 Spalten) */
+	.order-table td.hidden-xs { color: #d1d5db !important; font-size: 0.8rem; }
+	@media (max-width: 640px) {
+		.order-table .hidden-xs { display: none !important; }
+	}
+
+	/* Produktname + Zustands-Badge (z. B. "A-Zustand") */
+	.order-table td.td_410051 b { color: #1c1512 !important; }
+	.order-table td.td_410051 span {
+		display: inline-block;
+		margin-top: 4px;
+		color: #15803d !important;
+		background-color: #f0fdf4;
+		border-radius: 9999px;
+		padding: 2px 9px;
+		font-size: 0.72rem !important;
+		font-weight: 600;
+	}
+
+	/* Rabatt-Badge (z. B. "10 %") — eindeutig per exaktem Inline-Style-Match adressierbar,
+	   ohne die gleichfarbige Pos-Spalte (hat zusätzlich class="hidden-xs") zu treffen */
+	.order-table td[style="color:#b1b1b1"]:not(.hidden-xs) small {
+		color: #9ca3af !important;
+		background-color: #f3f4f6;
+		border-radius: 9999px;
+		padding: 2px 8px;
+		font-size: 0.7rem !important;
+	}
+
+	/* Versandzeile etwas zurückhaltender als die Produktzeile */
+	.order-table tbody tr.row_small td:nth-child(2):not(.td_410051) { color: #6b7280 !important; }
+
+	/* Zeilen-Gesamtpreis (letzte Spalte) hervorheben */
+	.order-table tbody tr.row_small td:last-child { font-weight: 600; color: #1c1512 !important; }
+
+	/* Total-Zeile */
+	.order-table tr[style*="height:40px"] {
+		background-color: #fafafa !important;
+		border-top: 2px solid #1c1512;
+	}
+	.order-table tr[style*="height:40px"] td {
+		padding: 14px 12px !important;
+		color: #1c1512 !important;
+		font-size: 1rem;
+	}
+	.order-table tr[style*="height:40px"] td[style*="underline"] { text-decoration: none !important; }
+
+	/* MwSt.-Zeile (letzte Zeile, ohne eigenen Klassen-Hook) */
+	.order-table tbody tr:last-child td { padding: 8px 12px !important; color: #9ca3af !important; }
 </style>
 
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
@@ -45,9 +117,13 @@
 						XX <% $_ %><br>
 %					}
 				</p>
-				<table style="border: 3px orange solid;">
-				<% ${$order_stmt->{out}} %>
-				</table>
+				<div class="mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden">
+					<div class="overflow-x-auto">
+						<table class="order-table w-full min-w-[640px]">
+						<% ${$order_stmt->{out}} %>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 
