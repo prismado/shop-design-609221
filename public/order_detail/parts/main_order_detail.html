@@ -3,12 +3,16 @@
 
 	my %args = $m->caller_args(0);
 
+	my $order_id = $args{order_id};
 	my $perm = $args{perm};
 	my $msgs = $args{msgs};
 	my $C    = $args{C};
+	my $A    = $args{A};
 
 	my $SID = $C->getSID();
-	my $order_id = $C->getSessData('order_id') + 0;
+	# XXX my $order_id = $C->getSessData('order_id') + 0;
+
+	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
 	my $cgi = $C->{CGI};
 
@@ -41,6 +45,9 @@
 % # XXX						<% $key %><br>
 %					}
 				</p>
+				<table>
+				<% ${$order_stmt->{out}} %>
+				</table>
 			</div>
 		</div>
 
