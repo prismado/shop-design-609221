@@ -36,6 +36,8 @@
 			"select id, TIMESTAMPDIFF(MINUTE, instime, NOW()) from orders where sid=$SID ORDER BY 1 DESC LIMIT 1")};
 		push(@msgs, "Eine Bestellbest&auml;tigung per E-Mail ist unterwegs zu Ihnen");
 	}
+
+	$m->redirect('/') unless $order_id;
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
