@@ -16,7 +16,7 @@
 		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
 </%init>
   <!-- Navigation (links, ca. 15%) -->
-  <aside class="mb-8 lg:mb-0 lg:sticky lg:self-start" style="top: var(--header-h, 0px)">
+  <aside class="relative z-10 mb-8 lg:mb-0 lg:sticky lg:self-start" style="top: var(--header-h, 0px)">
 
     <h2 class="hidden lg:block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Benutzerkonto</h2>
 
@@ -47,7 +47,8 @@
 		<div class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-[220px]
 				-translate-x-1/2 rounded-lg bg-[#1c1512] px-3 py-2 text-center text-xs text-white
 				leading-relaxed opacity-0 invisible shadow-lg transition duration-200
-				group-hover:opacity-100 group-hover:visible">
+				group-hover:opacity-100 group-hover:visible
+				lg:left-full lg:top-1/2 lg:mt-0 lg:ml-3 lg:translate-x-0 lg:-translate-y-1/2 lg:text-left">
 			Passwort ändern<br>Multifaktor-Authentifizierung
 		</div>
 	</div>
@@ -65,7 +66,8 @@
 		<div class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-[260px]
 				-translate-x-1/2 rounded-lg bg-[#1c1512] px-3 py-2 text-center text-xs text-white
 				leading-relaxed opacity-0 invisible shadow-lg transition duration-200
-				group-hover:opacity-100 group-hover:visible">
+				group-hover:opacity-100 group-hover:visible
+				lg:left-full lg:top-1/2 lg:mt-0 lg:ml-3 lg:translate-x-0 lg:-translate-y-1/2 lg:text-left">
 			Bereich für Firmenkunden<br>
 			Wenden Sie sich bitte an Ihren IT-Verantwortlichen oder nehmen Sie mit uns Kontakt auf.
 		</div>
