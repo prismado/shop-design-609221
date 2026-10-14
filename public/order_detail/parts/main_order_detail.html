@@ -97,13 +97,16 @@
 	.order-table tbody tr:last-child td { padding: 8px 12px !important; color: #9ca3af !important; }
 </style>
 
-	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+	<div>
 
-		<div>
-			<img src="https://placehold.co/400x80/d8d8d8/a8a8a8?text=Kein%0ABild"  loading="lazy"
-				class="w-full rounded-2xl object-cover border border-gray-200 bg-white">
+		<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Erfolg</p>
+		<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Danke für Ihre Bestellung.</h1>
 
-			<div class="mt-6">
+		<div class="flex flex-col sm:flex-row gap-6">
+			<img src="https://placehold.co/160x160/d8d8d8/a8a8a8?text=Kein%0ABild" loading="lazy"
+				class="w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0 rounded-2xl object-cover border border-gray-200 bg-white">
+
+			<div class="min-w-0">
 				<h2 class="text-lg font-bold">Bestellung Nr. <% $order_id %></h2>
 				<h3 class="text-sm mt-4 font-bold uppercase tracking-wider text-gray-400 mb-3">
 					Kundennummer <% $perm->{uid} %>
@@ -117,19 +120,15 @@
 						XX <% $_ %><br>
 %					}
 				</p>
-				<div class="mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden">
-					<div class="overflow-x-auto">
-						<table class="order-table w-full min-w-[640px]">
-						<% ${$order_stmt->{out}} %>
-						</table>
-					</div>
-				</div>
 			</div>
 		</div>
 
-		<div>
-			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Erfolg</p>
-			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Danke für Ihre Bestellung.</h1>
+		<div class="mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden">
+			<div class="overflow-x-auto">
+				<table class="order-table w-full">
+				<% ${$order_stmt->{out}} %>
+				</table>
+			</div>
 		</div>
 
 	</div>
