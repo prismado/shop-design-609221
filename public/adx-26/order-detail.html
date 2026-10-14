@@ -1,0 +1,59 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+	my $perm = $C->get_user_perm();
+
+	my $id    = $cgi->param('id') + 0;
+	my $debug = $cgi->param('debug');
+
+	# my $lang = $C->getSessData('_current_lang') || 'de';
+
+	unless ($C->is_admin()) {
+		$C->redir('/account.html');
+	}
+
+	my $mason = $C->exec(
+		comp_file => 'confirm_merchant_inc.html',
+		dir       => 'mail_templates',
+		order_id  => $id,
+		A         => $A
+	);
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Order ID <%$id%> (Admin<%$debug ? ' debug' : ''%>) &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<& _includes/adm_navbar.html, C=>$C, UID=>$perm->{uid} &>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, C=>$C, license=>$license &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+	<&_includes/adm_order_detail.html, mason=>$mason, CORE=>$C, A=>$A, perm=>$perm, debug=>$debug&>
+	<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	Algo-23
+	__METACLONING__
+</%doc>
