@@ -1,0 +1,56 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+	my $perm = $C->get_user_perm();
+
+	my $license = $C->get_license();
+
+	my $id = $C->{CGI}->param('id') + 0;
+	my $cust_email = $C->query("SELECT email FROM vorders WHERE id=$id")->[0];
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>O-Detail Cust (Adm) &middot; <% $C->{CONFIG}->{HTTP_HOST} %></title>
+<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+
+<div class="main-content">
+	<& _includes/adm_order_detail_cust.html, cust_email=>$cust_email, perm=>$perm, CORE=>$C, A=>$A, debug=>$cgi->param('debug') &>
+</div>
+
+<&_includes/footer2.html, C => $C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	Algo-23
+
+	__METACLONING__
+</%doc>
