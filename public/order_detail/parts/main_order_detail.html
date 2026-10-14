@@ -6,6 +6,8 @@
 	my $perm = $args{perm};
 	my $C    = $args{C};
 
+	my $SID = $C->getSID();
+
 	my $cgi = $C->{CGI};
 </%init>
 
@@ -19,7 +21,7 @@
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">
 					Kundennummer <% $perm->{uid} %>
 				</h2>
-				<p class="text-sm text-gray-600 leading-relaxed">&ndash;</p>
+				<p class="text-sm text-gray-600 leading-relaxed">SID <% $SID %></p>
 				<p>
 %					foreach ($cgi->all_parameters) {
 						XX <% $_ %><br>
