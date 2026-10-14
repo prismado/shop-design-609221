@@ -9,6 +9,8 @@
 	my $perm = $C->get_user_perm();
 	my $uinf = $A->get_user_info();
 
+	$C->redir('/signin.html') unless $perm->{uid} > 0;
+
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
