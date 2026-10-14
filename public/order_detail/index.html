@@ -7,10 +7,35 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
+	my $SID  = $C->getSID();
 
 	my $cgi = $C->{CGI};
 
-	my $debug = $cgi->param('debug');
+	my $order_id = $cgi->param('id') + 0; # -- Optional. Latest Order-ID from session will be used if empty
+	my $debug    = $cgi->param('debug');
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my @msgs = ();
+
+	my $age_min = my $rating_asked = 0;
+
+	if ($order_id) {
+		# -- The order ID was passed via explicit parameter
+		unless ($perm->{is_admin}) {
+			my $uid_from_order = $C->query("select uid from orders where id=$order_id")->[0];
+			my $UID            = $C->getUID();
+			if ($uid_from_order != $UID) {
+				push(@msgs, "Error: Belongs to UID $uid_from_order / $uid_from_order vs $UID (you)");
+				$order_id = 0;
+			}
+		}
+		$age_min = $C->query("select TIMESTAMPDIFF(MINUTE, instime, NOW()) from orders where id=$order_id")->[0];
+	}
+	else {
+		($order_id, $age_min) = @{$C->query(
+			"select id, TIMESTAMPDIFF(MINUTE, instime, NOW()) from orders where sid=$SID ORDER BY 1 DESC LIMIT 1")};
+		push(@msgs, "Eine Bestellbest&auml;tigung per E-Mail ist unterwegs zu Ihnen");
+	}
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -42,7 +67,7 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main_order_detail.html, perm => $perm, A => $A, C => $C &>
+		<& parts/main_order_detail.html, perm => $perm, msgs => \@msgs, A => $A, C => $C &>
 	</section>
 
 % # XX	<& partials/daily_offer.html, A => $A, C => $C &>
