@@ -15,8 +15,8 @@
 
 	my $user = $cgi->param('user');
 
-	my $rc  = 0;
-	my $msg = 'XX constr';
+	# XXX my $rc  = 0;
+	my $msg = '';
 
 	foreach ($cgi->all_parameters) {
 		$C->log(msg => "$_ = " . $cgi->param($_), service => 'dyn/resend-login', importance => 1);
@@ -30,12 +30,16 @@
 
 	my $res_link = $A->generate_user_reset_link(uname => $uname);
 
-	my $res = $A->mail_password_request(uname => $user, lang => 'de', url => $res_link->{url});
+	my $res = $A->mail_password_request(
+		uname => $user, lang => $lang, url => $res_link->{url}
+	);
+
+	$msg = 'Error 610141' if $res->{rc};
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
-  "rc": <% $rc %>,
+  "rc": <% $res->{rc} %>,
   "message": "<% $msg %>"
 }
