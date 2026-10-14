@@ -1,0 +1,1 @@
+../custom/algonetic/mail_templates/confirm_cust_de.txt

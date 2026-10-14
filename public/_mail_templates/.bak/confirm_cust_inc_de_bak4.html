@@ -1,0 +1,140 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my %args = $m->caller_args(0); # -- In case it's called by a web function
+
+	my $order_id = $C->{CGI}->param('order_id') || $args{order_id};
+	   $order_id ||= $C->query("SELECT MAX(id) FROM orders")->[0];
+
+	my $data = $A->get_order($order_id); # -- $data->{uid}
+</%init>
+%
+<& mail.css &>
+<table border="0" cellpadding="0" width="613">
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr style="background-color:#ea5c08;">
+        <td width="178"><img src="http://auctionline.pgate.net/images/logo_small.jpg" alt="Auctionline" /></td>
+        <td style="color:#FFF; font-size:13px; padding-right:10px;" width="431"><p align="right" ><strong>  Bestellung Nr.  <% $order_id %></strong></p></td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td><p><br />
+      Sehr geehrter Herr Patrick Sonderegger,<br />
+      herzlichen Dank für Ihre Bestellung bei Auctionline.ch.<br />
+      <br />
+    </p></td>
+  </tr>
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr>
+        <td class="greyback" colspan="2"><p><strong>Bestellbestätigung</strong>:<br />
+          Bestell-Zeit: <% $C->trans_date_short($data->{instime}) %><br />
+          Versand-Datum: <% $data->{delivery_date} %>
+          <br />
+          <br />
+          <strong>Ihre Referenz: <% $data->{ref} %></strong>:<br />
+
+        </td>
+      </tr>
+      <tr>
+        <td class="greyback"width="50%" valign="top"><p><strong>Abrechnungsadresse</strong><br />
+          Herr <br />
+          Patrick Sonderegger<br />
+          Segnesstrasse 1<br />
+          8048 Zürich<br />
+          Schweiz<br />
+          <br />
+          Telefon : +41 (079) 6354130<br />
+          eMail: <a href="mailto:ps0@gmx.ch">ps0@gmx.ch</a></p></td>
+        <td class="greyback" width="50%" valign="top"><p><strong>Lieferadresse</strong><br />
+          Patrick Sonderegger<br />
+          Segnesstrasse 1<br />
+          8048 Zürich<br />
+          Schweiz<br />
+          <br />
+          Telefon : +41 (079) 6354130<br />
+          eMail: <a href="mailto:ps0@gmx.ch">ps0@gmx.ch</a></p></td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td>
+    <table class="price_block" border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr>
+        <td colspan="5" valign="top">&nbsp;</td>
+        </tr>
+      <tr class="price_block_header">
+        <td width="62" height="32" valign="top"><p align="right">Anzahl</p></td>
+        <td width="94" valign="top"><p align="center">Artikelnummer  <br />
+          ID</p></td>
+        <td width="216" valign="top">Model</td>
+        <td width="131" valign="top"><p align="right">Einzelpreis mit Zubehör<br />
+          inkl. MWST CHF</p></td>
+        <td width="106" valign="top"><p align="right">Warenwert Total      <br />
+          inkl. MWST CHF</p></td>
+      </tr>
+      <tr class="price_block_row">
+        <td colspan="5" valign="top">
+        </td>
+        </tr>
+        
+ <!-- Generated Product row -->
+% foreach (@{$data->{_products}}) {
+%	my ($id, $count, $price) = split /\t/;
+%	my $d = $A->get_product($id);
+%	my $price_incl_vat = $data->{"prod_id_$id\_price_incl_vat"};
+      <tr class="price_block_row">
+        <td width="62" valign="top"><p align="right"><b><% $count %></b> x</p></td>
+        <td width="94" valign="top"><p align="right"><% $d->{art_no} %><br />ID <% $id %></p></td>
+        <td width="216" valign="top"><strong><% $d->{title} %></strong><br />
+         <% $d->{description} %></td>
+        <td width="131" valign="top"><p align="right"><% $price_incl_vat %></p></td>
+        <td width="106" valign="top"><p align="right"><% sprintf('%.2f', $count * $price_incl_vat) %></p></td>
+      </tr> 
+% }    
+      <tr class="row_small">
+        <td colspan="3" valign="top"><p><strong>Gesamtsumme inkl. 8.0 % MWST </strong></p></td>
+        <td colspan="2" valign="top"><p align="right"><% $data->{"XX total_incl_vat"} %></p></td>
+        </tr>     
+       <tr class="row_small">
+        <td colspan="3" valign="top">davon enthaltene 8.0 % MWST</td>
+        <td colspan="2" valign="top"><p align="right">0.00</p></td>
+        </tr>
+      <tr  class="row_small">
+        <td colspan="3" valign="top"><p><a href="#">Versandkosten</a> und Verpackungsmaterial inkl. MWST</p></td>
+        <td colspan="2" valign="top"><p align="right"><% $data->{"XX shipping"} %></p></td>
+        </tr>
+      <tr  class="row_small_d">
+        <td colspan="3" valign="top"><p><strong>Rechnungsbetrag</strong></p></td>
+        <td colspan="2" valign="top"><p align="right"><strong><% sprintf('%.2f', $data->{amount_incl_vat}) %></strong></p></td>
+        </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr>
+        <td><p>&nbsp;</p></td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td><table border="0" cellspacing="0" cellpadding="0" width="100%">
+      <tr>
+        <td><p>Hiermit bestätigen wir den      Erhalt Ihrer Bestellung. </p>
+<p><strong>Sie bestätigen      hiermit, die Allgemeinen Geschäfts-, Liefer- und Zahlungsbedingungen (AGB)      der Swiss Remarketing AG zur Kenntnis genommen und akzeptiert zu haben.</strong></p>
+          <p>Wir      danken Ihnen für das uns entgegengebrachte Vertrauen und nehmen Ihre      Bestellung zur Ausführung gerne entgegen.  Mit Zustellung der Ware erhalten Sie gleichzeitig die      entsprechende Originalabrechnung.</p></td>
+      </tr>
+    </table></td>
+  </tr>
+ 
+</table><br>
+
+<a href='http://<% $ENV{HTTP_HOST} %>/account.html'>http://<% $ENV{HTTP_HOST} %>/account.html</a>
+
+<& company_signature.html &>

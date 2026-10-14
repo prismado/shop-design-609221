@@ -1,0 +1,31 @@
+From: "Linsendirekt.ch" <order@linsendirekt.ch>
+Organization: Linsendirekt.ch
+X-Info: mail.pgate.net/xml-rpc
+User-Agent: Thunderbird 2.0.0.24 (Windows/20100228)
+MIME-Version: 1.0
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>mail</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body style="font-family:Helvetica,Verdana,Arial,sans-serif; font-size:12px; color:#666;">
+
+<b style="color:#3d9bd9;">Willkommen bei Linsendirekt.ch!</b><br><br>
+
+Bitte schliessen Sie Ihre Kontoer&ouml;ffnung durch Klick auf folgenden Link ab:<br><br>
+
+<!-- { {DATA}} -->
+
+http://{{HTTP_HOST}}/account.html?token={{TOKEN}}
+
+<br><br>
+
+<img src="http://{{HTTP_HOST}}/images/logo_small.jpg"><br>
+LINSENDIREKT.CH GMBH<br>
+Rigistrasse 13 | CH-5610 Wohlen AG | Schweiz<br><br>
+
+</body></html>

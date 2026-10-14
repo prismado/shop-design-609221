@@ -1,0 +1,69 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $order_id = $C->{CGI}->param('order_id');
+	   $order_id ||= $C->query("SELECT MAX(id) FROM orders")->[0];
+
+	my $data = $A->get_order($order_id); # -- $data->{uid}
+</%init>
+%
+<b>Herzlichen Dank f&uuml;r Ihre Bestellung Nr. <% $order_id %></b><br><br>
+
+Bestell-Zeit: <% $C->trans_date_short($data->{instime}) %><br><br>
+
+Liefer-Datum: <b><% $data->{delivery_date} %></b><br><br>
+
+Ihre Referenz: <% $data->{ref} %><br><br>
+
+<table cellspacing=0 cellpadding=3 border=0>
+% foreach (@{$data->{_products}}) {
+%	my ($id, $count, $price) = split /\t/;
+%	my $d = $A->get_product($id);
+%	my $price_incl_vat = $data->{"prod_id_$id\_price_incl_vat"};
+	<tr valign=top style='font-size:12px'>
+	<td nowrap><b><% $count %></b> x</td>
+	<td><b><% $d->{title} %></b><br>
+	<small><% $d->{description} %><br>
+	ID <% $id %>, Art. No. <% $d->{art_no} %></small>
+	</td>
+	<td align=right width=88><% sprintf('%.2f', $price) %> CHF</td>
+	<td align=right width=88><small><% $d->{price_incl_vat} %> CHF</small></td>
+	<td align=right width=88><% $price_incl_vat %> CHF</td>
+	<td align=right width=88><% sprintf('%.2f', $count * $price_incl_vat) %> CHF</td>
+	</td></tr>
+% }
+</table><br>
+
+<table celspacing=0 cellpadding=0 border=0 style='font-family:Verdana,Arial,Helvetica,sans-serif; font-size:11px'>
+
+<tr><td width=188></td><td width=33></td> <td></td></tr>
+
+<tr>
+<td>Versandspesen</td>
+<td>CHF</td>
+<td align=right><% $data->{"XX shipping"} %></td>
+</tr>
+
+<tr>
+<td>Total inkl. Mwst.</td>
+<td>CHF</td>
+<td align=right><% $data->{"XX total_incl_vat"} %></td>
+</tr>
+
+<tr><td colspan=3><hr noshade size=1></td></tr>
+
+<tr style='font-weight:bold'>
+<td>Total inkl. Mwst.</td>
+<td>CHF</td>
+<td align=right><% sprintf('%.2f', $data->{amount_incl_vat}) %></td>
+</tr>
+
+</table><br><br>
+
+<a href='http://<% $ENV{HTTP_HOST} %>/account.html'>http://<% $ENV{HTTP_HOST} %>/account.html</a>
+
+<& company_signature.html &>
