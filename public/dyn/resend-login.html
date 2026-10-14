@@ -13,6 +13,8 @@
 
 	my $cgi = $C->{CGI};
 
+	my $user = $cgi->param('user');
+
 	my $rc  = 0;
 	my $msg = 'XX constr';
 
@@ -20,11 +22,16 @@
 		$C->log(msg => "XX $_ = " . $cgi->param($_), importance => 1);
 	}
 
-	my $id = $cgi->param('id') + 0;
+	# XXX my $id = $cgi->param('id') + 0;
 	# my $sid = $C->getSID();
 
-	# XX my ($rc, $msg) = $A->add2basket_details(
-	# XX ) if $id;
+	my $sth = $C->{dbh}->prepare("select uname from users where email = ? OR uname = ? order by id limit 1");
+	   $sth->execute($user);
+	my ($uname) = $sth->fetchrow_array;
+
+	my $res_link = $A->generate_user_reset_link(uname => $uname);
+
+	my $res = $A->mail_password_request(uname => $user, lang => 'de', url => $res_link->{url});
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
