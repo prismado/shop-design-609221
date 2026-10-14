@@ -4,6 +4,7 @@
 	my %args = $m->caller_args(0);
 
 	my $perm = $args{perm};
+	my $msgs = $args{msgs};
 	my $C    = $args{C};
 
 	my $SID = $C->getSID();
@@ -29,6 +30,9 @@
 				</h3>
 				<p class="text-sm text-gray-600 leading-relaxed">SID <% $SID %></p>
 				<p>
+%					foreach (@$msgs) {
+						<% $_ %><br>
+%					}
 %					foreach ($cgi->all_parameters) {
 						XX <% $_ %><br>
 %					}
