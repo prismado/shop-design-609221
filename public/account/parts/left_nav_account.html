@@ -35,13 +35,22 @@
 		Ihre Bestellungen
 	</a>
 
-	<a href="#!"
-		class="bg-gray-100 text-[#1c1512] lg:border-transparent flex-shrink-0 whitespace-nowrap
-			lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-			lg:px-3 lg:border-l-2
-			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
-		Sicherheit
-	</a>
+	<div class="relative group flex-shrink-0">
+		<a href="#!"
+			class="block bg-gray-100 text-[#1c1512] lg:border-transparent whitespace-nowrap
+				lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
+				lg:px-3 lg:border-l-2
+				hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+			Sicherheit
+		</a>
+
+		<div class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-[220px]
+				-translate-x-1/2 rounded-lg bg-[#1c1512] px-3 py-2 text-center text-xs text-white
+				leading-relaxed opacity-0 invisible shadow-lg transition duration-200
+				group-hover:opacity-100 group-hover:visible">
+			Passwort ändern<br>Multifaktor-Authentifizierung
+		</div>
+	</div>
 
 % #	============================================ PRO-Zone ============================================
 	<a href="/prozone.html" ZZdata-cat-id="9913"
