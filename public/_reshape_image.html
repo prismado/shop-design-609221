@@ -1,0 +1,48 @@
+<%init>
+	use File::Copy;
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $id      =  $cgi->param('id') + 0;
+	my $in      =  $cgi->param('in');
+	my $x_size  = ($cgi->param('x_size') + 0) || 800;
+
+	(my $out = $in)      =~ s/\_orig/\_large/;
+	(my $out_thmb = $in) =~ s/\_orig/\_thmb/;
+
+	my $redir_url = $ENV{HTTP_REFERER} || "/adx/edit-product.html?id=$id";
+
+	my $res_1 = $C->reshape_image(
+		in_path  => $in,
+		out_path => $out,
+		width    => $x_size,
+		height   => $x_size
+	);
+
+	my $res_2 = $C->reshape_image(
+		in_path  => $out,
+		out_path => $out_thmb,
+		width    => $C->{CONFIG}->{default_imgsize_thmb},
+		height   => $C->{CONFIG}->{default_imgsize_thmb}
+	);
+
+	# XX $C->saveSessData('_msg', "XX Legacy: $res_1->{msg}");
+	# XXX $C->create_toast_note(body=>$res_1->{msg}, width=>'500px', delay=>9000); # -- 29Apr2024
+	$C->create_toast_note(body=>$res_1->{warn}, width=>'500px', delay=>9000, title=>'W1') if $res_1->{warn}; # -- 29Apr2024
+	$C->create_toast_note(body=>$res_2->{warn}, width=>'500px', delay=>9000, title=>'W2') if $res_2->{warn}; # -- 29Apr2024
+
+	(my $out_large = $in) =~ s/\_orig\./\_large\./;
+
+	copy "$C->{CONFIG}->{DOCUMENT_ROOT}/$out", "$C->{CONFIG}->{DOCUMENT_ROOT}/$out_large";
+
+	$C->log(msg=>"ID $id: $in / $out", service=>'_reshape_image', importance=>2);
+
+	$m->redirect($redir_url);
+	# XXX $m->redirect("adm_edit_product.html?id=$id");
+</%init>
+<%doc>
+	Created: 12Jul2023
+</%doc>
