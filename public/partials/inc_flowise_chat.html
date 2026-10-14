@@ -14,7 +14,7 @@
 	my $message_bg_color    = '#112920'; # -- (3)
 	my $message_text_color  = '#efefef'; # -- (4)
 	# my $message_text_color  = '#00E5A0'; # -- (4)
-	my $bot_window_color    = 'rgba(26,61,46,0.20)'; # -- (5)
+	my $bot_window_color    = 'rgba(26,61,46,0.55)'; # -- (5)
 	my $user_text_bg_color  = '#5dffc1'; # -- (6)
 	my $text_input_bg_color = '#0A1A14'; # -- (7)
 	my $text_input_color    = 'lightgreen';
@@ -92,6 +92,8 @@
 		}
 		.chatbot-container {
 			background-color: var(--fw-chat-bg, <% $bot_window_color %>) !important;
+			backdrop-filter: blur(10px) !important;
+			-webkit-backdrop-filter: blur(10px) !important;
 		}
 	    `,
             chatWindow: {
