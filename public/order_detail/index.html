@@ -67,10 +67,15 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main_order_detail.html, perm => $perm, msgs => \@msgs, A => $A, C => $C &>
+		<& parts/main_order_detail.html,
+			order_id => $order_id,
+			perm     => $perm,
+			msgs     => \@msgs,
+			A        => $A,
+			C        => $C
+		&>
 	</section>
 
-% # XX	<& partials/daily_offer.html, A => $A, C => $C &>
 </div>
 
 <& partials/footer.html, C => $C &>
