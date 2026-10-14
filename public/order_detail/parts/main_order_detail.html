@@ -10,20 +10,19 @@
 	my $A    = $args{A};
 
 	my $SID = $C->getSID();
-	# XXX my $order_id = $C->getSessData('order_id') + 0;
 
 	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
 	my $cgi = $C->{CGI};
 
-	my $sth = $C->{dbh}->prepare(qq~
-		select distinct `key` from session where sid=$SID order by `key` limit 999~);
-	   $sth->execute();
+	# XXX my $sth = $C->{dbh}->prepare(qq~
+	# XXX	select distinct `key` from session where sid=$SID order by `key` limit 999~);
 </%init>
 
 <style>
 	.row_small { color: red; }
 	.td_410051 { color: green; }
+	.hidden-xs { color: maroon; }
 </style>
 
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
@@ -45,11 +44,8 @@
 %					foreach ($cgi->all_parameters) {
 						XX <% $_ %><br>
 %					}
-%					while(my $r = $sth->fetch()) {
-%						# XXX my $key = $r->[0];
-%					}
 				</p>
-				<table>
+				<table style="border: 3px orange solid;">
 				<% ${$order_stmt->{out}} %>
 				</table>
 			</div>
