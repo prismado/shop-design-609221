@@ -341,7 +341,7 @@ Pay Method <b><%$pay_meth%> &middot; <% ucfirst $pay_meth_hr{$pay_meth} %></b> &
 
   <table>
   <tr>
-	<th style="text-align:left; padding-bottom:10px">qqqInvoice</th>
+	<th style="text-align:left; padding-bottom:10px">Invoice</th>
 	<th style="text-align:left; padding-bottom:10px; padding-left:111px">Delivery</th>
   </tr>
   <tr valign="top"><td>
@@ -524,7 +524,7 @@ Pay Method <b><%$pay_meth%> &middot; <% ucfirst $pay_meth_hr{$pay_meth} %></b> &
 	<input type="submit" value="Update">
 	</form>
 
-	Dev <a href="_callback/?payment_host=<%$C->{CONFIG}->{HTTP_HOST}%>&refno=<%$id%>&x=success">Complete Order</a><br>
+	Dev <a href="../_callback/?payment_host=<%$C->{CONFIG}->{HTTP_HOST}%>&refno=<%$id%>&x=success">Complete Order</a><br>
 
 <script type="text/javascript">
 	function confirm_del(id) {
