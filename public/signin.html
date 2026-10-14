@@ -57,9 +57,16 @@
         </div>
 
         <div>
-            <label for="pass" class="block text-xs font-bold uppercase tracking-widest text-[var(--txt-3)] mb-2">
-                Passwort
-            </label>
+            <div class="flex items-center justify-between mb-2">
+                <label for="pass" class="block text-xs font-bold uppercase tracking-widest text-[var(--txt-3)]">
+                    Passwort
+                </label>
+                <button type="button" id="forgot-pass-btn" onclick="resendLogin()"
+                        class="text-xs font-semibold text-[var(--txt-3)] hover:text-[var(--accent)] transition-colors
+                               bg-transparent border-none p-0 cursor-pointer">
+                    Passwort vergessen?
+                </button>
+            </div>
             <input type="password" id="pass" name="pass"
                    placeholder="••••••••" autocomplete="current-password">
         </div>
@@ -127,6 +134,49 @@
     <span class="text-[0.68rem] text-[var(--txt-3)] tracking-wide">© 2026 <% $C->txt('site_company') %> | Zürich</span>
     <span class="text-[0.68rem] text-[var(--txt-3)] tracking-wide">Moussonstrasse 66 · CH-8044 Zürich</span>
 </footer>
+
+<& partials/inc_toast.html &>
+<script>
+<& partials/toast_js.html &>
+
+// "Passwort vergessen" (signin.html) — asynchroner Aufruf an dyn/resend-login.html,
+// Rückmeldung bewusst generisch gehalten (bestätigt nicht, ob der Benutzername
+// tatsächlich existiert), um kein User-Enumeration-Leck zu öffnen.
+function resendLogin() {
+    var btn  = document.getElementById('forgot-pass-btn');
+    var user = document.getElementById('user').value.trim();
+
+    if (!user) {
+        showToast(false, 'Bitte zuerst den Benutzernamen eingeben.');
+        document.getElementById('user').focus();
+        return;
+    }
+
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sende…';
+
+    var body = new URLSearchParams();
+    body.set('user', user);
+
+    fetch('/dyn/resend-login.html', { method: 'POST', body: body })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.rc === 0) {
+                showToast(true, 'Falls dieser Benutzername existiert, haben wir eine E-Mail mit weiteren Anweisungen verschickt.', 6000);
+            } else {
+                showToast(false, data.message);
+            }
+        })
+        .catch(function () {
+            showToast(false, 'Die Anfrage konnte nicht gesendet werden.');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        });
+}
+</script>
 
 </body>
 </html>
