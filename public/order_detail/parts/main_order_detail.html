@@ -7,6 +7,7 @@
 	my $C    = $args{C};
 
 	my $SID = $C->getSID();
+	my $order_id = $C->getSessData('order_id') + 0;
 
 	my $cgi = $C->{CGI};
 
@@ -22,9 +23,10 @@
 				class="w-full rounded-2xl object-cover border border-gray-200 bg-white">
 
 			<div class="mt-6">
-				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">
+				<h2 class="text-lg font-bold">Bestellung Nr. <% $order_id %></h2>
+				<h3 class="text-sm mt-4 font-bold uppercase tracking-wider text-gray-400 mb-3">
 					Kundennummer <% $perm->{uid} %>
-				</h2>
+				</h3>
 				<p class="text-sm text-gray-600 leading-relaxed">SID <% $SID %></p>
 				<p>
 %					foreach ($cgi->all_parameters) {
@@ -32,7 +34,7 @@
 %					}
 %					while(my $r = $sth->fetch()) {
 %						my $key = $r->[0];
-						<% $key %><br>
+% # XXX						<% $key %><br>
 %					}
 				</p>
 			</div>
