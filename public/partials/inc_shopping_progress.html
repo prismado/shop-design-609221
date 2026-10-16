@@ -20,5 +20,12 @@
 		Bezahloptionen -
 %	}
 
-	Lieferangaben - Zahlung
+%	if ($step eq 'summary') {
+		<b>Lieferangaben -</b>
+%	}
+%	else {
+		Lieferangaben -
+%	}
+
+	Zahlung
 </p>
