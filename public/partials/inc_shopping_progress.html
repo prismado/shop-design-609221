@@ -1,9 +1,16 @@
 <%init>
 	use utf8;
+
 	my %args = $m->caller_args(0);
 
-	# my $id        = $args{id};
+	my $step = $args{step};
 </%init>
 <p>
-Warenkorb - Bezahloptionen - Lieferangaben - Zahlung
+%	if ($step eq 'basket') {
+		<b>Warenkorb</b>
+%	}
+%	else {
+		Warenkorb
+%	}
+	- Bezahloptionen - Lieferangaben - Zahlung
 </p>
