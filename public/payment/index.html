@@ -16,6 +16,7 @@
 	my %data = ();
 	$data{anon_uid}     = $C->getSessData('_anon_uid');
 	$data{cur_order_id} = $C->getSessData('order_id');
+	$data{pay_meth}     = $C->getSessData('checkout_zahlungsart_select');
 
 	if ($C->getSessData('flag_anon_buy') or $data{anon_uid}) {
 		if ($data{anon_uid}) {
