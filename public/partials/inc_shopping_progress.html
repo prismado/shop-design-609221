@@ -7,10 +7,18 @@
 </%init>
 <p>
 %	if ($step eq 'basket') {
-		<b>Warenkorb</b>
+		<b>Warenkorb -</b>
 %	}
 %	else {
-		Warenkorb
+		Warenkorb -
 %	}
-	- Bezahloptionen - Lieferangaben - Zahlung
+
+%	if ($step eq 'checkout') {
+		<b>Bezahloptionen -</b>
+%	}
+%	else {
+		Bezahloptionen -
+%	}
+
+	Lieferangaben - Zahlung
 </p>
