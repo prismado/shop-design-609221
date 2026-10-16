@@ -21,7 +21,9 @@
 %		my $is_active = $i == $cur_idx;
 %		my $lit       = $is_done || $is_active;
 
-		<div class="flex flex-col items-center flex-shrink-0 min-w-0 max-w-[6.5rem] sm:max-w-none">
+		<a href="/<% $steps[$i]{key} %>"
+				class="flex flex-col items-center flex-shrink-0 min-w-0 max-w-[6.5rem] sm:max-w-none
+					no-underline hover:opacity-70 transition-opacity">
 			<div class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-full text-sm font-bold
 					<% $lit ? 'bg-[#1c1512] text-white' : 'bg-gray-200 text-gray-400' %>">
 %			if ($is_done) {
@@ -38,7 +40,7 @@
 					<% $lit ? 'text-gray-900' : 'text-gray-400' %>">
 				<% $steps[$i]{label} %>
 			</span>
-		</div>
+		</a>
 
 %		if ($i < $#steps) {
 			<div class="flex-1 h-8 flex items-center px-1 sm:px-3">
