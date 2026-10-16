@@ -4,33 +4,46 @@
 	my %args = $m->caller_args(0);
 
 	my $step = $args{step};
+
+	my @steps = (
+		{ key => 'basket',   label => 'Warenkorb' },
+		{ key => 'checkout', label => 'Bezahloptionen' },
+		{ key => 'summary',  label => 'Versand' },
+		{ key => 'payment',  label => 'Kasse' },
+	);
+
+	my ($cur_idx) = grep { $steps[$_]{key} eq $step } 0 .. $#steps;
+	$cur_idx = 0 unless defined $cur_idx;
 </%init>
-<p>
-%	if ($step eq 'basket') {
-		<b>Warenkorb -</b>
-%	}
-%	else {
-		Warenkorb -
-%	}
+<div class="flex items-start w-full">
+%	for my $i (0 .. $#steps) {
+%		my $is_done   = $i <  $cur_idx;
+%		my $is_active = $i == $cur_idx;
+%		my $lit       = $is_done || $is_active;
 
-%	if ($step eq 'checkout') {
-		<b>Bezahloptionen -</b>
-%	}
-%	else {
-		Bezahloptionen -
-%	}
+		<div class="flex flex-col items-center flex-shrink-0 min-w-0 max-w-[6.5rem] sm:max-w-none">
+			<div class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-full text-sm font-bold
+					<% $lit ? 'bg-[#1c1512] text-white' : 'bg-gray-200 text-gray-400' %>">
+%			if ($is_done) {
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
+					stroke="currentColor" class="w-4 h-4">
+					<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+				</svg>
+%			}
+%			else {
+				<% $i + 1 %>
+%			}
+			</div>
+			<span class="mt-2 text-[11px] sm:text-sm font-semibold text-center truncate max-w-full
+					<% $lit ? 'text-gray-900' : 'text-gray-400' %>">
+				<% $steps[$i]{label} %>
+			</span>
+		</div>
 
-%	if ($step eq 'summary') {
-		<b>Versand -</b>
+%		if ($i < $#steps) {
+			<div class="flex-1 h-8 flex items-center px-1 sm:px-3">
+				<div class="h-0.5 w-full <% $is_done ? 'bg-[#1c1512]' : 'bg-gray-200' %>"></div>
+			</div>
+%		}
 %	}
-%	else {
-		Versand -
-%	}
-
-%	if ($step eq 'payment') {
-		<b>Kasse</b>
-%	}
-%	else {
-		Kasse
-%	}
-</p>
+</div>
