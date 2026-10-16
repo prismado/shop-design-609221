@@ -78,7 +78,18 @@
 <div>
 
 	<div class="mt-6">
-		QQQ pay_meth: <% $data->{pay_meth} %><br><br>
+%		if ($data->{pay_meth} eq 'prx') {
+			<div class="flex items-center gap-2 mb-6">
+				<img src="/assets/images/logo_visa.svg" alt="Visa" class="h-6 w-auto">
+				<img src="/assets/images/logo_mastercard.svg" alt="Mastercard" class="h-6 w-auto">
+				<img src="/assets/images/logo_twint.svg" alt="TWINT" class="h-[38.2px] w-auto">
+			</div>
+%		}
+%		else {
+			<div class="flex items-center mb-6">
+				<img src="/assets/images/logo_paypal.svg" alt="PayPal" class="h-5 w-auto">
+			</div>
+%		}
 
 		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Order-ID <% $data->{order_id} %></h2>
 
