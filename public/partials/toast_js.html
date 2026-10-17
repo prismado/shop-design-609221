@@ -5,18 +5,32 @@
 	var text      = toast.querySelector('.toast-text');
 	var hideTimer = null;
 
-	function showToast(ok, message, delay) {
-		delay = (typeof delay === 'number') ? delay : 4000;
+	// -- Warteschlange: mehrere showToast()-Aufrufe kurz hintereinander (z. B. gestaute
+	// Toast-Notes aus get_toast_notes()) würden sich sonst gegenseitig überschreiben, da es
+	// nur ein gemeinsames Toast-Element gibt. Aufrufer müssen davon nichts wissen, die
+	// öffentliche Signatur bleibt unverändert.
+	var toastQueue   = [];
+	var toastShowing = false;
 
-		iconOk.classList.toggle('hidden', !ok);
-		iconError.classList.toggle('hidden', ok);
-		toast.classList.toggle('bg-green-50', ok);
-		toast.classList.toggle('border-green-200', ok);
-		toast.classList.toggle('bg-red-50', !ok);
-		toast.classList.toggle('border-red-200', !ok);
-		text.innerHTML = message;
-		text.classList.toggle('text-green-800', ok);
-		text.classList.toggle('text-red-700', !ok);
+	function showToast(ok, message, delay) {
+		toastQueue.push({ ok: ok, message: message, delay: (typeof delay === 'number') ? delay : 4000 });
+		if (!toastShowing) processToastQueue();
+	}
+
+	function processToastQueue() {
+		var next = toastQueue.shift();
+		if (!next) { toastShowing = false; return; }
+		toastShowing = true;
+
+		iconOk.classList.toggle('hidden', !next.ok);
+		iconError.classList.toggle('hidden', next.ok);
+		toast.classList.toggle('bg-green-50', next.ok);
+		toast.classList.toggle('border-green-200', next.ok);
+		toast.classList.toggle('bg-red-50', !next.ok);
+		toast.classList.toggle('border-red-200', !next.ok);
+		text.innerHTML = next.message;
+		text.classList.toggle('text-green-800', next.ok);
+		text.classList.toggle('text-red-700', !next.ok);
 
 		toast.classList.remove('hidden');
 		toast.classList.add('flex');
@@ -30,6 +44,7 @@
 			setTimeout(function () {
 				toast.classList.add('hidden');
 				toast.classList.remove('flex');
+				processToastQueue();
 			}, 300);
-		}, delay);
+		}, next.delay);
 	}
