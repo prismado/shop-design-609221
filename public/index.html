@@ -75,6 +75,8 @@
     </div>                                                                                                              
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+<%doc>
+XXX:
 % if ($tnote->{rows}) {
 %	foreach my $tn (@{$tnote->{notes}}) {
 %		foreach (keys %$tn) {
@@ -83,6 +85,8 @@
 		--------<br>
 %	}
 % }
+/XXX
+</%doc>
 	<& partials/index_products.html,
 		prod_highlight => $prod_highlight,
 		perm           => $perm,
@@ -103,6 +107,7 @@
 	<& partials/product_portlet_js.html &>
 %	if ($tnote->{rows}) {
 %		foreach my $tn (@{$tnote->{notes}}) {
+%			# -- id / type (e.g. error) / created / title / body / delay (ms)
 			showToast(true, "<% $tn->{title} %> <% $tn->{body} %>", <% $tn->{delay} %>);
 %		}
 %	}
