@@ -18,6 +18,10 @@
 	$data{cur_order_id} = $C->getSessData('order_id');
 	$data{pay_meth}     = $C->getSessData('checkout_zahlungsart_select');
 
+	unless ($data{cur_order_id} > 0) {
+		$m->redirect('/');
+	}
+
 	if ($C->getSessData('flag_anon_buy') or $data{anon_uid}) {
 		if ($data{anon_uid}) {
 			push(@msgs, "NOTE: Anon user already created: UID $data{anon_uid}");
