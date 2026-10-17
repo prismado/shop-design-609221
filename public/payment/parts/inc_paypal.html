@@ -8,18 +8,57 @@
 
 	my $order_id     = $args{order_id} + 0;
 	my $total_no_dot = $args{total_no_dot};
+	my $total        = $args{total};
 	my $C            = $args{C};
+	my $A            = $args{A};
+
+	my $delay = 20000;
 
 	my $business = $C->{CONFIG}->{paypal_merchant_id};
+
+	$C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
+
+	# $A->empty_basket();
 </%init>
+
+<form name="ccform" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="locale.x" value="de_DE"> <!-- de_DE / fr_FR / en_US -->
+<input type="hidden" name="cmd" value="_xclick" />
+<input type="hidden" name="business" value="<% $C->{CONFIG}->{paypal_merchant_id} %>" />
+
+<input type="hidden" name="item_name" value="<% $C->{CONFIG}->{paypal_item_name} %>" />
+<input type="hidden" name="amount" value="<% $total %>" /> <!-- e.g. 43.45 -->
+<!-- XX input type="hidden" name="shipping" value="0.00" / -->
+<input type="hidden" name="currency_code" value="CHF" />
+<input type="hidden" name="invoice" value="<%$order_id%>">
+<input type="hidden" name="custom" value="first_name last_name">
+
+<input type="hidden" name="return"        value="https://<% $C->{CONFIG}->{HTTP_HOST} %>/order_detail.html" />
+<input type="hidden" name="cancel_return" value="http<%$ENV{HTTPS} ? 's' : ''%>://<%$C->{CONFIG}->{HTTP_HOST}%>/" />
+
+<input type="hidden" name="notify_url" value="http<%$ENV{HTTPS} ? 's' : ''%>://<%$C->{CONFIG}->{HTTP_HOST}%>/_callback/complete_order_paypal.html" />
 
 	<button type="submit"
 				class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
 					hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
 					shadow transition-colors">
-		Weiter zu PayPal XX <% $order_id %> qqq <% $business %>
+		Weiter zu PayPal XX <% $order_id %> qqq <% $total %>
 		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 					stroke-width="2" stroke="currentColor" class="w-4 h-4">
 			<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
 		</svg>
 	</button>
+
+% # XX <input class='btn btn-primary btn-lg mt-4' type=submit value="mit Paypal Zahlen">
+</form>
+
+
+
+
+
+<script language=JavaScript>
+	var updateDiv = function () {
+		document.ccform.submit();
+	}
+	var myTimer = window.setTimeout(updateDiv, <% $delay %>);
+</script>
