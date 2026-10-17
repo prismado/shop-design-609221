@@ -12,9 +12,8 @@
 	my $perm = $C->get_user_perm();
 	my $lang = 'de';
 
-	my $cgi = $C->{CGI};
+	# XX my $cgi = $C->{CGI};
 
-	# XX my $order_id = $cgi->param('order_id') + 0;
 	my $order_id = $C->getSessData('order_id');
 
 	my $rc  = 0;
@@ -24,7 +23,7 @@
 		$msg = 'XX constr';
 	}
 
-	# $C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
+	$C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
 
 	# $A->empty_basket();
 
