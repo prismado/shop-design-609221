@@ -146,7 +146,11 @@
 %			}
 %			else {
 				<& inc_paypal.html,
-					order_id => $order_id, total_no_dot => $total_no_dot, C => $C
+					order_id     => $order_id,
+					total_no_dot => $total_no_dot,
+					total        => $total,
+					A            => $A,
+					C            => $C
 				&>
 %			}
 		</div>
