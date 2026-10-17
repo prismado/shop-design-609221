@@ -14,7 +14,7 @@
 
 	my $cgi = $C->{CGI};
 
-	# XXX my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+	my $order_id = $cgi->param('order_id') + 0;
 
 	my $rc  = 0;
 	my $msg = '';
@@ -23,10 +23,14 @@
 		$msg = 'XX constr';
 	}
 
+	# $C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
+
+	# $A->empty_basket();
+
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
   "rc": <% $rc %>,
-  "message": "<% $msg %>"
+  "message": "<% $msg %>, UID <% $perm->{uid} %>"
 }
