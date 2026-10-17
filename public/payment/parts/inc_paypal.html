@@ -16,8 +16,7 @@
 
 	my $business = $C->{CONFIG}->{paypal_merchant_id};
 
-	$C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
-
+	# $C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
 	# $A->empty_basket();
 </%init>
 
