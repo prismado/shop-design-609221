@@ -10,6 +10,9 @@
 	my $debug = $cgi->param('debug');
 	my $showmsg = $cgi->param('showmsg');
 
+	my $tnote = $C->get_toast_notes();
+	# XXX my %toast_note = ();
+
 	my $perm = $C->get_user_perm();
 	my $lang = 'de';
 
@@ -72,6 +75,14 @@
     </div>                                                                                                              
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+% if ($tnote->{rows}) {
+%	foreach my $tn (@{$tnote->{notes}}) {
+%		foreach (keys %$tn) {
+			XX <% $_ %> = <% $tn->{$_} %><br>
+%		}
+		--------<br>
+%	}
+% }
 	<& partials/index_products.html,
 		prod_highlight => $prod_highlight,
 		perm           => $perm,
@@ -90,8 +101,10 @@
 	<script>
 	<& partials/toast_js.html &>
 	<& partials/product_portlet_js.html &>
-%	if ($showmsg == 610171) {
-		showToast(true, 'Ihr Warenkorb ist leer.', 6000);
+%	if ($tnote->{rows}) {
+%		foreach my $tn (@{$tnote->{notes}}) {
+			showToast(true, "<% $tn->{title} %> <% $tn->{body} %>", <% $tn->{delay} %>);
+%		}
 %	}
 	</script>
 
