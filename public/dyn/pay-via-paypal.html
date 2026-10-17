@@ -23,7 +23,7 @@
 
 	$C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
 
-	# $A->empty_basket();
+	$A->empty_basket();
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
