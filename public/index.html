@@ -95,7 +95,7 @@
 %	if ($tnote->{rows}) {
 %		foreach my $tn (@{$tnote->{notes}}) {
 %			# -- id / type (e.g. error) / created / title / body / delay (ms)
-			showToast(true, "<% $tn->{title} %> <% $tn->{body} %>", <% $tn->{delay} %>);
+		showToast(<% $tn->{type} eq 'error' ? 'false' : 'true' %>, "<% $tn->{title} %> <% $tn->{body} %>", <% $tn->{delay} %>);
 %		}
 %	}
 	</script>
