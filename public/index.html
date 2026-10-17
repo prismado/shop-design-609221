@@ -11,7 +11,6 @@
 	my $showmsg = $cgi->param('showmsg');
 
 	my $tnote = $C->get_toast_notes();
-	# XXX my %toast_note = ();
 
 	my $perm = $C->get_user_perm();
 	my $lang = 'de';
@@ -77,14 +76,6 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 <%doc>
 XXX:
-% if ($tnote->{rows}) {
-%	foreach my $tn (@{$tnote->{notes}}) {
-%		foreach (keys %$tn) {
-			XX <% $_ %> = <% $tn->{$_} %><br>
-%		}
-		--------<br>
-%	}
-% }
 /XXX
 </%doc>
 	<& partials/index_products.html,
