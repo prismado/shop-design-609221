@@ -12,7 +12,7 @@
 	my $perm = $C->get_user_perm();
 	my $lang = 'de';
 
-	my $order_id = $C->getSessData('order_id');
+	my $order_id = $C->getSessData('order_id') + 0;
 
 	my $rc  = 0;
 	my $msg = '';
@@ -23,6 +23,7 @@
 
 	$C->{dbh}->do("UPDATE orders SET pay_meth=4 WHERE id=$order_id"); # -- Override if started with other pay_meth
 
+	$C->del_sess_key('order_id');
 	$A->empty_basket();
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
