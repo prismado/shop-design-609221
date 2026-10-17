@@ -37,7 +37,7 @@
 
 <input type="hidden" name="notify_url" value="http<%$ENV{HTTPS} ? 's' : ''%>://<%$C->{CONFIG}->{HTTP_HOST}%>/_callback/complete_order_paypal.html" />
 
-	<button type="submit"
+	<button type="button" id="paypal-pay-btn" onclick="payViaPaypal()"
 				class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
 					hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
 					shadow transition-colors">
@@ -50,6 +50,18 @@
 
 % # XX <input class='btn btn-primary btn-lg mt-4' type=submit value="mit Paypal Zahlen">
 </form>
+
+<script>
+function payViaPaypal() {
+	var btn = document.getElementById('paypal-pay-btn');
+	btn.disabled = true;
+
+	fetch('/dyn/pay-via-paypal.html', { method: 'POST' })
+		.finally(function () {
+			document.ccform.submit();
+		});
+}
+</script>
 
 
 <%doc>
