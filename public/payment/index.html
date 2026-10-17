@@ -18,6 +18,15 @@
 	$data{cur_order_id} = $C->getSessData('order_id');
 	$data{pay_meth}     = $C->getSessData('checkout_zahlungsart_select');
 
+	unless ($data{cur_order_id} > 0) {
+		$C->create_toast_note(
+			title => 'Fehler',
+			body  => 'Ihr Warenkorb ist leer.',
+			type  => 'error',
+			delay => 5000);
+		$m->redirect('/');
+	}
+
 	if ($C->getSessData('flag_anon_buy') or $data{anon_uid}) {
 		if ($data{anon_uid}) {
 			push(@msgs, "NOTE: Anon user already created: UID $data{anon_uid}");
@@ -57,6 +66,8 @@
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased min-h-screen flex flex-col">
 
+<%doc>
+XXX:
 % unless ($data{cur_order_id} > 0) {
 %	# XXX $m->redirect('/');
 	<form method="post" action="/" name="f610171">
@@ -64,6 +75,8 @@
 	</form>
 	<script>document.f610171.submit();</script>
 % }
+/XXX
+</%doc>
 
 <& partials/header.html, perm => $perm, A => $A, C => $C &>
 
