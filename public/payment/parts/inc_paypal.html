@@ -3,16 +3,11 @@
 
 	my %args = $m->caller_args(0);
 
-	my $perm     = $args{perm};
-	my $C        = $args{C};
-	my $A        = $args{A};
-	my $msgs     = $args{msgs};
-	# XXX my $data     = $args{data};
+	# XX my $perm     = $args{perm};
+	# XX my $C        = $args{C};
+	# XX my $A        = $args{A};
+	# XX my $msgs     = $args{msgs};
 
 	my $order_id = $args{order_id} + 0;
-
-	# XXX my $total = $C->query("select amount_incl_vat FROM orders WHERE id=$order_id")->[0];
-	# XXX    $total = sprintf('%.2f', $total); # -- important for Payment GW to prevent loosing trailing zeroes
-	# XXX (my $total_no_dot = $total) =~ tr/\.//d;
 </%init>
-XX constr O-ID <% $order_id %>
+XX -- constr O-ID <% $order_id %>
