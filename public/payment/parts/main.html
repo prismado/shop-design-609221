@@ -125,6 +125,7 @@
 				Zurück
 			</a>
 
+%			if ($data->{pay_meth} eq 'prx') {
 			<form method="post" action="../_do.html">
 			<input type="hidden" name="action"      value="payrexx_start_payment">
 			<input type="hidden" name="amount"      value="<% $total_no_dot %>" />
@@ -142,6 +143,10 @@
 				</svg>
 			</button>
 			</form>
+%			}
+%			else {
+				XXX YYY
+%			}
 		</div>
 	</div>
 </div>
