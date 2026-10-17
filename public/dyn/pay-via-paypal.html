@@ -14,7 +14,8 @@
 
 	my $cgi = $C->{CGI};
 
-	my $order_id = $cgi->param('order_id') + 0;
+	# XX my $order_id = $cgi->param('order_id') + 0;
+	my $order_id = $C->getSessData('order_id');
 
 	my $rc  = 0;
 	my $msg = '';
@@ -32,5 +33,5 @@
 </%init>
 {
   "rc": <% $rc %>,
-  "message": "<% $msg %>, UID <% $perm->{uid} %>"
+  "message": "<% $msg %>, UID <% $perm->{uid} %>, OID <% $order_id %>"
 }
