@@ -36,8 +36,9 @@
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 			<p class="text-sm text-gray-600 leading-relaxed">
 %				if ($prod->{_rc}) {
-% # XX					<span class="text-red-500">RC <% $prod->{_rc} %> - <%  $prod->{_msg} %></span>
+					<div class="mt-6 mb-6">
 					<& ../partials/inc_alert.html, msg => "RC $prod->{_rc} $prod->{_msg}", type => 'error' &>
+					</div>
 %				}
 				<% $prod->{desc_long} %>
 			</p>
