@@ -44,7 +44,9 @@
 	$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
 
 	if ($data{order_id} < 0) {
-		push(@msgs, "Fehler $data{order_id} beim Erstellen der Bestellung.");
+		my $reason = $C->query(
+		"select action from log where sid=$perm->{sid} and action like 'Err%' order by id desc limit 1")->[0];
+		push(@msgs, "Fehler $data{order_id} beim Erstellen der Bestellung. $reason");
 	}
 
 	$C->saveSessData('order_id', $data{order_id}) if $data{order_id} > 0;
