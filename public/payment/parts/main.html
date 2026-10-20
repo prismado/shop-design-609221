@@ -185,15 +185,11 @@
 
 %		if (@$msgs) {
 			<div class="mt-4">
-			<& ../partials/inc_alert.html, msg => (join "<br>\n", @$msgs) &>
+			<& ../partials/inc_alert.html, msg => (join "<br>\n", @$msgs), type => $order_id < 0 ? 'error' : '' &>
 			</div>
 %		}
 
 		<div class="mt-4">
-%			foreach (@$msgs) {
-% # XXX				[msg] - <% $_ %><br>
-%			}
-
 %			foreach (sort keys %$data) {
 				[data] - <b><% $_ %></b> = <% $data->{$_} %><br>
 %			}
