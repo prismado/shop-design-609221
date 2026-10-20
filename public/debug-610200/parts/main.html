@@ -30,7 +30,9 @@
 %			while(my $r = $sth->fetch()) {
 %				my ($id, $key, $val, $ts) = @{$r};
 				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=session">E</a>
-				<% $C->trans_date_short($ts) %>: <% $key %> = <% $val %><br>
+				<% $C->trans_date_short($ts) %>: <b><% $key %></b> = <% $val %>
+				&rarr; <a href="./?delSessKey=<% $key %>">X</a>
+				<br>
 %			}
 		</div>
 
