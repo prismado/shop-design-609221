@@ -44,8 +44,12 @@
 	$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
 
 	if ($data{order_id} < 0) {
-		my $reason = $C->query(
-		"select action from log where sid=$perm->{sid} and action like 'Err%' order by id desc limit 1")->[0];
+		my $reason = $C->query(qq~
+			select	action
+			from	log
+			where	sid=$perm->{sid} and service='save_order' and action like 'Err%'
+			order	by id desc limit 1
+		~)->[0];
 		push(@msgs, "Fehler $data{order_id} beim Erstellen der Bestellung. $reason");
 	}
 
