@@ -10,14 +10,19 @@
 
 	my $cgi = $C->{CGI};
 
-	my $debug = $cgi->param('debug');
+	my $delSessKey = $cgi->param('delSessKey');
+	my $debug      = $cgi->param('debug');
+
+	if ($delSessKey) {
+		$C->del_sess_key($delSessKey);
+	}
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foo 609291 | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
+<title>Debug | <% $C->{CONFIG}->{HTTP_HOST} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +46,6 @@
 
 	<& partials/left_nav.html, A => $A, C => $C &>
 
-	<!-- Produkte (Mitte, ca. 70%) -->
 	<section>
 		<& parts/main.html, C => $C &>
 	</section>
