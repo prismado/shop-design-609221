@@ -183,13 +183,19 @@
 			</div>
 		</div>
 
+%		if (@$msgs) {
+%			foreach (@$msgs) {
+				<% $_ %><br>
+%			}
+%		}
+
 		<div class="mt-4">
 %			foreach (@$msgs) {
-				[msg] - <% $_ %><br>
+% # XXX				[msg] - <% $_ %><br>
 %			}
 
 %			foreach (sort keys %$data) {
-				[data] - <% $_ %> = <% $data->{$_} %><br>
+				[data] - <b><% $_ %></b> = <% $data->{$_} %><br>
 %			}
 
 %			foreach ($cgi->all_parameters) {
