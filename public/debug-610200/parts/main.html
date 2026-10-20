@@ -8,8 +8,10 @@
 
 	my $sid = $C->getSID();
 
-	my $sth = $C->{dbh}->prepare(qq~select id, `key`, val, tstamp from session where sid=$sid order by 1 desc limit 500~);
+	my $sth = $C->{dbh}->prepare(qq~select id, `key`, val, tstamp from session where sid=$sid order by 1 desc limit 999~);
 	   $sth->execute();
+
+	my %memo = ();
 </%init>
 
 	<div class="grid grid-cols-1 XXXlg:grid-cols-2 gap-8 lg:gap-10">
@@ -29,10 +31,12 @@
 
 %			while(my $r = $sth->fetch()) {
 %				my ($id, $key, $val, $ts) = @{$r};
+%				next if $memo{$key};
 				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=session">E</a>
 				<% $C->trans_date_short($ts) %>: <b><% $key %></b> = <% $val %>
 				&rarr; <a href="./?delSessKey=<% $key %>">X</a>
 				<br>
+%				$memo{$key} = 1;
 %			}
 		</div>
 
