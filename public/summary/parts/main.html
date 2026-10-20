@@ -3,6 +3,8 @@
 
 	my %args = $m->caller_args(0);
 
+	# -- summary/parts/main
+
 	my $bsk_itms  = $args{bsk_itms};
 	my $perm      = $args{perm};
 	my $C         = $args{C};
@@ -28,6 +30,10 @@
 
 	my $basket_h     = $A->get_basket_items();
 	# XX my $prod_options = $A->get_basket_options();
+
+	if ($basket_h->rows() < 1) {
+		push(@{$appmsgs}, 'Ihr Warenkorb ist leer.');
+	}
 
 	my $vouch_inf = $A->get_voucher_info($grand_tot->{voucher_code});
 
