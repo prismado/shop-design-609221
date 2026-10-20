@@ -8,6 +8,8 @@
 
 	my $perm = $C->get_user_perm();
 
+	$C->redir('/signin.html') unless $perm->{is_admin};
+
 	my $cgi = $C->{CGI};
 
 	my $delSessKey = $cgi->param('delSessKey');
@@ -39,7 +41,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
 
-<& partials/header.html, A => $A, C => $C &>
+<& partials/header.html, perm => $perm, A => $A, C => $C &>
 
 <div class="w-full px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
 
