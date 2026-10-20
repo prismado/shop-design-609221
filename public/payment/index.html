@@ -18,7 +18,7 @@
 	$data{cur_order_id} = $C->getSessData('order_id');
 	$data{pay_meth}     = $C->getSessData('checkout_zahlungsart_select');
 
-	unless ($data{cur_order_id} > 0) {
+	unless ($data{cur_order_id} > 0 or 1==1) { # XXX
 		$C->create_toast_note(
 			title => 'Fehler',
 			body  => 'Ihr Warenkorb ist leer.',
@@ -43,7 +43,7 @@
 
 	$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
 
-	$C->saveSessData('order_id', $data{order_id});
+	$C->saveSessData('order_id', $data{order_id}) if $data{order_id} > 0;
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
