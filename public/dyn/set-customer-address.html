@@ -35,7 +35,7 @@
 			$data{"cust_$key_new"} = $cgi->param($key);
 		}
 		($rc, $msg) = $A->create_user(\%data);
-		$C->log(msg => "RC $rc $msg, UID $A->{uid}", importance => 1);
+		# XX $C->log(msg => "RC $rc $msg, UID $A->{uid}", importance => 1);
 		$C->framework_login(uname => $data{cust_email}) unless $rc;
 	}
 
@@ -48,5 +48,5 @@
 </%init>
 {
   "rc": <% $rc %>,
-  "message": "<% $msg %>, SID <% $C->{sid} %>"
+  "message": "[create_user] - <% $msg %>"
 }
