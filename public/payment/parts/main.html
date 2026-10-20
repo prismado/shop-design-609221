@@ -185,8 +185,9 @@
 
 %		if (@$msgs) {
 %			foreach (@$msgs) {
-				<% $_ %><br>
+% # XXX				<% $_ %><br>
 %			}
+			<& ../partials/inc_alert.html, msg => (join "<br>\n", @$msgs), ZZtype => 'success' &>
 %		}
 
 		<div class="mt-4">
