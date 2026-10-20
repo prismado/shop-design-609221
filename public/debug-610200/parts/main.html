@@ -21,14 +21,15 @@
 
 		<div>
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">SID <% $sid %></p>
-			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">XX Debug</h1>
+			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Debug</h1>
 
 %			while(my $r = $sth->fetch()) {
 %				my ($id, $key, $val, $ts) = @{$r};
 %				next if $memo{$key};
 				<a href="/adm_db_edit?wcl=id%3D<% $id %>&table=session">E</a>
-				<% $C->trans_date_short($ts) %>: <b><% $key %></b> = <tt class="text-lg"><% $val %></tt>
-				&rarr; <a href="./?delSessKey=<% $key %>">X</a>
+				<% $C->trans_date_short($ts) %>: <b><% $key %></b>
+					= <tt class="text-lg text-red-800"><% $val %></tt>
+				&rarr; <a href="./?delSessKey=<% $key %>"><i>X</i></a>
 				<br>
 %				$memo{$key} = 1;
 %			}
