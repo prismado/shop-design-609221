@@ -277,11 +277,18 @@
 	function saveDeliveryAddress(form) {
 		var body = new URLSearchParams(new FormData(form));
 
+		// -- Button bleibt bei einem Fehler aktiv bedienbar (Backend legt bei Erfolg einen Kunden
+		//    an und verschickt Mails über einen externen Relay, das kann mehrere Sekunden dauern).
+		var saveBtn   = form.querySelector('button[type="submit"]');
+		var saveLabel = saveBtn.querySelector('span');
+
 		fetch('/dyn/set-customer-address.html', { method: 'POST', body: body })
 			.then(function (res) { return res.json(); })
 			.then(function (data) {
 				if (data.rc !== 0) {
 					showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+					saveBtn.disabled = false;
+					saveLabel.textContent = 'Speichern';
 					return;
 				}
 				closeModal('addr-deliv');
@@ -301,6 +308,8 @@
 			})
 			.catch(function () {
 				showToast(false, 'Adresse konnte nicht gespeichert werden.');
+				saveBtn.disabled = false;
+				saveLabel.textContent = 'Speichern';
 			});
 	}
 </script>
