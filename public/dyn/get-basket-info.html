@@ -11,8 +11,13 @@
 
 	my $cgi = $C->{CGI};
 
-	# XXX my $prod_id = $cgi->param('prod_id') + 0;
-	# XXX my $res = $A->save_to_wishlist( prod_id => $prod_id);
+	my $bask_info =	$A->get_basket_items_v2();
+
+	my @items = ();
+
+	foreach	my $d (@{$bask_info->{items}}) {
+		# push(@items, XXX YYY);
+	}
 
 	my $res;
 	   $res->{rc}  = 0;
@@ -23,5 +28,22 @@
 </%init>
 {
   "rc": <% $res->{rc} %>,
-  "message": "<% $res->{msg} %>"
+  "message": "<% $res->{msg} %>",
+  "basket_total": "<% sprintf('CHF %.2f', $bask_info->{basket_total}) %>"
 }
+<%doc>
+XXX:
+
+my $bask_info =	$A->get_basket_items_v2();
+
+foreach	my $d (@{$bask_info->{items}}) {
+	<b><% $d->{count} %> &times; <%	$d->{pdata}->{title} %></b><br>
+		<% $d->{pdata}->{desc_keyw} %> / Prod-ID <% $d->{prod_id} %><br>
+		CHF <% $d->{pdata}->{price_incl_vat_fmt} %>
+	if ($d->{upsell} > 0) {
+			+ CHF <% $d->{upsell} %>
+	}
+	<br>
+	------------------<br>
+}
+</%doc>
