@@ -35,11 +35,15 @@
 					[get_basket_items_v2] - <b><% $_ %></b> = <% $bask_info->{$_} %><br>
 %				}
 %				foreach my $d (@{$bask_info->{items}}) {
-					<% $d->{count} %> &times; Prod-ID <% $d->{prod_id} %>
+					<% $d->{count} %> &times; <% $d->{pdata}->{title} %><br>
+						<% $d->{pdata}->{desc_keyw} %> / Prod-ID <% $d->{prod_id} %>
 %					foreach (sort keys %$d) {
 %						next if $_ eq 'basket_id' or $_ eq 'instime' or $_ eq 'count' or $_ eq 'vat_perc'
-%							or $_ eq 'prod_id';
-						XX <% $_ %> = <% $d->{$_} %><br>
+%							or $_ eq 'prod_id' or $_ eq 'pdata';
+						X -- <% $_ %> = <% $d->{$_} %><br>
+%					}
+%					foreach (sort keys %{$d->{pdata}}) {
+% # XXX						XX <% $_ %> = <% $d->{pdata}->{$_} %><br>
 %					}
 					------------------<br>
 %				}
