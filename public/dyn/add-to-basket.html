@@ -12,7 +12,7 @@
 	my $cgi = $C->{CGI};
 
 	my $id = $cgi->param('id') + 0;
-	my $sid = $C->getSID();
+	my $sid = $C->getSID(); # -- Important
 
 	my ($rc, $msg) = $A->add2basket_details(
 		id    => $id,
@@ -25,6 +25,6 @@
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
-  "rc": <% $rc %>,
-  "message": "<% $msg %> um <% $C->now(12) %>, SID <% $C->{sid} %>"
+  "rc": <% $rc || 0 %>,
+  "message": "<% $msg || 'n/a' %>, SID <% $C->{sid} %>"
 }
