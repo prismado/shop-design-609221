@@ -16,6 +16,7 @@
 	my @items = ();
 
 	foreach	my $d (@{$bask_info->{items}}) {
+print STDERR "XXX ......... $d->{pdata}->{title}\n";
 		push(@items, {
 			count => $d->{count},
 			title => $d->{pdata}->{title}
@@ -32,6 +33,7 @@
 {
   "rc": <% $res->{rc} %>,
   "message": "<% $res->{msg} %>",
+  "item_count": <% $#items + 1 %>,
 % foreach my $d (@items) {
 %	foreach (sort keys %$d) {
 		"<% $_ %>": "<% $d->{$_} %>",
