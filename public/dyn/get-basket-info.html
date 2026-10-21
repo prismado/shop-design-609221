@@ -17,7 +17,8 @@
 
 	foreach	my $d (@{$bask_info->{items}}) {
 		push(@items, {
-			count => $d->{count}
+			count => $d->{count},
+			title => $d->{pdata}->{title}
 		});
 	}
 
