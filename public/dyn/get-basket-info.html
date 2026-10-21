@@ -1,5 +1,6 @@
 <%init>
 	use utf8;
+	use JSON;
 
 	# -- dyn/get-basket-info
 
@@ -14,15 +15,20 @@
 	my @items = ();
 
 	foreach	my $d (@{$bask_info->{items}}) {
-		push(@items, qq~{
-			"count": $d->{count},
-			"title": "$d->{pdata}->{title}",
-			"desc": "$d->{pdata}->{desc_keyw}",
-			"prod_id": $d->{prod_id},
-			"price": $d->{pdata}->{price_incl_vat},
-			"upsell": $d->{upsell}
-		}~);
+		push(@items, {
+			count   => $d->{count}                  + 0,
+			title   => $d->{pdata}->{title},
+			desc    => $d->{pdata}->{desc_keyw},
+			prod_id => $d->{prod_id}                + 0,
+			price   => $d->{pdata}->{price_incl_vat} + 0,
+			upsell  => $d->{upsell}                 + 0,
+		});
 	}
+
+	# -- Items via JSON-Modul serialisieren statt String-Interpolation, damit Sonderzeichen
+	#    (Anführungszeichen, Backslashes, Zeilenumbrüche) in z. B. desc_keyw das JSON nicht brechen.
+	my $json       = JSON->new();
+	my $items_json = $json->encode(\@items);
 
 	my $res;
 	   $res->{rc}  = 0;
@@ -34,8 +40,6 @@
   "rc": <% $res->{rc} %>,
   "message": "<% $res->{msg} %>",
   "item_count": <% $#items + 1 %>,
-  "items": [
-	<% join ",\n", @items %>
-  ],
+  "items": <% $items_json %>,
   "basket_total": "<% sprintf('CHF %.2f', $bask_info->{basket_total}) %>"
 }
