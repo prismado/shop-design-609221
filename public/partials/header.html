@@ -33,9 +33,15 @@
 			d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
             </span>
-            <input type="text" placeholder="Was suchst du?"
+            <input type="text" id="search-input" placeholder="Was suchst du?" autocomplete="off"
+              oninput="handleSearchInput()"
               class="w-full min-w-0 rounded-full border-0 bg-white/95 py-2.5 pl-11 pr-4 text-sm text-gray-800
 			placeholder:text-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-white/80 transition">
+
+            <div id="search-results-panel" class="invisible opacity-0 absolute left-0 right-0 top-full mt-2
+                rounded-xl bg-white shadow-lg ring-1 ring-black/5 text-sm text-gray-700 transition z-50 overflow-hidden">
+              <div id="search-results-body" class="max-h-96 overflow-y-auto divide-y divide-gray-100 py-2"></div>
+            </div>
           </div>
 
           <!-- Sprachauswahl -->
@@ -202,7 +208,7 @@
 	var cartData = null;
 
 	// -- Rein textbasiertes Escaping für sicheres Einfügen von Produkttiteln via innerHTML
-	function escapeHtmlCartPreview(str) {
+	function escapeHtmlText(str) {
 		var div = document.createElement('div');
 		div.textContent = str || '';
 		return div.innerHTML;
@@ -236,7 +242,7 @@
 			html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5">'
 				+ '<span class="flex-1 min-w-0 truncate">'
 				+ (item.count > 1 ? item.count + '&times; ' : '')
-				+ escapeHtmlCartPreview(item.title)
+				+ escapeHtmlText(item.title)
 				+ '</span>'
 				+ '<span class="flex-shrink-0 font-medium text-gray-900">'
 				+ data.currency + ' ' + itemTotal.toFixed(2)
@@ -316,5 +322,99 @@
 		setTimeout(function () {
 			document.addEventListener('click', closeCartPreviewOnOutsideClick);
 		}, 0);
+	}
+
+	// -- Volltextsuche mit Type-ahead: ab 2 Zeichen wird /dyn/get-search-result.html abgefragt
+	//    (debounced, damit nicht bei jedem Tastendruck ein Request läuft) und das Ergebnis
+	//    tabellarisch direkt unter dem Suchfeld dargestellt (gleiches Panel-Prinzip wie das
+	//    Mini-Basket oben).
+	var searchDebounceTimer    = null;
+	var searchAbortController  = null;
+
+	function handleSearchInput() {
+		var input = document.getElementById('search-input');
+		var query = input.value.trim();
+
+		clearTimeout(searchDebounceTimer);
+
+		if (query.length < 2) {
+			hideSearchResults();
+			return;
+		}
+
+		searchDebounceTimer = setTimeout(function () {
+			runSearch(query);
+		}, 250);
+	}
+
+	function runSearch(query) {
+		if (searchAbortController) searchAbortController.abort();
+		searchAbortController = new AbortController();
+
+		fetch('/dyn/get-search-result.html?q=' + encodeURIComponent(query), { signal: searchAbortController.signal })
+			.then(function (res) { return res.json(); })
+			.then(renderSearchResults)
+			.catch(function (err) {
+				if (err.name === 'AbortError') return;
+
+				var body = document.getElementById('search-results-body');
+				if (body) body.innerHTML = '<p class="px-4 py-3 text-red-600">Suche fehlgeschlagen.</p>';
+				showSearchResults();
+			});
+	}
+
+	function renderSearchResults(data) {
+		var body = document.getElementById('search-results-body');
+		if (!body) return;
+
+		if (!data.results || !data.results.length) {
+			body.innerHTML = '<p class="px-4 py-3 text-gray-400">Keine Treffer.</p>';
+			showSearchResults();
+			return;
+		}
+
+		var html = '';
+		data.results.forEach(function (item) {
+			html += '<a href="' + item.url + '" class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">'
+				+ '<img src="' + item.img + '" alt="" class="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-gray-100">'
+				+ '<span class="flex-1 min-w-0">'
+				+ '<span class="block truncate font-medium text-gray-900">' + escapeHtmlText(item.title) + '</span>'
+				+ '<span class="block truncate text-xs text-gray-500">' + escapeHtmlText(item.desc) + '</span>'
+				+ '</span>'
+				+ '<span class="flex-shrink-0 font-medium text-gray-900">CHF ' + item.price.toFixed(2) + '</span>'
+				+ '</a>';
+		});
+
+		body.innerHTML = html;
+		showSearchResults();
+	}
+
+	function showSearchResults() {
+		var panel = document.getElementById('search-results-panel');
+		if (!panel) return;
+
+		panel.classList.remove('invisible', 'opacity-0');
+		panel.classList.add('visible', 'opacity-100');
+
+		setTimeout(function () {
+			document.addEventListener('click', closeSearchResultsOnOutsideClick);
+		}, 0);
+	}
+
+	function hideSearchResults() {
+		var panel = document.getElementById('search-results-panel');
+		if (!panel) return;
+
+		panel.classList.add('invisible', 'opacity-0');
+		panel.classList.remove('visible', 'opacity-100');
+		document.removeEventListener('click', closeSearchResultsOnOutsideClick);
+	}
+
+	function closeSearchResultsOnOutsideClick(e) {
+		var panel = document.getElementById('search-results-panel');
+		var input = document.getElementById('search-input');
+		if (panel && (panel.contains(e.target) || e.target === input)) return;
+
+		hideSearchResults();
 	}
 </script>
