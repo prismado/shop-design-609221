@@ -31,8 +31,11 @@
 
 			<p class="mb-4">
 %				foreach (sort keys %$bask_info) {
-%					next if $_ eq 'VERSION';
+%					next if $_ eq 'VERSION' or $_ eq 'items';
 					[get_basket_items_v2] - <b><% $_ %></b> = <% $bask_info->{$_} %><br>
+%				}
+%				foreach (@{$bask_info->{items}}) {
+					XX <% $_ %><br>
 %				}
 			</p>
 
