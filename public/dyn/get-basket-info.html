@@ -9,8 +9,6 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	my $cgi = $C->{CGI};
-
 	my $bask_info =	$A->get_basket_items_v2();
 
 	my @items = ();
@@ -30,7 +28,6 @@
 	   $res->{rc}  = 0;
 	   $res->{msg} = 'ok';
 
-	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
@@ -42,11 +39,3 @@
   ],
   "basket_total": "<% sprintf('CHF %.2f', $bask_info->{basket_total}) %>"
 }
-<%doc>
-XXX:
-
-foreach	my $d (@{$bask_info->{items}}) {
-	<b><% $d->{count} %> &times; <%	$d->{pdata}->{title} %></b><br>
-		<% $d->{pdata}->{desc_keyw} %> / Prod-ID <% $d->{prod_id} %><br>
-}
-</%doc>
