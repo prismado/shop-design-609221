@@ -16,9 +16,10 @@
 	my @items = my @itms2 = ();
 
 	foreach	my $d (@{$bask_info->{items}}) {
-		# XXX push(@items, { count => $d->{count}, title => $d->{pdata}->{title} });
 		push(@itms2, qq~{
-			"count": $d->{count}, "title": "$d->{pdata}->{title}"
+			"count": $d->{count},
+			"title": "$d->{pdata}->{title}",
+			"price": "CHF $d->{pdata}->{price_incl_vat_fmt}"
 		}~);
 	}
 
