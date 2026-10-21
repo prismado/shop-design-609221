@@ -149,9 +149,20 @@
 
           <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100
               absolute right-0 top-full w-80 rounded-xl bg-white shadow-lg ring-1 ring-black/5
-              py-2 text-sm text-gray-700 transition z-50">
-            <div id="cart-preview-body" class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+              text-sm text-gray-700 transition z-50 overflow-hidden">
+            <div id="cart-preview-body" class="max-h-64 overflow-y-auto divide-y divide-gray-100 py-2">
               <p class="px-4 py-3 text-gray-400">Warenkorb wird geladen&hellip;</p>
+            </div>
+            <div id="cart-preview-footer" class="hidden border-t border-gray-100">
+              <div class="flex items-center justify-between gap-3 px-4 py-2.5 font-bold text-gray-900 bg-gray-50">
+                <span>Total</span>
+                <span id="cart-preview-total"></span>
+              </div>
+              <a href="/checkout/"
+                  class="block text-center bg-[#1c1512] hover:bg-red-600 text-white text-sm font-semibold
+                      px-4 py-2.5 transition-colors">
+                Zur Kasse
+              </a>
             </div>
           </div>
 	</div>
@@ -206,11 +217,13 @@
 	}
 
 	function renderCartPreview(data) {
-		var body = document.getElementById('cart-preview-body');
+		var body   = document.getElementById('cart-preview-body');
+		var footer = document.getElementById('cart-preview-footer');
 		if (!body) return;
 
 		if (!data.items || !data.items.length) {
 			body.innerHTML = '<p class="px-4 py-3 text-gray-400">Ihr Warenkorb ist leer.</p>';
+			if (footer) footer.classList.add('hidden');
 			return;
 		}
 
@@ -228,12 +241,13 @@
 				+ '</span>'
 				+ '</div>';
 		});
-		html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5 font-bold text-gray-900 bg-gray-50">'
-			+ '<span>Total</span>'
-			+ '<span>' + data.currency + ' ' + data.basket_total + '</span>'
-			+ '</div>';
 
 		body.innerHTML = html;
+
+		if (footer) {
+			footer.classList.remove('hidden');
+			document.getElementById('cart-preview-total').textContent = data.currency + ' ' + data.basket_total;
+		}
 	}
 
 	function fetchCartInfo() {
