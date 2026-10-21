@@ -19,7 +19,8 @@
 		push(@items, qq~{
 			"count": $d->{count},
 			"title": "$d->{pdata}->{title}",
-			"price": "CHF $d->{pdata}->{price_incl_vat_fmt}"
+			"price": $d->{pdata}->{price_incl_vat},
+			"upsell": $d->{upsell}
 		}~);
 	}
 
