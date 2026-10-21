@@ -183,7 +183,10 @@
 </header>
 
 <script>
-	var cartPreviewLoaded = false;
+	// -- Vom initialen Page-Load-Fetch befüllt und beim Hover wiederverwendet, damit der
+	//    Warenkorb-Zähler nach einem Seitenwechsel (Reload) sofort stimmt, ohne für das Mini-Modal
+	//    ein zweites Mal nachzuladen.
+	var cartData = null;
 
 	// -- Rein textbasiertes Escaping für sicheres Einfügen von Produkttiteln via innerHTML
 	function escapeHtmlCartPreview(str) {
@@ -192,44 +195,67 @@
 		return div.innerHTML;
 	}
 
-	function loadCartPreview() {
-		if (cartPreviewLoaded) return;
-		cartPreviewLoaded = true;
+	function updateCartCount(data) {
+		var el = document.getElementById('cart-count');
+		if (el) el.textContent = data.item_count || 0;
+	}
 
+	function renderCartPreview(data) {
 		var body = document.getElementById('cart-preview-body');
+		if (!body) return;
 
-		fetch('/dyn/get-basket-info.html')
+		if (!data.items || !data.items.length) {
+			body.innerHTML = '<p class="px-4 py-3 text-gray-400">Ihr Warenkorb ist leer.</p>';
+			return;
+		}
+
+		var html = '';
+		data.items.forEach(function (item) {
+			var itemTotal = item.price + (item.upsell || 0);
+
+			html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5">'
+				+ '<span class="flex-1 min-w-0 truncate">'
+				+ (item.count > 1 ? item.count + '&times; ' : '')
+				+ escapeHtmlCartPreview(item.title)
+				+ '</span>'
+				+ '<span class="flex-shrink-0 font-medium text-gray-900">'
+				+ data.currency + ' ' + itemTotal.toFixed(2)
+				+ '</span>'
+				+ '</div>';
+		});
+		html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5 font-bold text-gray-900 bg-gray-50">'
+			+ '<span>Total</span>'
+			+ '<span>' + data.currency + ' ' + data.basket_total + '</span>'
+			+ '</div>';
+
+		body.innerHTML = html;
+	}
+
+	function fetchCartInfo() {
+		return fetch('/dyn/get-basket-info.html')
 			.then(function (res) { return res.json(); })
 			.then(function (data) {
-				if (!data.items || !data.items.length) {
-					body.innerHTML = '<p class="px-4 py-3 text-gray-400">Ihr Warenkorb ist leer.</p>';
-					return;
-				}
-
-				var html = '';
-				data.items.forEach(function (item) {
-					var itemTotal = item.price + (item.upsell || 0);
-
-					html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5">'
-						+ '<span class="flex-1 min-w-0 truncate">'
-						+ (item.count > 1 ? item.count + '&times; ' : '')
-						+ escapeHtmlCartPreview(item.title)
-						+ '</span>'
-						+ '<span class="flex-shrink-0 font-medium text-gray-900">'
-						+ data.currency + ' ' + itemTotal.toFixed(2)
-						+ '</span>'
-						+ '</div>';
-				});
-				html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5 font-bold text-gray-900 bg-gray-50">'
-					+ '<span>Total</span>'
-					+ '<span>' + data.currency + ' ' + data.basket_total + '</span>'
-					+ '</div>';
-
-				body.innerHTML = html;
-			})
-			.catch(function () {
-				cartPreviewLoaded = false;
-				body.innerHTML = '<p class="px-4 py-3 text-red-600">Warenkorb konnte nicht geladen werden.</p>';
+				cartData = data;
+				updateCartCount(data);
+				return data;
 			});
 	}
+
+	function loadCartPreview() {
+		if (cartData) {
+			renderCartPreview(cartData);
+			return;
+		}
+
+		fetchCartInfo()
+			.then(renderCartPreview)
+			.catch(function () {
+				var body = document.getElementById('cart-preview-body');
+				if (body) body.innerHTML = '<p class="px-4 py-3 text-red-600">Warenkorb konnte nicht geladen werden.</p>';
+			});
+	}
+
+	// -- Zähler direkt beim Seitenaufbau mit dem tatsächlichen Warenkorb-Inhalt befüllen
+	//    (statt dem hartkodierten "0" im Markup), auch nach einem Seitenwechsel/Reload.
+	fetchCartInfo().catch(function () {});
 </script>
