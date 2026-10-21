@@ -19,6 +19,7 @@
 		push(@items, qq~{
 			"count": $d->{count},
 			"title": "$d->{pdata}->{title}",
+			"prod_id": $d->{prod_id},
 			"price": $d->{pdata}->{price_incl_vat},
 			"upsell": $d->{upsell}
 		}~);
@@ -46,9 +47,5 @@ XXX:
 foreach	my $d (@{$bask_info->{items}}) {
 	<b><% $d->{count} %> &times; <%	$d->{pdata}->{title} %></b><br>
 		<% $d->{pdata}->{desc_keyw} %> / Prod-ID <% $d->{prod_id} %><br>
-		CHF <% $d->{pdata}->{price_incl_vat_fmt} %>
-	if ($d->{upsell} > 0) {
-			+ CHF <% $d->{upsell} %>
-	}
 }
 </%doc>
