@@ -15,6 +15,8 @@ function addProductToBasket(el, prodId) {
 				if (cartBadge) {
 					var n = (parseInt(cartBadge.textContent, 10) || 0) + 1;
 					cartBadge.textContent = n;
+					cartBadge.classList.remove('hidden');
+					cartBadge.classList.add('flex');
 					cartBadge.classList.remove('pop');
 					void cartBadge.offsetWidth;
 					cartBadge.classList.add('pop');
@@ -50,6 +52,8 @@ function saveToWishlist(el, prodId) {
 				if (wishlistBadge) {
 					var n = (parseInt(wishlistBadge.textContent, 10) || 0) + 1;
 					wishlistBadge.textContent = n;
+					wishlistBadge.classList.remove('hidden');
+					wishlistBadge.classList.add('flex');
 					wishlistBadge.classList.remove('pop');
 					void wishlistBadge.offsetWidth;
 					wishlistBadge.classList.add('pop');

@@ -21,6 +21,8 @@ function removeFromWishlist(el, prodId) {
 				if (wishlistBadge) {
 					var n = Math.max(0, (parseInt(wishlistBadge.textContent, 10) || 0) - 1);
 					wishlistBadge.textContent = n;
+					wishlistBadge.classList.toggle('hidden', n <= 0);
+					wishlistBadge.classList.toggle('flex', n > 0);
 				}
 
 				showToast(true, 'Artikel wurde von der Merkliste entfernt.');
