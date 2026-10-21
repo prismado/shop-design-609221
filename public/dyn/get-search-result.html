@@ -1,0 +1,27 @@
+<%init>
+	use utf8;
+
+	# -- dyn/get-search-result
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm = $C->get_user_perm();
+	my $lang = 'de';
+
+	my $cgi = $C->{CGI};
+
+	my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+
+	my $rc  = 0;
+	my $msg = '';
+
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": <% $rc %>,
+  "message": "<% $msg %>"
+}
