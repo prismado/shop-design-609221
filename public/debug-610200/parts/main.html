@@ -35,7 +35,9 @@
 					[get_basket_items_v2] - <b><% $_ %></b> = <% $bask_info->{$_} %><br>
 %				}
 %				foreach my $d (@{$bask_info->{items}}) {
+					<% $d->{count} %> &times;
 %					foreach (sort keys %$d) {
+%						next if $_ eq 'basket_id' or $_ eq 'instime' or $_ eq 'count' or $_ eq 'vat_perc';
 						XX <% $_ %> = <% $d->{$_} %><br>
 %					}
 					------------------<br>
