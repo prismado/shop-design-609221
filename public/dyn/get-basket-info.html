@@ -16,7 +16,9 @@
 	my @items = ();
 
 	foreach	my $d (@{$bask_info->{items}}) {
-		# push(@items, XXX YYY);
+		push(@items, {
+			count => $d->{count}
+		});
 	}
 
 	my $res;
@@ -29,12 +31,16 @@
 {
   "rc": <% $res->{rc} %>,
   "message": "<% $res->{msg} %>",
+% foreach my $d (@items) {
+%	foreach (sort keys %$d) {
+		"<% $_ %>": "<% $d->{$_} %>",
+%	}
+	"eeeeeee": "-----------",
+% }
   "basket_total": "<% sprintf('CHF %.2f', $bask_info->{basket_total}) %>"
 }
 <%doc>
 XXX:
-
-my $bask_info =	$A->get_basket_items_v2();
 
 foreach	my $d (@{$bask_info->{items}}) {
 	<b><% $d->{count} %> &times; <%	$d->{pdata}->{title} %></b><br>
@@ -43,7 +49,5 @@ foreach	my $d (@{$bask_info->{items}}) {
 	if ($d->{upsell} > 0) {
 			+ CHF <% $d->{upsell} %>
 	}
-	<br>
-	------------------<br>
 }
 </%doc>
