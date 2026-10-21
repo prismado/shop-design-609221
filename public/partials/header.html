@@ -137,14 +137,24 @@
             <span id="wishlist-count" class="absolute -top-0.5 -right-0.5 bg-white text-red-600 text-[10px] font-bold rounded-full w-4.5 h-4.5 min-w-[18px] h-[18px] flex items-center justify-center">0</span>
           </button>
 	</a>
-	<a href="/basket">
+	<div class="relative group" onmouseenter="loadCartPreview()">
+	  <a href="/basket">
           <button class="relative flex items-center rounded-full p-2.5 text-white hover:bg-white/10 transition" aria-label="Warenkorb">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
             </svg>
             <span id="cart-count" class="absolute -top-0.5 -right-0.5 bg-white text-red-600 text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">0</span>
           </button>
-	</a>
+	  </a>
+
+          <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100
+              absolute right-0 top-full w-80 rounded-xl bg-white shadow-lg ring-1 ring-black/5
+              py-2 text-sm text-gray-700 transition z-50">
+            <div id="cart-preview-body" class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+              <p class="px-4 py-3 text-gray-400">Warenkorb wird geladen&hellip;</p>
+            </div>
+          </div>
+	</div>
         </div>
       </div>
     </div>
@@ -171,3 +181,53 @@
     </div>
   </div>
 </header>
+
+<script>
+	var cartPreviewLoaded = false;
+
+	// -- Rein textbasiertes Escaping für sicheres Einfügen von Produkttiteln via innerHTML
+	function escapeHtmlCartPreview(str) {
+		var div = document.createElement('div');
+		div.textContent = str || '';
+		return div.innerHTML;
+	}
+
+	function loadCartPreview() {
+		if (cartPreviewLoaded) return;
+		cartPreviewLoaded = true;
+
+		var body = document.getElementById('cart-preview-body');
+
+		fetch('/dyn/get-basket-info.html')
+			.then(function (res) { return res.json(); })
+			.then(function (data) {
+				if (!data.items || !data.items.length) {
+					body.innerHTML = '<p class="px-4 py-3 text-gray-400">Ihr Warenkorb ist leer.</p>';
+					return;
+				}
+
+				var html = '';
+				data.items.forEach(function (item) {
+					html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5">'
+						+ '<span class="flex-1 min-w-0 truncate">'
+						+ (item.count > 1 ? item.count + '&times; ' : '')
+						+ escapeHtmlCartPreview(item.title)
+						+ '</span>'
+						+ '<span class="flex-shrink-0 font-medium text-gray-900">'
+						+ data.currency + ' ' + item.price.toFixed(2)
+						+ '</span>'
+						+ '</div>';
+				});
+				html += '<div class="flex items-center justify-between gap-3 px-4 py-2.5 font-bold text-gray-900 bg-gray-50">'
+					+ '<span>Total</span>'
+					+ '<span>' + data.currency + ' ' + data.basket_total + '</span>'
+					+ '</div>';
+
+				body.innerHTML = html;
+			})
+			.catch(function () {
+				cartPreviewLoaded = false;
+				body.innerHTML = '<p class="px-4 py-3 text-red-600">Warenkorb konnte nicht geladen werden.</p>';
+			});
+	}
+</script>
