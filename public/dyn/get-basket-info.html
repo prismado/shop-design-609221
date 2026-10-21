@@ -19,6 +19,7 @@
 		push(@items, qq~{
 			"count": $d->{count},
 			"title": "$d->{pdata}->{title}",
+			"desc": "$d->{pdata}->{desc_keyw}",
 			"prod_id": $d->{prod_id},
 			"price": $d->{pdata}->{price_incl_vat},
 			"upsell": $d->{upsell}
