@@ -1,5 +1,6 @@
 	var toast = document.getElementById('toast-1');
 
+	var thumb     = toast.querySelector('.toast-thumb');
 	var iconOk    = toast.querySelector('.toast-icon-success');
 	var iconError = toast.querySelector('.toast-icon-error');
 	var text      = toast.querySelector('.toast-text');
@@ -12,8 +13,15 @@
 	var toastQueue   = [];
 	var toastShowing = false;
 
-	function showToast(ok, message, delay) {
-		toastQueue.push({ ok: ok, message: message, delay: (typeof delay === 'number') ? delay : 4000 });
+	// -- imgUrl ist optional (z. B. Produkt-Thumbnail beim "In den Warenkorb"); bestehende
+	// Aufrufer ohne 4. Argument sind unverändert kompatibel.
+	function showToast(ok, message, delay, imgUrl) {
+		toastQueue.push({
+			ok:      ok,
+			message: message,
+			delay:   (typeof delay === 'number') ? delay : 4000,
+			imgUrl:  imgUrl || null
+		});
 		if (!toastShowing) processToastQueue();
 	}
 
@@ -22,8 +30,12 @@
 		if (!next) { toastShowing = false; return; }
 		toastShowing = true;
 
-		iconOk.classList.toggle('hidden', !next.ok);
-		iconError.classList.toggle('hidden', next.ok);
+		var hasThumb = !!next.imgUrl;
+		thumb.classList.toggle('hidden', !hasThumb);
+		if (hasThumb) thumb.src = next.imgUrl;
+
+		iconOk.classList.toggle('hidden', hasThumb || !next.ok);
+		iconError.classList.toggle('hidden', hasThumb || next.ok);
 		toast.classList.toggle('bg-green-50', next.ok);
 		toast.classList.toggle('border-green-200', next.ok);
 		toast.classList.toggle('bg-red-50', !next.ok);
