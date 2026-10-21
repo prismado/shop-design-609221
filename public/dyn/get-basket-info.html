@@ -13,14 +13,14 @@
 
 	my $bask_info =	$A->get_basket_items_v2();
 
-	my @items = ();
+	my @items = my @itms2 = ();
 
 	foreach	my $d (@{$bask_info->{items}}) {
-print STDERR "XXX ......... $d->{pdata}->{title}\n";
 		push(@items, {
 			count => $d->{count},
 			title => $d->{pdata}->{title}
 		});
+		push(@itms2, qq~{ "count": $d->{count}, "title": "$d->{pdata}->{title}" }~);
 	}
 
 	my $res;
@@ -34,12 +34,9 @@ print STDERR "XXX ......... $d->{pdata}->{title}\n";
   "rc": <% $res->{rc} %>,
   "message": "<% $res->{msg} %>",
   "item_count": <% $#items + 1 %>,
-% foreach my $d (@items) {
-%	foreach (sort keys %$d) {
-		"<% $_ %>": "<% $d->{$_} %>",
-%	}
-	"eeeeeee": "-----------",
-% }
+  "items": [
+	<% join ",\n", @itms2 %>
+  ],
   "basket_total": "<% sprintf('CHF %.2f', $bask_info->{basket_total}) %>"
 }
 <%doc>
