@@ -9,18 +9,20 @@ function addProductToBasket(el, prodId) {
 	fetch('/dyn/add-to-basket.html', { method: 'POST', body: body })
 		.then(function (res) { return res.json(); })
 		.then(function (data) {
-			var cartBadge = document.getElementById('cart-count');
 			if (data.rc === 0) {
 				showToast(true, 'Der Artikel wurde hinzugefügt.', 6000);
-				if (cartBadge) {
-					var n = (parseInt(cartBadge.textContent, 10) || 0) + 1;
-					cartBadge.textContent = n;
-					cartBadge.classList.remove('hidden');
-					cartBadge.classList.add('flex');
-					cartBadge.classList.remove('pop');
-					void cartBadge.offsetWidth;
-					cartBadge.classList.add('pop');
-				}
+
+				// -- Zähler & Mini-Basket-Cache aus derselben Quelle (fetchCartInfo, siehe
+				//    partials/header.html) aktuell halten, statt den Badge lokal hochzuzählen
+				//    und das Mini-Basket dabei veralten zu lassen.
+				fetchCartInfo().then(function () {
+					var cartBadge = document.getElementById('cart-count');
+					if (cartBadge) {
+						cartBadge.classList.remove('pop');
+						void cartBadge.offsetWidth;
+						cartBadge.classList.add('pop');
+					}
+				});
 			} else {
 				showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
 			}
