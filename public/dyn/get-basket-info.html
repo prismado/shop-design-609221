@@ -16,11 +16,10 @@
 	my @items = my @itms2 = ();
 
 	foreach	my $d (@{$bask_info->{items}}) {
-		push(@items, {
-			count => $d->{count},
-			title => $d->{pdata}->{title}
-		});
-		push(@itms2, qq~{ "count": $d->{count}, "title": "$d->{pdata}->{title}" }~);
+		# XXX push(@items, { count => $d->{count}, title => $d->{pdata}->{title} });
+		push(@itms2, qq~{
+			"count": $d->{count}, "title": "$d->{pdata}->{title}"
+		}~);
 	}
 
 	my $res;
@@ -33,7 +32,7 @@
 {
   "rc": <% $res->{rc} %>,
   "message": "<% $res->{msg} %>",
-  "item_count": <% $#items + 1 %>,
+  "item_count": <% $#itms2 + 1 %>,
   "items": [
 	<% join ",\n", @itms2 %>
   ],
