@@ -41,5 +41,6 @@
   "message": "<% $res->{msg} %>",
   "item_count": <% $#items + 1 %>,
   "items": <% $items_json %>,
-  "basket_total": "<% sprintf('CHF %.2f', $bask_info->{basket_total}) %>"
+  "currency": "<% $C->{CONFIG}->{default_curr} %>",
+  "basket_total": "<% sprintf('%.2f', $bask_info->{basket_total}) %>"
 }
