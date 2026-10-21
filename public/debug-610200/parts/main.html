@@ -11,6 +11,8 @@
 
 	my $basket_h = $A->get_basket_items();
 
+	my $bask_info = $A->get_basket_items_v2();
+
 	my $sth = $C->{dbh}->prepare(qq~select id, `key`, val, tstamp from session where sid=$sid order by 1 desc limit 999~);
 	   $sth->execute();
 
@@ -25,6 +27,13 @@
 
 			<p>
 				<% $basket_h->rows() %> Basket Items
+			</p>
+
+			<p class="mb-4">
+%				foreach (sort keys %$bask_info) {
+%					next if $_ eq 'VERSION';
+					[get_basket_items_v2] - <b><% $_ %></b> = <% $bask_info->{$_} %><br>
+%				}
 			</p>
 
 %			while(my $r = $sth->fetch()) {
