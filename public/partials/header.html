@@ -138,7 +138,7 @@
           </button>
 	</a>
 	<div class="relative group" onmouseenter="loadCartPreview()">
-	  <a href="/basket">
+	  <a href="/basket" onclick="handleCartIconClick(event)">
           <button class="relative flex items-center rounded-full p-2.5 text-white hover:bg-white/10 transition" aria-label="Warenkorb">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.836l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.87-4.788 2.13-7.393a1.115 1.115 0 0 0-1.115-1.256H6.14M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
@@ -147,7 +147,7 @@
           </button>
 	  </a>
 
-          <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100
+          <div id="cart-preview-panel" class="invisible opacity-0 group-hover:visible group-hover:opacity-100
               absolute right-0 top-full w-80 rounded-xl bg-white shadow-lg ring-1 ring-black/5
               text-sm text-gray-700 transition z-50 overflow-hidden">
             <div id="cart-preview-body" class="max-h-64 overflow-y-auto divide-y divide-gray-100 py-2">
@@ -277,4 +277,42 @@
 	// -- Zähler direkt beim Seitenaufbau mit dem tatsächlichen Warenkorb-Inhalt befüllen
 	//    (statt dem hartkodierten "0" im Markup), auch nach einem Seitenwechsel/Reload.
 	fetchCartInfo().catch(function () {});
+
+	// -- Auf Geräten ohne echtes Hover (Touch) würde ein Tap das Mini-Basket nur für einen
+	//    Sekundenbruchteil zeigen und sofort zu /basket weiterleiten. Dort wird der erste Tap
+	//    stattdessen zum Öffnen/Schliessen des Mini-Baskets genutzt; ein zweiter Tap auf das
+	//    Icon (oder ein Klick auf "Zur Kasse") navigiert normal weiter.
+	var cartPreviewOpen = false;
+
+	function hasRealHover() {
+		return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+	}
+
+	function closeCartPreviewOnOutsideClick(e) {
+		var panel = document.getElementById('cart-preview-panel');
+		if (panel && panel.contains(e.target)) return;
+
+		cartPreviewOpen = false;
+		panel.classList.add('invisible', 'opacity-0');
+		panel.classList.remove('visible', 'opacity-100');
+		document.removeEventListener('click', closeCartPreviewOnOutsideClick);
+	}
+
+	function handleCartIconClick(e) {
+		if (hasRealHover()) return; // Desktop: normales Link-Verhalten, Hover zeigt das Mini-Basket
+
+		if (cartPreviewOpen) return; // Zweiter Tap: normal zu /basket navigieren
+
+		e.preventDefault();
+		cartPreviewOpen = true;
+
+		var panel = document.getElementById('cart-preview-panel');
+		panel.classList.remove('invisible', 'opacity-0');
+		panel.classList.add('visible', 'opacity-100');
+		loadCartPreview();
+
+		setTimeout(function () {
+			document.addEventListener('click', closeCartPreviewOnOutsideClick);
+		}, 0);
+	}
 </script>
