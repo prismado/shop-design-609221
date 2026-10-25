@@ -14,7 +14,8 @@
 
 	my $cgi = $C->{CGI};
 
-	my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+	my $q = $cgi->param('q');
+	# XXX my $addr_type_id   = $cgi->param('addr_type_id') + 0;
 
 	my $rc  = 0;
 	my $msg = '';
