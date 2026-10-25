@@ -7,6 +7,7 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
+	my $cookie_consent = $C->get_cookie_consent();
 
 	my $cgi = $C->{CGI};
 
@@ -46,6 +47,8 @@
 	</section>
 
 </div>
+
+<& partials/inc_flowise_chat.html, C=>$C, cookie_consent=>$cookie_consent &>
 
 <& partials/footer.html, C => $C &>
 <& partials/footer_js.html, C => $C &>
