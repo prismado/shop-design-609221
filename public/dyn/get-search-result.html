@@ -17,7 +17,7 @@
 	my $q = $cgi->param('q');
 
 	my $stmt = qq~
-		select  DISTINCT id, title, `description`
+		select  DISTINCT id, title, `description`, price
 		from    vproducts
 		where   lang='$lang' AND (
 				match `description` AGAINST ('$q' IN BOOLEAN MODE) OR
@@ -32,11 +32,12 @@
 
 	my @result = ();
 	while(my $r = $sth->fetch()) {
-		my ($id, $title, $desc) = @{$r};
+		my ($id, $title, $desc, $price) = @{$r};
 		push(@result, {
 			id    => $id,
 			title => $title,
 			desc  => $desc,
+			price => $price,
 			img   => "/produkte/p$id\_thmb.jpg",
 			url   => "/product/?id=$id"
 		});
