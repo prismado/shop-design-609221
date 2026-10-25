@@ -1,5 +1,6 @@
 <%init>
 	use utf8;
+	use JSON;
 
 	# -- dyn/get-search-result
 
@@ -16,19 +17,21 @@
 
 	my $q = $cgi->param('q');
 
+	# -- Platzhalter statt String-Interpolation, damit $q (Benutzereingabe) nicht als SQL
+	#    interpretiert werden kann (SQL-Injection).
 	my $stmt = qq~
 		select  DISTINCT id, title, `description`, price
 		from    vproducts
-		where   lang='$lang' AND (
-				match `description` AGAINST ('$q' IN BOOLEAN MODE) OR
-				title LIKE '%$q%'
+		where   lang=? AND (
+				match `description` AGAINST (? IN BOOLEAN MODE) OR
+				title LIKE ?
 			)
 			AND `count`>0 AND campaign_id=0
 		order   by id DESC
 		limit   250
 	~;
 	my $sth = $C->{dbh}->prepare($stmt);
-	   $sth->execute();
+	   $sth->execute($lang, $q, "%$q%");
 
 	my @result = ();
 	while(my $r = $sth->fetch()) {
@@ -37,11 +40,16 @@
 			id    => $id,
 			title => $title,
 			desc  => $desc,
-			price => $price,
+			price => $price + 0,
 			img   => "/produkte/p$id\_thmb.jpg",
 			url   => "/product/?id=$id"
 		});
 	}
+
+	# -- Ergebnisse via JSON-Modul serialisieren statt String-Interpolation, damit Sonderzeichen
+	#    in Titel/Beschreibung (Anführungszeichen, Backslashes, Zeilenumbrüche) das JSON nicht brechen.
+	my $json        = JSON->new();
+	my $result_json = $json->encode(\@result);
 
 	my $rc  = 0;
 	my $msg = '';
@@ -51,8 +59,5 @@
 {
   "rc": <% $rc %>,
   "message": "<% $msg %>",
-  "results": [
-	{ "id": 123, "title": "Foo", "desc": "tbd 1", "img": "/produkte/p5_thmb.jpg", "price": 44.5, "url": "/foo" },
-	{ "id": 321, "title": "Bar", "desc": "tbd 2", "img": "/produkte/p7_thmb.jpg", "price": 66.7, "url": "/bar" }
-  ]
+  "results": <% $result_json %>
 }
