@@ -35,7 +35,6 @@
 
 	my @result = ();
 	while(my $r = $sth->fetch()) {
-		# XXX my ($id, $title, $desc, $price) = @{$r};
 		my $id = $r->[0];
 		my $p = $A->get_product_v2(id => $id, public => 1);
 		push(@result, {
@@ -43,7 +42,7 @@
 			title => $p->{title},
 			desc  => $p->{description},
 			price => $p->{price_incl_vat} + 0,
-			img   => "/produkte/p$id\_thmb.jpg",
+			img   => $p->{image}->{url_thmb},
 			url   => "/product/?id=$id"
 		});
 	}
