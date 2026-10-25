@@ -20,7 +20,7 @@
 	# -- Platzhalter statt String-Interpolation, damit $q (Benutzereingabe) nicht als SQL
 	#    interpretiert werden kann (SQL-Injection).
 	my $stmt = qq~
-		select  DISTINCT id, title, `description`, price
+		select  DISTINCT id
 		from    vproducts
 		where   lang=? AND (
 				match `description` AGAINST (? IN BOOLEAN MODE) OR
@@ -35,12 +35,14 @@
 
 	my @result = ();
 	while(my $r = $sth->fetch()) {
-		my ($id, $title, $desc, $price) = @{$r};
+		# XXX my ($id, $title, $desc, $price) = @{$r};
+		my $id = $r->[0];
+		my $p = $A->get_product_v2(id => $id, public => 1);
 		push(@result, {
 			id    => $id,
-			title => $title,
-			desc  => $desc,
-			price => $price + 0,
+			title => $p->{title},
+			desc  => $p->{description},
+			price => $p->{price_incl_vat} + 0,
 			img   => "/produkte/p$id\_thmb.jpg",
 			url   => "/product/?id=$id"
 		});
