@@ -17,6 +17,18 @@
 	my $daily_active_cls = $cur_cat_id
 		? 'bg-gray-100 text-[#1c1512] lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
 		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
+
+	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
+	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
+	my ($cur_section) = $C->this() =~ m{^([^/]+)};
+
+	my $about_active_cls = ($cur_section eq 'about')
+		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+
+	my $contact_active_cls = ($cur_section eq 'contact')
+		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 </%init>
   <!-- Navigation (links, ca. 15%) -->
   <aside class="mb-8 lg:mb-0 lg:sticky lg:self-start" style="top: var(--header-h, 0px)">
@@ -107,8 +119,8 @@
 
     <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
-      <a href="/about" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-[#1c1512] lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Unternehmen</a>
-      <a href="/contact" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-[#1c1512] lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Kontakt</a>
+      <a href="/about" class="flex-shrink-0 whitespace-nowrap <% $about_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Unternehmen</a>
+      <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $contact_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Kontakt</a>
       <a href="#" class="flex-shrink-0 whitespace-nowrap bg-gray-50 text-[#1c1512] lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 lg:border-transparent hover:text-gray-800 hover:bg-gray-100 transition-colors">Newsletter</a>
 
     </nav>
