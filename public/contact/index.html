@@ -34,7 +34,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased min-h-screen flex flex-col">
 
-<& partials/header.html, A => $A, C => $C &>
+<& partials/header.html, perm => $perm, A => $A, C => $C &>
 
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
@@ -42,10 +42,9 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main.html, C => $C &>
+		<& parts/main.html, perm => $perm, C => $C &>
 	</section>
 
-% # XX	<& partials/daily_offer.html, C => $C, A => $A &>
 </div>
 
 <& partials/footer.html, C => $C &>
