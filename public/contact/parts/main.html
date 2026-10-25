@@ -31,6 +31,7 @@
 		</div>
 
 		<div>
+			<img src="/<% $pdfconf->{logo_path} %>">
 			<b><% $C->txt('site_company') %></b><br>
 			<% $C->txt('site_addr') %><br>
 			CH-<% $C->txt('site_zip') %> <% $C->txt('site_city') %><br><br>
@@ -38,10 +39,14 @@
 			Telefon <% $C->txt('site_phone') %><br>
 			E-Mail <% $C->txt('site_email') %><br><br>
 
-			X @<% $C->txt('site_twitter') %>
+			X @<% $C->txt('site_twitter') %><br><br>
+
+			<% $pdfconf->{company_vat_no} %><br><br>
+
+			<i><% $pdfconf->{company_slogan} %></i>
 
 %			foreach (sort keys %$pdfconf) {
-				XX <% $_ %> = <% $pdfconf->{$_} %><br>
+% # XXX				XX <% $_ %> = <% $pdfconf->{$_} %><br>
 %			}
 		</div>
 
