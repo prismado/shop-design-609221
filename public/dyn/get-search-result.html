@@ -15,7 +15,32 @@
 	my $cgi = $C->{CGI};
 
 	my $q = $cgi->param('q');
-	# XXX my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+
+	my $stmt = qq~
+		select  DISTINCT id, title, `description`
+		from    vproducts
+		where   lang='$lang' AND (
+				match `description` AGAINST ('$q' IN BOOLEAN MODE) OR
+				title LIKE '%$q%'
+			)
+			AND `count`>0 AND campaign_id=0
+		order   by id DESC
+		limit   250
+	~;
+	my $sth = $C->{dbh}->prepare($stmt);
+	   $sth->execute();
+
+	my @result = ();
+	while(my $r = $sth->fetch()) {
+		my ($id, $title, $desc) = @{$r};
+		push(@result, {
+			id    => $id,
+			title => $title,
+			desc  => $desc,
+			img   => "/produkte/p$id\_thmb.jpg",
+			url   => "/product/?id=$id"
+		});
+	}
 
 	my $rc  = 0;
 	my $msg = '';
