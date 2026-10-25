@@ -37,12 +37,14 @@
 	while(my $r = $sth->fetch()) {
 		my $id = $r->[0];
 		my $p = $A->get_product_v2(id => $id, public => 1);
+		my $img = $p->{image}->{url_thmb};
+		   $img = '/produkte/p7_thmb.webp' if $p->{image}->{url_thmb} =~ /_thmb\.$/;
 		push(@result, {
 			id    => $id,
 			title => $p->{title},
 			desc  => $p->{description},
 			price => $p->{price_incl_vat} + 0,
-			img   => $p->{image}->{url_thmb},
+			img   => $img,
 			url   => "/product/?id=$id"
 		});
 	}
