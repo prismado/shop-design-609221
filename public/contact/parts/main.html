@@ -11,7 +11,11 @@
 
 		<div>
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">contact</p>
-			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Kontakt</h1>
+			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Kontakt
+%				if ($perm->{is_admin}) {
+					<a href="/adx/manage-property.html?area=site">E</a>
+%				}
+			</h1>
 		</div>
 
 		<div class="flex flex-col sm:flex-row gap-6">
