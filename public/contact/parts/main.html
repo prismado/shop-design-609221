@@ -3,8 +3,9 @@
 
 	my %args = $m->caller_args(0);
 
-	my $perm = $args{perm};
-	my $C    = $args{C};
+	my $perm    = $args{perm};
+	my $pdfconf = $args{pfconf};
+	my $C       = $args{C};
 </%init>
 
 	<div class="flex flex-col gap-6">
@@ -38,6 +39,10 @@
 			E-Mail <% $C->txt('site_email') %><br><br>
 
 			X @<% $C->txt('site_twitter') %>
+
+%			foreach (sort keys %$pdfconf) {
+				XX <% $_ %> = <% $pdfconf->{$_} %><br>
+%			}
 		</div>
 
 	</div>

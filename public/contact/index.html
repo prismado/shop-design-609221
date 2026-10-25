@@ -6,8 +6,9 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	my $perm = $C->get_user_perm();
+	my $perm           = $C->get_user_perm();
 	my $cookie_consent = $C->get_cookie_consent();
+	my $pdfconf        = $C->load_config(table => 'pdf_config');
 
 	my $cgi = $C->{CGI};
 
@@ -43,7 +44,7 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main.html, perm => $perm, C => $C &>
+		<& parts/main.html, perm => $perm, pdfconf => $pdfconf, C => $C &>
 	</section>
 
 </div>
