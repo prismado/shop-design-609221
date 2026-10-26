@@ -42,6 +42,8 @@
 		id      => 'addr-deliv',
 		on_save => 'saveDeliveryAddress'
 	);
+
+	my $terms_modal_body = $m->scomp('../modal-terms.html');
 </%init>
 <div class="flex flex-col gap-6">
 	<div>
@@ -178,8 +180,14 @@
 %			}
 
 			<div class="mt-6">
-				<a href="modal-terms">Allgemeine Geschäftsbedingungen AGBs</a>
+				<button type="button" onclick="openModal('terms')" class="text-sm text-gray-700 underline
+						hover:text-red-600 transition-colors">
+					Allgemeine Geschäftsbedingungen AGBs
+				</button>
 			</div>
+
+			<& ../partials/inc_modal.html, id => 'terms', title => 'Allgemeine Geschäftsbedingungen',
+				body_html => $terms_modal_body &>
 
 			<form method="post" action="/payment/">
 			<input type="hidden" name="bogus_pid" value="<% $$ %>">
