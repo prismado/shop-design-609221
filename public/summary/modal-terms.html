@@ -1,4 +1,11 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+</%init>
 <h3>Unsere AGBs</h3>
 <p>
-	tbd
+	tbd <% $C->now(12) %>
 </p>
