@@ -42,7 +42,8 @@
 		}
 	}
 	else {
-		push(@msgs, "Ein Einkauf für $perm->{profile_firstname} $perm->{profile_lastname}");
+		push(@msgs, qq~Ein Einkauf für $perm->{profile_firstname} $perm->{profile_lastname}.
+				Die Lieferung nach XX erfolgt am Folge-Werktag.~);
 	}
 
 	$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
