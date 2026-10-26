@@ -22,14 +22,8 @@
 	$m->redirect('/basket') unless $bsk_itms->{item_count};
 	# push(@msgs, 'Ihr Warenkorb ist leer.') unless $bsk_itms->{item_count};
 
-	unless ($data{cur_order_id} > 0 or 1==1) { # XXX
-		# XXX $C->create_toast_note(
-		# XXX	title => 'Fehler',
-		# XXX	body  => 'Ihr Warenkorb ist leer.',
-		# XXX	type  => 'error',
-		# XXX	delay => 5000);
-		# XXX $m->redirect('/');
-	}
+	# XXX unless ($data{cur_order_id} > 0 or 1==1) { # XXX
+	# XXX }
 
 	if ($C->getSessData('flag_anon_buy') or $data{anon_uid}) {
 		if ($data{anon_uid}) {
