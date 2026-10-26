@@ -22,8 +22,6 @@
 	$m->redirect('/basket') unless $bsk_itms->{item_count};
 	# push(@msgs, 'Ihr Warenkorb ist leer.') unless $bsk_itms->{item_count};
 
-	# XXX unless ($data{cur_order_id} > 0 or 1==1) { # XXX
-	# XXX }
 	my $deliv = $A->get_address(2); # -- Get delivery address from current user
 
 	if ($C->getSessData('flag_anon_buy') or $data{anon_uid}) {
@@ -37,7 +35,6 @@
 		}
 	}
 	else {
-		# XXX my $deliv = $A->get_address(2);
 		my $dlv_city = $deliv->{city} || 'n/a';
 		push(@msgs, qq~Ein Einkauf für $perm->{profile_firstname} $perm->{profile_lastname}.
 				Die Lieferung nach <b>$dlv_city</b> erfolgt am Folge-Werktag.~);
