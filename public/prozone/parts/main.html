@@ -44,6 +44,7 @@
 			</div>
 		</div>
 
+<%doc>
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 			<div class="rounded-2xl border border-gray-200 bg-white p-5">
 				<p class="font-semibold text-gray-900"><% $C->txt('site_company') %></p>
@@ -51,8 +52,7 @@
 				<p class="text-sm text-gray-500 italic mt-3"><% $pdfconf->{company_slogan} %></p>
 			</div>
 		</div>
-
-% # XX		<div> <p class="text-sm text-gray-600 leading-relaxed"> </p> </div>
+</%doc>
 
 		<& ../partials/inc_alert.html, type => 'info',
 			msg => 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.' &>
