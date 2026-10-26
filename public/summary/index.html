@@ -59,7 +59,8 @@
 	$C->cgi2session();
 
 	my $ship_meth     = $C->{CGI}->param('ship_meth')            || $C->getSessData('ship_meth');
-	my $remarks       = $C->{CGI}->param('checkout_bemerkungen') || $C->getSessData('checkout_bemerkungen');
+	my $remarks       = $C->getSessData('checkout_bemerkungen') // '';
+	# XXX my $remarks       = $C->{CGI}->param('checkout_bemerkungen') || $C->getSessData('checkout_bemerkungen');
 	   $remarks       =~ s/\&/&amp;/g;
 	   $remarks       =~ s/\</&lt;/g;
 	   $remarks       =~ s/\>/&gt;/g;
