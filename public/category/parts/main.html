@@ -31,6 +31,9 @@
 	</div>
 
 	<div class="grid grid-cols-1 mt-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+%		unless ($args{rows}) {
+			<p>Derzeit sind alle Artikel in dieser Kategorie ausverkauft.</p>
+%		}
 %		foreach my $d (@$result) {
 			<& ../../partials/product_portlet.html, id => $d->{id}, prod => $d, A => $A, C => $C &>
 %		}
