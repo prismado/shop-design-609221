@@ -10,13 +10,24 @@
 
 	<div class="flex flex-col gap-6">
 
-		<div>
-			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">prozone</p>
-			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">PRO-Zone
+		<div class="flex items-center gap-2">
+			<div>
+				<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">prozone</p>
+				<h1 class="text-2xl md:text-3xl font-bold text-gray-900">PRO-Zone</h1>
+			</div>
 %				if ($perm->{is_admin}) {
-					<a href="/adx/manage-property.html?area=site">&#128393;</a>
+					<a href="/adx/manage-property.html?area=site" aria-label="Seite bearbeiten"
+						class="w-8 h-8 flex items-center justify-center rounded-full
+							text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+							stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round"
+								d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897
+									1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25
+									2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+						</svg>
+					</a>
 %				}
-			</h1>
 		</div>
 
 		<div class="flex flex-col sm:flex-row gap-6">
@@ -41,14 +52,18 @@
 		</div>
 
 		<div>
-			In diesem Bereich betreiben wir Shops für Unternehmungen in welchem Produkte an deren Mitarbeitenden
-			oder andere berechtigte Personen durch uns verkauft werden.<br><br>
-
-			Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.
+			<p class="text-sm text-gray-600 leading-relaxed">
+				In diesem Bereich betreiben wir Shops für Unternehmungen, in welchem Produkte an deren
+				Mitarbeitenden oder andere berechtigte Personen durch uns verkauft werden.
+			</p>
 		</div>
 
+		<& ../partials/inc_alert.html, type => 'info',
+			msg => 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.' &>
+
 		<div class="rounded-2xl border border-gray-200 bg-white p-5 max-w-md">
-			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Zugang anfordern</h2>
+			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-1">Zugang anfordern</h2>
+			<p class="text-sm text-gray-500 mb-4">Wir prüfen Ihre Anfrage und melden uns zeitnah.</p>
 
 			<form method="post"
 				onsubmit="document.getElementById('btn309200').disabled = true;
