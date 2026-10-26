@@ -10,6 +10,6 @@
 </%init>
 
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
-	<& product_portlet.html, id => $hl->{id}, hl => $hl, A => $A, C => $C, debug => $debug &>
+	<& product_portlet.html, id => $hl->{id}, prod => $hl, A => $A, C => $C, debug => $debug &>
 % }
 
