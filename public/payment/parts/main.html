@@ -183,9 +183,15 @@
 			</div>
 		</div>
 
+%		if (@$msgs) {
+			<div class="mt-4">
+			<& ../partials/inc_alert.html, msg => (join "<br>\n", @$msgs), type => $order_id < 0 ? 'error' : '' &>
+			</div>
+%		}
+
 % #		-------------------------------------------------------------------------------------------------------------
 %		if ($data->{pay_meth} eq 'prx') {
-		    <div class="mt-8 mb-6 flex justify-end">
+		    <div class="mt-6 mb-6 flex justify-end">
 			<form method="post" action="../_do.html">
 			<input type="hidden" name="action"      value="payrexx_start_payment">
 			<input type="hidden" name="amount"      value="<% $total_no_dot %>" />
@@ -207,17 +213,7 @@
 %		}
 % #		-------------------------------------------------------------------------------------------------------------
 
-%		if (@$msgs) {
-			<div class="mt-4">
-			<& ../partials/inc_alert.html, msg => (join "<br>\n", @$msgs), type => $order_id < 0 ? 'error' : '' &>
-			</div>
-%		}
-
 		<div class="mt-4">
-%			foreach (sort keys %$data) {
-% # XXX				[data] - <b><% $_ %></b> = <% $data->{$_} %><br>
-%			}
-
 %			foreach ($cgi->all_parameters) {
 % # XXX				X -- <% $_ %> = <% $cgi->param($_) %><br>
 %			}
