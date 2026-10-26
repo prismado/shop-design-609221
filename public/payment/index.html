@@ -54,6 +54,7 @@
 	}
 
 	$C->saveSessData('order_id', $data{order_id}) if $data{order_id} > 0;
+	$C->saveSessData('terms_accepted', 1);
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
