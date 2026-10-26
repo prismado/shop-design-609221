@@ -82,13 +82,14 @@
 %					if ($vouch_inf->{perc}) {
 						&ndash;<% $vouch_inf->{perc} %>%
 %					}
-					<span>Wert: <% $C->{CONFIG}->{default_curr} // 'CHx' %>
+					<span>Wert: <b><% $C->{CONFIG}->{default_curr} // 'CHF' %>
 %						if ($C->{CONFIG}->{round5}) {
 							<% $C->round_amount($grand_tot->{voucher_value_incl_vat}) %>
 %						}
 %						else {
 							<% sprintf('%.2f', $grand_tot->{voucher_value_incl_vat}) %>
 %						}
+						</b>
 					</span>
 				</div>
 			</div>
