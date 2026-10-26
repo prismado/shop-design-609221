@@ -16,6 +16,8 @@
 	my $debug  = $cgi->param('debug');
 
 	my @msgs = ();
+	my $terms_accepted = $C->getSessData('terms_accepted');
+
 	my $prod_id;
 
 	if ($delid) {
@@ -161,7 +163,8 @@
 			appmsgs   => \@appmsgs,
 			UID       => $UID,
 			A         => $A,
-			C         => $C
+			C         => $C,
+			terms_accepted => $terms_accepted
 		&>
 	</section>
 
