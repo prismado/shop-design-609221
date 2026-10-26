@@ -61,7 +61,6 @@
 				</div>
 %			}
 
-% # XXX			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl	overflow-hidden	bg-white">
 				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
 			</div>
@@ -83,7 +82,7 @@
 %					if ($vouch_inf->{perc}) {
 						&ndash;<% $vouch_inf->{perc} %>%
 %					}
-					<span>Wert: CHF 
+					<span>Wert: <% $C->{CONFIG}->{default_curr} // 'CHx' %>
 %						if ($C->{CONFIG}->{round5}) {
 							<% $C->round_amount($grand_tot->{voucher_value_incl_vat}) %>
 %						}
