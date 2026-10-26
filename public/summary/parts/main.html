@@ -193,51 +193,50 @@
 			<form method="post" action="/payment/">
 			<input type="hidden" name="bogus_pid" value="<% $$ %>">
 % #			============================================================================================================
-			<div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-8 p-5
+			<div class="flex items-center justify-between gap-4 mt-8 p-5
 					rounded-2xl border border-gray-200 bg-white">
-				<span class="text-base text-gray-900 sm:flex-shrink-0">
+				<span class="text-base text-gray-900">
 					Total inkl. <% $grand_tot->{default_vat} %>% MwSt.:
 				</span>
-				<span class="font-bold text-gray-900 sm:flex-1 sm:text-center">
+				<span class="font-bold text-gray-900">
 					CHF <% $C->decimal_mark($grand_tot->{grand_total}) %>
 				</span>
-
-% #				----------------------------------------------------------------------------------------------------
-				<div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-					<a href="/checkout"
-						class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border
-							border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700
-							text-sm font-semibold px-6 py-3.5 rounded-full transition-colors">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-							stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round"
-								d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-						</svg>
-						Zurück
-					</a>
-
-%					if ($args{UID} > 0) {
-						<button type="submit"
-						class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
-							hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
-							shadow transition-colors">
-%						if ($terms_ack) {
-							Bezahlen
-%						}
-%						else {
-							Bezahlen &amp; AGBs akzeptieren
-%						}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-							stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round"
-										d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-						</svg>
-						</button>
-%					}
-				</div>
-% #				----------------------------------------------------------------------------------------------------
 			</div>
-% #			============================================================================================================
+
+% #			----------------------------------------------------------------------------------------------------
+			<div class="flex flex-col sm:flex-row sm:justify-end gap-3 mt-5">
+				<a href="/checkout"
+					class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border
+						border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700
+						text-sm font-semibold px-6 py-3.5 rounded-full transition-colors">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+						stroke-width="2" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round"
+							d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+					</svg>
+					Zurück
+				</a>
+
+%				if ($args{UID} > 0) {
+					<button type="submit"
+					class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
+						hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
+						shadow transition-colors">
+%					if ($terms_ack) {
+						Bezahlen
+%					}
+%					else {
+						Bezahlen &amp; AGBs akzeptieren
+%					}
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+						stroke-width="2" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round"
+									d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+					</svg>
+					</button>
+%				}
+			</div>
+% #			----------------------------------------------------------------------------------------------------
 			</form>
 		</div>
 	</div>
