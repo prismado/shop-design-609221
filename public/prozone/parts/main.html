@@ -61,9 +61,7 @@
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-1">Zugang anfordern</h2>
 			<p class="text-sm text-gray-500 mb-6">Wir prüfen Ihre Anfrage und melden uns zeitnah.</p>
 
-			<form method="post"
-				onsubmit="document.getElementById('btn309200').disabled = true;
-					document.getElementById('btn309200-label').textContent = 'Wird gesendet…';">
+			<form method="post" onsubmit="event.preventDefault(); sendProzoneRequest(this);">
 			<input type="hidden" name="bGo" value="1">
 
 			<div class="mb-4">
@@ -85,11 +83,48 @@
 			</button>
 			</form>
 
-			<div class="mt-6">
-%				# ---------- Der Button wurde gedrückt
-				{{msg}}
+			<div id="prozone-result" class="hidden mt-6">
+				<p class="text-sm text-gray-600" id="prozone-result-msg"></p>
 			</div>
 		</div>
+
+		<script>
+		// Async-Versand des "Zugang anfordern"-Formulars (prozone/parts/main.html) an
+		// dyn/send-prozone.html — Ergebnis kommt wie gewohnt als Toast, zusätzlich wird der
+		// bis dahin versteckte Ergebnis-Bereich unter dem Formular eingeblendet und mit der
+		// Server-Meldung befüllt.
+		function sendProzoneRequest(form) {
+			var btn       = document.getElementById('btn309200');
+			var label     = document.getElementById('btn309200-label');
+			var resultBox = document.getElementById('prozone-result');
+			var resultMsg = document.getElementById('prozone-result-msg');
+
+			btn.disabled = true;
+			label.textContent = 'Wird gesendet…';
+
+			var body = new URLSearchParams(new FormData(form));
+
+			fetch('/dyn/send-prozone.html', { method: 'POST', body: body })
+				.then(function (res) { return res.json(); })
+				.then(function (data) {
+					resultMsg.textContent = data.message;
+					resultBox.classList.remove('hidden');
+
+					if (data.rc === 0) {
+						showToast(true, data.message);
+					} else {
+						showToast(false, data.message);
+						btn.disabled = false;
+						label.textContent = 'Zugang zu Pro-Zone anfordern';
+					}
+				})
+				.catch(function () {
+					showToast(false, 'Anfrage konnte nicht gesendet werden.');
+					btn.disabled = false;
+					label.textContent = 'Zugang zu Pro-Zone anfordern';
+				});
+		}
+		</script>
 
 	</div>
 
