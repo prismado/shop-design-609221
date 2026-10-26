@@ -16,6 +16,13 @@
 	my $debug  = $cgi->param('debug');
 
 	my @msgs = ();
+
+	my $x_msg = $C->getSessData('x_msg');
+	if ($x_msg) {
+		push(@msgs, $x_msg);
+		$C->del_sess_key('x_msg');
+	}
+
 	my $terms_accepted = $C->getSessData('terms_accepted');
 
 	my $prod_id;
