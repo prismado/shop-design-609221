@@ -11,6 +11,7 @@
 	my @path_elems = split /\//, $this;
 	my $home = $#path_elems ? '..' : '.';
 	   $home = '.' if $args{is_index};
+	   $home = ''  if $this eq '404'; # -- 26Oct2026
 </%init>
 <!-- ===== HEADER ===== -->
 <header class="sticky top-0 z-40 shadow-md">
