@@ -15,10 +15,12 @@
 	my $scope         = $C->uri_esc('openid profile');
 	my $proto         = $C->{CONFIG}->{HTTP_HOST} eq 'localhost' ? 'http' : 'https';
 	my $redirect_uri  = $C->uri_esc("$proto://$C->{CONFIG}->{HTTP_HOST}/sso/_callback/");
-	my $state         = 'x605171state';
+	my $state         = 's604161priv'; # -- 26Oct2026
+	# my $state       = 'x605171state';
 	my $nonce         = 'x605171none';
 
-	my $link = "https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize?client_id=$client_id&nonce=$nonce&redirect_uri=$redirect_uri&scope=$scope&state=$state&response_type=$response_type";
+	# my $link = "https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize?client_id=$client_id&nonce=$nonce&redirect_uri=$redirect_uri&scope=$scope&state=$state&response_type=$response_type";
+	my $link = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=$client_id&nonce=$nonce&redirect_uri=$redirect_uri&scope=$scope&state=$state&response_type=$response_type";
 
 	$m->redirect($link) unless $debug;
 </%init>
