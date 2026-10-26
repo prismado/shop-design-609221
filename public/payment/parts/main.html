@@ -191,11 +191,11 @@
 
 		<div class="mt-4">
 %			foreach (sort keys %$data) {
-				[data] - <b><% $_ %></b> = <% $data->{$_} %><br>
+% # XXX				[data] - <b><% $_ %></b> = <% $data->{$_} %><br>
 %			}
 
 %			foreach ($cgi->all_parameters) {
-				X -- <% $_ %> = <% $cgi->param($_) %><br>
+% # XXX				X -- <% $_ %> = <% $cgi->param($_) %><br>
 %			}
 		</div>
 	</div>
