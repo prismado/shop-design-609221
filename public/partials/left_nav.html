@@ -13,14 +13,15 @@
 	my $title = $C->{CONFIG}->{site_title};
 	my $daily_title = 'Tagesangebote am Dienstag';
 
-	# -- Nur aktiv, solange keine Kategorie ausgewählt ist
-	my $daily_active_cls = $cur_cat_id
-		? 'bg-gray-100 text-[#1c1512] lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
-		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
-
 	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
 	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
 	my ($cur_section) = $C->this() =~ m{^([^/]+)};
+	my $is_static_section = grep { $cur_section eq $_ } qw(about contact services prozone);
+
+	# -- Nur aktiv, solange weder eine Kategorie ausgewählt noch eine statische Seite aktiv ist
+	my $daily_active_cls = ($cur_cat_id || $is_static_section)
+		? 'bg-gray-100 text-[#1c1512] lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
+		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
 
 	my $about_active_cls = ($cur_section eq 'about')
 		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
@@ -113,9 +114,9 @@
 
 % #	============================================ PRO-Zone ============================================
 	<a href="/prozone" ZZdata-cat-id="9913"
-		class="bg-gray-100 text-[#1c1512] lg:border-transparent flex-shrink-0 whitespace-nowrap
-			lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-			lg:px-3 lg:border-l-2 <% $prozone_active_cls %>
+		class="flex-shrink-0 whitespace-nowrap <% $prozone_active_cls %> lg:bg-transparent
+			text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
+			lg:px-3 lg:border-l-2
 			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 		PRO-Zone
 	</a>
