@@ -16,6 +16,8 @@
 		$m->redirect('/');
 	}
 
+	my $authority = $cgi->param('state') eq 's604161priv' ? 'common' : 'organizations'; # -- 26Oct2026
+
 	my @msgs = ();
 	my $null = '';
 	my $res = \$null;
@@ -36,7 +38,8 @@
 					"&grant_type=authorization_code&code=$code&scope=openid+profile&redirect_uri=$redirect_uri";
 
 		$res = $C->lwp_post_raw_v2(
-			URL          => 'https://login.microsoftonline.com/organizations/oauth2/v2.0/token',
+			# XXX URL          => 'https://login.microsoftonline.com/organizations/oauth2/v2.0/token',
+			URL          => "https://login.microsoftonline.com/$authority/oauth2/v2.0/token",
 			content_type => 'application/x-www-form-urlencoded',
 			debug        => 0, # -- 0, 1, or 2
 			data         => \$data
