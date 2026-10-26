@@ -43,8 +43,9 @@
 	}
 	else {
 		my $deliv = $A->get_address(2);
+		my $dlv_city = $deliv->{city} || 'n/a';
 		push(@msgs, qq~Ein Einkauf für $perm->{profile_firstname} $perm->{profile_lastname}.
-				Die Lieferung nach $deliv->{city} erfolgt am Folge-Werktag.~);
+				Die Lieferung nach <b>$dlv_city</b> erfolgt am Folge-Werktag.~);
 	}
 
 	$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
