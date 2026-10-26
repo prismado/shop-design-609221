@@ -44,7 +44,7 @@
 		$data{order_id} = sprintf('%08d', $A->save_order($data{cur_order_id}), $data{anon_uid});
 	}
 	else {
-		$C->create_toast_note(title=>'Fehler', body=>'Lieferadresse fehlt', type => 'error');
+		$C->saveSessData('x_msg', 'Fehler: Lieferadresse fehlt.');
 		$m->redirect('/summary');
 	}
 
