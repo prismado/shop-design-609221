@@ -5,7 +5,6 @@
 
 	my $C = ScreenPoint::Core->new($r, $m);
 </%init>
-<h3>Unsere AGBs</h3>
 <p>
-	tbd <% $C->now(12) %>
+<% $C->txt('content', 'de', "custom/$C->{CONFIG}->{theme}/html/info_agb") %>
 </p>
