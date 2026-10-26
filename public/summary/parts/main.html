@@ -13,6 +13,7 @@
 	my $grand_tot = $args{grand_tot};
 	my $remarks   = $args{remarks};
 	my $appmsgs   = $args{appmsgs};
+	my $terms_ack = $args{terms_accepted};
 
 	my $lang = 'de';
 
@@ -209,7 +210,12 @@
 						class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#1c1512]
 							hover:bg-red-600 text-white text-sm font-semibold px-8 py-3.5 rounded-full
 							shadow transition-colors">
-						Bezahlen
+%						if ($terms_ack) {
+							Bezahlen
+%						}
+%						else {
+							Bezahlen &amp; AGBs akzeptieren
+%						}
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 							stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round"
