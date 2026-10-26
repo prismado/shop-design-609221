@@ -18,6 +18,9 @@
 	$data{cur_order_id} = $C->getSessData('order_id');
 	$data{pay_meth}     = $C->getSessData('checkout_zahlungsart_select');
 
+	my $bsk_itms = $A->get_basket_items_v2();
+	push(@msgs, 'Ihr Warenkorb ist leer.') unless $bsk_itms->{item_count};
+
 	unless ($data{cur_order_id} > 0 or 1==1) { # XXX
 		$C->create_toast_note(
 			title => 'Fehler',
