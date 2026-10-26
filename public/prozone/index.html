@@ -1,0 +1,58 @@
+<%init>
+	use utf8;
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $perm           = $C->get_user_perm();
+	my $cookie_consent = $C->get_cookie_consent();
+	my $pdfconf        = $C->load_config(table => 'pdf_config');
+
+	my $cgi = $C->{CGI};
+
+	my $debug = $cgi->param('debug');
+</%init>
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kontakt | <% $C->{CONFIG}->{site_title} %></title>
+<meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
+<link rel="preconnect" href="https://placehold.co">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; }
+  .reveal.in-view { animation: fadeInUp .5s ease-out forwards; }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  .pop { animation: pop .35s ease-out; }
+  ::-webkit-scrollbar { height: 6px; width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased min-h-screen flex flex-col">
+
+<& partials/header.html, perm => $perm, A => $A, C => $C &>
+
+<!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
+<div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
+
+	<& partials/left_nav.html, A => $A, C => $C &>
+
+	<section>
+		<& parts/main.html, perm => $perm, pdfconf => $pdfconf, C => $C &>
+	</section>
+
+</div>
+
+<& partials/inc_flowise_chat.html, C=>$C, cookie_consent=>$cookie_consent &>
+
+<& partials/footer.html, C => $C &>
+<& partials/footer_js.html, C => $C &>
+
+</body>
+</html>
