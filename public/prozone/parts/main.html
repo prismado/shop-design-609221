@@ -8,6 +8,15 @@
 	my $pdfconf = $args{pdfconf};
 	my $C       = $args{C};
 	my $msg     = $args{msg};
+
+	my $type = 'warning';
+	my %style = (
+		info    => { box => 'bg-gray-50 border-gray-200 text-gray-700',    icon => 'text-gray-400' },
+		success => { box => 'bg-green-50 border-green-200 text-green-800', icon => 'text-green-600' },
+		warning => { box => 'bg-amber-50 border-amber-200 text-amber-800', icon => 'text-amber-500' },
+		error   => { box => 'bg-red-50 border-red-200 text-red-700',       icon => 'text-red-600' },
+	);
+	my $s = $style{$type} || $style{info};
 </%init>
 
 	<div class="flex flex-col gap-6">
@@ -46,7 +55,7 @@
 		</div>
 
 		<div id="alert-441853410" role="alert"
-			class="flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm bg-amber-50 border-amber-200 text-amber-800">
+			class="flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm <% $s->{box} %>">
 			<span class="flex-shrink-0 mt-0.5 text-amber-500">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 					stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
