@@ -23,7 +23,7 @@
 <div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 % while(my $r = $sth->fetch()) {
 %	my $id       = $r->[0];
-%	my $prd      = $A->get_product_v2(id => $id);
+%	my $prd      = $A->get_product_v2(id => $id, opts => 1);
 %	my $cat_name = $C->query("select label from categories where id=$prd->{cat_id} and lang='de'")->[0];
 %	my $img_url  = $prd->{image}->{url_thmb};
 %	   $img_url  = '/assets/images/no_image.webp' unless $prd->{image}->{ext};
@@ -48,6 +48,15 @@
 			<span class="text-base font-bold text-gray-900 whitespace-nowrap">
 				CHF <% $prd->{price_incl_vat_fmt} %>
 			</span>
+		</div>
+
+		<div class="flex items-center gap-6 flex-shrink-0">
+%			if ($prd->{mand_count}) {
+				<a href="/product/?id=<% $id %>">Warenkorb</a>
+%			}
+%			else {
+				Warenkorb
+%			}
 		</div>
 	</div>
 % }
