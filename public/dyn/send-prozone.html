@@ -13,12 +13,12 @@
 	my $cgi = $C->{CGI};
 
 	# XXX my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+	my $email = $cgi->param('email');
+
+	my $domain = (split /\@/, $email)[1];
 
 	my $rc  = 0;
-	my $msg = 'XX construction';
-
-	# XXX if ($perm->{uid} > 0) {
-	# XXX }
+	my $msg = "XX Konstr. $domain";
 
 	$r->content_type('application/json; charset=utf-8');
 </%init>
