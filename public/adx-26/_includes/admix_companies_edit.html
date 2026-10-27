@@ -1,0 +1,136 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+
+	my $id = $C->{CGI}->param('edit') + 0;
+
+	my @appmsg = ();
+
+	if ($C->{CGI}->param('bUpdTok')) {
+		my $name       = $C->{CGI}->param('name') || '';
+		my $discount   = $C->{CGI}->param('discount') || 0.0;
+		my $zip        = $C->{CGI}->param('zip');
+		my $city       = $C->{CGI}->param('city');
+		$C->{dbh}->do("UPDATE companies SET name='$name', zip='$zip', city='$city', discount=$discount WHERE id=$id");
+		push(@appmsg, 'Updated');
+	}
+	elsif ($C->{CGI}->param('delmaildom')) {
+		my $dom_id = $C->{CGI}->param('delmaildom') || 0;
+		$C->{dbh}->do("DELETE FROM campaign_maildom WHERE id=$dom_id");
+		$m->out("Deleted<br>");
+	}
+	elsif ($C->{CGI}->param('bAddMailDom')) {
+		my $maildom = $C->trim($C->{CGI}->param('maildom'));
+		if ($maildom) {
+			$C->{dbh}->do("INSERT INTO campaign_maildom (company_id, mail_domain) VALUES ($id, '$maildom')");
+			$m->out("Added.<br>");
+		}
+	}
+	elsif ($C->{CGI}->param('bDelTok')) {
+		$C->{dbh}->do("DELETE FROM companies WHERE id=$id");
+		$C->{dbh}->do("DELETE FROM campaign_maildom WHERE company_id=$id");
+		$m->redirect('admix.html?func=companies');
+	}
+
+	my ($instime, $name, $discount) = @{$C->query("select tstamp, name, discount FROM companies WHERE id=$id")};
+
+	my $sth = $C->{dbh}->prepare("SELECT id, mail_domain FROM campaign_maildom WHERE company_id=$id order by 2");
+	   $sth->execute();
+
+	my $st_token = $C->{dbh}->prepare("SELECT id, token, instime FROM campaign_data WHERE company_id=$id ORDER BY id DESC LIMIT 9999");
+	   $st_token->execute();
+
+	my ($exists, $zip, $city) = @{$C->query("select id, zip, city from companies where id=$id")};
+	unless ($exists) {
+		my $sql = qq~ALTER TABLE companies ADD zip CHAR(31) NULL AFTER `name`,
+				ADD city CHAR(63) NULL AFTER zip;~;
+		$C->{dbh}->do($sql) or $m->out("ERR $DBI::errstr<br>");
+		push(@appmsg, qq~<b>WARNING:</b> Check db structure (companies): zip / city<br><tt>$sql</tt>~);
+	}
+</%init>
+<script type="text/javascript">document.title='Company Id <% $id %> | <% $C->{CONFIG}->{site_title} %>';</script>
+
+<div style="margin-top:20px" class="pull-right">
+<form>
+<div style="background-color:#fafafa; widtx:80%" class="well">
+<h2><i class="icon-envelope"></i> Mail Domain(s)</h2>
+% while(my $r = $sth->fetch()) {
+%	my ($dom_id, $maildom) = @{$r};
+	<a style="color:red"
+		rel="tooltip" data-placement="left" data-original-title="Delete"
+		href='admix.html?func=companies&edit=<% $id %>&delmaildom=<% $dom_id %>'><i
+		class="icon-remove"></i></a>&nbsp;&nbsp;<% $maildom %><br>
+% }
+
+<input type=hidden name=func value=companies>
+<input type=hidden name=edit value='<% $id %>'>
+Add Mail Domain: <input type=text style="margin-top:10px; width:235px" name=maildom placeholder="e.g. example.ch or *.example.ch">
+<input type=submit value='Add' class="btn" name=bAddMailDom>
+</div>
+</form>
+</div>
+
+
+<form method=post>
+<input type=hidden name=func value='companies'>
+<input type=hidden name=edit value='<% $id %>'>
+
+<h2><a href="admix.html?func=hiddenshop">Pro Zone</a> &rsaquo; <% $name %></h2>
+
+<table cellspacing=0 cellpadding=5 border=0 widtx='60%'>
+
+<tr><td>Created:</td> <td><% $C->trans_date_short($instime) %></td></tr>
+<tr><td>Company</td> <td><input style='font-weight:bold; width:288px' type=text name='name' value='<% $name %>'></td></tr>
+<tr><td>Address</td> <td>
+	<input style='font-weight:bold; width:80px' type=text name='zip'  value='<% $zip %>'>
+	<input style='font-weight:bold; width:235px' type=text name='city' value='<% $city %>'>
+</td></tr>
+<tr><td>Discount</td> <td><input style='font-weight:bold; width:55px; text-align:center' type=text name='discount' value='<% $discount %>'> %</td></tr>
+
+<tr><td></td>
+<td nowrap>
+<input type=submit value='Update' name=bUpdTok class="btn btn-success"> &nbsp;&nbsp;
+<input type=submit value='Delete' name=bDelTok class="btn btn-danger"> &nbsp;&nbsp;
+<input type=button value='Cancel' class="btn" onclick='document.location="admix.html?func=companies"'>
+</td>
+</tr>
+
+</table>
+
+</form>
+
+% if (@appmsg) {
+	<% $C->bootstrap_alert((join '<br>', @appmsg), 'success') %><br />
+% }
+
+
+
+<h2><a href="admix.html?func=hiddenshop">Token</a></h2>
+
+<table class="mytable table-striped table-hover">
+<tr>
+	<th>Token</th>
+	<th>Created</th>
+	<th style="text-align:right">Item(s)</th>
+</tr>
+% while(my $r = $st_token->fetch()) {
+%	my ($id, $token, $instime) = @{$r};
+%	my $count = $C->query("select count(*) from products where campaign_id=$id")->[0];
+	<tr>
+	<td><a href='admix.html?func=hiddenshop&edit=<% $id %>'><% $token %></a></td>
+	<td><% $C->trans_date($instime) %></td>
+	<td style="text-align:right">
+%		if ($count > 0) {
+			<a href="admix.html?func=items_expand&campaign_id=<% $id %>"><% $count %></a>
+%		}
+%		else {
+			0
+%		}
+	</td>
+	</tr>
+% }
+</table>
+
+<%doc>
+	__METACLONING__
+</%doc>
