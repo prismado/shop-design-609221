@@ -1,0 +1,32 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	# XXX my $perm = $C->get_user_perm();
+	my $lang = 'de';
+	my @msgs = ();
+
+	my $cgi = $C->{CGI};
+
+	# XXX my $token = $cgi->param('token');
+
+	# XXX my $maildom      = (split /\@/, $email)[1];
+	my $rc           = 0;
+	# XXX my $reenable     = 0; # -- 1 = Frontend darf den Button nach dieser Antwort wieder aktivieren
+
+	# XXX $C->saveSessData('prozone_email', $email) if length($email) > 4;
+
+	my $msg = join '', @msgs;
+
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": <% $rc %>,
+  "message": "<% $msg %>",
+  "reenable": 1
+}
