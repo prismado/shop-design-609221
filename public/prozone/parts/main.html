@@ -3,13 +3,14 @@
 
 	my %args = $m->caller_args(0);
 
-	my $perm    = $args{perm};
-	my $email   = $args{email};
-	my $pdfconf = $args{pdfconf};
-	my $C       = $args{C};
-	my $msg     = $args{msg};
-	my $msg_type= $args{msg_type} || 'info';
-	my $token   = $args{token} // '';
+	my $perm     = $args{perm};
+	my $email    = $args{email};
+	my $pdfconf  = $args{pdfconf};
+	my $C        = $args{C};
+	my $msg      = $args{msg};
+	my $msg_type = $args{msg_type} || 'info';
+	my $token    = $args{token} // '';
+	my $token_id = $args{token_id} // 0;
 
 	my %style = (
 		info    => { box => 'bg-gray-50 border-gray-200 text-gray-700',    icon => 'text-gray-400' },
@@ -74,7 +75,13 @@
 			</div>
 		</div>
 
+%		if ($token_id) {
+			<p>PRO-Zone ist aktiv.</p>
+			<p>Aus PRO-Zone <a href="/prozone/?leave=1">Abmelden</a></p>
+%		}
+%		else {
 		<& inc_prozone_user_input.html, email => $email, token => $token &>
+%		}
 
 		<script>
 		// Farb-Varianten der Alert-Box (Zeile 57ff.) — deckungsgleich mit der %style-Map im
