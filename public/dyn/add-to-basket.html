@@ -23,8 +23,9 @@
 
 	my $thumb = '';
 	if ($id) {
-		my $p = $A->get_product_v2(id => $id);
-		$thumb = $p->{image}->{url_thmb};
+		# XX my $p = $A->get_product_v2(id => $id);
+		my $i = $A->get_product_image(id => $id);
+		$thumb = $i->{url_thmb};
 	}
 
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
