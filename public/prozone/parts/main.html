@@ -83,6 +83,7 @@
 			</div>
 		</div>
 
+		<div id="prozone-zone-active" class="<% $token_id ? '' : 'hidden ' %>flex flex-col gap-6">
 %		if ($token_id) {
 			<div class="rounded-2xl border border-gray-200 bg-white p-5 flex flex-col sm:flex-row
 					sm:items-center sm:justify-between gap-4">
@@ -98,8 +99,7 @@
 					<p class="text-sm font-medium text-gray-900">Die PRO-Zone <b><% $company_name %></b> ist aktiv.</p>
 				</div>
 
-				<form method="post" action="/prozone/">
-				<input type="hidden" name="leave" value="1">
+				<form onsubmit="event.preventDefault(); leaveProzone(this);">
 				<button type="submit"
 					class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border
 						border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700
@@ -110,9 +110,11 @@
 			</div>
 			<& inc_prozone_articles.html, C => $C, A => $A, token_id => $token_id &>
 %		}
-%		else {
+		</div>
+
+		<div id="prozone-zone-inactive" class="<% $token_id ? 'hidden' : '' %>">
 			<& inc_prozone_user_input.html, email => $email, token => $token &>
-%		}
+		</div>
 
 		<script>
 		// Farb-Varianten der Alert-Box (Zeile 57ff.) — deckungsgleich mit der %style-Map im
@@ -130,6 +132,35 @@
 
 			box.className = 'flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm ' + s.box;
 			if (icon) icon.className = 'flex-shrink-0 mt-0.5 ' + s.icon;
+		}
+
+		// Abmelden aus der PRO-Zone (dyn/leave-prozone.html) — läuft wie "Zugang anfordern" rein
+		// clientseitig über fetch/JSON, damit kein kompletter Seiten-Reload (und damit kein
+		// Flackern) mehr nötig ist. Blendet den aktiven Zustand aus und den "Zugang anfordern /
+		// Token"-Bereich (prozone-zone-inactive, bereits serverseitig gerendert, nur versteckt) ein.
+		function leaveProzone(form) {
+			fetch('/dyn/leave-prozone.html', { method: 'POST' })
+				.then(function (res) { return res.json(); })
+				.then(function (data) {
+					var resultBox = document.getElementById('prozone-result');
+					var resultMsg = document.getElementById('prozone-result-msg');
+					if (resultMsg) resultMsg.textContent = data.message;
+					if (resultBox) resultBox.classList.remove('hidden');
+
+					var initialMsg = document.getElementById('app-msg-610270');
+					if (initialMsg) initialMsg.classList.add('hidden');
+
+					setProzoneAlertType(data.rc === 0 ? 'success' : 'error');
+					showToast(data.rc === 0, data.message);
+
+					var activeSection   = document.getElementById('prozone-zone-active');
+					var inactiveSection = document.getElementById('prozone-zone-inactive');
+					if (activeSection)   activeSection.classList.add('hidden');
+					if (inactiveSection) inactiveSection.classList.remove('hidden');
+				})
+				.catch(function () {
+					showToast(false, 'Abmeldung konnte nicht durchgeführt werden.');
+				});
 		}
 
 		// Async-Versand des "Zugang anfordern"-Formulars (prozone/parts/main.html) an
