@@ -21,6 +21,8 @@
 	my $company_id   = 0;
 	my $company_name = '';
 
+	$C->saveSessData('prozone_email', $email) if length($email) > 4;
+
 	if ($token) {
 		($company_id, $company_name) = @{$C->query(
 			"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
