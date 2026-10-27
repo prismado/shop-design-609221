@@ -24,7 +24,7 @@
 	if ($token) {
 		($company_id, $company_name) = @{$C->query(
 			"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
-		$msg = "XX constr: $company_id $company_name";
+		$msg      = "Unternehmen: <b>$company_name</b> freigeschaltet. (XX constr.)";
 		$msg_type = 'error';
 	}
 </%init>
