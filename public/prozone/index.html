@@ -16,10 +16,10 @@
 	my $token = $cgi->param('token') // '';
 	my $leave = $cgi->param('leave');
 
-	my $msg          = 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
 	my $msg_type     = 'warning';
 	my $company_id   = 0;
 	my $token_id     = $C->getSessData('token_id') // 0;
+	my $msg          = $token_id ? '' : 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
 	my $company_name = '';
 
 	if ($leave) {
@@ -34,7 +34,6 @@
 			($company_id, $company_name) = @{$C->query(
 				"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
 			$msg      = 'Die PRO-Zone ist nun freigeschaltet.';
-			# XXX $msg      = qq~Unternehmen: <b>$company_name</b><br>Die PRO-Zone ist nun freigeschaltet.~;
 			$C->saveSessData('token',    $token);
 			$C->saveSessData('token_id', $token_id);
 		}
