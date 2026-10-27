@@ -16,18 +16,36 @@
 	$sth->execute();
 </%init>
 
-<p>
-	<% $sth->rows() %> zusätzliche Artikel wurden freigeschaltet.
-</p>
+<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">
+	<% $sth->rows() %> zusätzliche Artikel wurden freigeschaltet
+</h2>
 
+<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
 % while(my $r = $sth->fetch()) {
 %	my $id = $r->[0];
 %	my $prd = $A->get_product_v2(id => $id);
 %	my $cat_name = $C->query("select label from categories where id=$prd->{cat_id} and lang='de'")->[0];
 
-	<img src="<% $prd->{image}->{url_thmb} %>" style="width:45px;">
-	<% $prd->{count_product} %> &times; 
-		<a href="/product/?id=<% $id %>"><b><% $prd->{title} %></b></a> CHF <% $prd->{price_incl_vat_fmt} %>
-		<a href="/category/?id=<% $prd->{cat_id} %>"><% $cat_name %></a>
-	<br>
+	<div class="flex items-center gap-4 p-4">
+		<a href="/product/?id=<% $id %>"
+			class="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-gray-200 bg-white">
+			<img src="<% $prd->{image}->{url_thmb} %>" class="w-full h-full object-cover"
+				loading="lazy" alt="<% $prd->{title} %>">
+		</a>
+
+		<div class="flex-1 min-w-0">
+			<a href="/product/?id=<% $id %>" class="font-semibold text-gray-900 text-sm
+				hover:text-red-600 transition line-clamp-1"><% $prd->{title} %></a>
+			<a href="/category/?id=<% $prd->{cat_id} %>" class="block text-xs text-gray-400
+				hover:text-red-600 transition mt-0.5"><% $cat_name %></a>
+		</div>
+
+		<div class="flex items-center gap-6 flex-shrink-0">
+			<span class="text-sm text-gray-500"><% $prd->{count_product} %> &times;</span>
+			<span class="text-base font-bold text-gray-900 whitespace-nowrap">
+				CHF <% $prd->{price_incl_vat_fmt} %>
+			</span>
+		</div>
+	</div>
 % }
+</div>
