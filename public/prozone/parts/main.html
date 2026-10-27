@@ -139,6 +139,10 @@
 					resultMsg.textContent = data.message;
 					resultBox.classList.remove('hidden');
 
+					// -- Dynamische Message hat Vorrang vor der initial gerenderten App-Message
+					var initialMsg = document.getElementById('app-msg-610270');
+					if (initialMsg) initialMsg.classList.add('hidden');
+
 					showToast(data.rc === 0, data.message);
 
 					if (data.reenable) {
