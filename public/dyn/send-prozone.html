@@ -9,16 +9,30 @@
 
 	my $perm = $C->get_user_perm();
 	my $lang = 'de';
+	my @msgs = ();
 
 	my $cgi = $C->{CGI};
 
-	# XXX my $addr_type_id   = $cgi->param('addr_type_id') + 0;
+	my $token = $cgi->param('token');
 	my $email = $cgi->param('email');
+	my $bGo   = $cgi->param('bGo');
 
 	my $domain = (split /\@/, $email)[1];
+	my $company_id   = 0;
+	my $company_name = '';
+
+	if ($token) {
+		($company_id, $company_name) = @{$C->query(
+			"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
+		push(@msgs, $C->prp('prozone_okay') . "<br>PRO-Zone Token ist aktiv: <b>$company_name</b>");
+	}
+
+	if ($bGo && length($email) > 4) {
+		push(@msgs, "XX constr: $domain");
+	}
 
 	my $rc  = 0;
-	my $msg = "XX Konstr. $domain";
+	my $msg = join '', @msgs;
 
 	$r->content_type('application/json; charset=utf-8');
 </%init>
