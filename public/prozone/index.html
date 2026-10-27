@@ -24,8 +24,8 @@
 	if ($token) {
 		($company_id, $company_name) = @{$C->query(
 			"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
-		$msg      = qq~Unternehmen: <b>$company_name</b> freigeschaltet.<br>
-				PRO-Zone ist nun aktiv.<br>XX: constr~;
+		$msg      = qq~Unternehmen: <b>$company_name</b><br>
+				Die PRO-Zone ist nun freigeschaltet.<br>XX: constr~;
 		$msg_type = 'error';
 	}
 </%init>
