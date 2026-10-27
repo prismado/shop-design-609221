@@ -8,21 +8,28 @@
 
 	my $perm           = $C->get_user_perm();
 	my $cookie_consent = $C->get_cookie_consent();
-
-	my $email = $C->getSessData('prozone_email') // '';
+	my $email          = $C->getSessData('prozone_email') // '';
 
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
 	my $token = $cgi->param('token') // '';
+	my $leave = $cgi->param('leave');
 
 	my $msg          = 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
 	my $msg_type     = 'warning';
 	my $company_id   = 0;
+	my $token_id     = $C->getSessData('token_id') // 0;
 	my $company_name = '';
 
+	if ($leave) {
+		$C->del_sess_key('token_id');
+		$token_id = 0;
+		$msg = 'Abgemeldet aus PRO-Zone';
+	}
+
 	if ($token) {
-		my ($token_id, $company_id) = @{$C->query("SELECT id, company_id FROM campaign_data WHERE token='$token'")};
+		($token_id, $company_id) = @{$C->query("SELECT id, company_id FROM campaign_data WHERE token='$token'")};
 		if ($token_id) {
 			($company_id, $company_name) = @{$C->query(
 				"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
@@ -72,6 +79,7 @@
 			msg      => $msg,
 			msg_type => $msg_type,
 			token    => $token,
+			token_id => $token_id,
 			C        => $C
 		&>
 	</section>
