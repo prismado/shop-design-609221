@@ -5,7 +5,19 @@
 
 	my $C         = $args{C};
 	my $token_id  = $args{token_id};
+
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, art_no, cat_id, title, `count`
+		from	vproducts
+		where	lang='de' and campaign_id=$token_id
+	~);
+	$sth->execute();
 </%init>
 
-XX <% $C->now(12) %><br>
+% # XXX <% $C->now(12) %><br>
 XX <% $token_id %>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $art_no, $cat_id, $title, $count) = @{$r};
+	XX <% $count %> &times; Prod-ID <% $id %> - <% $cat_id %> <% $title %><br>
+% }
