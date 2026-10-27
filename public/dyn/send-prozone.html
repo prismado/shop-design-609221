@@ -17,7 +17,7 @@
 	my $email = $cgi->param('email');
 	my $bGo   = $cgi->param('bGo');
 
-	my $domain = (split /\@/, $email)[1];
+	my $maildom      = (split /\@/, $email)[1];
 	my $company_id   = 0;
 	my $company_name = '';
 
@@ -28,7 +28,8 @@
 	}
 
 	if ($bGo && length($email) > 4) {
-		push(@msgs, "XX constr: $domain");
+		my $second_level_dom = $C->grep_2nd_level_dom($maildom);
+		push(@msgs, "XX constr: $second_level_dom");
 	}
 
 	my $rc  = 0;
