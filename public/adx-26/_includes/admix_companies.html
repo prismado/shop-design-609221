@@ -1,0 +1,44 @@
+<%init>
+	my %args = $m->caller_args(0);
+	my $C = $args{CORE};
+	my $A = $args{A};
+
+	if ($C->{CGI}->param('add')) {
+		$C->{dbh}->do("INSERT INTO companies (name, discount) VALUES ('* New Company *', 0)") or $m->out('Err');
+	}
+
+	my $sth = $C->{dbh}->prepare('SELECT id, tstamp, name, discount FROM companies ORDER BY id DESC');
+	   $sth->execute();
+</%init>
+<script type="text/javascript">document.title='Companies | <%$C->{CONFIG}->{site_title}%>';</script>
+
+<h2><a href="admix.html?func=hiddenshop">ProZone</a> &rsaquo; Companies</h2>
+
+<table class="mytable table-striped table-hover">
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Company</th>
+<th>Created</th>
+<th>Discount</th>
+</tr>
+</thead>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $instime, $name, $discount) = @{$r};
+	<tr>
+	<td><a href='admix.html?func=companies&edit=<% $id %>'><% sprintf('%08d', $id) %></a></td>
+	<td><b><% $name %></b></td>
+	<td widtx='100' align=center nowrap><%substr($C->trans_date($instime), 0, 16)%></td>
+	<td nowrap align=right><% sprintf('%.1f', $discount) %> %</td>
+	</tr>
+% }
+
+</table><br>
+
+&rsaquo; <a href='admix.html?func=companies&add=1'>Hinzuf&uuml;gen</a>
+
+<%doc>
+	__METACLONING__
+</%doc>
