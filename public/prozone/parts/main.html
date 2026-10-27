@@ -26,6 +26,8 @@
 		error   => { box => 'bg-red-50 border-red-200 text-red-700',       icon => 'text-red-600' },
 	);
 	my $s = $style{$msg_type} || $style{info};
+
+	my $test_token = $C->query("select token from campaign_data order by id desc limit 1")->[0];
 </%init>
 
 	<div class="flex flex-col gap-6">
@@ -117,7 +119,7 @@
 		</div>
 
 		<div class="mt-4 text-xs text-gray-400">
-			<% $ENV{NODE_ENV} %> &ndash; V610271
+			<% $ENV{NODE_ENV} %> &ndash; V610271 &ndash; <% $test_token %>
 		</div>
 
 		<script>
