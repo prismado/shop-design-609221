@@ -8,7 +8,6 @@
 
 	my $perm           = $C->get_user_perm();
 	my $cookie_consent = $C->get_cookie_consent();
-	# XXX my $pdfconf        = $C->load_config(table => 'pdf_config');
 
 	my $email = $C->getSessData('prozone_email') // '';
 
@@ -16,6 +15,10 @@
 
 	my $debug = $cgi->param('debug');
 	my $token = $cgi->param('token') // '';
+	my $msg   = 'Dex Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
+
+	if ($token) {
+	}
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -47,7 +50,7 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main.html, email => $email, perm => $perm, XXXpdfconf => 0, C => $C &>
+		<& parts/main.html, email => $email, perm => $perm, msg => $msg, C => $C &>
 	</section>
 
 </div>
