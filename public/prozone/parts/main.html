@@ -12,6 +12,12 @@
 	my $token    = $args{token} // '';
 	my $token_id = $args{token_id} // 0;
 
+	my $company_name = '';
+	if ($token_id) {
+		$company_name = $C->query(qq~select c.name from companies c, campaign_data d
+					where company_id=c.id and d.id=$token_id limit 1~)->[0];
+	}
+
 	my %style = (
 		info    => { box => 'bg-gray-50 border-gray-200 text-gray-700',    icon => 'text-gray-400' },
 		success => { box => 'bg-green-50 border-green-200 text-green-800', icon => 'text-green-600' },
@@ -87,7 +93,7 @@
 								d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
 						</svg>
 					</span>
-					<p class="text-sm font-medium text-gray-900">Die PRO-Zone ist aktiv.</p>
+					<p class="text-sm font-medium text-gray-900">Die PRO-Zone <b><% $company_name %></b> ist aktiv.</p>
 				</div>
 
 				<form method="post" action="/prozone/">
