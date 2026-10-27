@@ -38,6 +38,7 @@
 		<div class="flex-1 min-w-0">
 			<a href="/product/?id=<% $id %>" class="font-semibold text-gray-900 text-sm
 				hover:text-red-600 transition line-clamp-1"><% $prd->{title} %></a>
+			<span class="text-sm"><% $prd->{desc_keyw} %></span>
 			<a href="/category/?id=<% $prd->{cat_id} %>" class="block text-xs text-gray-400
 				hover:text-red-600 transition mt-0.5"><% $cat_name %></a>
 		</div>
