@@ -36,9 +36,9 @@
 		</a>
 
 		<div class="flex-1 min-w-0">
-			<a href="/product/?id=<% $id %>" class="font-semibold text-gray-900 text-sm
+			<a href="/product/?id=<% $id %>" class="font-bold text-black text-[15.4px]
 				hover:text-red-600 transition line-clamp-1"><% $prd->{title} %></a>
-			<span class="text-sm"><% $prd->{desc_keyw} %></span>
+			<p class="text-sm text-gray-500 line-clamp-1 mt-0.5"><% $prd->{desc_keyw} %></p>
 			<a href="/category/?id=<% $prd->{cat_id} %>" class="block text-xs text-gray-400
 				hover:text-red-600 transition mt-0.5"><% $cat_name %></a>
 		</div>
