@@ -8,7 +8,7 @@
 	my $token_id  = $args{token_id};
 
 	my $sth = $C->{dbh}->prepare(qq~
-		select	id, art_no, cat_id, `count`
+		select	id
 		from	vproducts
 		where	lang='de' and campaign_id=$token_id
 	~);
@@ -20,8 +20,13 @@
 </p>
 
 % while(my $r = $sth->fetch()) {
-%	my ($id, $art_no, $cat_id, $count) = @{$r};
+%	my $id = $r->[0];
 %	my $prd = $A->get_product_v2(id => $id);
-	&bull; <% $count %> &times; Prod-ID <% $id %> - C-ID <% $cat_id %> <% $id %>
-		<a href="/product/?id=<% $id %>"><% $prd->{title} %></a> CHF <% $prd->{price_incl_vat_fmt} %><br>
+	<% $prd->{count_product} %> &times; 
+		<a href="/product/?id=<% $id %>"><% $prd->{title} %></a> CHF <% $prd->{price_incl_vat_fmt} %>
+		Cat-ID <% $prd->{cat_id} %>
+%	foreach (sort keys %{$prd->{image}}) {
+		XX ...... <% $_ %><br>
+%	}
+	<br>
 % }
