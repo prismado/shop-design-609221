@@ -9,6 +9,7 @@
 	my $C       = $args{C};
 	my $msg     = $args{msg};
 	my $msg_type= $args{msg_type} || 'info';
+	my $token   = $args{token} // '';
 
 	my %style = (
 		info    => { box => 'bg-gray-50 border-gray-200 text-gray-700',    icon => 'text-gray-400' },
@@ -109,7 +110,7 @@
 				<form method="post">
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-1" for="prozone-token">Token</label>
-					<input type="text" name="token" id="prozone-token" placeholder="z. B. 8f3a-29c1"
+					<input type="text" name="token" id="prozone-token" placeholder="z. B. 8f3a-29c1" value="<% $token %>"
 						class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-800
 							focus:outline-none focus:ring-2 focus:ring-red-500 transition">
 				</div>
