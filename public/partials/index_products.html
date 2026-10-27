@@ -7,9 +7,19 @@
 	my $perm           = $args{perm};
 	my $prod_highlight = $args{prod_highlight};
 	my $debug          = $args{debug};
+
+	my $token_id = $C->getSessData('token_id') // 0;
 </%init>
 
+% if ($token_id) {
 % foreach my $hl (@{ $prod_highlight->{ids} }) {
 	<& product_portlet.html, id => $hl->{id}, prod => $hl, A => $A, C => $C, debug => $debug &>
+% }
+% }
+% else {
+%	foreach my $hl (@{ $prod_highlight->{ids} }) {
+%		next if $hl->{campaign_id};
+		<& product_portlet.html, id => $hl->{id}, prod => $hl, A => $A, C => $C, debug => $debug &>
+%	}
 % }
 
