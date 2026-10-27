@@ -22,13 +22,14 @@
 	my $company_name = '';
 
 	if ($token) {
-		$C->saveSessData('token',    $token);
 		my ($token_id, $company_id) = @{$C->query("SELECT id, company_id FROM campaign_data WHERE token='$token'")};
 		if ($token_id) {
 			($company_id, $company_name) = @{$C->query(
 				"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
 			$msg      = qq~Unternehmen: <b>$company_name</b><br>
-					Die PRO-Zone ist nun freigeschaltet.<br>XX: constr~;
+					Die PRO-Zone ist nun freigeschaltet.<br>XX: constr......~;
+			$C->saveSessData('token',    $token);
+			$C->saveSessData('token_id', $token_id);
 		}
 		else {
 			$msg      = 'Dieses Token ist leider ung&uuml;tig.';
