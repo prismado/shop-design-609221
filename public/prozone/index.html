@@ -22,6 +22,7 @@
 	my $company_name = '';
 
 	if ($token) {
+		$C->saveSessData('token',    $token);
 		my ($token_id, $company_id) = @{$C->query("SELECT id, company_id FROM campaign_data WHERE token='$token'")};
 		if ($token_id) {
 			($company_id, $company_name) = @{$C->query(
@@ -69,6 +70,7 @@
 			perm     => $perm,
 			msg      => $msg,
 			msg_type => $msg_type,
+			token    => $token,
 			C        => $C
 		&>
 	</section>
