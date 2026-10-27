@@ -20,5 +20,6 @@
 
 % while(my $r = $sth->fetch()) {
 %	my ($id, $art_no, $cat_id, $title, $count) = @{$r};
-	&bull; <% $count %> &times; Prod-ID <% $id %> - C-ID <% $cat_id %> <% $id %> <% $title %><br>
+	&bull; <% $count %> &times; Prod-ID <% $id %> - C-ID <% $cat_id %> <% $id %>
+		<a href="/product/?id=<% $id %>"><% $title %></a><br>
 % }
