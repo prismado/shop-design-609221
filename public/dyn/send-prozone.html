@@ -31,7 +31,14 @@
 		my $second_level_dom = $C->grep_2nd_level_dom($maildom);
 		$company_id = $C->query(
 			"select company_id from campaign_maildom where mail_domain='$second_level_dom' order by id desc limit 1")->[0];
-		push(@msgs, "XX -- constr: $second_level_dom - C-ID $company_id");
+		if ($company_id) {
+			my ($token, $token_id) = @{$C->query(
+			"select token, id from campaign_data where company_id=$company_id order by id desc limit 1")};
+			push(@msgs, "XX -- $second_level_dom, C-ID $company_id / $token");
+		}
+		else {
+			push(@msgs, "Nicht gefunden: $second_level_dom");
+		}
 	}
 
 	my $rc  = 0;
