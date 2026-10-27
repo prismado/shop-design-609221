@@ -2,10 +2,8 @@
 	use utf8;
 
 	use ScreenPoint::Core;
-	# XX use ScreenPoint::Auctionline;
 
 	my $C = ScreenPoint::Core->new($r, $m);
-	# XX my $A = ScreenPoint::Auctionline->new($C);
 
 	my $lang = 'de';
 	my @msgs = ();
@@ -15,6 +13,9 @@
 	my $rc           = 0;
 
 	# XXX $C->saveSessData('prozone_email', $email) if length($email) > 4;
+	$C->del_sess_key('token_id');
+
+	push(@msgs, 'Sie wurden von der PRO-Zone abgemeldet.');
 
 	my $msg = join '', @msgs;
 
