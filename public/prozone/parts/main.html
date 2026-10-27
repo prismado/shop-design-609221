@@ -106,6 +106,7 @@
 				</button>
 				</form>
 			</div>
+			<& inc_prozone_articles.html, C => $C, token_id => $token_id &>
 %		}
 %		else {
 			<& inc_prozone_user_input.html, email => $email, token => $token &>
