@@ -15,15 +15,10 @@
 	# XXX my $addr_type_id   = $cgi->param('addr_type_id') + 0;
 
 	my $rc  = 0;
-	my $msg = '';
+	my $msg = 'XX construction';
 
-	if ($perm->{uid} > 0) {
-		$msg = 'XX constr';
-	}
-	else {
-		$rc  = 1;
-		$msg = 'Not logged in.';
-	}
+	# XXX if ($perm->{uid} > 0) {
+	# XXX }
 
 	$r->content_type('application/json; charset=utf-8');
 </%init>
