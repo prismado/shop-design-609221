@@ -11,6 +11,7 @@
 		select	id
 		from	vproducts
 		where	lang='de' and campaign_id=$token_id
+		limit	2000
 	~);
 	$sth->execute();
 </%init>
