@@ -8,7 +8,7 @@
 	my $token_id  = $args{token_id};
 
 	my $sth = $C->{dbh}->prepare(qq~
-		select	id
+		select	DISTINCT id
 		from	vproducts
 		where	lang='de' and campaign_id=$token_id
 		limit	2000
