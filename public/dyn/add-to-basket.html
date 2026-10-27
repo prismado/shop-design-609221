@@ -21,10 +21,17 @@
 		debug => 0
 	) if $id;
 
+	my $thumb = '';
+	if ($id) {
+		my $p = $A->get_product_v2(id => $id);
+		$thumb = $p->{image}->{url_thmb};
+	}
+
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
   "rc": <% $rc || 0 %>,
+  "img": "<% $thumb %>",
   "message": "<% $msg || 'n/a' %>, SID <% $C->{sid} %>"
 }
