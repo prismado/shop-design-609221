@@ -56,7 +56,7 @@
 
 		<div id="alert-441853410" role="alert"
 			class="flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm <% $s->{box} %>">
-			<span class="flex-shrink-0 mt-0.5 text-amber-500">
+			<span id="alert-441853410-icon" class="flex-shrink-0 mt-0.5 <% $s->{icon} %>">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 					stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round"
@@ -126,6 +126,23 @@
 		</div>
 
 		<script>
+		// Farb-Varianten der Alert-Box (Zeile 57ff.) — deckungsgleich mit der %style-Map im
+		// < % i n i t >   dieser Seite, damit die Box nach einer dyn-Antwort passend umgefärbt werden kann.
+		var PROZONE_ALERT_STYLE = {
+			success: { box: 'bg-green-50 border-green-200 text-green-800', icon: 'text-green-600' },
+			error:   { box: 'bg-red-50 border-red-200 text-red-700',       icon: 'text-red-600' }
+		};
+
+		function setProzoneAlertType(type) {
+			var box  = document.getElementById('alert-441853410');
+			var icon = document.getElementById('alert-441853410-icon');
+			var s    = PROZONE_ALERT_STYLE[type];
+			if (!box || !s) return;
+
+			box.className = 'flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm ' + s.box;
+			if (icon) icon.className = 'flex-shrink-0 mt-0.5 ' + s.icon;
+		}
+
 		// Async-Versand des "Zugang anfordern"-Formulars (prozone/parts/main.html) an
 		// dyn/send-prozone.html — Ergebnis kommt wie gewohnt als Toast, zusätzlich wird der
 		// bis dahin versteckte Ergebnis-Bereich unter dem Formular eingeblendet und mit der
@@ -151,6 +168,7 @@
 					var initialMsg = document.getElementById('app-msg-610270');
 					if (initialMsg) initialMsg.classList.add('hidden');
 
+					setProzoneAlertType(data.rc === 0 ? 'success' : 'error');
 					showToast(data.rc === 0, data.message);
 
 					if (data.reenable) {
