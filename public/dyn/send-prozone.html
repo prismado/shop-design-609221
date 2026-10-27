@@ -37,6 +37,12 @@
 			my ($token, $token_id) = @{$C->query(
 			"select token, id from campaign_data where company_id=$company_id order by id desc limit 1")};
 			push(@msgs, "XX -- $second_level_dom, C-ID $company_id / $token");
+			my $mailtext = 'asdf';
+			$C->mail_x(
+				to      => 'testxx@algonetic.ch',
+				subject => 'tesx prozone',
+				data    => \$mailtext
+			);
 		}
 		else {
 			push(@msgs, "Nicht gefunden: $second_level_dom");
