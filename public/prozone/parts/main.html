@@ -116,6 +116,10 @@
 			<& inc_prozone_user_input.html, email => $email, token => $token &>
 		</div>
 
+		<div class="mt-4 text-xs">
+			<% $ENV{NODE_ENV} %>
+		</div>
+
 		<script>
 		// Farb-Varianten der Alert-Box (Zeile 57ff.) — deckungsgleich mit der %style-Map im
 		// < % i n i t >   dieser Seite, damit die Box nach einer dyn-Antwort passend umgefärbt werden kann.
