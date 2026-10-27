@@ -15,8 +15,9 @@
 
 	my $debug = $cgi->param('debug');
 	my $token = $cgi->param('token') // '';
-	my $msg   = 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
-	my $msg_type = 'error';
+
+	my $msg      = 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
+	my $msg_type = 'warning';
 
 	if ($token) {
 		$msg = 'XX constr';
