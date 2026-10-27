@@ -21,6 +21,7 @@
 	my $company_id   = 0;
 	my $company_name = '';
 	my $rc           = 0;
+	my $reenable     = 0; # -- 1 = Frontend darf den Button nach dieser Antwort wieder aktivieren
 
 	$C->saveSessData('prozone_email', $email) if length($email) > 4;
 
@@ -44,10 +45,12 @@
 				subject => 'tesx prozone',
 				data    => \$mailtext
 			);
+			$reenable = 1;
 		}
 		else {
 			push(@msgs, "Nicht gefunden: $second_level_dom");
-			$rc = 1;
+			$rc       = 1;
+			$reenable = 1;
 		}
 	}
 
@@ -57,5 +60,6 @@
 </%init>
 {
   "rc": <% $rc %>,
-  "message": "<% $msg %>"
+  "message": "<% $msg %>",
+  "reenable": <% $reenable %>
 }

@@ -101,10 +101,9 @@
 					resultMsg.textContent = data.message;
 					resultBox.classList.remove('hidden');
 
-					if (data.rc === 0) {
-						showToast(true, data.message);
-					} else {
-						showToast(false, data.message);
+					showToast(data.rc === 0, data.message);
+
+					if (data.reenable) {
 						btn.disabled = false;
 						label.textContent = 'Zugang zu Pro-Zone anfordern';
 					}
