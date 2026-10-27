@@ -10,7 +10,7 @@ function addProductToBasket(el, prodId) {
 		.then(function (res) { return res.json(); })
 		.then(function (data) {
 			if (data.rc === 0) {
-				showToast(true, 'Der Artikel wurde hinzugefügt.', 6000, '/produkte/p' + prodId + '_thmb.jpg');
+				showToast(true, 'Der Artikel wurde hinzugefügt.', 6000, data.img);
 
 				// -- Zähler & Mini-Basket-Cache aus derselben Quelle (fetchCartInfo, siehe
 				//    partials/header.html) aktuell halten, statt den Badge lokal hochzuzählen
