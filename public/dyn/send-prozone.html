@@ -20,6 +20,7 @@
 	my $maildom      = (split /\@/, $email)[1];
 	my $company_id   = 0;
 	my $company_name = '';
+	my $rc           = 0;
 
 	$C->saveSessData('prozone_email', $email) if length($email) > 4;
 
@@ -46,10 +47,10 @@
 		}
 		else {
 			push(@msgs, "Nicht gefunden: $second_level_dom");
+			$rc = 1;
 		}
 	}
 
-	my $rc  = 0;
 	my $msg = join '', @msgs;
 
 	$r->content_type('application/json; charset=utf-8');
