@@ -76,11 +76,13 @@
 		</div>
 
 %		if ($token_id) {
-			<p>PRO-Zone ist aktiv.</p>
-			<p>Aus PRO-Zone <a href="/prozone/?leave=1">Abmelden</a></p>
+			<div>
+				<p>Die PRO-Zone ist aktiv.</p>
+				<p>Aus PRO-Zone <a href="/prozone/?leave=1">Abmelden</a></p>
+			</div>
 %		}
 %		else {
-		<& inc_prozone_user_input.html, email => $email, token => $token &>
+			<& inc_prozone_user_input.html, email => $email, token => $token &>
 %		}
 
 		<script>
