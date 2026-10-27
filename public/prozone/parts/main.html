@@ -64,7 +64,8 @@
 		</div>
 
 		<div id="alert-441853410" role="alert"
-			class="flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm <% $s->{box} %>">
+			class="<% (!defined($msg) || $msg eq '') ? 'hidden ' : '' %>flex items-start gap-3 rounded-xl
+				border px-4 py-3 shadow-sm <% $s->{box} %>">
 			<span id="alert-441853410-icon" class="flex-shrink-0 mt-0.5 <% $s->{icon} %>">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
 					stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
