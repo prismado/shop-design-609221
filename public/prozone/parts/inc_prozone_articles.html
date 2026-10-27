@@ -1,0 +1,11 @@
+<%init>
+	use utf8;
+
+	my %args = $m->caller_args(0);
+
+	my $C         = $args{C};
+	my $token_id  = $args{token_id};
+</%init>
+
+XX <% $C->now(12) %><br>
+XX <% $token_id %>
