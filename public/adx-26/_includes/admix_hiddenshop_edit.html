@@ -1,0 +1,205 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	use utf8; # -- 08Feb2026
+
+	my $C   = $args{CORE};
+	my $cgi = $C->{CGI};
+
+	my $id    = $C->{CGI}->param('edit') + 0;
+	my $debug = $C->{CGI}->param('debug');
+
+	my @appmsgs = ();
+	my $f_err = 0;
+
+	my $cur_inter   = $C->get_safe_property("prozone_507141_$id\_iv", 'sys') + 0;
+	my $cur_pattern = $C->get_safe_property("prozone_507141_$id\_tok", 'sys') if $cur_inter;
+	my $cur_token   = $cur_inter ? $cur_pattern : $C->query("select token FROM campaign_data WHERE id=$id")->[0];
+
+	if ($C->{CGI}->param('bUpdTok')) {
+		my $token      = $C->{CGI}->param('token') || '* No Val *';
+		   $token      = $C->web_enc(uc $C->trim($token));
+		   $token     =~ s/[^0-9A-Z\{\}]/-/gi;
+		my $company_id = $C->{CGI}->param('company_id') + 0;
+		my $discount   = $C->{CGI}->param('discount') + 0.0;
+		my $cb_inter   = $C->{CGI}->param('cb_inter');
+		my $interval   = $C->{CGI}->param('interval') + 0;
+
+		my @allowed_chars = grep { $_ ne '0' && $_ ne '1' && $_ ne 'D' && $_ ne 'I' && $_ ne 'J' && $_ ne 'O' && $_ ne 'W' } ('A'..'Z', '2'..'9');
+		my $string = '';
+		for (1..6) { $string .= $allowed_chars[int(rand(@allowed_chars))]; }
+
+		my $token_orig = ($token =~ /\{\{RANDOM\}\}/) ? uc $token : $cur_pattern;
+		   $token =~ s/\{\{RANDOM\}\}/$string/;
+
+		my $errstr = '';
+		$C->{dbh}->do("UPDATE campaign_data SET token='$token', company_id='$company_id', discount=$discount WHERE id=$id")
+			or $errstr = $DBI::errstr;
+		if ($errstr) {
+			push(@appmsgs, "ERROR: $errstr");
+			$f_err++;
+		}
+		else {
+			push(@appmsgs, "Updated $token");
+		}
+		if ($cb_inter) {
+			$C->log(msg=>"WARN W507141: Token $token / Interval $interval h", importance=>1, service=>'admix_hiddenshop_edit');
+			$C->set_safe_property("prozone_507141_$id\_tok", $token_orig, 'sys') if $token_orig =~ /\{\{RANDOM\}\}/;
+		} 
+		$C->set_safe_property("prozone_507141_$id\_iv", $interval, 'sys');
+		$cur_inter = $interval;
+		$cur_pattern = $token_orig if $token_orig =~ /\{\{RANDOM\}\}/;
+	}
+	elsif ($C->{CGI}->param('bDelTok')) {
+		$C->{dbh}->do("DELETE FROM campaign_data WHERE id=$id");
+		$C->{dbh}->do("DELETE FROM campaign_maildom WHERE campaign_id=$id");
+		$m->redirect('admix.html?func=hiddenshop');
+	}
+
+	my ($instime, $token, $company_id, $name, $discount) = @{$C->query(
+		"SELECT instime, token, company_id, (select name FROM companies WHERE id=company_id), discount FROM campaign_data WHERE id=$id")};
+
+	my $sth_company = $C->{dbh}->prepare("SELECT id, name FROM companies ORDER BY name LIMIT 99999");
+	   $sth_company->execute();
+
+	my $teaser_text_id = $C->query("select id from prozone_teaser where campaign_id=$id order by id desc limit 1")->[0];
+	unless ($teaser_text_id) {
+		$C->{dbh}->do("insert into prozone_teaser (status, campaign_id) values (1, $id)")
+			or $m->out("ERR $DBI::errstr<br>");
+		$teaser_text_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+	}
+
+	my $item_count = $C->query("select count(*) from products where campaign_id=$id")->[0];
+</%init>
+<script type="text/javascript">document.title='Token-ID <% $id %> - <% $cur_token %>';</script>
+
+<form method=post name="f507141">
+<input type=hidden name=func value='hiddenshop'>
+<input type=hidden name=edit value='<% $id %>'>
+
+<h2><a href="admix.html?func=hiddenshop">ProZone</a> &rsaquo; Token: &laquo;<% $token %>&raquo;</h2>
+
+<table cellspacing=0 cellpadding=5 border=0 width='60%'>
+
+<tr><td nowrap>Created:</td> <td><% $C->trans_date_short($instime) %></td></tr>
+<tr><td>Token:</td> <td nowrap><input style='font-weight:bold; margin-bottom:0px; width:55%;' type=text name='token' value='<% uc $token %>'>
+	&larr; Secret string for customers <% $cur_inter ? "&rarr; Muster <a href='#' onclick='fill_pattern()'><u>$cur_pattern</u></a>" : '' %></td></tr>
+
+<tr><td></td> <td>
+	<label class="checkbox" style="margin-top:0px;">
+		<input type="checkbox" name="cb_inter" value="1" <% $cur_inter ? 'checked' : '' %>
+			onclick="adjust_507141()"> Interval. <span id="i_507140">Automatische Aktualisierung des Tokens.</span>
+			<span id="i_507141" style="display:none;"><i>{{RANDOM}}</i> wird automatisch durch 6 Zeichen ersetzt.</span><br>
+				<small>(jedoch <u>kein</u> automatisches Ablaufdatum)</small>
+%		if ($C->is_devel()) {
+			Devel: <a href="/adm_safe_properties.html?lang=sys&filter=prozone">Safe-properties</a>
+%		}
+	</label>
+	<input style='font-weight:bold; margin-bottom:0px; width:35px; text-align:center;' disabled
+		name="interval" type=text value="<% $cur_inter %>"> &larr; automatische Aktualisierung alle {N} Stunden
+</td></tr>
+
+<tr valign="top"><td style="padding-top:25px;" nowrap>Organization / Company:</td> <td style="padding-top:25px;">
+	<select style="font-weight:bold" name=company_id>
+%	while(my $r = $sth_company->fetch()) {
+%		my ($id, $name) = @{$r};
+%		my $sel = $id == $company_id ? ' selected' : '';
+		<option value="<% $id %>"<% $sel %>>[ <% $id %> ] &ndash; <% $name %></option>
+%	}
+	</select>
+	&mdash; <a href='admix.html?func=companies&edit=<% $company_id %>'>Edit Company Details</a> 
+
+</td></tr>
+
+<tr><td>Discount 1:</td> <td><input style='font-weight:bold; width:42px; text-align:center' type=text name='discount'
+	value='<% $discount %>'> % &mdash; on Pro Zone articles</td></tr>
+
+<tr><td>Discount 2:</td> <td><input style='font-weight:bold; width:42px; text-align:center' type=text name='discount_2'
+	value='<% $discount %>'> % &mdash; on other items</td></tr>
+
+<tr><td></td>
+<td nowrap>
+<input type=submit value='Update' name=bUpdTok class="btn btn-success"> &nbsp;&nbsp;
+<input type=submit value='Delete' name=bDelTok class="btn btn-danger"> &nbsp;&nbsp;
+<input type=button value='Cancel' onclick='document.location="admix.html?func=hiddenshop"' class="btn">
+</td>
+</tr>
+
+</table>
+</form>
+
+% if (@appmsgs) {
+	<% $C->bootstrap_alert( (join '<br>', @appmsgs), $f_err ? 'danger' : 'success') %><br>
+% }
+
+<div style="background-color:#f8f8f8; text-align:center" class="well">
+	Secret URL for the end customers:
+	<code>https://<%$C->{CONFIG}->{HTTP_HOST}%>/token.html?token=<%$token%></code>
+		<a target="_blank" href="https://<%$C->{CONFIG}->{HTTP_HOST}%>/token.html?token=<%$token%>"><i
+			class="icon-external-link"></i></a>
+</div>
+
+<div class="pull-right">
+%	if ($item_count > 0) {
+		<a href="admix.html?func=items_expand&campaign_id=<% $id %>"><% $item_count %> item(s)</a>
+%	}
+%	else {
+		No items at this time
+%	}
+</div>
+
+<a href='admix.html?func=prozone_teaser&id=<%$teaser_text_id%>'><i class="icon-pencil"></i> Edit Teaser Text</a><br><br>
+
+% if ($debug) {
+	<% $C->html_debug("SELECT mail_domain FROM campaign_maildom WHERE company_id=$company_id") %>
+% }
+
+<form method=post action='adm_release_hiddenshop.html'>
+
+<div class="well">
+<h2>Post-campaign phase</h2>
+By clicking the following button, all articles belonging to this token will be transferred to the public shop.<br>
+Durch Klicken des nachfolgenden Buttons werden alle Artikel, die zu diesem Token gehören, in den öffentlichen Shop überführt.<br><br>
+
+<input type=hidden name=id value="<% $id %>">
+<input type=submit value='Unlock Products ...' class="btn">
+</div>
+
+</form>
+
+<script>
+  function adjust_507141() {
+	var tokenField = document.f507141.token;
+	var randomTag = '{{RANDOM}}';
+
+	if (document.f507141.cb_inter.checked == true) {
+		if (!tokenField.value.includes(randomTag)) {
+			tokenField.value += randomTag;
+		}
+		document.f507141.interval.value=24;
+		document.f507141.interval.disabled=false;
+		document.getElementById('i_507140').style.display='none';
+		document.getElementById('i_507141').style.display='';
+	}
+	else {
+		if (tokenField.value.includes(randomTag)) {
+			tokenField.value = tokenField.value.replaceAll(randomTag, '');
+		}
+		document.f507141.interval.value=0;
+		document.f507141.interval.disabled=true;
+	}
+
+  }
+
+  function fill_pattern() {
+	document.f507141.token.value = "<% $cur_pattern %>";
+  }
+
+%	if ($cur_inter) {
+		document.f507141.interval.disabled=false;
+%	}
+</script>
+
+<%doc>
+	__METACLONING__
+</%doc>
