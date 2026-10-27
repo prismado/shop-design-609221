@@ -22,11 +22,13 @@
 % while(my $r = $sth->fetch()) {
 %	my $id = $r->[0];
 %	my $prd = $A->get_product_v2(id => $id);
+
+	<img src="<% $prd->{image}->{url_thmb} %>" style="width:45px;">
 	<% $prd->{count_product} %> &times; 
-		<a href="/product/?id=<% $id %>"><% $prd->{title} %></a> CHF <% $prd->{price_incl_vat_fmt} %>
+		<a href="/product/?id=<% $id %>"><b><% $prd->{title} %></b></a> CHF <% $prd->{price_incl_vat_fmt} %>
 		Cat-ID <% $prd->{cat_id} %>
 %	foreach (sort keys %{$prd->{image}}) {
-		XX ...... <% $_ %><br>
+% # XXX		XX ...... <% $_ %> = <% $prd->{image}->{$_} %><br>
 %	}
 	<br>
 % }
