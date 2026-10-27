@@ -39,7 +39,11 @@
 			my ($token, $token_id) = @{$C->query(
 			"select token, id from campaign_data where company_id=$company_id order by id desc limit 1")};
 			push(@msgs, "Das Freischalt-Token wurde Ihnen per E-Mail zugestellt.");
-			my $mailtext = "Der Token-Code f&uuml;r Ihre PRO-Zone lautet: <b>$token</b>";
+			my $mailtext = qq~Sehr geehrte Damen und Herren<br><br>
+
+					Der Token-Code f&uuml;r Ihre PRO-Zone lautet: <b>$token</b><br><br>
+
+					Freundliche Gr&uuml;sse<br>~ . $C->txt('site_company');
 			$C->mail_x(
 				to      => 'testxx@algonetic.ch',
 				subject => 'PRO-Zone',
