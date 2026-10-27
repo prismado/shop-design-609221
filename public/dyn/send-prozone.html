@@ -29,7 +29,9 @@
 
 	if ($bGo && length($email) > 4) {
 		my $second_level_dom = $C->grep_2nd_level_dom($maildom);
-		push(@msgs, "XX constr: $second_level_dom");
+		$company_id = $C->query(
+			"select company_id from campaign_maildom where mail_domain='$second_level_dom' order by id desc limit 1")->[0];
+		push(@msgs, "XX -- constr: $second_level_dom - C-ID $company_id");
 	}
 
 	my $rc  = 0;
