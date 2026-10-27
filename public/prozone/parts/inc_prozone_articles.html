@@ -14,10 +14,11 @@
 	$sth->execute();
 </%init>
 
-% # XXX <% $C->now(12) %><br>
-XX <% $token_id %>
+<p>
+	<% $sth->rows() %> zusätzliche Artikel wurden freigeschaltet.
+</p>
 
 % while(my $r = $sth->fetch()) {
 %	my ($id, $art_no, $cat_id, $title, $count) = @{$r};
-	XX <% $count %> &times; Prod-ID <% $id %> - <% $cat_id %> <% $title %><br>
+	&bull; <% $count %> &times; Prod-ID <% $id %> - C-ID <% $cat_id %> <% $id %> <% $title %><br>
 % }
