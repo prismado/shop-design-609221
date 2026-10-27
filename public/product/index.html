@@ -23,7 +23,8 @@
 
 	if ($prod->{campaign_id}) {
 		my $token_id = $C->getSessData('token_id') // 0;
-		$m->redirect('/prozone') unless $token_id == $prod->{campaign_id};
+		$C->redir('/prozone/index.html') unless $token_id == $prod->{campaign_id};
+		# XX $m->redirect('/prozone') unless $token_id == $prod->{campaign_id};
 	}
 
 	my $options_total = $A->get_cur_options_from_session($id); # -- Betrag / $id = Prod-ID
