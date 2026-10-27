@@ -4,10 +4,11 @@
 	my %args = $m->caller_args(0);
 
 	my $C         = $args{C};
+	my $A         = $args{A};
 	my $token_id  = $args{token_id};
 
 	my $sth = $C->{dbh}->prepare(qq~
-		select	id, art_no, cat_id, title, `count`
+		select	id, art_no, cat_id, `count`
 		from	vproducts
 		where	lang='de' and campaign_id=$token_id
 	~);
@@ -19,7 +20,8 @@
 </p>
 
 % while(my $r = $sth->fetch()) {
-%	my ($id, $art_no, $cat_id, $title, $count) = @{$r};
+%	my ($id, $art_no, $cat_id, $count) = @{$r};
+%	my $prd = $A->get_product_v2(id => $id);
 	&bull; <% $count %> &times; Prod-ID <% $id %> - C-ID <% $cat_id %> <% $id %>
-		<a href="/product/?id=<% $id %>"><% $title %></a><br>
+		<a href="/product/?id=<% $id %>"><% $prd->{title} %></a> CHF <% $prd->{price_incl_vat_fmt} %><br>
 % }
