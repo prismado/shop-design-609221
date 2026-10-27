@@ -16,11 +16,15 @@
 	my $debug = $cgi->param('debug');
 	my $token = $cgi->param('token') // '';
 
-	my $msg      = 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
-	my $msg_type = 'warning';
+	my $msg          = 'Der Zugang zum PRO-Bereich ist ausschliesslich für berechtigte Benutzer vorbehalten.';
+	my $msg_type     = 'warning';
+	my $company_id   = 0;
+	my $company_name = '';
 
 	if ($token) {
-		$msg = 'XX constr';
+		($company_id, $company_name) = @{$C->query(
+			"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
+		$msg = "XX constr: $company_id $company_name";
 		$msg_type = 'error';
 	}
 </%init>
