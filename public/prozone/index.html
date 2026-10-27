@@ -33,7 +33,8 @@
 		if ($token_id) {
 			($company_id, $company_name) = @{$C->query(
 				"select company_id, name from campaign_data d, companies c where c.id=company_id and token='$token'")};
-			$msg      = qq~Unternehmen: <b>$company_name</b><br>Die PRO-Zone ist nun freigeschaltet.~;
+			$msg      = 'Die PRO-Zone ist nun freigeschaltet.';
+			# XXX $msg      = qq~Unternehmen: <b>$company_name</b><br>Die PRO-Zone ist nun freigeschaltet.~;
 			$C->saveSessData('token',    $token);
 			$C->saveSessData('token_id', $token_id);
 		}
