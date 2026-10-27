@@ -7,6 +7,7 @@
 	my $email    = $args{email};
 	my $pdfconf  = $args{pdfconf};
 	my $C        = $args{C};
+	my $A        = $args{A};
 	my $msg      = $args{msg};
 	my $msg_type = $args{msg_type} || 'info';
 	my $token    = $args{token} // '';
@@ -106,7 +107,7 @@
 				</button>
 				</form>
 			</div>
-			<& inc_prozone_articles.html, C => $C, token_id => $token_id &>
+			<& inc_prozone_articles.html, C => $C, A => $A, token_id => $token_id &>
 %		}
 %		else {
 			<& inc_prozone_user_input.html, email => $email, token => $token &>
