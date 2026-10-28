@@ -39,7 +39,8 @@
 				<h1 class="text-2xl md:text-3xl font-bold text-gray-900">PRO-Zone</h1>
 			</div>
 %			if ($perm->{is_admin} && $this eq 'product') {
-				<a href="/adx/edit-product.html?id=9" aria-label="Bearbeiten"
+%				my $prod_id = $C->{CGI}->param('id') + 0;
+				<a href="/adx/edit-product.html?id=<% $prod_id %>" aria-label="Bearbeiten"
 					class="w-8 h-8 flex items-center justify-center rounded-full
 						text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
