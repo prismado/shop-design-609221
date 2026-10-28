@@ -12,9 +12,12 @@
 	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
 
 	my ($cur_section) = $this =~ m{^([^/]+)};
-	# XXX my ($cur_section) = $C->this() =~ m{^([^/]+)};
 
 	# -- Nur aktiv, solange weder eine Kategorie ausgewählt noch eine statische Seite aktiv ist
+
+	my $cls_active   = 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
+	my $cls_inactive = 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+	my %active       = ($cur_section => $cls_active);
 
 	my $about_active_cls = ($cur_section eq 'about')
 		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
@@ -24,9 +27,9 @@
 		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
 		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 
-	my $services_active_cls = ($cur_section eq 'services')
-		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
-		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+	# XXX my $services_active_cls = ($cur_section eq 'services')
+	# XXX	? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+	# XXX	: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 
 	my $privacy_active_cls = ($cur_section eq 'privacy')
 		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
@@ -45,7 +48,7 @@
 
       <a href="/about" class="flex-shrink-0 whitespace-nowrap <% $about_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Unternehmen</a>
 
-      <a href="/services" class="flex-shrink-0 whitespace-nowrap <% $services_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Dienstleistungen</a>
+      <a href="/services" class="flex-shrink-0 whitespace-nowrap <% $active{services} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Dienstleistungen</a>
 
       <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $contact_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Kontakt</a>
 
