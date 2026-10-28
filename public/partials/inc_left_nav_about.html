@@ -16,7 +16,8 @@
 	# -- Nur aktiv, solange weder eine Kategorie ausgewählt noch eine statische Seite aktiv ist
 
 	my $cls_active   = 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
-	my $cls_inactive = 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+	my $cls_inactive = 'bg-gray-50 text-[#1c1512] lg:border-transparent
+			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600';
 	my %active       = ($cur_section => $cls_active);
 
 	# XXX my $services_active_cls = ($cur_section eq 'services')
