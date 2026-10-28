@@ -92,6 +92,7 @@
 						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 					<% $depth_arrow %>
 					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
+					<% $cid_elem == $daily_offer_cid ? 'DLY!' : '' %>
 				</a>
 %			}
 %			$memo{$cid_elem} = 1;
