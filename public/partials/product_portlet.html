@@ -5,14 +5,12 @@
 	my $A     = $args{A};
 	my $v     = $args{v};
 	my $id    = $args{id};
-	my $prod  = $args{prod}; # -- 26Oct2026
+	my $prod  = $args{prod};
 	my $debug = $args{debug};
 
-	# XX my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
-
-	my $img_url = $prod->{image}->{url};
+	my $img_url    = $prod->{image}->{url};
 	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
-	   $img_url = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Kein+Bild%0Avorhanden' unless $img_exists;
+	   $img_url    = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Kein+Bild%0Avorhanden' unless $img_exists;
 </%init>
 
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm
