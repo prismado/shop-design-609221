@@ -13,8 +13,9 @@
 
 	my $weekday = $C->map_weekday_de( $C->get_weekday(date => $C->now(7)) );
 
-	my $title = $C->{CONFIG}->{site_title};
-	my $daily_title = "Tagesangebote am $weekday";
+	# XXX my $title           = $C->{CONFIG}->{site_title};
+	my $daily_title     = "Tagesangebote am $weekday";
+	my $daily_offer_cid = $A->get_daily_offer_categ()->{id};
 
 	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
 	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
@@ -34,7 +35,7 @@
     <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 mb-12
 		lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
-	<a href="#" class="flex-shrink-0 whitespace-nowrap <% $daily_active_cls %> lg:bg-transparent
+	<a href="#?<% $daily_offer_cid %>" class="flex-shrink-0 whitespace-nowrap <% $daily_active_cls %> lg:bg-transparent
 		text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none lg:px-3
 		lg:border-l-2 transition-colors"><% $daily_title %></a>
 
