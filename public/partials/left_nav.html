@@ -10,8 +10,10 @@
 
 	my ($categ_ids, $label) = $A->get_categ_nav($lang);
 
+	my $weekday = $C->map_weekday_de( $C->get_weekday(date => $C->now(7)) );
+
 	my $title = $C->{CONFIG}->{site_title};
-	my $daily_title = 'Tagesangebote am Dienstag';
+	my $daily_title = "Tagesangebote am $weekday";
 
 	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
 	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
