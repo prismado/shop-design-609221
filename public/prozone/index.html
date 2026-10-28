@@ -14,6 +14,10 @@
 	$this =~ s/^\///;
 	$this = (split /\//, $this)[0];
 
+	if ($this eq 'product') {
+		$C->create_toast_note(body => 'Bitte schalten Sie zuerst Ihre PRO-Zone frei.', type => 'error');
+	}
+
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
