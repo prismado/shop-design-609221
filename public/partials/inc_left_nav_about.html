@@ -35,9 +35,9 @@
 	# XXX	? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
 	# XXX	: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 
-	my $prozone_active_cls = ($cur_section eq 'prozone')
-		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
-		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+	# XXX my $prozone_active_cls = ($cur_section eq 'prozone')
+	# XXX	? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+	# XXX	: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 </%init>
 
 <hr class="my-3 lg:my-4 border-gray-200">
@@ -59,7 +59,7 @@
 		<a href="/prozone"
 			class="block bg-gray-100 text-[#1c1512] lg:border-transparent whitespace-nowrap
 				lg:bg-transparent text-[15.4px] ZZfont-medium px-3 py-2 rounded-full lg:rounded-none
-				lg:px-3 lg:border-l-2 <% $prozone_active_cls %>
+				lg:px-3 lg:border-l-2 <% $active{prozone} || $cls_inactive %>
 				hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 			PRO-Zone
 		</a>
