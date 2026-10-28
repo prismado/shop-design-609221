@@ -23,6 +23,12 @@
           <span class="absolute top-3 left-3 bg-red-600 text-white text-xs
 			font-bold px-2 py-1 rounded-full">-<% sprintf('%.0f', $prod->{discount_perc}) %>%</span>
 %	}
+
+%	if ($prod->{campaign_id}) {
+		<span class="absolute top-3 left-20 bg-gray-600 text-white text-xs
+				font-bold px-2 py-1 rounded-full">PRO</span>
+%	}
+
 	  <button type="button" onclick="saveToWishlist(this, <% $id %>)"
 		class="absolute top-3 right-3 bg-white/90 backdrop-blur p-2
 			rounded-full shadow hover:bg-white transition" aria-label="Zur Merkliste hinzufügen">
