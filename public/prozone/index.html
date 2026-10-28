@@ -8,7 +8,11 @@
 
 	my $perm           = $C->get_user_perm();
 	my $cookie_consent = $C->get_cookie_consent();
+	my $this           = $ENV{REQUEST_URI}; # -- e.g. /product/?id=123 *or* /prozone/
 	my $email          = $C->getSessData('prozone_email') // '';
+
+	$this =~ s/^\///;
+	$this = (split /\//, $this)[0];
 
 	my $cgi = $C->{CGI};
 
@@ -80,6 +84,7 @@
 			msg_type => $msg_type,
 			token    => $token,
 			token_id => $token_id,
+			this     => $this,
 			A        => $A,
 			C        => $C
 		&>
