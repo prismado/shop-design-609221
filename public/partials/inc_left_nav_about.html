@@ -23,9 +23,9 @@
 		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
 		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 
-	my $contact_active_cls = ($cur_section eq 'contact')
-		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
-		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+	# XXX my $contact_active_cls = ($cur_section eq 'contact')
+	# XXX	? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+	# XXX	: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
 
 	# XXX my $services_active_cls = ($cur_section eq 'services')
 	# XXX	? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
@@ -50,7 +50,7 @@
 
       <a href="/services" class="flex-shrink-0 whitespace-nowrap <% $active{services} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Dienstleistungen</a>
 
-      <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $contact_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Kontakt</a>
+      <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $active{contact} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Kontakt</a>
 
       <a href="/privacy" class="flex-shrink-0 whitespace-nowrap <% $active{privacy} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Datenschutz</a>
 
