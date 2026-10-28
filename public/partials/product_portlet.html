@@ -7,9 +7,9 @@
 	my $prod  = $args{prod};
 
 	my $img_url    = $prod->{image}->{url};
-	# XXX my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
-	my $img_exists = $prod->{image}->{ext} ? 1 : 0;
-	   $img_url    = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Kein+Bild%0Avorhanden' unless $img_exists;
+	   $img_url    = '/assets/images/no_image.webp' unless $prod->{image}->{ext};
+	# XXX my $img_exists = $prod->{image}->{ext} ? 1 : 0;
+	# XXX    $img_url    = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Kein+Bild%0Avorhanden' unless $img_exists;
 </%init>
 
 <article class="reveal group bg-white rounded-2xl border border-gray-200 shadow-sm
