@@ -11,9 +11,8 @@
 	my $showmsg = $cgi->param('showmsg');
 
 	my $tnote = $C->get_toast_notes();
-
-	my $perm = $C->get_user_perm();
-	my $lang = 'de';
+	my $perm  = $C->get_user_perm();
+	my $lang  = 'de';
 
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
 	my $cookie_consent = $C->get_cookie_consent();
