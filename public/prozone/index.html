@@ -18,6 +18,8 @@
 		$C->create_toast_note(body => 'Bitte schalten Sie zuerst Ihre PRO-Zone frei.', type => 'error');
 	}
 
+	my $tnote = $C->get_toast_notes();
+
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
@@ -102,6 +104,11 @@
 <script>
 <& partials/toast_js.html &>
 <& partials/product_portlet_js.html &>
+%	if ($tnote->{rows}) {
+%		foreach my $tn (@{$tnote->{notes}}) {
+			showToast(<% $tn->{type} eq 'error' ? 'false' : 'true' %>, "<% $tn->{title} %> <% $tn->{body} %>", <% $tn->{delay} %>);
+%		}
+%	}
 </script>
 
 <& partials/footer.html, C => $C &>
