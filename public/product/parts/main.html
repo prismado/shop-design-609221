@@ -148,6 +148,8 @@
 				</script>
 
 				<& inc_prod_spec.html, C => $C, prod => $prod, id => $id &>
+<%doc>
+XXX:
 %			if ($perm->{is_devel}) {
 				<p class="mt-5">XX <% $C->{CONFIG}->{DOCUMENT_ROOT} %></p>
 				<p class="mt-5">XX <% $img_url %></p>
@@ -155,6 +157,8 @@
 					<p class="mt-1 text-xs">XX pic: <% $_ %></p>
 %				}
 %			}
+/XXX
+</%doc>
 		</div>
 	</div>
 
