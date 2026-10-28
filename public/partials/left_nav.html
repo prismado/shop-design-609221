@@ -2,8 +2,9 @@
 	use utf8;
 	my %args = $m->caller_args(0);
 
-	my $C = $args{C};
-	my $A = $args{A};
+	my $C          = $args{C};
+	my $A          = $args{A};
+	my $this       = $args{this} // $C->this();
 	my $cur_cat_id = $args{cat_id}; # -- Aktiv ausgewählte Kategorie-ID
 
 	my $lang = 'de';
@@ -17,7 +18,8 @@
 
 	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
 	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
-	my ($cur_section) = $C->this() =~ m{^([^/]+)};
+	my ($cur_section) = $this =~ m{^([^/]+)};
+	# XXX my ($cur_section) = $C->this() =~ m{^([^/]+)};
 	my $is_static_section = grep { $cur_section eq $_ } qw(about contact services prozone privacy);
 
 	# -- Nur aktiv, solange weder eine Kategorie ausgewählt noch eine statische Seite aktiv ist
@@ -120,7 +122,7 @@ XXX:
 </%doc>
     </nav>
 
-	<& inc_left_nav_about.html, C => $C &>
+	<& inc_left_nav_about.html, this => $this, C => $C &>
   </aside>
 
   <script>
