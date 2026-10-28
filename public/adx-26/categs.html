@@ -26,10 +26,11 @@
 		(my $label_en = $cgi->param('label_en')) =~ s/'/''/g;
 		(my $label_fr = $cgi->param('label_fr')) =~ s/'/''/g;
 		my $max_id = $C->query('select MAX(id)+1 from categories')->[0];
-		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'de', '$label_de')~);
-		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'en', '$label_en')~);
-		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label) values ($max_id, 0, 'fr', '$label_fr')~);
-		$C->create_toast_note(body=>"Neue Kategorie ID $max_id<br>$label_de<br>$label_en<br>$label_fr");
+		my $errstr = '';
+		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label, ref) values ($max_id, 0, 'de', '$label_de', '')~) or $errstr = $DBI::errstr;
+		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label, ref) values ($max_id, 0, 'en', '$label_en', '')~);
+		$C->{dbh}->do(qq~insert into categories (id, parent_id, lang, label, ref) values ($max_id, 0, 'fr', '$label_fr', '')~);
+		$C->create_toast_note(body=>"Neue Kategorie ID $max_id<br>$label_de $errstr<br>$label_en<br>$label_fr");
 	}
 	elsif ($cgi->param('delid')) {
 		my $id = $cgi->param('delid');
