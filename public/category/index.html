@@ -20,7 +20,8 @@
 	$stmt = qq~
 		select	id
 		from	vproducts
-		where	cat_id=$id and lang='de' and `count` > 0~ if $token_id;
+		where	cat_id=$id and lang='de' and `count` > 0
+		limit	1000~ if $token_id;
 
 	my $sth = $C->{dbh}->prepare($stmt);
 	   $sth->execute();
