@@ -3,10 +3,10 @@
 
 	my $C     = $args{C};
 	my $A     = $args{A};
-	my $v     = $args{v};
+	# XXX my $v     = $args{v};
 	my $id    = $args{id};
 	my $prod  = $args{prod};
-	my $debug = $args{debug};
+	# XXX my $debug = $args{debug};
 
 	my $img_url    = $prod->{image}->{url};
 	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
