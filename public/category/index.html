@@ -16,6 +16,7 @@
 		select	id
 		from	vproducts
 		where	cat_id=$id and lang='de' and `count` > 0
+			and campaign_id=0
 		limit	1000~;
 	$stmt = qq~
 		select	id
