@@ -6,12 +6,10 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	my $perm = $C->get_user_perm();
-	my $token_id = $C->getSessData('token_id') // 0;
-	my $cgi  = $C->{CGI};
-
-	my $id = $cgi->param('id') + 0;
-
+	my $perm      = $C->get_user_perm();
+	my $token_id  = $C->getSessData('token_id') // 0;
+	my $cgi       = $C->{CGI};
+	my $id        = $cgi->param('id') + 0;
 	my $cat_label = $C->query("select label from categories where id=$id and lang='de'")->[0];
 
 	my $stmt = qq~
