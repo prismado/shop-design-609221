@@ -1,0 +1,48 @@
+<%init>
+	use utf8;
+
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+
+	my $lang = 'de';
+
+	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
+	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
+
+	my ($cur_section) = $C->this() =~ m{^([^/]+)};
+
+	# -- Nur aktiv, solange weder eine Kategorie ausgewählt noch eine statische Seite aktiv ist
+
+	my $about_active_cls = ($cur_section eq 'about')
+		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+
+	my $contact_active_cls = ($cur_section eq 'contact')
+		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+
+	my $services_active_cls = ($cur_section eq 'services')
+		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+
+	my $privacy_active_cls = ($cur_section eq 'privacy')
+		? 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50'
+		: 'bg-gray-50 text-[#1c1512] lg:border-transparent hover:text-gray-800 hover:bg-gray-100';
+</%init>
+
+<hr class="my-3 lg:my-4 border-gray-200">
+
+<h2 class="hidden lg:block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Über uns</h2>
+
+<nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
+
+      <a href="/about" class="flex-shrink-0 whitespace-nowrap <% $about_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Unternehmen</a>
+
+      <a href="/services" class="flex-shrink-0 whitespace-nowrap <% $services_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Dienstleistungen</a>
+
+      <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $contact_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Kontakt</a>
+
+      <a href="/privacy" class="flex-shrink-0 whitespace-nowrap <% $privacy_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Datenschutz</a>
+
+</nav>
