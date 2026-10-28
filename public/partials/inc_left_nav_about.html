@@ -3,14 +3,16 @@
 
 	my %args = $m->caller_args(0);
 
-	my $C = $args{C};
+	my $C    = $args{C};
+	my $this = $args{this};
 
 	my $lang = 'de';
 
 	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
 	# Kategorie-Logik oben: erstes Pfadsegment der aktuellen Seite (z. B. "about/index" -> "about").
 
-	my ($cur_section) = $C->this() =~ m{^([^/]+)};
+	my ($cur_section) = $this =~ m{^([^/]+)};
+	# XXX my ($cur_section) = $C->this() =~ m{^([^/]+)};
 
 	# -- Nur aktiv, solange weder eine Kategorie ausgewählt noch eine statische Seite aktiv ist
 
@@ -54,7 +56,7 @@
 		<a href="/prozone"
 			class="block bg-gray-100 text-[#1c1512] lg:border-transparent whitespace-nowrap
 				lg:bg-transparent text-[15.4px] ZZfont-medium px-3 py-2 rounded-full lg:rounded-none
-				lg:px-3 lg:border-l-2
+				lg:px-3 lg:border-l-2 <% $prozone_active_cls %>
 				hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 			PRO-Zone
 		</a>
