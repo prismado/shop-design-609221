@@ -12,6 +12,7 @@
 	my $options_total = sprintf('%.2f', $args{options_total});
 
 	my $img_url = $prod->{image}->{url};
+	   $img_url = '/assets/images/no_image.webp' unless $prod->{image}->{ext};
 </%init>
 <div class="hidden" id="base_price"><% $prod->{price_incl_vat} %></div>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
