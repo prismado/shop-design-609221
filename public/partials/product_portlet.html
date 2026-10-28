@@ -7,7 +7,8 @@
 	my $prod  = $args{prod};
 
 	my $img_url    = $prod->{image}->{url};
-	my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
+	# XXX my $img_exists = -e "$C->{CONFIG}->{DOCUMENT_ROOT}$img_url" ? 1 : 0;
+	my $img_exists = $prod->{image}->{ext} ? 1 : 0;
 	   $img_url    = 'https://placehold.co/250x250/FAFAFA/CCCCCC?text=Kein+Bild%0Avorhanden' unless $img_exists;
 </%init>
 
