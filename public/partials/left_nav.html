@@ -58,8 +58,8 @@
 					erreichbar für "verwaiste" Artikel ohne eigene Unterkategorie), Chevron klappt
 					nur die Unterkategorien auf/zu. -->
 				<div class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 inline-flex items-center
-						lg:bg-transparent rounded-full lg:rounded-none lg:border-l-2
-						hover:lg:border-red-600 transition-colors"
+						lg:bg-transparent rounded-full lg:rounded-none lg:border-l-2 lg:border-b
+						lg:border-b-gray-300 lg:last:border-b-0 hover:lg:border-red-600 transition-colors"
 % 					if (!$is_main_cat) {
 						data-parent-id="<% $parent_id %>"
 % 					}
@@ -88,7 +88,7 @@
 % 					}
 					class="<% $hidden_cls %><% $active_cls %> flex-shrink-0 whitespace-nowrap
 						lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-						lg:px-3 lg:border-l-2
+						lg:px-3 lg:border-l-2 lg:border-b lg:border-b-gray-300 lg:last:border-b-0
 						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 					<% $depth_arrow %>
 					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
