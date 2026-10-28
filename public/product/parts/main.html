@@ -147,7 +147,6 @@
 				})();
 				</script>
 
-				<& inc_prod_spec.html, C => $C, prod => $prod, id => $id &>
 		</div>
 	</div>
 
@@ -228,6 +227,10 @@
 
 			<div class="mt-6">
 			<& inc_options.html, C => $C, A => $A, opts => $opts, prod_id => $id &>
+			</div>
+
+			<div class="mt-6">
+			<& inc_prod_spec.html, C => $C, prod => $prod, id => $id &>
 			</div>
 
 %			if ($perm->{is_devel}) {
