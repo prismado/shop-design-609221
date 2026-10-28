@@ -7,10 +7,11 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $cgi = $C->{CGI};
-	my $debug = $cgi->param('debug');
+	my $debug   = $cgi->param('debug');
 	my $showmsg = $cgi->param('showmsg');
 
 	my $tnote = $C->get_toast_notes();
+	my $daily_offer_cid = $A->get_daily_offer_categ()->{id};
 
 	my $perm = $C->get_user_perm();
 	my $lang = 'de';
