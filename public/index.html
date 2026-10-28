@@ -17,9 +17,9 @@
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
 	my $cookie_consent = $C->get_cookie_consent();
 
-	my $this = $C->this(); # -- product/index
+	my $this       = $C->this(); # -- product/index
 	my @path_elems = split /\//, $this;
-	my $home = $#path_elems ? '..' : '.';
+	my $home       = $#path_elems ? '..' : '.';
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
