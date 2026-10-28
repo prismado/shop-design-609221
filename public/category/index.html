@@ -7,6 +7,7 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
+	my $token_id = $C->getSessData('token_id') // 0;
 	my $cgi  = $C->{CGI};
 
 	my $id = $cgi->param('id') + 0;
@@ -16,7 +17,13 @@
 	my $stmt = qq~
 		select	id
 		from	vproducts
-		where	cat_id=$id and lang='de' and `count` > 0~;
+		where	cat_id=$id and lang='de' and `count` > 0
+		limit	1000~;
+	$stmt = qq~
+		select	id
+		from	vproducts
+		where	cat_id=$id and lang='de' and `count` > 0~ if $token_id;
+
 	my $sth = $C->{dbh}->prepare($stmt);
 	   $sth->execute();
 
