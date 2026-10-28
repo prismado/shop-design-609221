@@ -12,7 +12,7 @@
 	my ($categ_ids, $label) = $A->get_categ_nav($lang);
 
 	my $weekday         = $C->map_weekday_de( $C->get_weekday(date => $C->now(7)) );
-	my $daily_title     = "Tagesangebote am $weekday";
+	my $daily_title     = "am $weekday";
 	my $daily_offer_cid = $A->get_daily_offer_categ()->{id};
 
 	# -- Aktiv-Status für "Über uns" (statische Seiten ohne Kategorie-ID), analog zur
@@ -92,7 +92,7 @@
 						hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
 					<% $depth_arrow %>
 					<% $C->shorten_title($label->{$cid_elem}, 25) %><% $is_main_cat ? '' : ' Level-' . ($#cat_group + 1) %>
-					<% $cid_elem == $daily_offer_cid ? 'DLY!' : '' %>
+					<% $cid_elem == $daily_offer_cid ? $daily_title : '' %>
 				</a>
 %			}
 %			$memo{$cid_elem} = 1;
