@@ -154,7 +154,7 @@
 	<!-- Produktdetails -->
 		<div>
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1"><% $prod->{brand} %>
-				&ndash; <% $prod->{cat_names} %>
+				&ndash; <a href="/category/?id=<% $prod->{cat_id} %>&frnd=dreizehn"><% $prod->{cat_names} %></a>
 %				if ($perm->{is_admin}) {
 					&ndash; <a class="text-red-500" href="../adx/edit-product.html?id=<% $id %>">Edit</a>
 %				}
