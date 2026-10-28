@@ -50,12 +50,23 @@
       <a href="/privacy" class="flex-shrink-0 whitespace-nowrap <% $privacy_active_cls %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Datenschutz</a>
 
 % #	============================================ PRO-Zone ============================================
-	<a href="/prozone"
-		class="flex-shrink-0 whitespace-nowrap <% $prozone_active_cls %> lg:bg-transparent
-			text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-			lg:px-3 lg:border-l-2
-			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
-		PRO-Zone
-	</a>
+	<div class="relative group flex-shrink-0">
+		<a href="/prozone"
+			class="block bg-gray-100 text-[#1c1512] lg:border-transparent whitespace-nowrap
+				lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
+				lg:px-3 lg:border-l-2
+				hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+			PRO-Zone
+		</a>
+
+		<div class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-[260px]
+				-translate-x-1/2 rounded-lg bg-[#1c1512] px-3 py-2 text-center text-xs text-white
+				leading-relaxed opacity-0 invisible shadow-lg transition duration-200
+				group-hover:opacity-100 group-hover:visible
+				lg:left-full lg:top-1/2 lg:mt-0 lg:ml-0 lg:translate-x-0 lg:-translate-y-1/2 lg:text-left">
+			Bereich für Firmenkunden<br>
+			Wenden Sie sich bitte an Ihren IT-Verantwortlichen oder nehmen Sie mit uns Kontakt auf.
+		</div>
+	</div>
 
 </nav>
