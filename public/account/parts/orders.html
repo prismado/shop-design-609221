@@ -108,7 +108,8 @@
 	<!-- Merkliste -->
 	<div class="mt-10">
 %		foreach my $d (@$orders) {
-			&bull; <% $d->{id} %> <% $d->{instime} %><br>
+			&bull; <% $d->{id} %> <% $C->trans_date_short($d->{instime}) %>
+				&rarr; CHF <% $d->{amount_incl_vat} %> / <% $d->{status} %><br>
 %		}
 % # XX		<p class="text-sm mb-6 text-gray-600 leading-relaxed"> </p>
 	</div>
