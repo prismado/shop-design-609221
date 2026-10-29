@@ -123,7 +123,8 @@
 				&ndash; <i><% $d->{odat}->{remarks} %></i><br>
 %				foreach (@{ $d->{odat}->{_products} }) {
 %					my ($prod_id, $count, $price) = split /\t/;
-					<% $count %> &times; Prod-ID <% $prod_id %><br>
+%					my $p = $A->get_product_v2(id => $prod_id);
+					<% $count %> &times; Prod-ID <% $prod_id %> <% $p->{title} %><br>
 %				}
 				<br>
 %		}
