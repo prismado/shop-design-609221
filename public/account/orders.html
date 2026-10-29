@@ -11,6 +11,16 @@
 
 	$C->redir('/signin.html') unless $perm->{uid} > 0;
 
+	my $sth = $C->{dbh}->prepare(qq~select id, instime, firstname, lastname, city, pay_meth, amount_incl_vat, status
+				from vorders_custname where uid=$perm->{uid} order by 1 desc limit 500~);
+	$sth->execute() or $m->out("Err $DBI::errstr<br>");
+
+	my @orders = ();
+	while(my $r = $sth->fetch()) {
+		my %d = ();
+		($d{id}, $d{instime}, $d{firstname}, $d{lastname}, $d{city}, $d{pay_meth}, $d{amount_incl_vat}, $d{status}) = @{$r};
+		push(@orders, \%d);
+	}
 	# XXX my $cgi = $C->{CGI};
 	# XXX my $debug = $cgi->param('debug');
 </%init>
@@ -19,7 +29,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konto | Bestellungen | <% $C->{CONFIG}->{HTTP_HOST} %></title>
+<title>Konto | <% $sth->rows() %> Bestellungen | <% $C->{CONFIG}->{HTTP_HOST} %></title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -44,7 +54,7 @@
 	<& parts/left_nav_account.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/orders.html, perm => $perm, uinf => $uinf, C => $C, A => $A &>
+		<& parts/orders.html, orders => \@orders, perm => $perm, uinf => $uinf, C => $C, A => $A &>
 	</section>
 
 </div>

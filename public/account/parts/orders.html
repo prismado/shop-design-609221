@@ -6,6 +6,7 @@
 
 	my $perm = $args{perm};
 	my $uinf = $args{uinf};
+	my $orders = $args{orders};
 	my $C    = $args{C};
 	my $A    = $args{A};
 
@@ -106,6 +107,10 @@
 
 	<!-- Merkliste -->
 	<div class="mt-10">
+		HOE<br>
+%		foreach my $d (@$orders) {
+			XX <% $d->{id} %><br>
+%		}
 % # XX		<p class="text-sm mb-6 text-gray-600 leading-relaxed"> </p>
 	</div>
 
