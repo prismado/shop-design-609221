@@ -108,7 +108,7 @@
 	<!-- Merkliste -->
 	<div class="mt-10">
 %		foreach my $d (@$orders) {
-			&bull; <% $d->{id} %> <% $C->trans_date_short($d->{instime}) %>
+			&bull; <% sprintf('%06d', $d->{id}) %> <% $C->trans_date_short($d->{instime}) %>
 				<% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %>
 				&rarr; CHF <% $d->{amount_incl_vat} %> <% $d->{pay_meth} %> / <% $d->{status} %>
 				<i><% $d->{remarks} %></i><br>
