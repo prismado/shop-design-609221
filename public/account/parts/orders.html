@@ -173,7 +173,8 @@
 					</div>
 %				  }
 %				  if ($item_counter < $#{ $d->{odat}->{_products} } + 1) {
-					<p class="mt-4 text-xs">Nicht <% $#{ $d->{odat}->{_products} } + 1 %> alle Artikel dargestellt</p>
+%					my $diff = $#{ $d->{odat}->{_products} } + 1 - $item_counter;
+					<p class="mt-4 text-xs"><% $diff %> weitere Artikel</p>
 %				  }
 				</div>
 
