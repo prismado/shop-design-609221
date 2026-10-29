@@ -84,7 +84,7 @@
 				if (data.rc === 0) {
 					location.reload();
 				} else {
-					showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+					showToast(false, data.message);
 				}
 			})
 			.catch(function () {
