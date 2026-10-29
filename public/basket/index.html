@@ -86,13 +86,13 @@
 	<& partials/daily_offer.html, C => $C, A => $A &>
 </div>
 
-% if (@msgs) {
 	<& ../partials/inc_toast.html &>
 	<script>
 	<& ../partials/toast_js.html &>
+% if (@msgs) {
 	showToast(true, '<% join "\\n", @msgs %>', 9000);
-	</script>
 % }
+	</script>
 
 % if ($delid) {
 	<script>
