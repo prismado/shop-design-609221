@@ -57,8 +57,12 @@
 %				}
 			</div>
 
-			<span class="text-base font-bold text-gray-900 whitespace-nowrap">
+			<span class="text-base font-semibold text-gray-900 whitespace-nowrap">
 				CHF <% sprintf('%.2f', $d->{price} + $A->add_vat($bask_opts->{price_total})) %>
+			</span>
+
+			<span class="text-base font-bold text-gray-900 whitespace-nowrap">
+				CHF <% sprintf('%.2f', $d->{count} * ($d->{price} + $A->add_vat($bask_opts->{price_total}))) %>
 			</span>
 
 			<a href="#!" onclick="removeFromBasket(<% $d->{basket_id} %>)" aria-label="Artikel entfernen"
