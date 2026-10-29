@@ -168,7 +168,7 @@
 					<span class="text-xs text-gray-400">
 						<img src="/assets/images/icons/payments/<% $pay_mth_icon{$d->{pay_meth}} %>.svg">
 						<% $pay_method{$d->{pay_meth}} || "* $d->{pay_meth} *" %>
-						<% $pay_meth_short{$d->{pay_meth}} %>
+						(<% uc $pay_meth_short{$d->{pay_meth}} %>)
 					</span>
 					<span class="text-base font-bold text-gray-900">
 						CHF <% $C->decimal_mark($d->{amount_incl_vat}) %>
