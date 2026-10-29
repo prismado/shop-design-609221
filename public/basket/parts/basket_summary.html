@@ -81,18 +81,15 @@
 		body.set('oper', oper);
 
 		fetch('/dyn/update-basket.html', { method: 'POST', body: body })
-			.then(function (res) { return res.json(); })
-			.then(function (data) {
-				showToast(data.rc === 0, data.message);
-				if (data.rc === 0) {
-					// -- Reload erst nach kurzer Sichtbarkeit des Toasts, sonst wird er vom
-					// sofortigen Neuladen "verschluckt". Bewusst kein location.reload(): Falls die
-					// aktuelle Seite zuvor per POST geladen wurde (z. B. nach removeFromBasket),
-					// würde reload() diesen POST wiederholen und der Browser mit einer
-					// "Daten erneut senden?"-Abfrage reagieren. Eine Neuzuweisung von location.href
-					// erzwingt stattdessen immer einen frischen GET-Request.
-					setTimeout(function () { location.href = location.href; }, 1500);
-				}
+			.then(function () {
+				// -- Rückmeldung kommt als Toast-Note direkt aus der neu geladenen Seite (siehe
+				// $C->create_toast_note() in @dyn/update-basket.html), daher ohne Wartezeit neu
+				// laden. Bewusst kein location.reload(): Falls die aktuelle Seite zuvor per POST
+				// geladen wurde (z. B. nach removeFromBasket), würde reload() diesen POST
+				// wiederholen und der Browser mit einer "Daten erneut senden?"-Abfrage reagieren.
+				// Eine Neuzuweisung von location.href erzwingt stattdessen immer einen frischen
+				// GET-Request.
+				location.href = location.href;
 			})
 			.catch(function () {
 				showToast(false, 'Die Menge konnte nicht angepasst werden.');

@@ -53,6 +53,8 @@
 	}
 
 	my $bsk_itms = $A->get_basket_items_v2();
+
+	my $tnote = $C->get_toast_notes();
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -102,6 +104,11 @@
 % if (@msgs) {
 	showToast(true, '<% join "\\n", @msgs %>', 9000);
 % }
+%	if ($tnote->{rows}) {
+%		foreach my $tn (@{$tnote->{notes}}) {
+	showToast(<% $tn->{type} eq 'error' ? 'false' : 'true' %>, "<% $tn->{title} %> <% $tn->{body} %>", <% $tn->{delay} %>);
+%		}
+%	}
 	</script>
 
 % if ($delid) {

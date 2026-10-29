@@ -42,6 +42,11 @@
 		}
 	}
 
+	# -- Rückmeldung als Session-Flash-Note statt reiner JSON-Antwort: Das Frontend lädt die Seite
+	# nach diesem AJAX-Call sofort neu (siehe basket_summary.html), die Note wird dort analog zu
+	# prozone/index.html ($tnote / get_toast_notes()) als Toast ausgegeben.
+	$C->create_toast_note(body => (join ', ', @msgs), type => $rc ? 'error' : 'success') if @msgs;
+
 	$r->content_type('application/json; charset=utf-8');
 </%init>
 {
