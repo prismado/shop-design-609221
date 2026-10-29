@@ -157,7 +157,9 @@
 				<div class="divide-y divide-gray-100 border-t border-gray-100">
 %				  my $item_counter = 0;
 %				  foreach (@{ $d->{odat}->{_products} }) {
-%					last if ++$item_counter > 2;
+%					if (++$item_counter > 2) {
+%						$item_counter--; last;
+%					}
 %					my ($prod_id, $count, $price) = split /\t/;
 %					my $p = $A->get_product_v2(id => $prod_id);
 %					my $img_url = $p->{image}->{url_thmb};
@@ -169,6 +171,10 @@
 							<span class="text-gray-400 font-medium"><% $count %>&times;</span> <% $p->{title} %>
 						</span>
 					</div>
+%				  }
+% # XXX				XXX ..... counter=<% $item_counter %> vs <b><%  $#{ $d->{odat}->{_products} } + 1 %></b>
+%				  if ($item_counter < $#{ $d->{odat}->{_products} } + 1) {
+					<p>XX: nicht alles dargestellt</p>
 %				  }
 				</div>
 
