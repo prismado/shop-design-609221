@@ -37,6 +37,9 @@
 			$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid");
 			push(@msgs, "Stückzahl von Prod-ID $prod_id reduziert");
 		}
+		else {
+			push(@msgs, 'Nichts mehr zu reduzieren an dieser Bestellposition.');
+		}
 	}
 
 	$r->content_type('application/json; charset=utf-8');
