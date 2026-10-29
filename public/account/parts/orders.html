@@ -109,9 +109,9 @@
 	<div class="mt-10">
 %		foreach my $d (@$orders) {
 			&bull; <% $d->{id} %> <% $C->trans_date_short($d->{instime}) %>
+				<% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %>
 				&rarr; CHF <% $d->{amount_incl_vat} %> / <% $d->{status} %><br>
 %		}
-% # XX		<p class="text-sm mb-6 text-gray-600 leading-relaxed"> </p>
 	</div>
 
 	<& ../partials/inc_toast.html &>
