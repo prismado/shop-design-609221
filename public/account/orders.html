@@ -11,14 +11,17 @@
 
 	$C->redir('/signin.html') unless $perm->{uid} > 0;
 
-	my $sth = $C->{dbh}->prepare(qq~select id, instime, firstname, lastname, city, pay_meth, amount_incl_vat, status
-				from vorders_custname where uid=$perm->{uid} order by 1 desc limit 500~);
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, instime, firstname, lastname, city, pay_meth, amount_incl_vat, status, `remarks`
+		from	vorders_custname
+		where	uid=$perm->{uid} order by 1 desc limit 500~);
 	$sth->execute() or $m->out("Err $DBI::errstr<br>");
 
 	my @orders = ();
 	while(my $r = $sth->fetch()) {
 		my %d = ();
-		($d{id}, $d{instime}, $d{firstname}, $d{lastname}, $d{city}, $d{pay_meth}, $d{amount_incl_vat}, $d{status}) = @{$r};
+		($d{id}, $d{instime}, $d{firstname}, $d{lastname}, $d{city},
+			$d{pay_meth}, $d{amount_incl_vat}, $d{status}, $d{remarks}) = @{$r};
 		push(@orders, \%d);
 	}
 </%init>
