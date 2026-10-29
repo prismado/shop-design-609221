@@ -14,7 +14,7 @@
 	my $sth = $C->{dbh}->prepare(qq~
 		select	id, instime, firstname, lastname, city, pay_meth, amount_incl_vat, status, `remarks`
 		from	vorders_custname
-		where	uid=$perm->{uid} order by 1 desc limit 500~);
+		where	uid=$perm->{uid} order by 1 desc limit 50~);
 	$sth->execute() or $m->out("Err $DBI::errstr<br>");
 
 	my @orders = ();
@@ -23,7 +23,6 @@
 		($d{id}, $d{instime}, $d{firstname}, $d{lastname}, $d{city},
 			$d{pay_meth}, $d{amount_incl_vat}, $d{status}, $d{remarks}) = @{$r};
 		$d{odat} = $A->get_order($d{id});
-		# XXX $d{products} = $d{odat}->{_products};
 		push(@orders, \%d);
 	}
 </%init>
