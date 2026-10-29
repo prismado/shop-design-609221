@@ -4,16 +4,23 @@
 
 	my $C = $args{C};
 	my $A = $args{A};
-	my $cur_cat_id = $args{cat_id}; # -- Aktiv ausgewählte Kategorie-ID
 
 	my $lang = 'de';
 
 	my $title = $C->{CONFIG}->{site_title};
 
-	# -- Nur aktiv, solange keine Kategorie ausgewählt ist
-	my $daily_active_cls = $cur_cat_id
-		? 'bg-gray-100 text-[#1c1512] lg:border-transparent hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600'
-		: 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
+	# -- Aktiv-Status analog zur Artikel-Kategorien-Navigation (partials/left_nav.html): zweites
+	# Pfadsegment der aktuellen Seite (z. B. "account/security" -> "security", "account/" -> "").
+	my $this = $ENV{REQUEST_URI};
+	$this =~ s/^\///;
+	$this =~ s/\?.*$//;
+	my (undef, $cur_section) = split /\//, $this;
+	$cur_section ||= 'overview';
+
+	my $cls_active   = 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
+	my $cls_inactive = 'bg-gray-50 text-[#1c1512] lg:border-transparent
+			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600';
+	my %active       = ($cur_section => $cls_active);
 </%init>
   <!-- Navigation (links, ca. 15%) -->
   <aside class="relative z-10 mb-8 lg:mb-0 lg:sticky lg:self-start" style="top: var(--header-h, 0px)">
@@ -23,24 +30,22 @@
     <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 mb-12
 		lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
-	<a href="." class="flex-shrink-0 whitespace-nowrap <% $daily_active_cls %> lg:bg-transparent
+	<a href="." class="flex-shrink-0 whitespace-nowrap <% $active{overview} || $cls_inactive %> lg:bg-transparent
 		text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none lg:px-3
 		lg:border-l-2 transition-colors">Übersicht</a>
 
 	<a href="#!"
-		class="bg-gray-100 text-[#1c1512] lg:border-transparent flex-shrink-0 whitespace-nowrap
-			lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-			lg:px-3 lg:border-l-2
-			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+		class="flex-shrink-0 whitespace-nowrap <% $active{orders} || $cls_inactive %> lg:bg-transparent
+			text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
+			lg:px-3 lg:border-l-2 transition-colors">
 		Ihre Bestellungen
 	</a>
 
 	<div class="relative group flex-shrink-0">
 		<a href="security"
-			class="block bg-gray-100 text-[#1c1512] lg:border-transparent whitespace-nowrap
+			class="block whitespace-nowrap <% $active{security} || $cls_inactive %>
 				lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
-				lg:px-3 lg:border-l-2
-				hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
+				lg:px-3 lg:border-l-2 transition-colors">
 			Sicherheit
 		</a>
 
