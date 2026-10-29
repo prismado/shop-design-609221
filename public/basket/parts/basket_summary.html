@@ -81,10 +81,11 @@
 		fetch('/dyn/update-basket.html', { method: 'POST', body: body })
 			.then(function (res) { return res.json(); })
 			.then(function (data) {
+				showToast(data.rc === 0, data.message);
 				if (data.rc === 0) {
-					location.reload();
-				} else {
-					showToast(false, data.message);
+					// -- Reload erst nach kurzer Sichtbarkeit des Toasts, sonst wird er vom
+					// sofortigen Neuladen "verschluckt".
+					setTimeout(function () { location.reload(); }, 1500);
 				}
 			})
 			.catch(function () {
