@@ -120,9 +120,11 @@
 			<& inc_prozone_user_input.html, email => $email, token => $token &>
 		</div>
 
+%	if ($ENV{NODE_ENV} ne 'production') {
 		<div class="mt-4 text-xs text-gray-400">
-			<% $ENV{NODE_ENV} %> &ndash; V610271 &ndash; <% $test_token %>
+			<% $ENV{NODE_ENV} %> &ndash; V610290 &ndash; <% $test_token %>
 		</div>
+%	}
 
 		<script>
 		// Farb-Varianten der Alert-Box (Zeile 57ff.) — deckungsgleich mit der %style-Map im
