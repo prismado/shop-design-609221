@@ -63,12 +63,14 @@
               <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="FR">Français</button>
               <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="IT">Italiano</button>
               <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="EN">English</button>
+%	if ($perm->{is_devel}) {
 		<a href="./?debug=1">
               <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="XX">- Edit -</button>
 		</a>
 		<a href="/_foo">
               <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="XX">_Foo</button>
 		</a>
+%	}
             </div>
           </div>
         </div>
