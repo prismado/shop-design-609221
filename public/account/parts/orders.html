@@ -13,6 +13,12 @@
 	my $bill_addr = $A->get_address_by_id($perm->{uid}, 1);
 	my $dlvr_addr = $A->get_address_by_id($perm->{uid}, 2);
 
+	my %order_status_hr = (
+		1 => 'Offen',
+		3 => 'Storniert',
+		4 => 'Durchgeführt'
+	);
+
 	my $sth = $C->{dbh}->prepare(qq~
 		select	SUBSTR(xkey, 15, 10), xval
 		from	users_details
@@ -112,7 +118,8 @@
 				<% $C->trans_date_short($d->{instime}) %>
 				<% sprintf('%06d', $d->{id}) %>:
 				<% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %>
-				&rarr; CHF <% $d->{amount_incl_vat} %> <% $d->{pay_meth} %> / <% $d->{status} %>
+				&rarr; CHF <% $d->{amount_incl_vat} %> <% $d->{pay_meth} %> /
+					<% $d->{status} %> <% $order_status_hr{$d->{status}} || "* $d->{status} *" %>
 				<br>
 %		}
 	</div>
