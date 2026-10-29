@@ -44,11 +44,13 @@
 		</div>
 
 		<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
-			<span><a href="#!" onclick="event.preventDefault(); updateBasketCount(<% $d->{basket_id} %>, 'sub')">-</a></span>
-			<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
-			<span><a href="#!" onclick="event.preventDefault(); updateBasketCount(<% $d->{basket_id} %>, 'add')">+</a></span>
+			<div class="flex items-center justify-center gap-3 w-20 flex-shrink-0">
+				<a href="#!" onclick="event.preventDefault(); updateBasketCount(<% $d->{basket_id} %>, 'sub')">-</a>
+				<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
+				<a href="#!" onclick="event.preventDefault(); updateBasketCount(<% $d->{basket_id} %>, 'add')">+</a>
+			</div>
 
-			<div class="flex flex-col items-end">
+			<div class="flex flex-col items-end w-24 flex-shrink-0">
 				<span class="text-sm text-gray-500"><% sprintf('%.2f', $d->{price}) %></span>
 %				if ($bask_opts->{price_total}) {
 					<span class="text-xs text-gray-400 whitespace-nowrap">
@@ -57,11 +59,7 @@
 %				}
 			</div>
 
-			<span class="text-base XXXfont-semibold text-gray-900 whitespace-nowrap">
-				CHF <% sprintf('%.2f', $d->{price} + $A->add_vat($bask_opts->{price_total})) %>
-			</span>
-
-			<span class="text-base font-bold text-gray-900 whitespace-nowrap">
+			<span class="text-base font-bold text-gray-900 whitespace-nowrap w-28 text-right flex-shrink-0">
 				CHF <% sprintf('%.2f', $d->{count} * ($d->{price} + $A->add_vat($bask_opts->{price_total}))) %>
 			</span>
 
