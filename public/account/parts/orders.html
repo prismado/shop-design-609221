@@ -20,9 +20,10 @@
 	);
 
 	my $pay_meths = $A->get_payment_methods()->{all};
-	my %pay_method = ();
+	my %pay_method = my %pay_mth_icon = ();
 	foreach my $d (@$pay_meths) {
-		$pay_method{$d->{num}} = $d->{psp}; # -- active / pmeth / icon
+		$pay_method{$d->{num}}   = $d->{psp}; # -- active / pmeth
+		$pay_mth_icon{$d->{num}} = $d->{icon};
 	}
 
 	my %order_status_style = (
@@ -163,7 +164,10 @@
 				</div>
 
 				<div class="flex items-center justify-between pt-3 mt-1 border-t border-gray-100">
-					<span class="text-xs text-gray-400"><% $pay_method{$d->{pay_meth}} || "* $d->{pay_meth} *" %></span>
+					<span class="text-xs text-gray-400">
+						<% $pay_mth_icon{$d->{pay_meth}} %>
+						<% $pay_method{$d->{pay_meth}} || "* $d->{pay_meth} *" %>
+					</span>
 					<span class="text-base font-bold text-gray-900">
 						CHF <% $C->decimal_mark($d->{amount_incl_vat}) %>
 					</span>
