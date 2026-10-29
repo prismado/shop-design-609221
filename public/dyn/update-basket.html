@@ -29,7 +29,7 @@
 		}
 		else {
 			$C->{dbh}->do("update basket set `count` = `count` + 1 where id=$id and sid=$sid");
-			push(@msgs, "Hinzu: Prod-ID $prod_id, avail. $available");
+			push(@msgs, "Hinzugefügt Prod-ID $prod_id, verfügbar: $available Stk.");
 		}
 	}
 	elsif ($oper eq 'sub') {
