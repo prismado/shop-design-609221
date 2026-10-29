@@ -1,0 +1,40 @@
+<%init>
+	use utf8;
+
+	# -- dyn/update-basket
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	# XXX my $lang = 'de';
+	my $rc  = 0;
+	my $msg = '';
+
+	my $cgi = $C->{CGI};
+
+	my $id   = $cgi->param('id') + 0;
+	my $oper = $cgi->param('oper');
+
+	my $sid = $C->getSID(); # -- Important
+
+	if ($oper eq 'add') {
+		$C->{dbh}->do("update basket set `count` = `count` + 1 where id=$id and sid=$sid");
+	}
+	elsif ($oper eq 'sub') {
+		$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid");
+	}
+
+	# XXX my ($rc, $msg) = $A->add2basket_details(
+	# XXX ) if $id;
+
+	# XXX my $thumb = '';
+
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": <% $rc || 0 %>,
+  "message": "<% $msg || 'n/a' %>, SID <% $C->{sid} %>"
+}
