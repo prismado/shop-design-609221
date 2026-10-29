@@ -84,8 +84,12 @@
 				showToast(data.rc === 0, data.message);
 				if (data.rc === 0) {
 					// -- Reload erst nach kurzer Sichtbarkeit des Toasts, sonst wird er vom
-					// sofortigen Neuladen "verschluckt".
-					setTimeout(function () { location.reload(); }, 1500);
+					// sofortigen Neuladen "verschluckt". Bewusst kein location.reload(): Falls die
+					// aktuelle Seite zuvor per POST geladen wurde (z. B. nach removeFromBasket),
+					// würde reload() diesen POST wiederholen und der Browser mit einer
+					// "Daten erneut senden?"-Abfrage reagieren. Eine Neuzuweisung von location.href
+					// erzwingt stattdessen immer einen frischen GET-Request.
+					setTimeout(function () { location.href = location.href; }, 1500);
 				}
 			})
 			.catch(function () {
