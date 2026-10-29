@@ -24,7 +24,8 @@
 	if ($oper eq 'add') {
 		my ($available, $condition) = @{$C->query("select `count`, `condition` FROM products WHERE id=$prod_id")};
 		if ($in_basket + 1 > $available) {
-			push(@msgs, "Anfrage zu hoch");
+			push(@msgs, "Anfrage zu hoch. Nur $available Stk. verfügbar.");
+			$rc = 1;
 		}
 		else {
 			$C->{dbh}->do("update basket set `count` = `count` + 1 where id=$id and sid=$sid");
