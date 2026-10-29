@@ -11,9 +11,8 @@
 
 	$C->redir('/signin.html') unless $perm->{uid} > 0;
 
-	my $cgi = $C->{CGI};
-
-	my $debug = $cgi->param('debug');
+	# XXX my $cgi = $C->{CGI};
+	# XXX my $debug = $cgi->param('debug');
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
