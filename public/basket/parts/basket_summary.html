@@ -44,9 +44,9 @@
 		</div>
 
 		<div class="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 sm:flex-shrink-0">
-			<span><a href="#!?id=<% $d->{basket_id} %>&oper=sub">-</a></span>
+			<span><a href="#!" onclick="event.preventDefault(); updateBasketCount(<% $d->{basket_id} %>, 'sub')">-</a></span>
 			<span class="text-sm text-gray-500"><% $d->{count} %> &times;</span>
-			<span><a href="#!?id=<% $d->{basket_id} %>&oper=add">+</a></span>
+			<span><a href="#!" onclick="event.preventDefault(); updateBasketCount(<% $d->{basket_id} %>, 'add')">+</a></span>
 
 			<div class="flex flex-col items-end">
 				<span class="text-sm text-gray-500"><% sprintf('%.2f', $d->{price}) %></span>
@@ -69,3 +69,26 @@
 	</div>
 
 % }
+
+<script>
+	// Mengen-Anpassung ("+"/"-") pro Warenkorbposition — ruft @dyn/update-basket.html auf und lädt
+	// die Seite danach neu, damit Preise/Total serverseitig korrekt neu berechnet werden.
+	function updateBasketCount(basketId, oper) {
+		var body = new URLSearchParams();
+		body.set('id', basketId);
+		body.set('oper', oper);
+
+		fetch('/dyn/update-basket.html', { method: 'POST', body: body })
+			.then(function (res) { return res.json(); })
+			.then(function (data) {
+				if (data.rc === 0) {
+					location.reload();
+				} else {
+					showToast(false, 'Fehler ' + data.rc + ': ' + data.message);
+				}
+			})
+			.catch(function () {
+				showToast(false, 'Die Menge konnte nicht angepasst werden.');
+			});
+	}
+</script>
