@@ -33,7 +33,10 @@
 		}
 	}
 	elsif ($oper eq 'sub') {
-		$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid") if $in_basket > 0;
+		if ($in_basket > 0) {
+			$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid");
+			push(@msgs, "Stückzahl von Prod-ID $prod_id reduziert");
+		}
 	}
 
 	$r->content_type('application/json; charset=utf-8');
