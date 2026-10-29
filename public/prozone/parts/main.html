@@ -30,7 +30,6 @@
 
 	my $sth = $C->{dbh}->prepare('select token from campaign_data order by id desc limit 3');
 	   $sth->execute() or $m->out("Err $DBI::errstr<br>");
-	# XXX my $test_token = $C->query("select token from campaign_data order by id desc limit 1")->[0];
 </%init>
 
 	<div class="flex flex-col gap-6">
@@ -124,9 +123,9 @@
 
 %	if ($ENV{NODE_ENV} ne 'production') {
 		<div class="mt-4 text-xs text-gray-400">
-% # XX			<% $ENV{NODE_ENV} %> &ndash; V610290 &ndash; <% $test_token %>
+			<% $ENV{NODE_ENV} %> &ndash; V610290<br>
 %			while(my $r = $sth->fetch()) {
-				XX <% $r->[0] %><br>
+				&bull; Test-Token: <b><% $r->[0] %></b><br>
 %			}
 		</div>
 %	}
