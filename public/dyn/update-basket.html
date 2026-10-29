@@ -9,8 +9,8 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	my $rc  = 0;
-	my $msg = '';
+	my $rc   = 0;
+	my @msgs = ();
 
 	my $cgi = $C->{CGI};
 
@@ -20,7 +20,10 @@
 	my $sid = $C->getSID(); # -- Important
 
 	if ($oper eq 'add') {
+		my $prod_id = $C->query("select prod_id from basket where id=$id")->[0];
+		my ($available, $condition) = @{$C->query("select `count`, `condition` FROM products WHERE id=$prod_id")};
 		$C->{dbh}->do("update basket set `count` = `count` + 1 where id=$id and sid=$sid");
+		push(@msgs, "Hinzu: Prod-ID $prod_id, avail. $available");
 	}
 	elsif ($oper eq 'sub') {
 		$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid");
@@ -30,5 +33,5 @@
 </%init>
 {
   "rc": <% $rc || 0 %>,
-  "message": "<% $msg || 'n/a' %>, SID <% $C->{sid} %>"
+  "message": "<% (join ', ', @msgs) || 'n/a' %>, SID <% $C->{sid} %>"
 }
