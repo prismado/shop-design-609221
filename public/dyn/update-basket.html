@@ -19,11 +19,17 @@
 
 	my $sid = $C->getSID(); # -- Important
 
+	my ($in_basket, $prod_id) = @{$C->query("select `count`, prod_id from basket where id=$id")};
+
 	if ($oper eq 'add') {
-		my $prod_id = $C->query("select prod_id from basket where id=$id")->[0];
 		my ($available, $condition) = @{$C->query("select `count`, `condition` FROM products WHERE id=$prod_id")};
-		$C->{dbh}->do("update basket set `count` = `count` + 1 where id=$id and sid=$sid");
-		push(@msgs, "Hinzu: Prod-ID $prod_id, avail. $available");
+		if ($in_basket + 1 > $available) {
+			push(@msgs, "Anfrage zu hoch");
+		}
+		else {
+			$C->{dbh}->do("update basket set `count` = `count` + 1 where id=$id and sid=$sid");
+			push(@msgs, "Hinzu: Prod-ID $prod_id, avail. $available");
+		}
 	}
 	elsif ($oper eq 'sub') {
 		$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid");
