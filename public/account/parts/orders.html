@@ -19,6 +19,12 @@
 		4 => 'Durchgeführt'
 	);
 
+	my %order_status_style = (
+		1 => 'bg-amber-50 text-amber-700',
+		3 => 'bg-red-50 text-red-600',
+		4 => 'bg-green-50 text-green-700',
+	);
+
 	my $sth = $C->{dbh}->prepare(qq~
 		select	SUBSTR(xkey, 15, 10), xval
 		from	users_details
@@ -111,24 +117,53 @@
 
 	</div>
 
-	<!-- Merkliste -->
+	<!-- Bestellungen -->
 	<div class="mt-10">
+		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bestellungen</h2>
+
+		<div class="flex flex-col gap-4">
 %		foreach my $d (@$orders) {
-			&bull;
-				<% $C->trans_date_short($d->{instime}) %>
-				<% sprintf('%06d', $d->{id}) %>:
-				<% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %> /
-				Lieferort <% $d->{odat}->{deliv_city} %>
-				&rarr; <b>CHF <% $d->{amount_incl_vat} %></b> <% $d->{pay_meth} %> /
-					<% $d->{status} %> <% $order_status_hr{$d->{status}} || "* $d->{status} *" %>
-				&ndash; <i><% $d->{odat}->{remarks} %></i><br>
-%				foreach (@{ $d->{odat}->{_products} }) {
-%					my ($prod_id, $count, $price) = split /\t/;
-%					my $p = $A->get_product_v2(id => $prod_id);
-					<% $count %> &times; Prod-ID <% $prod_id %> <% $p->{title} %><br>
-%				}
-				<br>
+%			my $status_cls = $order_status_style{$d->{status}} || 'bg-gray-100 text-gray-600';
+			<div class="rounded-2xl border border-gray-200 bg-white p-5">
+
+				<div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+					<div>
+						<p class="text-sm font-bold text-gray-900">Bestellung #<% sprintf('%06d', $d->{id}) %></p>
+						<p class="text-xs text-gray-400 mt-0.5"><% $C->trans_date_short($d->{instime}) %></p>
+					</div>
+					<span class="flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full
+							text-xs font-semibold <% $status_cls %>">
+						<% $order_status_hr{$d->{status}} || "Status $d->{status}" %>
+					</span>
+				</div>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm text-gray-600 mb-3">
+					<p><% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %></p>
+					<p>Lieferort: <% $d->{odat}->{deliv_city} %></p>
+				</div>
+
+%			if (length($d->{odat}->{remarks})) {
+				<p class="text-xs text-gray-400 italic mb-3"><% $d->{odat}->{remarks} %></p>
+%			}
+
+				<div class="divide-y divide-gray-100 border-t border-gray-100">
+%			foreach (@{ $d->{odat}->{_products} }) {
+%				my ($prod_id, $count, $price) = split /\t/;
+%				my $p = $A->get_product_v2(id => $prod_id);
+					<div class="flex items-center gap-2 py-2 text-sm text-gray-700">
+						<span class="text-gray-400 font-medium"><% $count %>&times;</span> <% $p->{title} %>
+					</div>
+%			}
+				</div>
+
+				<div class="flex items-center justify-between pt-3 mt-1 border-t border-gray-100">
+					<span class="text-xs text-gray-400"><% $d->{pay_meth} %></span>
+					<span class="text-base font-bold text-gray-900">CHF <% $d->{amount_incl_vat} %></span>
+				</div>
+
+			</div>
 %		}
+		</div>
 	</div>
 
 	<& ../partials/inc_toast.html &>
