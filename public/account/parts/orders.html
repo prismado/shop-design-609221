@@ -120,6 +120,12 @@
 				<% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %>
 				&rarr; CHF <% $d->{amount_incl_vat} %> <% $d->{pay_meth} %> /
 					<% $d->{status} %> <% $order_status_hr{$d->{status}} || "* $d->{status} *" %>
+				&ndash; <i><% $d->{odat}->{remarks} %></i><br>
+%				foreach (@{ $d->{odat}->{_products} }) {
+					XX Pos "<% $_ %>"<br>
+%					# XX my ($dbid, $prod_id, $count, $price) = split /\t/;
+%					# XX Prod-ID <% $prod_id %><br>
+%				}
 				<br>
 %		}
 	</div>
