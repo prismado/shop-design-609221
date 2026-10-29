@@ -158,12 +158,12 @@
 %				  foreach (@{ $d->{odat}->{_products} }) {
 %					my ($prod_id, $count, $price) = split /\t/;
 %					my $p = $A->get_product_v2(id => $prod_id);
+%					my $img_url = $p->{image}->{url_thmb};
+%					   $img_url = '/assets/images/no_image.webp' unless $p->{image}->{ext};
 					<div class="flex items-center gap-2 py-2 text-sm text-gray-700">
 						<span class="text-gray-400 font-medium"><% $count %>&times;</span> <% $p->{title} %>
 					</div>
-%					if ($p->{image}->{ext}) {
-						<img style="width:32px;" src="<% $p->{image}->{url_thmb} %>">
-%					}
+					<img style="width:32px;" src="<% $img_url %>">
 %				  }
 				</div>
 
