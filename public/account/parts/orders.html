@@ -161,6 +161,9 @@
 					<div class="flex items-center gap-2 py-2 text-sm text-gray-700">
 						<span class="text-gray-400 font-medium"><% $count %>&times;</span> <% $p->{title} %>
 					</div>
+%					if ($p->{image}->{ext}) {
+						<img style="width:32px;" src="<% $p->{image}->{url_thmb} %>">
+%					}
 %				  }
 				</div>
 
