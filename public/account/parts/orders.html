@@ -160,10 +160,13 @@
 %					my $p = $A->get_product_v2(id => $prod_id);
 %					my $img_url = $p->{image}->{url_thmb};
 %					   $img_url = '/assets/images/no_image.webp' unless $p->{image}->{ext};
-					<div class="flex items-center gap-2 py-2 text-sm text-gray-700">
-						<span class="text-gray-400 font-medium"><% $count %>&times;</span> <% $p->{title} %>
+					<div class="flex items-center gap-3 py-2 text-sm text-gray-700">
+						<img src="<% $img_url %>" loading="lazy"
+							class="flex-shrink-0 w-10 h-10 rounded-lg border border-gray-200 bg-white object-cover">
+						<span class="min-w-0">
+							<span class="text-gray-400 font-medium"><% $count %>&times;</span> <% $p->{title} %>
+						</span>
 					</div>
-					<img style="width:32px;" src="<% $img_url %>">
 %				  }
 				</div>
 
