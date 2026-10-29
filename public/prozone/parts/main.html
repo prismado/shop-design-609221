@@ -121,7 +121,7 @@
 			<& inc_prozone_user_input.html, email => $email, token => $token &>
 		</div>
 
-%	if ($ENV{NODE_ENV} ne 'production') {
+%	if ($ENV{NODE_ENV} ne 'production' && !$token_id) {
 		<div class="mt-4 text-xs text-gray-400">
 			<% $ENV{NODE_ENV} %> &ndash; V610290<br>
 %			while(my $r = $sth->fetch()) {
