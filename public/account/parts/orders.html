@@ -155,7 +155,9 @@
 %			}
 
 				<div class="divide-y divide-gray-100 border-t border-gray-100">
+%				  my $item_counter = 0;
 %				  foreach (@{ $d->{odat}->{_products} }) {
+%					last if ++$item_counter > 2;
 %					my ($prod_id, $count, $price) = split /\t/;
 %					my $p = $A->get_product_v2(id => $prod_id);
 %					my $img_url = $p->{image}->{url_thmb};
