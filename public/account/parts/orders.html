@@ -118,7 +118,7 @@
 				<% $C->trans_date_short($d->{instime}) %>
 				<% sprintf('%06d', $d->{id}) %>:
 				<% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %>
-				&rarr; CHF <% $d->{amount_incl_vat} %> <% $d->{pay_meth} %> /
+				&rarr; <b>CHF <% $d->{amount_incl_vat} %></b> <% $d->{pay_meth} %> /
 					<% $d->{status} %> <% $order_status_hr{$d->{status}} || "* $d->{status} *" %>
 				&ndash; <i><% $d->{odat}->{remarks} %></i><br>
 %				foreach (@{ $d->{odat}->{_products} }) {
