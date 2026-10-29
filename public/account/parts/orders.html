@@ -107,9 +107,8 @@
 
 	<!-- Merkliste -->
 	<div class="mt-10">
-		HOE<br>
 %		foreach my $d (@$orders) {
-			XX <% $d->{id} %><br>
+			&bull; <% $d->{id} %> <% $d->{instime} %><br>
 %		}
 % # XX		<p class="text-sm mb-6 text-gray-600 leading-relaxed"> </p>
 	</div>
