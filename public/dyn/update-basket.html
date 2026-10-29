@@ -9,7 +9,6 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
-	# XXX my $lang = 'de';
 	my $rc  = 0;
 	my $msg = '';
 
@@ -26,11 +25,6 @@
 	elsif ($oper eq 'sub') {
 		$C->{dbh}->do("update basket set `count` = `count` - 1 where id=$id and sid=$sid");
 	}
-
-	# XXX my ($rc, $msg) = $A->add2basket_details(
-	# XXX ) if $id;
-
-	# XXX my $thumb = '';
 
 	$r->content_type('application/json; charset=utf-8');
 </%init>
