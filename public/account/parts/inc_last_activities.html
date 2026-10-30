@@ -8,12 +8,14 @@
 
 	# my $lang = 'de';
 
-	# XX my $this = $ENV{REQUEST_URI};
-	# XX $this =~ s/^\///;
-	# XX $this =~ s/\?.*$//;
-	# XX my (undef, $cur_section) = split /\//, $this;
-	# XX $cur_section ||= 'overview';
+	my $sth = $C->{dbh}->prepare("select id, `source`, importance, module, service, action, tstamp, rc from log where uid=$perm->{uid} order by 1 desc limit 500");
+	$sth->execute();
 </%init>
 <p>
 	UID <% $perm->{uid} %>
 </p>
+
+% while(my $r = $sth->fetch()) {
+%	my ($id, $source, $importance, $module, $service, $action, $tstamp, $rc) = @{$r};
+	XX <% $action %><br>
+% }
