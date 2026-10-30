@@ -21,10 +21,26 @@
 	UID <% $perm->{uid} %>
 </p>
 
-% while(my $r = $sth->fetch()) {
-%	my ($id, $source, $importance, $module, $service, $action, $tstamp, $rc) = @{$r};
-	<% $C->trans_date_short($tstamp) %>
-	<% $source %>
-	<% $service %>
-	&ndash; <% $action %><br>
-% }
+<div class="overflow-x-auto rounded-2xl border border-gray-200">
+	<table class="w-full text-sm text-left">
+		<thead>
+			<tr class="border-b border-gray-100 bg-gray-50 text-xs font-bold uppercase tracking-wider text-gray-400">
+				<th class="px-4 py-3">Datum</th>
+				<th class="px-4 py-3">Quelle</th>
+				<th class="px-4 py-3">Dienst</th>
+				<th class="px-4 py-3">Aktion</th>
+			</tr>
+		</thead>
+		<tbody class="divide-y divide-gray-100">
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $source, $importance, $module, $service, $action, $tstamp, $rc) = @{$r};
+			<tr class="hover:bg-gray-50 transition-colors">
+				<td class="px-4 py-3 whitespace-nowrap text-gray-500"><% $C->trans_date_short($tstamp) %></td>
+				<td class="px-4 py-3 text-gray-700"><% $source %></td>
+				<td class="px-4 py-3 text-gray-700"><% $service %></td>
+				<td class="px-4 py-3 text-gray-900"><% $action %></td>
+			</tr>
+%	}
+		</tbody>
+	</table>
+</div>
