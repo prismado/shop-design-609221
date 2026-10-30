@@ -40,6 +40,8 @@
 		limit	9999
 	~);
 	$sth->execute() or $m->out("Err $DBI::errstr<hr>");
+
+	my $last_order_date = $C->query("select instime from orders where uid=$perm->{uid} order by id desc limit 1")->[0];
 </%init>
 
 	<!-- Seiten-Header -->
@@ -100,7 +102,7 @@
 			<h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pr-10">Bestellungen</h2>
 			<p class="text-sm text-gray-600 leading-relaxed">
 				<% $#{$orders} + 1 %> Bestellungen<br>
-				Letzte Bestellung am XX
+				Letzte Bestellung am <% $last_order_date %>
 			</p>
 		</div>
 
