@@ -8,7 +8,13 @@
 
 	# my $lang = 'de';
 
-	my $sth = $C->{dbh}->prepare("select id, `source`, importance, module, service, action, tstamp, rc from log where uid=$perm->{uid} order by 1 desc limit 500");
+	my $sth = $C->{dbh}->prepare(qq~
+		select	id, `source`, importance, module, service, action, tstamp, rc
+		from	log
+		where	uid=$perm->{uid}
+		order	by 1 desc
+		limit	200
+	~);
 	$sth->execute();
 </%init>
 <p>
