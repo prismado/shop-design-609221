@@ -102,7 +102,7 @@
 			<h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pr-10">Bestellungen</h2>
 			<p class="text-sm text-gray-600 leading-relaxed">
 				<% $#{$orders} + 1 %> Bestellungen<br>
-				Letzte Bestellung am <% $last_order_date %>
+				Letzte Bestellung am <% $C->trans_date_short($last_order_date) %>
 			</p>
 		</div>
 
