@@ -1,0 +1,22 @@
+<%init>
+	use utf8;
+	my %args = $m->caller_args(0);
+
+	my $C = $args{C};
+	my $A = $args{A};
+
+	my $lang = 'de';
+
+	# XXX my $title = $C->{CONFIG}->{site_title};
+
+	my $this = $ENV{REQUEST_URI};
+	$this =~ s/^\///;
+	$this =~ s/\?.*$//;
+	my (undef, $cur_section) = split /\//, $this;
+	$cur_section ||= 'overview';
+
+	# XXX my $cls_active   = 'bg-red-50 text-red-700 lg:border-red-600 hover:bg-red-50';
+</%init>
+<p>
+	last xx <% $cur_section %>
+</p>
