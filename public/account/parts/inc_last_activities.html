@@ -11,13 +11,13 @@
 	my $sth = $C->{dbh}->prepare(qq~
 		select	id, `source`, importance, module, service, action, tstamp, rc
 		from	log
-		where	uid=$perm->{uid}
+		where	uid=$perm->{uid} and importance = 1
 		order	by 1 desc
 		limit	200
 	~);
 	$sth->execute();
 </%init>
-<p>
+<p class="mb-6">
 	UID <% $perm->{uid} %>
 </p>
 
