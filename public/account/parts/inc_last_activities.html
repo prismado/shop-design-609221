@@ -17,5 +17,8 @@
 
 % while(my $r = $sth->fetch()) {
 %	my ($id, $source, $importance, $module, $service, $action, $tstamp, $rc) = @{$r};
-	XX <% $action %><br>
+	<% $C->trans_date_short($tstamp) %>
+	<% $source %>
+	<% $service %>
+	&ndash; <% $action %><br>
 % }
