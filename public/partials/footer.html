@@ -60,17 +60,18 @@
     <div>
       <h3 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Newsletter</h3>
       <p class="text-sm text-gray-400 mb-3">Erhalte exklusive Angebote direkt in dein Postfach.</p>
-      <form class="flex items-center gap-2" onsubmit="event.preventDefault(); this.reset(); this.querySelector('button').textContent='Danke!';">
+      <form class="flex items-center gap-2" onsubmit="event.preventDefault(); subscribeNewsletter(this);">
         <div class="relative flex-1">
           <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
             </svg>
           </span>
-          <input type="email" required placeholder="deine@email.ch" class="w-full rounded-lg bg-gray-800 border border-gray-700 py-2 pl-9 pr-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500">
+          <input type="email" name="email" required placeholder="deine@email.ch" class="w-full rounded-lg bg-gray-800 border border-gray-700 py-2 pl-9 pr-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500">
         </div>
         <button type="submit" class="flex-shrink-0 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">Abo</button>
       </form>
+      <p class="newsletter-feedback hidden text-xs mt-2"></p>
 
       <h3 class="text-white font-semibold text-sm uppercase tracking-wider mt-6 mb-3">Folge uns</h3>
       <div class="flex items-center gap-3">
@@ -115,6 +116,47 @@
 <script src="/js2/load-cookie-banner" defer></script>
 % # -- /Cookie Consent Mode v2
 
+
+<script>
+	// Newsletter-Anmeldung im Footer — bewusst ohne showToast()/inc_toast.html, da der Footer auf
+	// Seiten eingebunden wird, die diese Partials nicht laden (z. B. about, contact, product).
+	// Rückmeldung daher direkt im Formular (Button-Status + Inline-Meldung unterhalb).
+	function subscribeNewsletter(form) {
+		var btn      = form.querySelector('button');
+		var input    = form.querySelector('input[name="email"]');
+		var feedback = form.parentElement.querySelector('.newsletter-feedback');
+		var btnLabel = btn.textContent;
+
+		btn.disabled = true;
+
+		var body = new URLSearchParams();
+		body.set('email', input.value);
+
+		fetch('/dyn/subscribe-newsletter.html', { method: 'POST', body: body })
+			.then(function (res) { return res.json(); })
+			.then(function (data) {
+				feedback.classList.remove('hidden', 'text-red-400', 'text-green-400');
+				if (data.rc === 0) {
+					feedback.classList.add('text-green-400');
+					feedback.textContent = data.message || 'Danke für die Anmeldung!';
+					form.reset();
+					btn.textContent = 'Danke!';
+				} else {
+					feedback.classList.add('text-red-400');
+					feedback.textContent = data.message || 'Anmeldung fehlgeschlagen.';
+					btn.textContent = btnLabel;
+					btn.disabled = false;
+				}
+			})
+			.catch(function () {
+				feedback.classList.remove('hidden', 'text-green-400');
+				feedback.classList.add('text-red-400');
+				feedback.textContent = 'Anmeldung fehlgeschlagen. Bitte später erneut versuchen.';
+				btn.textContent = btnLabel;
+				btn.disabled = false;
+			});
+	}
+</script>
 
 <!-- Scroll-to-top: links neben dem fix platzierten Chatbot-Bubble (bottom:20/right:16, 48px) -->
 <button type="button" id="scroll-top-btn" aria-label="Nach oben scrollen"
