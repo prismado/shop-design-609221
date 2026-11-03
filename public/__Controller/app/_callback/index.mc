@@ -28,8 +28,7 @@
 	if ( $code ) {
 		my $redirect_uri  = "https://$C->{CONFIG}->{HTTP_HOST}/app/_callback/";
 		my $client_id     = 'cecd3e78-45b3-42dc-9388-e79c7dc0a212';
-		my $client_secret = 'eNRPOyYCVU63RgZC1ejC15nc82Yhqrsd';
-		   $client_secret = 'qVg8Q~6dY-L2leTUTIgwGLhUSW43kS_DXFtbBbiB';
+		my $client_secret = '';
 		my $data          = "client_id=$client_id&client_secret=$client_secret&grant_type=authorization_code&" .
 								"code=$code&scope=openid+profile&redirect_uri=$redirect_uri";
 
