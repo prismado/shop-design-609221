@@ -1,0 +1,60 @@
+{
+  "companyDetails": {
+    "url": "/adx/show.html?macro=master_data",
+    "resourceId": "tbd//UUID",
+    "resourceLocation": "tbd//link to json resoure",
+    "userRoleReq": "any// devel🚀, admin, user",
+    "data": [
+      {
+        "description": "",
+        "key": "company",
+        "value": "ACME GmbH",
+        "mandatory": true,
+        "userRoleReq": "any//devel,admin,user"
+      },
+      {
+        "description": "Bankkonto-Nr.",
+        "key": "IBAN-1",
+        "value": "CH93 0483 5277 5229 1100 1"
+      }
+    ]
+  },
+
+  "shipping": {
+    "url": "/adm_shipping.html",
+    "resourceId": "tbd//UUID",
+    "resourceLocation": "tbd//link to json resoure",
+    "userRoleReq": "any// devel🚀, admin, user",
+    "data": [
+      {
+        "description": "",
+        "key": "shipping_model",
+        "value": 1
+      }
+    ]
+  },
+
+  "emailDeliverySettings": {
+    "url": "/adx/show.html?macro=mail",
+    "resourceId": "tbd//UUID",
+    "resourceLocation": "tbd//link to json resoure",
+    "userRoleReq": "any// devel🚀, admin, user",
+    "data": [
+      {
+        "description": "Siehe auch: /adx/special_keys.html?area=order",
+        "key": "mail_relay_host",
+        "value": "con2.luckywork.net"
+      },
+      {
+        "description": "",
+        "key": "mail_relay_port",
+        "value": 587
+      }
+    ]
+  },
+
+  "metadata": {
+    "version": "1.001 / Prismado",
+    "lastUpdated": "2025-10-16 11:48:58"
+  }
+}
