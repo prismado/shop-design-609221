@@ -1,0 +1,24 @@
+<%init>
+	use utf8;
+
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $cgi = $C->{CGI};
+
+	my $email = $cgi->param('email');
+
+	# XXX my $prod_id = $cgi->param('prod_id') + 0;
+
+	my $res = $A->subscribe_newsletter(email => $email);
+	# XX my $res = $A->remove_from_wishlist( prod_id => $prod_id);
+
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "rc": <% $res->{rc} %>,
+  "message": "<% $res->{msg} %>"
+}
