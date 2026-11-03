@@ -1,0 +1,49 @@
+<%args>
+	$result
+</%args>
+% use utf8;
+% my $C = $result->{C};
+% my $cookie_consent = $result->{consent};
+
+// cookie_consent.js
+
+% foreach (sort keys %$cookie_consent) {
+// XX	<% $_ %> = <% $cookie_consent->{$_} %>
+% }
+
+    // -- Cookie banner --
+    const cookieIcon     = document.getElementById('cookie-icon');
+    const cookiePanel    = document.getElementById('cookie-panel');
+    const cookieBackdrop = document.getElementById('cookie-backdrop');
+
+    function closeCookiePanel() {
+        cookiePanel.style.display    = 'none';
+        cookieBackdrop.style.display = 'none';
+    }
+    window.closeCookiePanel = closeCookiePanel;
+
+    function openCookiePanel() {
+        if (cookiePanel.style.display !== 'none') return;
+        fetch('/app/partials/inc_cookiebanner.html')
+            .then(r => r.text())
+            .then(html => {
+                const panelContent = document.getElementById('cookie-panel-content');
+                panelContent.innerHTML = html;
+                htmx.process(panelContent);
+                cookiePanel.style.display    = 'block';
+                cookieBackdrop.style.display = 'block';
+            });
+    }
+
+    cookieIcon.addEventListener('click', () => {
+        if (cookiePanel.style.display !== 'none') {
+            closeCookiePanel();
+            return;
+        }
+        openCookiePanel();
+    });
+
+%   unless ($cookie_consent->{decision}) {
+    setTimeout(openCookiePanel, 3500);
+%   }
+

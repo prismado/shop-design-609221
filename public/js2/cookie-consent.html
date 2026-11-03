@@ -1,0 +1,31 @@
+<%args>
+	$result
+</%args>
+% use utf8;
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+
+% if ( $result->{consent}->{decision} )	{
+gtag('consent',	'update', {
+  'ad_storage':	'granted',
+  'analytics_storage': '<% $result->{consent}->{analytics_storage} ? 'granted' : 'denied' %>',
+  'ad_user_data': 'granted',
+  'ad_personalization':	'<% $result->{consent}->{ad_personalization} ? 'granted' : 'denied' %>'
+});
+% }
+% else {
+gtag('consent',	'default', {
+  'ad_storage':	'denied',
+  'analytics_storage': 'denied',
+  'ad_user_data': 'denied',
+  'ad_personalization':	'denied',
+  'wait_for_update': 500
+});
+% }
+
+// UID <% $result->{perm}->{uid} %>
+% if ( $result->{perm}->{is_devel} ) {
+%	foreach	(sort keys %{$result->{consent}}) {
+//		[result/consent] - <% $_ %> = <% $result->{consent}->{$_} %>
+%	}
+% }
