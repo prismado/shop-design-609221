@@ -95,9 +95,26 @@
   </div>
 
   <div class="border-t border-gray-800 py-5 px-4 md:px-6">
+<img id="cookie-icon" src="/assets/images/icons/cookie_transp_100_v2.webp"
+	style="width:15px; margin-right:10px; opacity:60%; cursor:pointer;">
     <p class="max-w-[1800px] mx-auto text-center text-xs text-gray-500">© 2026 ElectroNova AG. Alle Rechte vorbehalten.</p>
   </div>
 </footer>
+
+
+% # -- Cookie Consent Mode v2
+<div id="cookie-backdrop"
+	style="display:none; position:fixed; inset:0; z-index:9998; backdrop-filter:blur(3px); background:rgba(0,0,0,0.25);"></div>
+<div id="cookie-panel" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:50000000;
+	background:#ffffff; border-top:1px solid var(--border); padding:2rem 2.5rem 2.5rem; max-height:90dvh;
+	overflow-y:auto; -webkit-overflow-scrolling:touch;">
+    <div id="cookie-panel-content" style="margin-top:-10px; margin-bottom:-10px;"></div>
+</div>
+
+<script src="/assets/js/htmx.min.js" defer></script>
+<script src="/js2/load-cookie-banner" defer></script>
+% # -- /Cookie Consent Mode v2
+
 
 <!-- Scroll-to-top: links neben dem fix platzierten Chatbot-Bubble (bottom:20/right:16, 48px) -->
 <button type="button" id="scroll-top-btn" aria-label="Nach oben scrollen"
