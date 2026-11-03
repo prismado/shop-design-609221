@@ -1,0 +1,9 @@
+<%args>
+	$result
+</%args>
+
+% use utf8;
+
+% foreach (sort keys %{$result->{spez}}) {
+	X - <b><% $_ %></b> = <% $result->{spez}->{$_} %><br>
+% }

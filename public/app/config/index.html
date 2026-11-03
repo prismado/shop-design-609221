@@ -1,0 +1,66 @@
+<%args>
+	$result
+</%args>
+% use utf8;
+<!doctype html>
+<html>
+<head>
+	<title>Konfiguration - <% $result->{C}->{CONFIG}->{HTTP_HOST} %> - Prismado</title>
+	<link rel="stylesheet" href="/assets/css/core.min.css">
+</head>
+
+<body stylx="">
+
+<div class="container p-3">
+
+<p>
+	<a href="/adx/config.html">adx/config</a>
+%	if ($result->{perm}->{is_devel}) {
+		&mdash; Dev: <a href="/__Controller/app/config/index.mc">Controller</a> <small><i>(Error expected)</i></small>
+%	}
+</p>
+
+% foreach my $area (sort keys %{$result->{config}}) {
+%	next if $area eq 'metadata';
+
+	<h2 class="mt-5">[ <% $area %> ]</h2>
+	<a href="<%  $result->{config}->{$area}->{url} %>"><%  $result->{config}->{$area}->{url} %></a><br><br>
+
+	<span style="font-size:0.75rem;">
+%		foreach (sort keys %{$result->{config}->{$area}}) {
+%			next if $_ eq 'data' or $_ eq 'url';
+			<b><% $_ %></b> &rarr; <% $result->{config}->{$area}->{$_} %><br>
+%		}
+	</span>
+	<br />
+
+	<table class="table table-sm table-hover table-striped">
+
+%	foreach my $data (@{$result->{config}->{$area}->{data}}) {
+%		if ( $data->{description} ) {
+			<tr><td colspan="3"><% $data->{description} %></td></tr>
+%		}
+%		foreach (sort keys %$data) {
+%			next unless length($data->{$_});
+%			next if $_ eq 'description' or $_ eq 'key' or $_ eq 'value';
+			<tr valign="top">
+				<td style="width:160px;"><code><b style="font-size:1.0rem;"><% $_ %></b></code></td>
+				<td style="width:400px; padding-left:10px;"><% $data->{$_} %></td>
+				<td> </td>
+			</tr>
+%		}
+			<tr>
+				<td style="width:160px;"><code><b style="font-size:1.0rem;"><% $data->{key} %></b></code></td>
+				<td style="width:400px; padding-left:10px;"><% $data->{value} %></b></td>
+				<td><a style="text-decoration:none;"
+					href="edit?area=<% $area %>&XXXproperty=0&key=<% $data->{key} %>">✏️</a>
+				</td>
+			</tr>
+%	}
+
+	</table>
+% }
+
+</div>
+</body>
+</html>

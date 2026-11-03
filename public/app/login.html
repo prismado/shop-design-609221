@@ -1,0 +1,30 @@
+<%args>
+	$result
+</%args>
+
+% use utf8;
+
+% unless ($ENV{NODE_ENV} eq 'development') {
+	<script language="JavaScript">
+		window.location.replace("<% $result->{spez}->{link2} %>");
+	</script>
+% }
+
+<div style="font-family:Roboto">
+
+<p>
+	NODE_ENV: <% $ENV{NODE_ENV} %><br><br>
+
+	Business: <a href="<% $result->{spez}->{link} %>"><% substr($result->{spez}->{link}, 0, 110) . '...' %></a>
+</p>
+
+<p>
+	Public: <a href="<% $result->{spez}->{link2} %>"><% substr($result->{spez}->{link2}, 0, 110) . '...' %></a>
+</p>
+
+% foreach (sort keys %{$result->{spez}}) {
+%	next if $_ eq 'link' or $_ eq 'link2';
+	X - <b><% $_ %></b> = <% $result->{spez}->{$_} %><br>
+% }
+
+</div>

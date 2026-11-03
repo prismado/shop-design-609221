@@ -1,0 +1,66 @@
+<%init>
+	# -- Layout / Controller-Vorlauf
+
+	use App::MVC;
+	use utf8;
+	use ScreenPoint::Core;
+	use CGI	qw(-utf8);
+
+	my $mvc	= App::MVC->new($r, $m);
+	my $C	= ScreenPoint::Core->new($r, $m);
+
+	my $perm   = $C->get_user_perm();
+	my $this   = $mvc->this;
+	my $router = $mvc->router(perm=>$perm, controllerPrefix=>'__Controller/app', sameDir=>1); # -- $router->{controller}
+
+	my $cgi	= CGI->new;
+
+	$r->pnotes('app' => {
+		auth =>	{ perm => $perm	},
+		cgi  =>	$cgi,
+		C    =>	$C,
+	    }
+	);
+
+	my %controller_result;
+
+	my $vs;
+	my $noti;
+	my $prism_roles;
+
+	my @breadcrumb = (
+		{ title	=> 'Status',  link => '/status'	 },
+		{ title	=> 'Support', link => '/support' }
+	);
+
+	eval { $m->scomp($router->{controller},	result => \%controller_result);	};
+	my $errstr = $@;
+	if ($errstr) {
+		$errstr	= "Warning W512302: $errstr";
+	}
+</%init>
+% #	-------------------------------------------------------------------------------------------------------------
+%	eval { $m->comp( $controller_result{view} || $router->{stdView}, router=>$router, result=>\%controller_result )	} or do	{ $m->out($@); };
+% #	-------------------------------------------------------------------------------------------------------------
+
+%	$m->redirect('/') if $controller_result{spez}->{redirected}; # -- 07Jul2026
+
+%	if ($C->{CGI}->param('debug')) {
+%		foreach	(keys %controller_result) {
+			[ controller result ] -	<b><% $_ %></b>	= <% $controller_result{$_} %><br>
+%		}
+		<br>
+%		foreach	(sort keys %{ $router }) {
+			[ MVC /	router ] &mdash; <b><% $_ %></b> = <% $router->{$_} %><br>
+%		}
+%	}
+
+%	if ($perm->{is_devel}) {
+		<div class="float-end" style="font-family:Roboto; font-size:0.6rem;">
+			<a href="/<% $router->{request}	%>?debug=1">Debug this req.</a>
+		</div>
+%	}
+
+%	if ($errstr) {
+	    <% $errstr %>
+%	}

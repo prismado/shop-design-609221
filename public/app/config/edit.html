@@ -1,0 +1,56 @@
+<%args>
+	$result
+</%args>
+% use utf8;
+<!doctype html>
+<html>
+<head>
+	<title>Edit Konfiguration - <% $result->{C}->{CONFIG}->{HTTP_HOST} %> - Prismado</title>
+	<link rel="stylesheet" href="/assets/css/core.min.css">
+</head>
+
+<body stylx="">
+
+<div class="container p-3">
+
+<p clasx="mt-3">
+	<a href="/adx/config.html">adx/config</a>
+</p>
+
+<h2>[ <% $result->{config}->{area} %> ]</h2>
+
+<h3 class="mt-6 font-weight-bold"><% $result->{config}->{key} %></h3>
+
+<p>
+	<% $result->{config}->{property} %>
+</p>
+
+<form method="post">
+
+	<input type="hidden" name="area"     value="<% $result->{config}->{area} %>">
+	<input type="hidden" name="key"      value="<% $result->{config}->{key} %>">
+	<input type="hidden" name="property" value="<% $result->{config}->{property} %>">
+
+	<input type="text" name="value"
+		class="form-control mt-3 font-weight-bold" value="<% $result->{config}->{value} %>">
+
+	<input type="submit" name="bUpdate" class="btn btn-primary mt-3" value="Update">
+	<input type="button" class="btn btn-secondary mt-3" value="Zurück" onclick="document.location='/app/config/'">
+</form>
+
+	<div class="mt-4">
+%		foreach (sort keys %{$result->{config}}) {
+%			next unless length( $result->{config}->{$_} );
+%			next if $_ eq 'key' or $_ eq 'data' or $_ eq 'area' or $_ eq 'ZZproperty' or $_ eq 'value';
+			[result] - <b><% $_ %></b> = <% $result->{config}->{$_} %><br>
+%		}
+
+%		if ($result->{msg}) {
+			<p><% $result->{msg} %></p>
+%		}
+	</div>
+
+</div>
+
+</body>
+</html>

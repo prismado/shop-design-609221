@@ -1,0 +1,40 @@
+<%args>
+	$result
+</%args>
+
+% use utf8;
+
+<div style="font-family:Calibri;">
+
+<p class="absolute top-3 right-0 p-3 mr-2 text-sm text-gray-500">NODE_ENV: <b><% $ENV{NODE_ENV} %></b></p>
+
+<h4 class="text-base"><a href="/">Start</a></h4>
+
+<p class="mt-5"><a 
+href="https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=https://<% $result->{C}->{CONFIG}->{HTTP_HOST} %>/">SSO Logout</a>
+</p>
+
+<p class="mt-5 mb-5">Temp &mdash; <a href="/app/login">(Re-)Login</a></p>
+
+% my $decoded = $result->{spez}->{decoded};
+% my $jwt     = $result->{spez}->{jwt};
+
+% foreach (sort keys %$jwt) {
+	[jwt] - <% $_ %> = <% $jwt->{$_} %><br>
+% }
+
+% foreach (sort keys %$decoded) {
+	XX <% $_ %> = <% $decoded->{$_} %><br>
+% }
+
+% foreach (sort keys %{$result->{spez}}) {
+	[result] - <b><% $_ %></b> = <% $result->{spez}->{$_} %><br>
+% }
+
+<br>
+% my $cgi = $result->{cgi};
+% foreach ($cgi->all_parameters) {
+	[cgi] - <b><% $_ %></b> = <% $cgi->param($_) %><br>
+% }
+
+</div>
