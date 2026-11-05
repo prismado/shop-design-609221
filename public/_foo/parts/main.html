@@ -30,7 +30,7 @@
 
 			<div class="mt-6">
 %			foreach my $c (@{$cats->{result}}) {
-				<b><% $c->{label} %><br>
+				<b><% $c->{label} %></b><br>
 %				foreach (sort keys %$c) {
 %					next if $_ eq 'meta' or $_ eq 'visible' or $_ eq 'label';
 					X -- <b><% $_ %></b> = <% $c->{$_} %><br>
