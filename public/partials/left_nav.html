@@ -30,8 +30,12 @@
     <nav class="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 mb-12
 		lg:mx-0 lg:px-0 lg:pb-0 lg:flex-col lg:overflow-visible lg:gap-0.5">
 
+%	my $is_active  = ($cur_cat_id && $daily_offer_cid == $cur_cat_id) ? 1 : 0;
+%	my $active_cls = $is_active
+%		? 'bg-red-50 text-red-700 lg:border-red-600'
+%		: 'bg-gray-100 text-[#1c1512] lg:border-transparent';
 	<a href="/category/?id=<% $daily_offer_cid %>&frnd=daily-offer" data-cat-id="<% $daily_offer_cid %>"
-		class="bg-gray-100 text-[#1c1512] lg:border-transparent flex-shrink-0 whitespace-nowrap
+		class="<% $active_cls %> flex-shrink-0 whitespace-nowrap
 			lg:bg-transparent text-[15.4px] font-medium px-3 py-2 rounded-full lg:rounded-none
 			lg:px-3 lg:border-l-2 lg:border-b lg:border-b-gray-300 lg:last:border-b-0
 			hover:text-red-700 hover:bg-red-50 hover:lg:border-red-600 transition-colors">
