@@ -45,6 +45,8 @@
 %		my @subsubcats = ();
 %		my $vis_info = !$visible ? ' <span class="fs--11" style="background-color:yellow">unsichtb.</span>' : '';
 %		my $info_pgs = $C->mquery(stmt=>"select id from vproducts where cat_id=$c->{id} and lang='de' and `condition`='IP'");
+%		my ($sys_meta_key, $sys_meta_val) = @{$C->query(
+%			"select xkey, xval from categ_meta where cat_id=$c->{id} and lang != 'de' limit 1")};
 %		if ($c->{parent_id}) {
 %			$label = $c->{label};
 %			foreach (@{ $A->get_sub_categs($c->{id})}) {
