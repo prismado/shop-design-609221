@@ -14,7 +14,7 @@
 	my $perm  = $C->get_user_perm();
 	my $lang  = 'de';
 
-	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
+	# XXX my $prod_highlight = $A->get_product_highlights(shuffle => 1);
 	my $cookie_consent = $C->get_cookie_consent();
 
 	my $this       = $C->this(); # -- product/index
@@ -74,7 +74,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 	<& partials/index_products.html,
-		XXXprod_highlight => $prod_highlight,
+		XXXprod_highlight => 0,
 		perm           => $perm,
 		A              => $A,
 		C              => $C,
