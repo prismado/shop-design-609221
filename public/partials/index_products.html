@@ -18,7 +18,9 @@
 %	}
 % }
 % else {
-%	foreach my $hl (@{ $prod_highlight->{ids} }) {
+%	# XX foreach my $hl (@{ $prod_highlight->{ids} }) {
+%	foreach	(@{$A->promo_ids()}) {
+%		my $hl = $A->get_product_v2(id => $_, public => 1);
 %		next if $hl->{campaign_id};
 		<& product_portlet.html, id => $hl->{id}, prod => $hl, A => $A, C => $C, debug => $debug &>
 %	}
