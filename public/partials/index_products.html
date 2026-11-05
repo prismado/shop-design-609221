@@ -21,6 +21,7 @@
 %	# XX foreach my $hl (@{ $prod_highlight->{ids} }) {
 %	foreach my $prod_id (@{$A->promo_ids()}) {
 %		my $hl = $A->get_product_v2(id => $prod_id, public => 1);
+%		next if $hl->{_rc}; # -- 05Nov2026
 %		next if $hl->{campaign_id};
 		<& product_portlet.html, id => $prod_id, prod => $hl, A => $A, C => $C, debug => $debug &>
 %	}
