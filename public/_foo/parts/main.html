@@ -32,15 +32,15 @@
 %			foreach my $c (@{$cats->{result}}) {
 %				foreach (sort keys %$c) {
 %					next if $_ eq 'meta';
-					X -- <% $_ %> = <% $c->{$_} %><br>
+					X -- <b><% $_ %></b> = <% $c->{$_} %><br>
 %				}
 %				foreach my $meta (@{$c->{meta}}) {
 %					foreach (sort keys %$meta) {
-						XX <% $_ %> = <% $meta->{$_} %><br>
+						[meta] <% $_ %> = <% $meta->{$_} %><br>
 %					}
 					-----------<br>
 %				}
-				-----------------<br>
+				-----------------------------------<br>
 %			}
 			</div>
 		</div>
