@@ -79,6 +79,9 @@
 %						}
 %					}
 %				}
+%				if ($sys_meta_key) {
+					<% $sys_meta_key %> = <% $sys_meta_val %><br>
+%				}
 %				if ($main_cat) {
 					<a class="link-muted fs--12" href="categs.html?id=<% $c->{id} %>&bAddMeta=1&lang=sys">+ Metadaten</a>
 %				}
