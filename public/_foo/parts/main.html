@@ -31,9 +31,16 @@
 			<div class="mt-6">
 %			foreach my $c (@{$cats->{result}}) {
 %				foreach (sort keys %$c) {
+%					next if $_ eq 'meta';
 					X -- <% $_ %> = <% $c->{$_} %><br>
 %				}
-				------------<br>
+%				foreach my $meta (@{$c->{meta}}) {
+%					foreach (sort keys %$meta) {
+						XX <% $_ %> = <% $meta->{$_} %><br>
+%					}
+					-----------<br>
+%				}
+				-----------------<br>
 %			}
 			</div>
 		</div>
