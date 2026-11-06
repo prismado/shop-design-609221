@@ -1,0 +1,203 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+
+	my $id = $cgi->param('id') + 0;
+
+	my $errstr = '';
+	my @appmsgs = ();
+	my $now10 = $C->now(10);
+
+	my $is_devel = $C->is_devel();
+	my $debug    = $C->getSessData('debug') || 0;
+	my $odat     = $A->get_order($id);
+	my $oitms    = $A->get_order_items( order_id=>$id, show_options=>1 );
+	my $o_stat   = $A->get_order_status(id=>$id);
+
+	my $font_size_odata = '1.05rem';
+
+	# push(@appmsgs, q~<b>NOTE</b>&nbsp;&nbsp;Please verify the data and click the <b>"Generate PDF"</b> button in the top right corner.~);
+
+	my $shipment_info = $C->query("select xval from orders_status where order_id=$id and status_id=400 order by id desc limit 1")->[0];
+
+	my %salut_map = (
+		1 => 'Herr<br>',
+		2 => 'Frau<br>'
+	);
+</%init>
+<style type="text/css">
+	.modal-body { max-height:70vh; }
+</style>
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id   value="<% $id %>">
+<input type=hidden name=func value="orders">
+<input type=hidden name=otime value="<% $odat->{instime} %>">
+<input type=hidden name=pdf_save_as value="upload/dn_<% $id %>_<% $now10 %>.pdf">
+<input type=hidden name=paid value="<% $o_stat->{paid} %>">
+%
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+	style="width:92%; position: absolute; left: 240px; top:-10px; background-color: #ebfeeb;">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Lieferschein Order-ID <%$id%></h3>
+  </div>
+
+  <div class="modal-body">
+	<div class="pull-right">
+%		if ($is_devel) {
+			<a style="margin-right:10px;" target="_blank" href="/_systex/install/help/de/4/3/">Help</a> &rsaquo;
+			<a style="margin-right:30px; margin-left:10px;" target="_blank"
+				href="/_systex/install/help/de/11/1/sub-create_pdf_delivery_note.html">$C-&gt;create_pdf_delivery_note( )</a>
+%		}
+		<input type="submit" class="btn btn-primary" name="bGenDN" value="Generate PDF">
+	</div><br clear="all" />
+
+	<div style="margin-top:-30px; font-size:1.5rem; font-weight:bold"><i class="icon icon-qrcode"></i> Lieferschein
+		<sup style="font-size:0.69rem">&ndash; [ <% $odat->{lang} || 'de' %> ]</sup>
+	</div>
+
+	<div style="font-size:1.1rem; line-height:135%; margin-top:40px; colox:red;">
+		<% $odat->{deliv_company} %><br>
+		<% $odat->{dept_d} %><br>
+		<% $odat->{deliv_firstname} %> <% $odat->{deliv_lastname} %><br />
+		<% $odat->{deliv_street} %><br>
+		<% $odat->{deliv_country} %>-<% $odat->{deliv_zip} %> <% $odat->{deliv_city} %>
+	</div><br />
+
+%	if ($odat->{x_order_id}) {
+		EDI Order-ID <b><% $odat->{x_order_id} %></b> &mdash;
+%	}
+	Customer-ID <b><% $odat->{uid} %></b> &mdash; Customer E-Mail <b><% $odat->{email} %></b> &mdash;
+		Pay Meth <b><% $odat->{pay_meth} %> <% ucfirst $odat->{checkout_zahlungsart_select} %></b>
+		&mdash; Status <b><% $odat->{status} %></b> &mdash; Purchase at: <b><% $odat->{instime_swiss} %></b><br /><br>
+
+%	if ($odat->{x_order_id}) {
+%		my $shipm_track_nr = $oitms->{x_dhl_shipmentTrackingNumber} || '';
+
+		<% $C->bootstrap_alert(qq~<center><b>Hinweis:</b> Das Erstellen dieses Lieferscheins l&ouml;st eine Benachrichtigung an
+				die externe H&auml;ndlerplattform aus.<br>
+				DHL-Paketnummer: <b>$shipm_track_nr</b></center>~, 'warning') %>
+
+%		unless ($shipm_track_nr) {
+			<br />
+			<% $C->bootstrap_alert(qq~<center><b>ACHTUNG</b>&nbsp;&nbsp;
+				Die DHL <b>Paketnummer</b> (Shipment-ID) ist noch nicht erfasst!
+				Der Lieferschein darf noch nicht erstellt werden!<br>
+				$shipment_info</center>~, 'danger') %>
+%		}
+		<br />
+%	}
+
+%	if ($is_devel) {
+		<p><b>Devel Info:</b> <code>$A-&gt;get_order_positions()</code></p><br>
+%	}
+	<table class="mytable table-hover table-striped" style="line-height:220%; margin-bottom:20px">
+	<tr>
+		<th style="text-align:center">Count</th>
+		<th>Items</th>
+		<th>Price</th>
+		<th>Article Info</th>
+		<th style="text-align:right">Amount CHF</th>
+	</tr>
+%	$A->get_order_prepare(order_id=>$id);
+%	my $subtot = 0.0;
+%	while(my $row = $A->get_order_positions()) {
+		<tr>
+		<td style="font-size:<% $font_size_odata %>; text-align:center"><% $row->{count} %> &times;</td>
+		<td><a href="admix.html?func=edit_item&id=<% $row->{prod_id} %>"><b
+			style="font-size:<% $font_size_odata %>"><% $row->{title} %></b></a>
+%		    if ($row->{prod_discount_perc} > 0) {
+			<br /><small>CHF <% sprintf('%.2f', $row->{price}) %> netto<br>
+			./. <% $row->{prod_discount_perc} %> %
+			</small>
+%		    }
+%			if ($row->{option_id_0}) {
+				<br />
+				+ <% $row->{option_name_0} %> &rarr; CHF <% sprintf('%.2f', $row->{option_price_0}) %>
+%			}
+%			if ($row->{campaign_id}) {
+				<br />
+				Campaign-ID <% $row->{campaign_id} %>
+%			}
+		</td>
+		<td><% sprintf('%.2f', $row->{price_enduser_unrounded}) %> CHF <small>+ <% $row->{vat_perc} %> % VAT</small></td>
+		<td><% $row->{art_no} %></td>
+		<td style="text-align:right; font-size:1.0rem">
+%			my $unit_price = $row->{price} * (1 - $row->{prod_discount_perc} / 100) + $row->{option_price_0};
+%			my $line_tot   = $row->{count} * $unit_price;
+%			$subtot += $line_tot;
+			<% sprintf('%.2f', $line_tot) %>
+		</td>
+		</tr>
+%	}
+
+	<tr>
+		<td colspan="4">Shipping (<% $odat->{ship_meth_amount} %> incl. <% $odat->{vat_rate} %> % VAT)</td>
+		<td style="text-align:right; font-size:1.0rem"><% sprintf('%.2f', $odat->{ship_meth_amount} / (1 + $odat->{vat_rate} / 100)) %></td>
+	</tr>
+
+	<tr>
+		<td colspan="4">VAT</td>
+		<td style="text-align:right">
+	<% sprintf('%.2f', $odat->{amount_incl_vat} - sprintf('%.2f', $odat->{ship_meth_amount} / (1 + $odat->{vat_rate} / 100)) - $subtot) %>
+		</td>
+	</tr>
+
+	<tr style="font-size:1.2rem">
+		<td colspan="4"><b>Total CHF</b></td>
+		<td style="text-align:right"><b><% $odat->{amount_incl_vat} %></b></td>
+	</tr>
+
+	</table>
+
+	<div class="pull-right">
+<%doc>
+</%doc>
+%		if ($is_devel) {
+			<input type="checkbox" style="margin-top:-3px" name="debug" value="3"> Debug Level 3
+			&mdash; <a href="_debug.html">&#128030; Debug <% $debug ? 'Off' : 'On' %></a>
+%		}
+	</div>
+% #	<input type=text name="pdf_iban" style="width:35%; height:30px"
+% #		placeholder="IBAN &middot; Bitte leer lassen f&uuml;r Standard-IBAN-Konto"><br />
+
+%	if ($errstr) {
+		<% $C->bootstrap_alert("ERR $errstr", 'danger') %>
+%	}
+
+%    if (@appmsgs) {
+	<% $C->bootstrap_alert( (join "<br>\n", @appmsgs), 'success' ) %>
+%    }
+
+	<& inc_order_status.html, id=>$id, o_stat=>$o_stat, limit=>5, C=>$C, A=>$A &>
+
+% if ($debug) {
+%	foreach (sort keys %$o_stat) {
+%		next if $_ eq 'id' or $_ eq 'VERSION' or $_ eq 'status_recs';
+		[ get_order_status ] &rarr; <b><% $_ %></b> = <code>"<% $o_stat->{$_} %>"</code><br>
+%	}
+% }
+
+  </div>
+%
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+%
+</div>
+%
+</form>
+<%doc>
+	__METACLONING__
+	Created: 06Jun2024
+</%doc>

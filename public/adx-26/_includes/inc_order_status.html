@@ -1,0 +1,64 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C           = $args{C};
+	my $A           = $args{A};
+	my $id          = $args{id};
+	my $o_stat      = $args{o_stat};
+	my $odat        = $args{odat};
+	my $limit       = $args{limit} || 0;
+	my $perma_debug = $args{perma_debug};
+
+	my $count = 0;
+</%init>
+<br />
+	<table class="mytable table-hover">
+%	if ( $#{ $o_stat->{status_recs}	} + 1  ) {
+		<tr>
+			<th>Date</th>
+			<th>Status-ID</th>
+			<th>Text</th>
+			<th>Source</th>
+			<th>By User</th>
+		</tr>
+%	}
+%	foreach	my $d (@{$o_stat->{status_recs}}) {
+%		if ($limit) {
+%			last if ++$count > $limit;
+%		}
+%		my $uname = $C->query("select uname from users where id=$d->{uid}")->[0];
+%		my $xval = $d->{xval};
+%		my $pdf_ref = '';
+%		if ($xval =~ /\bqr_bill_$id\_(\d+)\.pdf\b/) {
+%			$pdf_ref = $1;
+%			my $lt = $C->_lt_(); my	$a_tag = $lt . 'a';
+%			$xval =~ s/qr_bill_$id\_$pdf_ref\.pdf/$a_tag href="upload\/qr_bill_$id\_$pdf_ref\.pdf">qr_bill_$id\_$pdf_ref\.pdf<\/a>/;
+%		}
+		<tr>
+		<td nowrap><% $C->trans_date_short($d->{created_at}) %></td>
+		<td><% $d->{status_id} %></td>
+		<td>
+			<% $xval %>
+%			if ($d->{status_id} == 400) {
+				<a href="<% $odat->{dhl_doc_path} %>">Express Label</a> <% $odat->{deliv_city} %><br>
+%			}
+		</td>
+		<td><% $d->{src} %></td>
+		<td>
+%			if ($d->{uid} >	0) {
+				<abbr title="UID <% $d->{uid} %>"><% $uname %></abbr>
+%			}
+%			else {
+				&mdash;
+%			}
+%			if ($perma_debug) {
+				<a href="adm_db_edit.html?table=orders_status&wcl=id%3D<% $d->{id} %>">Edit</a>
+%			}
+		</td>
+		</tr>
+%	}
+	</table>
+
+<%doc>
+	__METACLONING__
+</%doc>
