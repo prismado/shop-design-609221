@@ -11,7 +11,8 @@
 	my @path_elems = split /\//, $this;
 	my $home = $#path_elems ? '..' : '.';
 	   $home = '.' if $args{is_index};
-	   $home = ''  if $this eq '404'; # -- 26Oct2026
+	   $home = '/' if $this eq '404'; # -- 06Nov2026
+	   # XX $home = ''  if $this eq '404'; # -- 26Oct2026
 </%init>
 <!-- ===== HEADER ===== -->
 <header class="sticky top-0 z-40 shadow-md">
@@ -21,7 +22,8 @@
       <div class="flex flex-wrap items-center gap-3 md:gap-6">
         <!-- Logo -->
         <a href="<% $home %>" class="order-1 flex-shrink-0 flex items-center">
-          <img src="<% $home %>/assets/images/logo_algonetic_big_2026_white.png" alt="ElectroNova Logo" class="h-9 md:h-10 w-auto">
+          <img src="/assets/images/logo_algonetic_big_2026_white.png" alt="Online Shop" class="h-9 md:h-10 w-auto">
+% # XX    <img src="<% $home %>/assets/images/logo_algonetic_big_2026_white.png" alt="ElectroNova Logo" class="h-9 md:h-10 w-auto">
         </a>
 
         <!-- Suchleiste + Sprache -->
