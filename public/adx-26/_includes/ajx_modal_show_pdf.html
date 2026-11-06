@@ -1,0 +1,79 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+	my $id = $cgi->param('id') + 0;
+
+	my $odat     = $A->get_order($id);
+	my $o_dat    = $A->get_order_prepare(order_id=>$id);
+	my $is_devel = $C->is_devel();
+
+	my $SID = $C->getSID();
+
+	my $sth = $C->{dbh}->prepare("select `key`, val from session where sid=$SID and `key` LIKE 'pdf_%' order by id desc");
+	   $sth->execute();
+
+	my %memo = my %pdf_sess = ();
+	while(my $r = $sth->fetch()) {
+		my ($k, $v) = @{$r};
+		next if $memo{$k};
+		$pdf_sess{$k} = $v;
+		$memo{$k} = 1;
+	}
+
+	my $cur_user_email = $C->get_current_user_email();
+</%init>
+<style type="text/css">
+	.modal-body { max-height:72vh; }
+</style>
+
+<script language=JavaScript>
+	$('#myModax').modal();
+</script>
+
+<form method=post>
+<input type=hidden name=id     value="<% $id %>">
+<input type=hidden name=doc    value="<% $pdf_sess{pdf_save_as} %>">
+<input type=hidden name=mailto value="<% $cur_user_email %>">
+<input type=hidden name=func   value="orders">
+
+<div id="myModax" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+	style="width:95%; height:80vh; position: absolute; left: 230px; top:-12px">
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Order-ID <%$id%> &ndash; QR Invoice</h3>
+  </div>
+
+  <div class="modal-body" style="height:80vh; margin-bottom:0px">
+	<div class="pull-right">
+		<input type="submit" class="btn btn-primary" name="bMailBill" value="Mail to <% $cur_user_email %>">
+	</div>
+	<h3 style="margin-top:-10px; font-size:1.5rem"><i class="icon icon-qrcode"></i> PDF QR Invoice &middot; Order-ID <% $id %></h3>
+
+	<div class="ExternalFiles" style="margin-top:20px">
+		<iframe class="form-control" style="width:78vw; height:80vh" src="<% $pdf_sess{pdf_save_as} %>"></iframe>
+	</div>
+
+%  if ($is_devel) {
+%	foreach (sort keys %pdf_sess) {
+		[ Session ] &bull; <b><% $_ %></b> = <code>"<% $pdf_sess{$_} %>"</code><br>
+%	}
+%  }
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+
+
+</div>
+
+</form>
+<%doc>
+	__METACLONING__
+</%doc>
