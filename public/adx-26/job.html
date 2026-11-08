@@ -1,0 +1,102 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+	my $is_devel = $C->is_devel();
+	my $license = $C->get_license();
+
+	my $id        = $cgi->param('id') + 0;
+	my $debug     = $cgi->param('debug');
+	my $bAddParam = $cgi->param('bAddParam');
+	my $bUpdate   = $cgi->param('bUpdate');
+	my $bRun      = $cgi->param('bRun');
+	my $bDelete   = $cgi->param('bDelete');
+
+	my $params = $C->get_job_params(id=>$id);
+
+	my ($name, $path, $weight) = @{$C->query("select substr(featkey, 10, 31), featname, weight from config_prod_feat where id=$id")};
+
+	my $appmsg = $C->getSessData('_msg');
+
+	if ($bUpdate) {
+		(my $new_name = $cgi->param('name')) =~ tr/['"]//d;
+		(my $new_path = $cgi->param('path')) =~ tr/['"]//d;
+		$C->{dbh}->do("update config_prod_feat set featkey='job_path_$new_name', featname='$new_path' where id=$id");
+		$appmsg = 'Updated.';
+	}
+	elsif ($bRun) {
+		my @para = ();
+		foreach (keys %{$params}) {
+			next if $_ eq 'quiet';
+			if ($params->{$_} =~ /^\d+$/) {
+				push(@para, "--$_=$params->{$_}");
+			}
+			else {
+				push(@para, "--$_=\"$params->{$_}\"");
+			}
+		}
+		my $cmd = "$C->{CONFIG}->{DOCUMENT_ROOT}/custom/$C->{CONFIG}->{theme}/jobs/$path --debug 1 " . (join ' ', @para);
+		my $result = $C->system(cmd=>"export db_name=$ENV{db_name}; export db_pass=$ENV{db_pass}; $cmd");
+		my @result_arr = ();
+		foreach (sort keys %{$result}) {
+			next if $_ eq 'err' or $_ eq 'out';
+			push(@result_arr, "$_: $result->{$_}");
+		}
+		push(@result_arr, "${$result->{err}} ${$result->{out}}");
+		my $resx = join "<br>\n", @result_arr;
+		$appmsg = "<b>Note</b> Job executed: <code>$cmd</code><br>$resx";
+	}
+	elsif ($bDelete) {
+		$C->log(msg=>"WARN: Deleting Job-ID $id $name", importance=>1, service=>'adm_job');
+		$C->{dbh}->do("delete from config_prod_feat where lang='sys' and featkey='job_path_$name'");
+		$C->{dbh}->do("delete from config_prod_feat where lang='sys' and featkey like 'job_detail_$id\\_%'");
+		$m->redirect('adm_jobs.html');
+	}
+	elsif ($bAddParam) {
+		$C->{dbh}->do("insert into config_prod_feat (featkey, featname, lang) values ('job_detail_$id\_new$$', 'new', 'sys')");
+		$appmsg = 'Param added';
+	}
+
+	$C->del_sess_key('_msg');
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>System Job <% $id %> &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+		<&_includes/adm_job.html, id=>$id, C=>$C, A=>$A, is_devel=>$is_devel, appmsg=>$appmsg, bRun=>$bRun, debug=>$debug&>
+		<&_includes/footer2.html, C=>$C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	Algo
+
+	__METACLONING__
+</%doc>
