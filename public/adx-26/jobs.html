@@ -1,0 +1,75 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	unless ($C->is_admin()) {
+		$C->redir('/signin.html');
+	}
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+
+	my $debug  = $cgi->param('debug');
+	my $bAdd   = $cgi->param('bAdd');
+	my $action = $cgi->param('action');
+	my $filter = $cgi->param('filter');
+
+	my $appmsg = $C->getSessData('_msg');
+
+	$C->del_sess_key('_msg');
+
+	if ($bAdd) {
+		$C->{dbh}->do("insert into config_prod_feat (featkey, featname, lang) values ('job_path_new$$', 'new$$', 'sys')")
+			or $m->out("ERR $DBI::errstr<br>");
+		my $last_id = $C->query('SELECT LAST_INSERT_ID()')->[0];
+		$C->{dbh}->do("insert into config_prod_feat (featkey, featname, lang) values ('job_detail_$last_id\__is_active', '0', 'sys')");
+
+		$C->set_safe_property("job_detail_$last_id\__runs_every", "30", 'sys' );
+		$C->set_safe_property("job_detail_$last_id\_quiet", "0", 'sys' );
+		$C->set_safe_property("job_detail_$last_id\__description", "tbd", 'sys' );
+
+		$m->redirect("adm_job.html?id=$last_id");
+	}
+
+	my @required = qw(/root/bin/gits_site.sh /var/www/shop/_systex/run_jobs.pl);
+	my $sysjobs = $C->get_system_autojobs(requirex=>\@required);
+
+	my $license = $C->get_license();
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>System Jobs &middot; <%$C->{CONFIG}->{site_title}%></title>
+<&_includes/header_meta_theme.html&>
+</head>
+% # XXX <&_includes/meta_top.html&>
+<!--[if (gt IE 9)|!(IE)]><!-->
+<body class="">
+<!--<![endif]-->
+<&_includes/adm_navbar.html, C => $C, UID => $UID&>
+<&_includes/dashboard_mainmenu_hor.html, C => $C&>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+		<h2>*** <a href="/adx/show.html?macro=prism_sys_jobs">Funktions-Update</a> ***</h2>
+		<div style="margin-top:10px">
+			<% $C->bootstrap_alert('<b>WARN</b> For experienced administrators only.', 'danger') %>
+		</div>
+		<&_includes/adm_jobs.html, C=>$C, A=>$A, action=>$action, appmsg=>$appmsg, filter=>$filter, sysjobs=>$sysjobs, debug=>$debug&>
+		<&_includes/footer2.html, C=>$C&>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	__METACLONING__
+</%doc>
