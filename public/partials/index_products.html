@@ -5,14 +5,12 @@
 	my $C              = $args{C};
 	my $A              = $args{A};
 	my $perm           = $args{perm};
-	# XXX my $prod_highlight = $args{prod_highlight};
 	my $debug          = $args{debug};
 
 	my $token_id = $C->getSessData('token_id') // 0;
 </%init>
 
 % if ($token_id) {
-%	# XXX foreach my $hl (@{ $prod_highlight->{ids} }) {
 %	foreach my $prod_id (@{$A->promo_ids()}) {
 %		my $hl = $A->get_product_v2(id => $prod_id, public => 1);
 %		next if $hl->{campaign_id} && $token_id != $hl->{campaign_id};
