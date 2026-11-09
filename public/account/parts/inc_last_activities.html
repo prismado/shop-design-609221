@@ -11,7 +11,7 @@
 	my $sth = $C->{dbh}->prepare(qq~
 		select	id, `source`, importance, module, service, action, tstamp, rc
 		from	log
-		where	uid=$perm->{uid} and importance = 1
+		where	uid=$perm->{uid} and importance = 1 and action not like 'WARN W407%'
 		order	by 1 desc
 		limit	10
 	~);
