@@ -14,8 +14,6 @@
 	my $perm  = $C->get_user_perm();
 	my $lang  = 'de';
 
-	# XXX my $promo_id = $C->query("select product_id from promo_prods where is_active < 0 limit 1")->[0]; # -- 09Nov2026
-
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
 	my $promo_id       = $prod_highlight->{ids}->[0]->{id};
 	my $cookie_consent = $C->get_cookie_consent();
