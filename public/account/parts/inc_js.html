@@ -67,8 +67,12 @@ function openEditAccountModal() {
 	loadEditModal('Benutzerinformation bearbeiten', '/account/modal-edit-account.html');
 }
 
-function openEditSecurityModal() {
-	loadEditModal('Benutzersicherheit bearbeiten', '/account/modal-edit-security.html');
+function openEditSecurityModal(secType) {
+	if (secType === 2) {
+		loadEditModal('Login bearbeiten', '/account/modal-edit-change-login.html');
+	} else {
+		loadEditModal('Benutzersicherheit bearbeiten', '/account/modal-edit-security.html');
+	}
 }
 
 // Gemeinsame Submit-Logik für die Edit-Modals (Adresse / Konto) — beide dyn/*-Endpunkte liefern
