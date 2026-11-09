@@ -47,27 +47,12 @@
 				<% $prod->{title} %>
 			</h3>
 		</a>
-		<!-- -- desc_long stammt vom Kunden-Webmaster und kann beliebig lang sein: Höhe begrenzen
-			 (Preis landet dadurch ungefähr auf Bodenhöhe des Produktbilds) und bei Überlänge per
-			 Gradient nach unten ausblenden statt hart abzuschneiden ("Bezahlschranken"-Optik).
-			 Der Gradient wird per JS nur eingeblendet, falls tatsächlich Text abgeschnitten wird
-			 (scrollHeight > clientHeight) — sonst würde er auch kurze Texte ausgrauen, siehe CSS
-			 allein kann "wurde geklippt?" nicht von "passt genau rein" unterscheiden. -->
-		<div class="relative overflow-hidden max-h-24 sm:max-h-28 md:max-h-32 mb-4" data-fade-desc>
-			<p class="text-xs md:text-sm text-gray-600 leading-relaxed">
-				<% $prod->{desc_long} %>
-			</p>
-			<div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent hidden"
-					data-fade-overlay></div>
-		</div>
-		<script>
-			document.querySelectorAll('[data-fade-desc]').forEach(function (box) {
-				if (box.scrollHeight > box.clientHeight) {
-					var overlay = box.querySelector('[data-fade-overlay]');
-					if (overlay) overlay.classList.remove('hidden');
-				}
-			});
-		</script>
+		<!-- -- desc_long stammt vom Kunden-Webmaster und kann beliebig lang sein: Hier nur ein Teaser,
+			 daher per line-clamp kürzen (nativer Ellipsis, ohne Farbveränderung) statt wie in der
+			 Detailansicht üblich auszugrauen. -->
+		<p class="text-xs md:text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3 sm:line-clamp-4">
+			<% $prod->{desc_long} %>
+		</p>
           <div class="flex flex-wrap items-end justify-between gap-4 mt-auto pt-2">
 
 	<div>
