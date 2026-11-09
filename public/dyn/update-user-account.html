@@ -18,8 +18,10 @@
 	my $msg    = '';
 
 	if ($perm->{uid} > 0) {
+		my $uname = $cgi->param('uname');
+		my $email = $cgi->param('email');
 		$rc_upd = 90;
-		$msg = 'XX constr 611090-21';
+		$msg = "XX constr 611090-21: $uname $email";
 	}
 	else {
 		$rc_upd = 10;
