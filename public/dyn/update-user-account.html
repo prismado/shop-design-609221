@@ -1,5 +1,6 @@
 <%init>
 	use utf8;
+	use JSON;
 
 	use ScreenPoint::Core;
 	use ScreenPoint::Auctionline;
@@ -39,10 +40,12 @@
 		$msg    = 'Not logged in.';
 	}
 
+	# -- Über JSON-Modul serialisieren statt String-Interpolation, damit Sonderzeichen in $msg
+	#    (Anführungszeichen, HTML-Tags etc. — $A->update_user_account() liefert hier mitunter recht
+	#    "geschwätzige" Meldungen) das JSON nicht brechen.
+	my $json = JSON->new()->encode({ rc => $rc_upd, message => $msg });
+
 	# -- JSON-Ausgabe mit UTF-8-Kodierung
 	$r->content_type('application/json; charset=utf-8');
 </%init>
-{
-  "rc": <% $rc_upd %>,
-  "message": "<% $msg %>"
-}
+<% $json %>
