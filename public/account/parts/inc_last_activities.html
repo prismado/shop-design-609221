@@ -16,6 +16,15 @@
 		limit	25
 	~);
 	$sth->execute();
+
+	my $st2 = $C->{dbh}->prepare(qq~
+		select	id, tstamp, SUBSTR(xkey, 6, 15), xval
+		from	users_details
+		where	user_id=$perm->{uid} and xkey like 'hist_%'
+		order	by 1 desc
+		limit	25
+	~);
+	$st2->execute();
 </%init>
 <p class="mb-6">
 	UID <% $perm->{uid} %>
@@ -32,6 +41,15 @@
 			</tr>
 		</thead>
 		<tbody class="divide-y divide-gray-100">
+%	while(my $r = $st2->fetch()) {
+%		my ($id, $tstamp, $key, $val) = @{$r};
+		<tr class="hover:bg-gray-50 transition-colors">
+			<td class="px-4 py-3 whitespace-nowrap text-gray-500"><% $C->trans_date_short($tstamp) %></td>
+			<td><% $key %></td>
+			<td></td>
+			<td><% $val %></td>
+		</tr>
+%	}
 %	while(my $r = $sth->fetch()) {
 %		my ($id, $source, $importance, $module, $service, $action, $tstamp, $rc) = @{$r};
 			<tr class="hover:bg-gray-50 transition-colors">
