@@ -4,8 +4,15 @@
 
 	my $C = $args{C};
 	my $A = $args{A};
+	my $ph = $args{ph};
 
-	my $prod_highlight = $A->get_product_highlights(shuffle => 1)->{ids};
+	unless ($ph) {
+		# XX $m->out("XX keine prod hls<hr>");
+		$ph = $A->get_product_highlights(shuffle => 1);
+	}
+
+	my $prod_highlight = $ph->{ids};
+	# XXX my $prod_highlight = $A->get_product_highlights(shuffle => 1)->{ids};
 </%init>
 <!-- Tagesangebote (rechts, ca. 15%) -->
 <aside id="tagesangebote" class="mt-10 lg:mt-0 lg:sticky lg:self-start scroll-mt-24"
