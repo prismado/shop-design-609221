@@ -43,6 +43,7 @@
 		<tbody class="divide-y divide-gray-100">
 %	while(my $r = $st2->fetch()) {
 %		my ($id, $tstamp, $key, $val) = @{$r};
+%		$key =~ s/_\d+$//;
 		<tr class="hover:bg-gray-50 transition-colors">
 			<td class="px-4 py-3 whitespace-nowrap text-gray-500"><% $C->trans_date_short($tstamp) %></td>
 			<td class="px-4 py-3 text-gray-700"><% $key %></td>
