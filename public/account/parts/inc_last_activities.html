@@ -18,7 +18,7 @@
 	$sth->execute();
 
 	my $st2 = $C->{dbh}->prepare(qq~
-		select	id, tstamp, SUBSTR(xkey, 6, 15), xval
+		select	id, tstamp, SUBSTR(xkey, 6, 31), xval
 		from	users_details
 		where	user_id=$perm->{uid} and xkey like 'hist_%'
 		order	by 1 desc
