@@ -47,9 +47,15 @@
 				<% $prod->{title} %>
 			</h3>
 		</a>
-		<p class="text-xs md:text-sm text-gray-600 leading-relaxed mb-4">
-			<% $prod->{desc_long} %>
-		</p>
+		<!-- -- desc_long stammt vom Kunden-Webmaster und kann beliebig lang sein: Höhe begrenzen
+			 (Preis landet dadurch ungefähr auf Bodenhöhe des Produktbilds) und bei Überlänge per
+			 Gradient nach unten ausblenden statt hart abzuschneiden ("Bezahlschranken"-Optik) -->
+		<div class="relative overflow-hidden max-h-24 sm:max-h-28 md:max-h-32 mb-4">
+			<p class="text-xs md:text-sm text-gray-600 leading-relaxed">
+				<% $prod->{desc_long} %>
+			</p>
+			<div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent"></div>
+		</div>
           <div class="flex flex-wrap items-end justify-between gap-4 mt-2">
 
 	<div>
