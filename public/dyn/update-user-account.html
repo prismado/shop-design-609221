@@ -20,8 +20,19 @@
 	if ($perm->{uid} > 0) {
 		my $uname = $cgi->param('uname');
 		my $email = $cgi->param('email');
-		$rc_upd = 90;
-		$msg = "XX constr 611090-21: $uname $email";
+		my $cur_addr = $A->get_address_by_id($perm->{uid}, 1);
+		my %data = (
+			uid           => $perm->{uid},
+			account_uname => $uname,
+			account_email => $email,
+			account_first_name => $cur_addr->{firstname},
+			account_last_name  => $cur_addr->{lastname},
+			account_phone      => $cur_addr->{phone}
+		);
+		my $res = $A->update_user_account(data => \%data);
+		$rc_upd = $res->{rc};
+		$msg    = "RC $res->{rc_info} $res->{msg}";
+		$C->log(msg => "XX RC $rc_upd $msg");
 	}
 	else {
 		$rc_upd = 10;
