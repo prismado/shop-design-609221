@@ -13,7 +13,7 @@
 		from	log
 		where	uid=$perm->{uid} and importance = 1
 		order	by 1 desc
-		limit	25
+		limit	10
 	~);
 	$sth->execute();
 
