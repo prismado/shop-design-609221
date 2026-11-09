@@ -2,12 +2,12 @@
 	use utf8;
 	my %args = $m->caller_args(0);
 
-	my $C = $args{C};
-	my $A = $args{A};
-	my $ph = $args{ph};
+	my $C        = $args{C};
+	my $A        = $args{A};
+	my $ph       = $args{ph};
+	my $promo_id = $args{promo_id} // 0;
 
 	unless ($ph) {
-		# XX $m->out("XX keine prod hls<hr>");
 		$ph = $A->get_product_highlights(shuffle => 1);
 	}
 
@@ -31,6 +31,7 @@
 
 %	my $count = 0;
 %	foreach my $hl (@{ $prod_highlight }) {
+%		next if $hl->{id} == $promo_id;
 %		last if ++$count > 3;
 %		my $id = $hl->{id};
 %		my $prod = $A->get_product_v2(id => $id, public => 1, opts => 1);
