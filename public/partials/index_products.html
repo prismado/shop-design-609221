@@ -18,7 +18,6 @@
 %	}
 % }
 % else {
-%	# XX foreach my $hl (@{ $prod_highlight->{ids} }) {
 %	foreach my $prod_id (@{$A->promo_ids()}) {
 %		my $hl = $A->get_product_v2(id => $prod_id, public => 1);
 %		next if $hl->{_rc}; # -- 05Nov2026
