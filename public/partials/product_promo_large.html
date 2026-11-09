@@ -10,15 +10,15 @@
 	   $img_url    = '/assets/images/no_image.webp' unless $prod->{image}->{ext};
 </%init>
 
-<div class="mt-3 mb-5 XXflex XXflex-col XXsm:flex-row gap-5 XXitems-start">
+<div class="mt-3 mb-5 gap-5">
 
   <article class="reveal group bg-white rounded-2xl border-2 border-gray-300 shadow-sm
 			hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
 
         <div class="relative overflow-hidden p-[18px]">
 		<a href="/product?id=<% $id %>">
-        	  <img src="<% $img_url %>" alt="Produkt"
-			class="w-full aspect-square object-cover rounded-lg group-hover:scale-105
+        	  <img src="<% $img_url %>" alt="Produkt" style="width:200px;"
+			class="ZZw-full aspect-square object-cover rounded-lg group-hover:scale-105
 				transition-transform duration-500" loading="lazy">
 		</a>
 %	if ($prod->{discount_perc}) {
@@ -44,7 +44,8 @@
 			</h3>
 		</a>
 		<p class="text-xs md:text-sm text-gray-500 line-clamp-4 mb-3 flex-1">
-			<% $prod->{description} %>
+			<% $prod->{desc_long} %>
+% # XX			<% $prod->{description} %>
 		</p>
           <div class="flex items-end justify-between mt-auto pt-2">
 
