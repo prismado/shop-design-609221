@@ -33,7 +33,8 @@
 		my $res = $A->update_user_account(data => \%data);
 		$rc_upd = $res->{rc};
 		$msg    = "RC $res->{rc_info} $res->{msg}";
-		$C->log(msg => "XX RC $rc_upd $msg");
+		$A->add_user_hist(id => $perm->{uid}, key => 'update_account', val => $res->{msg});
+		# XXX $C->log(msg => "XX RC $rc_upd $msg");
 	}
 	else {
 		$rc_upd = 10;
