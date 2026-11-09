@@ -45,9 +45,9 @@
 %		my ($id, $tstamp, $key, $val) = @{$r};
 		<tr class="hover:bg-gray-50 transition-colors">
 			<td class="px-4 py-3 whitespace-nowrap text-gray-500"><% $C->trans_date_short($tstamp) %></td>
-			<td><% $key %></td>
-			<td></td>
-			<td><% $val %></td>
+			<td class="px-4 py-3 text-gray-700"><% $key %></td>
+			<td class="px-4 py-3 text-gray-700"></td>
+			<td class="px-4 py-3 text-gray-700"><% $val %></td>
 		</tr>
 %	}
 %	while(my $r = $sth->fetch()) {
