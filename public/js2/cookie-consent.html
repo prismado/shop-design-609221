@@ -12,6 +12,8 @@ gtag('consent',	'update', {
   'ad_user_data': 'granted',
   'ad_personalization':	'<% $result->{consent}->{ad_personalization} ? 'granted' : 'denied' %>'
 });
+% # -- Neu für Facebook Pixel // 10Nov2026
+dataLayer.push({event: 'prism_consent_ready'});
 % }
 % else {
 gtag('consent',	'default', {
