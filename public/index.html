@@ -21,6 +21,8 @@
 	my $this       = $C->this(); # -- product/index
 	my @path_elems = split /\//, $this;
 	my $home       = $#path_elems ? '..' : '.';
+
+	my $conv_track_on  = $C->get_property('google_conv_tracking_on', '_global', 'sys'); # -- 10Nov2026
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -29,6 +31,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
+% if ($conv_track_on) {
+%	# -- adx/manage-property.html?area=google_conv_tracking
+	<% $C->get_property('google_conv_tracking_head', '_global', 'sys') %>
+% }
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
