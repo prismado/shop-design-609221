@@ -12,8 +12,9 @@ gtag('consent',	'update', {
   'ad_user_data': 'granted',
   'ad_personalization':	'<% $result->{consent}->{ad_personalization} ? 'granted' : 'denied' %>'
 });
-% # -- Neu für Facebook Pixel // 10Nov2026
-dataLayer.push({event: 'prism_consent_ready'});
+%	if ( $result->{consent}->{set_event_ready} ) { # -- Neu für Facebook Pixel (prism_consent_ready) // 10Nov2026
+dataLayer.push({event: '<% $result->{consent}->{set_event_ready} %>'});
+%	}
 % }
 % else {
 gtag('consent',	'default', {
@@ -26,7 +27,7 @@ gtag('consent',	'default', {
 % }
 
 // UID <% $result->{perm}->{uid} %>
-% if ( $result->{perm}->{is_devel} ) {
+% if ( $result->{perm}->{is_devel} or 1==1) {
 %	foreach	(sort keys %{$result->{consent}}) {
 //		[result/consent] - <% $_ %> = <% $result->{consent}->{$_} %>
 %	}
