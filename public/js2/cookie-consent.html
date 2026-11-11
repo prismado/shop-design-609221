@@ -27,7 +27,7 @@ gtag('consent',	'default', {
 % }
 
 // UID <% $result->{perm}->{uid} %>
-% if ( $result->{perm}->{is_devel} or 1==1) {
+% if ( $result->{perm}->{is_devel} ) {
 %	foreach	(sort keys %{$result->{consent}}) {
 //		[result/consent] - <% $_ %> = <% $result->{consent}->{$_} %>
 %	}
