@@ -1,2 +1,5 @@
 
 diff public/index.html public/start/index.html
+
+
+git update-index --skip-worktree public/proto/sso/ms_jwks.json
