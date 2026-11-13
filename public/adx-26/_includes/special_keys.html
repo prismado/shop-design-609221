@@ -1,4 +1,6 @@
 <%init>
+	use utf8; # -- 12Nov2026
+
 	my %args = $m->caller_args(0);
 
 	my $C     = $args{C};
@@ -7,10 +9,19 @@
 	my $debug = $args{debug};
 	my $perm  = $args{perm};
 	my $appmsg = $args{appmsg};
+	my $core_feat = $args{core_feat}; # -- 12Nov2026
 
 	my $db_conf = $C->get_table_schema(table=>'config', schema=>$ENV{db_name}); # -- 26Dec2025
 	my $collation_test = my $errstr_coll = '';
 	eval { $collation_test = $C->uri_esc($C->{CONFIG}->{site_title}); } or do { $errstr_coll = $@ };
+
+	my %area_ids_hr = (
+		1 => 'In relation to sending emails',
+		2 => 'Vat / Tax',
+		3 => 'Administrator',
+		4 => 'Customization',
+		7 => 'Product related'
+	);
 
 	my $sth = $C->{dbh}->prepare(qq~
 		select	id, `key`, val, tstamp
@@ -148,5 +159,39 @@
 		<p class="mt-5">
 			<i class="fi fi-database"></i> Datenbank: <b><% $ENV{db_name} %></b> auf DB Host <b><% $ENV{db_host} %></b>
 		</p>
+
+		<table class="table">
+%		foreach my $cf (@{$core_feat->{features}}) {
+%			next if $cf->{mnemonic} eq 'foo_bar' or $cf->{mnemonic} eq 'adm_dashboard';
+%			my @urls = ();
+%			if ($cf->{url}) {
+%				(my $label = $cf->{url}) =~ s/\.html$//;
+%				push(@urls, qq~&bull; <a href="$cf->{url}">$label</a>~);
+%			}
+%			if ($cf->{wiki_url}) {
+%				(my $label = $C->shorten_title($cf->{wiki_url}, 35)) =~ s/^https:\/\///;
+%				push(@urls, qq~&bull; <a href="$cf->{wiki_url}">$label</a>~);
+%			}
+%			foreach (sort keys %{$cf->{add_setting_url}}) {
+%				(my $label = $cf->{add_setting_url}->{$_}) =~ s/^\/adx\///;
+%				    $label =~ s/\/adm\_//;
+%				    $label =~ s/\.html$//;
+%				    $label = $C->shorten_title($label, 30);
+%				push(@urls, qq~&bull; <a href="$cf->{add_setting_url}->{$_}">$label</a>~);
+%			}
+			<tr valign="top">
+				<td class="prism-limit-len-300"><b><% $cf->{title_de} %></b></td>
+				<td class="fs--11"><% $C->shorten_title($cf->{mnemonic}, 20) %></td>
+				<td class="fs--11"><% $cf->{id} %></td>
+				<td><% join "<br>\n", @urls %></td>
+				<td><% $cf->{auth_req} eq 'auto' ? '&ndash;' : ucfirst $cf->{auth_req} %></td>
+				<td class="prism-limit-len-200">
+%					foreach (@{$cf->{area_ids}}) {
+						<% $area_ids_hr{$_} || "* $_ *" %><br>
+%					}
+				</td>	
+			</tr>
+%		}
+		</table>
 %	}
 </div>
