@@ -163,6 +163,8 @@
 		<table class="table">
 %		foreach my $cf (@{$core_feat->{features}}) {
 %			next if $cf->{mnemonic} eq 'foo_bar' or $cf->{mnemonic} eq 'adm_dashboard';
+%			(my $feat_ref_id = $C->format_hr4($cf->{id})) =~ s/ $//;
+%			    $feat_ref_id =~ tr/ /-/;
 %			my @urls = ();
 %			if ($cf->{url}) {
 %				(my $label = $cf->{url}) =~ s/\.html$//;
@@ -173,16 +175,16 @@
 %				push(@urls, qq~&bull; <a href="$cf->{wiki_url}">$label</a>~);
 %			}
 %			foreach (sort keys %{$cf->{add_setting_url}}) {
-%				(my $label = $cf->{add_setting_url}->{$_}) =~ s/^\/adx\///;
-%				    $label =~ s/\/adm\_//;
-%				    $label =~ s/\.html$//;
-%				    $label = $C->shorten_title($label, 30);
-%				push(@urls, qq~&bull; <a href="$cf->{add_setting_url}->{$_}">$label</a>~);
+%				# XXX (my $label = $cf->{add_setting_url}->{$_}) =~ s/^\/adx\///;
+%				# XXX     $label =~ s/\/adm\_//;
+%				# XXX     $label =~ s/\.html$//;
+%				# XXX     $label = $C->shorten_title($label, 30);
+%				push(@urls, qq~&bull; <a href="$cf->{add_setting_url}->{$_}">$_</a>~);
 %			}
 			<tr valign="top">
 				<td class="prism-limit-len-300"><b><% $cf->{title_de} %></b></td>
 				<td class="fs--11"><% $C->shorten_title($cf->{mnemonic}, 20) %></td>
-				<td class="fs--11"><% $cf->{id} %></td>
+				<td class="fs--11"><% $feat_ref_id %></td>
 				<td><% join "<br>\n", @urls %></td>
 				<td><% $cf->{auth_req} eq 'auto' ? '&ndash;' : ucfirst $cf->{auth_req} %></td>
 				<td class="prism-limit-len-200">
