@@ -9,7 +9,8 @@
 
 	my $chatflowid = $C->get_safe_property('fw_chat_id_1', 'sys');
 
-	my $sessionId = (split /\./, $C->{CONFIG}->{HTTP_HOST})[0] . $C->now(5); # -- 16Nov2026
+	# XX my $sessionId = (split /\./, $C->{CONFIG}->{HTTP_HOST})[0] . $C->now(5); # -- 16Nov2026
+	my $sessionId = (split /\./, $C->{CONFIG}->{HTTP_HOST})[0] . '-' . $C->now(5); # -- 16Nov2026
 	if ($perm->{uid} > 0) {
 		$sessionId  = "$sessionId\-u$perm->{uid}";
 	}
