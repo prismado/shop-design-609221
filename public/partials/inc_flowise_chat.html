@@ -42,7 +42,8 @@
 </%init>
 
 <script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+% # import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    import Chatbot from "/assets/js/flowise-embed/web.js"
     Chatbot.init({
 	chatflowid: "<% $chatflowid %>",
         apiHost: "https://fw1.h3.zspace.ch",
