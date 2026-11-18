@@ -1,0 +1,19 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $SID = $C->getSID();
+
+	my $lang = $C->{CGI}->param('lang') || 'de';
+
+	if (length($lang) > 2) {
+		$lang = 'de'; # -- 21Nov2024
+	}
+
+	$C->saveSessData('_current_lang', $lang);
+
+	my $ref = $ENV{HTTP_REFERER} || '/';
+
+	$m->redirect($ref);
+</%init>
+lang <% $lang %> &mdash; <% $ref %>
