@@ -5,7 +5,8 @@
 	my $C = $args{C};
 	my $A = $args{A};
 	my $v = $args{v};
-	my $perm = $args{perm};
+	my $perm            = $args{perm};
+	my $lang            = $args{lang} || 'de';
 	my $daily_offer_cid = $args{daily_offer_cat_id} // $A->get_daily_offer_categ()->{id}; # -- 18Nov2026
 
 	my $this = $C->this(); # -- product/index
@@ -80,7 +81,7 @@
               <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="XX">- Edit -</button>
 		</a>
 		<a href="/_foo">
-              <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="XX">_Foo</button>
+              <button class="lang-opt block w-full text-left px-4 py-2 hover:bg-red-50" data-code="XX">_Foo <% $lang %></button>
 		</a>
 %	}
             </div>
