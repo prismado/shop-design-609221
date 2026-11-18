@@ -2,8 +2,11 @@
 	use utf8;
 	my %args = $m->caller_args(0);
 	my $C    = $args{C};
+	my $perm = $args{perm}; # -- 18Nov2026
 	my $home = $args{home};
 	   $home = '.' if $args{is_index};
+
+	my $cookie_consent = $args{cookie_consent}; # -- 18Nov2026
 
 	my $lang = 'de';
 </%init>
@@ -160,6 +163,10 @@
 			});
 	}
 </script>
+
+% if ($C->{CONFIG}->{chat_bot_enabled} == 1) {
+	<& inc_flowise_chat.html, C => $C, perm => $perm, cookie_consent => $cookie_consent &>
+% }
 
 <!-- Scroll-to-top: links neben dem fix platzierten Chatbot-Bubble (bottom:20/right:16, 48px) -->
 <button type="button" id="scroll-top-btn" aria-label="Nach oben scrollen"
