@@ -18,6 +18,7 @@
 	my $narrow  = $cgi->param('narrow');
 	my $bUpdNextOrderID = $cgi->param('bUpdNextOrderID');
 
+	my $lang = $C->getSessData('_current_lang') || 'de'; # -- 18Nov2026
 	my $perm = $C->get_user_perm();
 	my $appenv = $C->get_safe_property('SHOP_CONFIG_ENV', 'sys'); # -- 07Sep2026
 
@@ -36,8 +37,13 @@
 	}
 	elsif ($bAddKey) {
 		my $errstr = '';
-		$C->{dbh}->do(qq~insert into properties (`key`, val, page) values ('$area\_de', 'tbd', '_global')~) or ($errstr = $DBI::errstr);
+		$C->{dbh}->do(qq~insert into properties (`key`, val, page) values ('$area\_$lang', 'tbd', '_global')~) or ($errstr = $DBI::errstr);
+		if ($errstr) {
+			push(@appmsg, "Error: No new key added to area <b>$area:</b><br>$errstr")
+		}
+		else {
 		push(@appmsg, "New key added to area $area $errstr")
+		}
 	}
 	elsif ($bDelete) {
 		$C->{dbh}->do("delete from properties where `key` LIKE '$area\\_%'");
@@ -112,7 +118,8 @@
 				<div class="row gutters-sm">
 					<div class="col-12 p-0 mb-0">
 						<div class="portlet">
-							<& _includes/manage-property.html, area=>$area, core=>$core, page=>$page, bUpdate=>$bUpdate, appmsg=>\@appmsg,
+							<& _includes/manage-property.html, area=>$area, core=>$core,
+								page=>$page, bUpdate=>$bUpdate, appmsg=>\@appmsg, lang=>$lang,
 								usage=>$usage, C=>$C, A=>$A, perm=>$perm, debug=>$debug &>
 						</div>
 					</div>
