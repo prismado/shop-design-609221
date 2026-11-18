@@ -12,7 +12,7 @@
 
 	my $tnote = $C->get_toast_notes();
 	my $perm  = $C->get_user_perm();
-	my $lang  = 'de';
+	my $lang  = $C->getSessData('_current_lang') || 'de';
 
 	my $prod_highlight = $A->get_product_highlights(shuffle => 1);
 	my $promo_id       = $prod_highlight->{ids}->[0]->{id};
