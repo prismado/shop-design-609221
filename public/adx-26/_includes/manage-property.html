@@ -5,9 +5,10 @@
 	my $A      = $args{A};
 	my $area   = $args{area};
 	my $core   = $args{core};
-	my $page   = $args{page}; # -- 13Sep2024
+	my $page   = $args{page};
 	my $debug  = $args{debug};
 	my $perm   = $args{perm};
+	my $lang   = $args{lang}; # -- 18Nov2026
 	my $appmsg = $args{appmsg};
 	my $usage  = $args{usage};
 
@@ -53,7 +54,8 @@
 		Where Clause #2: <% $wc2 %>
 %	}
 %	if ($area) {
-		<span>Property verwalten: <code><span class="ml-2" style="font-size:1.3rem"><% $area %></span></code></span>
+		<span>Property verwalten: [ <a href="/_change_lang.html?lang=de"><% uc $lang %></a> ]
+			<code><span class="ml-2" style="font-size:1.3rem"><% $area %></span></code></span>
 %	}
 %	else {
 		<div class="float-end">
