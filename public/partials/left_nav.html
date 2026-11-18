@@ -5,10 +5,9 @@
 	my $C          = $args{C};
 	my $A          = $args{A};
 	my $this       = $args{this} // $C->this();
+	my $lang       = $args{lang} || 'de';
 	my $cur_cat_id = $args{cat_id}; # -- Aktiv ausgewählte Kategorie-ID
 	my $daily_offer_cid = $args{daily_offer_cat_id} // $A->get_daily_offer_categ()->{id}; # -- 18Nov2026
-
-	my $lang = 'de';
 
 	my ($categ_ids, $label) = $A->get_categ_nav($lang);
 
