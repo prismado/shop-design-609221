@@ -22,6 +22,8 @@
 	my @path_elems = split /\//, $this;
 	my $home       = $#path_elems ? '..' : '.';
 
+	my $daily_offer_cat_id = $A->get_daily_offer_categ()->{id};
+
 	my $conv_track_on  = $C->get_property('google_conv_tracking_on', '_global', 'sys'); # -- 10Nov2026
 </%init>
 <!DOCTYPE html>
@@ -55,7 +57,7 @@
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
 
-<& partials/left_nav.html, this => $this, A => $A, C => $C &>
+<& partials/left_nav.html, this => $this, daily_offer_cat_id => $daily_offer_cat_id, A => $A, C => $C &>
 
 <!-- Produkte (Mitte, ca. 70%) -->
 <section>
