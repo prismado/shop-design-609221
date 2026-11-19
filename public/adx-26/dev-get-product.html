@@ -7,6 +7,8 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
+	my $lang = $C->getSessData('_current_lang') || 'de'; # -- 19Nov2026
+
 	my $cgi = $C->{CGI};
 	my $prod_id = $cgi->param('prod_id') + 0;
 	my $narrow  = $cgi->param('narrow');
@@ -18,7 +20,7 @@
 
 	$prod_id ||= $C->query("select MAX(id) FROM products")->[0];
 
-	my $prd = $A->get_product_v2(id=>$prod_id, public=>$public, debug=>1);
+	my $prd = $A->get_product_v2(id=>$prod_id, public=>$public, lang=>$lang, debug=>1);
 	my $fls = $A->get_product_files(id=>$prod_id);
 	my $extra_imgs = $A->get_product_extra_imgs(id=>$prod_id);
 	my $option_check = $A->get_option_id_with_art_no($prod_id);
