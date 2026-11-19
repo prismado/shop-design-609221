@@ -1,0 +1,101 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+
+	my $redir_url = $ENV{HTTP_REFERER};
+
+	my $action = $cgi->param('action');
+	my $uid    = $cgi->param('uid') + 0;
+	my $csum   = $cgi->param('csum');
+	my $lang   = $cgi->param('lang') || 'de';
+
+	my $secret = $C->md5_secret($uid);
+
+	if ($action eq 'send_reg_invitation' && $csum eq $secret) {
+		my $res = $A->send_register_invitation(id=>$uid, lang=>$lang);
+		$C->log(msg=>"Send register invitation to UID $uid from $ENV{HTTP_REFERER}", service=>'_do');
+		$redir_url = '/';
+	}
+	elsif ($action eq 'edit_mode') {
+		my $perm = $C->get_user_perm();
+		my $cur_edit_mode = $C->getSessData('adm_edit_mode') + 0;
+		if ($cur_edit_mode) {
+			$A->activate_edit(mode=>0);
+			$C->create_toast_note(body=>'<center>Editier-Modus ausgeschaltet</center>', type=>'success', fs=>25,
+				style=>'.toast, .max-w-300 { max-width: 350px !important; opacity: 0.45; }');
+		}
+		else {
+			$A->activate_edit(mode=>1) if $perm->{is_admin};
+			$C->create_toast_note(body=>'<center>Editier-Modus eingeschaltet</center>', type=>'pink', fs=>25,
+				style=>'.toast, .max-w-300 { max-width: 350px !important; opacity: 0.45; }');
+		}
+	}
+	elsif ($action eq 'payrexx_start_payment' && $csum eq $secret) {
+		my $amount      = $cgi->param('amount') + 0;
+		my $referenceId = $cgi->param('referenceId');
+		my $purpose     = $cgi->param('purpose') || 'Online-Einkauf';
+		my $pm          = $cgi->param('pm')      || 'twint,mastercard,visa';
+		my $instance    = $C->{CONFIG}->{payrexx_instance};
+		my $secret      = $C->{CONFIG}->{payrexx_secret};
+
+		my $uinf = $C->get_user(id=>$uid);
+
+		my $res = $A->payrexx_create_paylink(
+			amount      => $amount,
+			sku         => "O-ID\-$referenceId\-$C->{CONFIG}->{HTTP_HOST}",
+			purpose     => $purpose,
+			forename    => $uinf->{firstname},
+			surname     => $uinf->{lastname},
+			email       => $uinf->{email},
+			referenceId => $referenceId,
+			pm          => $pm, # -- Comma-separated
+			instance    => $instance,
+			secret      => $secret,
+			successRedirectUrl => $C->{CONFIG}->{payrexx_successRedirectUrl},
+			debug       => 0
+		);
+
+		$C->log(msg=>"N310202-2: [ payrexx_create_paylink ] Order-ID $referenceId $res->{pm} $res->{instance}, status = $res->{status}", service=>'_do');
+		$C->log(msg=>"N310202-3: [ payrexx_create_paylink ] Order-ID $referenceId Going to redirect to $res->{json_link}", service=>'_do');
+
+		unless ($res->{status} eq 'success') {
+			foreach (sort keys %{$res}) {
+				$C->log(msg=>"N310310-69: [ payrexx_create_paylink ] $_ = $res->{$_}", service=>'_do');
+			}
+		}
+
+		open(RES, ">$C->{CONFIG}->{DOCUMENT_ROOT}/upload/zz_trash_out_$referenceId\.txt");
+		print RES  ${$res->{res_req}};
+		close(RES);
+
+		# foreach (sort keys %{$res}) {
+		# 	$C->log(msg=>"XX $_ = $res->{$_}", service=>'_do');
+		# }
+
+		$C->log(msg=>"Error E311101-81: No redirection link from Payrexx, Order-ID $referenceId", importance=>1, service=>'_do') unless $res->{json_link};
+
+		$redir_url = $res->{json_link};
+	}
+	else {
+		my $referer = $ENV{HTTP_REFERER} || $ENV{SCRIPT_URL};
+		my $uid_info = $uid ? "$uid/$UID" : $UID;
+		$C->log(msg=>"ERROR: Unknown call $action by UID $uid_info $referer", importance=>1, service=>'_do');
+		foreach ($cgi->all_parameters) {
+			$C->log(msg=>"[ CGI ] $_ = " . $cgi->param($_), service=>'_do');
+		}
+	}
+
+	$m->redirect($redir_url);
+</%init>
+<%doc>
+	Diese Quelle: Metanet # 2
+
+	Algo-23
+	__METACLONING__
+</%doc>

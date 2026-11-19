@@ -1,0 +1,55 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi = $C->{CGI};
+	my $UID = $C->getUID();
+
+	my $redir_url = $ENV{HTTP_REFERER};
+
+	my $id     = $cgi->param('id') + 0; # -- Categ-ID
+	my $action = $cgi->param('action');
+	my $uid    = $cgi->param('uid') + 0;
+	my $csum   = $cgi->param('csum');
+	my $lang   = $cgi->param('lang') || 'de';
+
+	my $secret = $C->md5_secret($uid);
+
+	if ($action eq 'send_reg_invitation' && $csum eq $secret) {
+		my $res = $A->send_register_invitation(id=>$uid, lang=>$lang);
+		$C->log(msg=>"Send register invitation to UID $uid from $ENV{HTTP_REFERER}", service=>'_do');
+		$redir_url = '/';
+	}
+	elsif ($action eq 'set_active') {
+		my $res = $A->set_categ(id=>$id, visible=>1);
+		$C->create_toast_note(body=>$res->{stmt});
+	}
+	elsif ($action eq 'set_inactive') {
+		my $res = $A->set_categ(id=>$id, visible=>0);
+		$C->create_toast_note(body=>$res->{stmt});
+	}
+	elsif ($action eq 'redir') {
+		$C->saveSessData('id', $id);
+	}
+	else {
+		my $referer = $ENV{HTTP_REFERER} || $ENV{SCRIPT_URL};
+		my $uid_info = $uid ? "$uid/$UID" : $UID;
+		$C->log(msg=>"ERROR: Unknown call $action by UID $uid_info $referer", importance=>1, service=>'_do');
+		foreach ($cgi->all_parameters) {
+			$C->log(msg=>"[ CGI ] $_ = " . $cgi->param($_), service=>'_do');
+		}
+	}
+
+	# XXX $C->create_toast_note(body=>"XXX action was $action");
+
+	# XX $m->redirect($redir_url);
+</%init>
+<%doc>
+	Created: 27Dec2023
+
+	Algo-23
+	__METACLONING__
+</%doc>

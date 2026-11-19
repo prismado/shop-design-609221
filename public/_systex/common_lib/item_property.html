@@ -1,0 +1,42 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $cgi = $C->{CGI};
+
+	my $code   = $cgi->param('code');
+	my $cat_id = $cgi->param('cat_id'); # -- 30Sep2024
+	my $debug  = $cgi->param('debug');
+
+	my @array   = grep { /^\d+$/ } split /,/, $cat_id;
+	my $cat_ids = join ', ', @array;
+
+	my $desc = $C->txt("choice_\{$code\}", 'de');
+	   $desc = qq~[ "Wert von $code" ]~ if $desc =~ /^\* .+ \*$/;
+	   $desc =~ s/"/\\"/g;
+	   $desc =~ s/[\n\r]/\\n/g;
+	   $desc =~ tr/\t/ /;
+
+	my $label = $C->query("select xval from categ_meta where xkey='$code' and cat_id IN ($cat_ids) and lang='de'")->[0]
+		|| $C->txt("label_{$code}", 'de');
+
+	$label = "* $code *" if $label =~ /^\* .+/;
+
+	my $DEBUG_INFO = qq~,
+  "DEBUG": "Code $code / Cat-IDs: $cat_ids"
+~ if $debug;
+
+	$r->content_type('application/json; charset=utf-8');
+</%init>
+{
+  "DESC": "<% $desc %>",
+  "CODE": "<% $code %>",
+  "LABEL": "<% $label %>"<% $DEBUG_INFO %>
+}
+<%doc>
+	Created: 29Sep2024
+
+	Algo-23
+	__METACLONING__
+</%doc>
