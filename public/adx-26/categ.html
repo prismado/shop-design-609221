@@ -25,7 +25,8 @@
 
 	if ($act eq 'create') {
 		my $l = $cgi->param('l') || 'de';
-		$C->{dbh}->do("insert into categories (id, parent_id, lang, label) values ($id, 0, '$l', '* New *')") or ($msg = "ERR $DBI::errstr");
+		$C->{dbh}->do("insert into categories (id, parent_id, lang, ref, label) values ($id, 0, '$l', '', '* New *')")
+			or ($msg = "ERR $DBI::errstr");
 	}
 
 	if ($special_key) {
