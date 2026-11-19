@@ -5,6 +5,7 @@
 	my $C              = $args{C};
 	my $A              = $args{A};
 	my $perm           = $args{perm};
+	my $lang           = $args{lang};
 	my $debug          = $args{debug};
 
 	my $token_id = $C->getSessData('token_id') // 0;
@@ -12,14 +13,14 @@
 
 % if ($token_id) {
 %	foreach my $prod_id (@{$A->promo_ids()}) {
-%		my $hl = $A->get_product_v2(id => $prod_id, public => 1);
+%		my $hl = $A->get_product_v2(id => $prod_id, lang => $lang, public => 1);
 %		next if $hl->{campaign_id} && $token_id != $hl->{campaign_id};
 		<& product_portlet.html, id => $hl->{id}, prod => $hl, A => $A, C => $C, debug => $debug &>
 %	}
 % }
 % else {
 %	foreach my $prod_id (@{$A->promo_ids()}) {
-%		my $hl = $A->get_product_v2(id => $prod_id, public => 1);
+%		my $hl = $A->get_product_v2(id => $prod_id, lang => $lang, public => 1);
 %		next if $hl->{_rc}; # -- 05Nov2026
 %		next if $hl->{campaign_id};
 		<& product_portlet.html, id => $prod_id, prod => $hl, A => $A, C => $C, debug => $debug &>
