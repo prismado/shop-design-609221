@@ -75,7 +75,7 @@
 		</div>
 	</div>
 
-%	my $prom = $A->get_product_v2(id => $promo_id, public => 1);
+%	my $prom = $A->get_product_v2(id => $promo_id, lang => $lang, public => 1);
 	<& partials/product_promo_large.html, prod => $prom, id => $promo_id, A => $A, C => $C &>
 
 	<hr class="mb-5 border-gray-200" />
