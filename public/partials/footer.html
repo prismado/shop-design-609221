@@ -3,12 +3,11 @@
 	my %args = $m->caller_args(0);
 	my $C    = $args{C};
 	my $perm = $args{perm}; # -- 18Nov2026
+	my $lang = $args{lang};
 	my $home = $args{home};
 	   $home = '.' if $args{is_index};
 
 	my $cookie_consent = $args{cookie_consent}; # -- 18Nov2026
-
-	my $lang = 'de';
 </%init>
 
 <footer class="bg-gray-900 text-gray-300 mt-8">
@@ -54,7 +53,8 @@
     </div>
 
     <div>
-      <h3 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Kundenservice</h3>
+% # -- Kundenservice
+      <h3 class="text-white font-semibold text-sm uppercase tracking-wider mb-4"><% $C->lbl('customer_service', $lang) %></h3>
       <ul class="space-y-2.5 text-sm text-gray-400">
         <li><a href="#" class="hover:text-white transition">Kontakt</a></li>
         <li><a href="#" class="hover:text-white transition">Versand &amp; Lieferung</a></li>
