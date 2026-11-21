@@ -6,7 +6,8 @@
 	my $perm    = $args{perm};
 	my $lang    = $args{lang};
 	my $prp_id  = $args{prp_id} + 0;
-	my $pdfconf = $args{pdfconf};
+	my $consent = $args{consent};
+	# XXX my $pdfconf = $args{pdfconf};
 	my $C       = $args{C};
 </%init>
 
@@ -37,11 +38,15 @@
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
+%			foreach (sort keys %$consent) {
+				XX <% $_ %> = <% $consent->{$_} %><br>
+%			}
+
 			<!-- Unternehmen -->
 			<div class="rounded-2xl border border-gray-200 bg-white p-5">
 				<p class="font-semibold text-gray-900"><% $C->txt('site_company') %></p>
-				<p class="text-sm text-gray-500 mt-1"><% $pdfconf->{company_vat_no} %></p>
-				<p class="text-sm text-gray-500 italic mt-3"><% $pdfconf->{company_slogan} %></p>
+% # XXX				<p class="text-sm text-gray-500 mt-1"><% $pdfconf->{company_vat_no} %></p>
+% # XXX				<p class="text-sm text-gray-500 italic mt-3"><% $pdfconf->{company_slogan} %></p>
 			</div>
 
 		</div>
