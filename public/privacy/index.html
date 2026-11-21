@@ -11,6 +11,9 @@
 	my $cookie_consent = $C->get_cookie_consent();
 	my $pdfconf        = $C->load_config(table => 'pdf_config');
 
+	my $prp_id = $C->query(
+		"select id from properties where `key`='content_$lang' and page LIKE '%\/html\/info_datenschutz' limit 1")->[0];
+
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
@@ -20,7 +23,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kontakt | <% $C->{CONFIG}->{site_title} %></title>
+<title>Privacy | <% $C->{CONFIG}->{site_title} %></title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -45,7 +48,7 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main.html, perm => $perm, pdfconf => $pdfconf, C => $C &>
+		<& parts/main.html, lang => $lang, prp_id => $prp_id, perm => $perm, pdfconf => $pdfconf, C => $C &>
 	</section>
 
 </div>
