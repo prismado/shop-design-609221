@@ -1,0 +1,33 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $value = $args{value} !~ /^\* \[.+/ ? $args{value} : '';
+
+	my $style = (
+		$args{name} eq 'site_iban' or $args{name} eq 'site_copyright' or
+		$args{name} eq 'site_website' or $args{name} eq 'site_company' or $args{name} eq 'site_addr'
+	) ?  'width:522px' : '';
+
+	$style = 'width:55px'  if $args{name} eq 'site_country_code' or $args{name} eq 'site_zip';
+	$style = 'width:355px' if $args{name} =~ /email/ or $args{name} eq 'site_bank_name';
+	$style = 'width:600px' if $args{name} eq 'site_title' or $args{name} eq 'site_headquarter';
+</%init>
+<tr>
+	<td style="width:23%"><% $args{label} %>
+%	if ($args{name} eq 'test_email') {
+		&ndash; <a href="#"
+	onclick="document.myForm0.test_email.value='check-auth2@verifier.port25.com'; document.myForm0.test_subject.value='Authentication Test'">port25.com</a>
+%	}
+	</td>
+	<td style="border-bottom:0px">
+		<input type="text" class="input-xlarge" name="<% $args{name} %>"
+			style="<% $style %>; <% $value ? 'font-weight:bold' : '' %>"
+			placeholder="<% $args{label} %>" value="<% $value %>">
+%		unless ($args{hide_micro_help}) {
+				<abbr title="Property <%$args{name}%>"><i class="icon-info-sign"></i></abbr>
+%		}
+	</td>
+</tr>
+<%doc>
+	__METACLONING__
+</%doc>

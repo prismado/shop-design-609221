@@ -1,0 +1,89 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $perm = $C->get_user_perm();
+
+	unless ($perm->{is_admin}) {
+		$C->redir('/signin.html');
+	}
+
+	my $lang = $C->getSessData('_current_lang') || 'de';
+	my $cgi  = $C->{CGI};
+	my $UID  = $C->getUID();
+	my $license = $C->get_license();
+	my $msg  = '';
+
+	my $bUpdate   = $cgi->param('bUpdate');
+	my $bSendMail = $cgi->param('bSendMail');
+	my $bSendMaix = $cgi->param('bSendMaix');
+	my $bCallBatch= $cgi->param('bCallBatch');
+	my $del_file  = $cgi->param('del_file');
+	my $file      = $cgi->param('file');
+	my $pane      = $cgi->param('pane') + 0;
+	my $subselect = $cgi->param('subselect') + 0;
+
+	if ($bUpdate or $bSendMail or $bSendMaix) {
+		my %data = ();
+		foreach ($cgi->all_parameters) {
+			$data{$_} = $cgi->param($_);
+		}
+		my $resp = $A->adm_update_masterdata(data=>\%data, lang=>$lang);
+		$pane = $resp->{pane};
+		$msg = $resp->{msg};
+	}
+	elsif ($bCallBatch) {
+		my $batch_code = $cgi->param('batch_code');
+		my $order_id = $C->query('select max(id) from orders where status=4')->[0];
+
+		my $res = $C->call_batch(call=>
+			qq~\\\$A->mail_invoice(to=>'foo.bar\@eshop.pub', id=>$order_id, att=>'alshop2_manual.pdf');~,
+			debug => $C->{CONFIG}->{debug_level} > 1 ? $C->{CONFIG}->{debug_level} : 0
+		);
+
+		my @msgs = ();
+		foreach (sort keys %$res) {
+			push(@msgs, "&bull; <b>$_</b> = <code>$res->{$_}</code>");
+		}
+		$msg .= "Order-ID $order_id $batch_code " . (join "<br>", @msgs);
+	}
+
+	if ($del_file) {
+		unlink "$ENV{DOCUMENT_ROOT}/produkte/docs/$file";
+	}
+
+	my $sprop_inf = $C->get_table_infos( schema=>$ENV{db_name}, table=>'config_prod_feat' );
+</%init>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Masterdata &middot; <%$C->{CONFIG}->{site_title}%></title>
+	<& _includes/header_meta_theme.html &>
+</head>
+<body>
+<& _includes/adm_navbar.html, C=>$C, UID=>$UID &>
+<& _includes/dashboard_mainmenu_hor.html, C=>$C &>
+<div id="sidebar-nav"><& _includes/dashboard_sidebar_nav.html, func=>'masterdata', license=>$license, C=>$C &></div>
+
+<div class="content">
+	<div class="container-fluid">
+	    <div class="row-fluid">
+		<& _includes/adm_masterdata.html, bUpdate=>$bUpdate, del_file=>$del_file, file=>$file, perm=>$perm,
+				msg=>$msg, pane=>$pane, subselect=>$subselect, sprop_inf=>$sprop_inf, C=>$C, A=>$A &>
+		<& _includes/footer2.html, C=>$C &>
+	    </div>
+	</div>
+</div>
+
+<&_includes/meta_bootstrap_bottom.html&>
+</body>
+</html>
+<%doc>
+	Algo-23
+
+	__METACLONING__
+</%doc>
