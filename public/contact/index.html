@@ -42,7 +42,7 @@
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
 
-	<& partials/left_nav.html, A => $A, C => $C &>
+	<& partials/left_nav.html, lang => $lang, A => $A, C => $C &>
 
 	<section>
 		<& parts/main.html, perm => $perm, pdfconf => $pdfconf, C => $C &>
@@ -52,7 +52,7 @@
 
 <& partials/inc_flowise_chat.html, C=>$C, cookie_consent=>$cookie_consent &>
 
-<& partials/footer.html, C => $C &>
+<& partials/footer.html, lang => $lang, C => $C &>
 <& partials/footer_js.html, C => $C &>
 
 </body>
