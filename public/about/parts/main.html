@@ -3,6 +3,7 @@
 
 	my %args = $m->caller_args(0);
 
+	my $lang = $args{lang};
 	my $perm = $args{perm};
 	my $C    = $args{C};
 </%init>
@@ -25,7 +26,7 @@
 %				}
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed">
-					Dies ist ein Demo-Shop.
+					<% $C->txt('content', $lang, 'custom/algonetic/html/info_help') %>
 				</p>
 			</div>
 		</div>
