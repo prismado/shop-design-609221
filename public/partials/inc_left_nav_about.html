@@ -26,9 +26,13 @@
 
       <a href="/about" class="flex-shrink-0 whitespace-nowrap <% $active{about} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Unternehmen</a>
 
-      <a href="/services" class="flex-shrink-0 whitespace-nowrap <% $active{services} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Dienstleistungen</a>
+      <a href="/services" class="flex-shrink-0 whitespace-nowrap <% $active{services} || $cls_inactive %>
+		lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full
+		lg:rounded-none lg:px-3 lg:border-l-2 transition-colors"><% $C->lbl('services', $lang) %></a>
 
-      <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $active{contact} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Kontakt</a>
+      <a href="/contact" class="flex-shrink-0 whitespace-nowrap <% $active{contact} || $cls_inactive %>
+		lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full
+		lg:rounded-none lg:px-3 lg:border-l-2 transition-colors"><% $C->lbl('contact', $lang) %></a>
 
       <a href="/privacy" class="flex-shrink-0 whitespace-nowrap <% $active{privacy} || $cls_inactive %> lg:bg-transparent text-[15.4px] px-3 py-2 rounded-full lg:rounded-none lg:px-3 lg:border-l-2 transition-colors">Datenschutz</a>
 
