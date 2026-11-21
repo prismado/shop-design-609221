@@ -3,9 +3,10 @@
 
 	my %args = $m->caller_args(0);
 
-	my $perm = $args{perm};
+	my $perm   = $args{perm};
+	my $lang   = $args{lang};
 	my $prp_id = $args{prp_id} + 0;
-	my $C    = $args{C};
+	my $C      = $args{C};
 </%init>
 
 	<div class="flex flex-col gap-6">
@@ -26,7 +27,7 @@
 			<div>
 				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
 				<p class="text-sm text-gray-600 leading-relaxed">
-					Dies ist ein Demo-Shop.
+					<% $C->txt('content', $lang, 'custom/algonetic/html/info-services') %>
 				</p>
 			</div>
 		</div>
