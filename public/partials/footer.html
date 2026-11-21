@@ -168,7 +168,7 @@
 </script>
 
 % if ($C->{CONFIG}->{chat_bot_enabled} == 1) {
-	<& inc_flowise_chat.html, C => $C, perm => $perm, cookie_consent => $cookie_consent &>
+	<& inc_flowise_chat.html, C => $C, lang => $lang, perm => $perm, cookie_consent => $cookie_consent &>
 % }
 
 <!-- Scroll-to-top: links neben dem fix platzierten Chatbot-Bubble (bottom:20/right:16, 48px) -->
