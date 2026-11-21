@@ -7,6 +7,7 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm           = $C->get_user_perm();
+	my $lang           = $C->getSessData('_current_lang') || 'de';
 	my $cookie_consent = $C->get_cookie_consent();
 	my $this           = $ENV{REQUEST_URI}; # -- e.g. /product/?id=123 *or* /prozone/
 	my $email          = $C->getSessData('prozone_email') // '';
@@ -76,7 +77,7 @@
 </head>
 <body class="bg-white text-gray-800 antialiased min-h-screen flex flex-col">
 
-<& partials/header.html, perm => $perm, A => $A, C => $C &>
+<& partials/header.html, lang => $lang, perm => $perm, A => $A, C => $C &>
 
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
 
