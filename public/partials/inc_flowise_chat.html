@@ -8,6 +8,7 @@
 	my $C    = $args{C};
 	my $cookie_consent = $args{cookie_consent};
 	my $perm           = $args{perm}; # -- 16Nov2026
+	my $lang           = $args{lang} || 'de';
 
 	my $chatflowid = $C->get_safe_property('fw_chat_id_1', 'sys');
 
@@ -38,7 +39,7 @@
 
 	my $openDelaySec = $cookie_consent->{decision} ? 360 : 3600;
 
-	my $hello = $C->get_random_hello(lang => 'fr');
+	my $hello = $C->get_random_hello(lang => $lang);
 </%init>
 
 <script type="module">
