@@ -38,7 +38,7 @@
 
 	my $openDelaySec = $cookie_consent->{decision} ? 360 : 3600;
 
-	my $hello = $C->get_random_hello();
+	my $hello = $C->get_random_hello(lang => 'fr');
 </%init>
 
 <script type="module">
