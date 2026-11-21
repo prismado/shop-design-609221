@@ -38,7 +38,15 @@
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-			XX Personalisierung = <% $consent->{ad_personalization} %><br>
+			&bull; Personalisierung:
+%				unless (length($consent->{ad_personalization})) {
+					(noch unbestimmt)
+%				}
+%				else {
+					<% $consent->{ad_personalization} %>
+%				}
+				<br>
+
 			XX Analytics Storage = <% $consent->{analytics_storage} %><br>
 			XX Decision = <% $consent->{decision} %><br>
 %			foreach (sort keys %$consent) {
