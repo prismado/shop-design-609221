@@ -25,16 +25,14 @@
 			</h1>
 		</div>
 
-		<div class="flex flex-col sm:flex-row gap-6">
+		<div>
 			<img src="<% $image_url %>"
-				class="w-full sm:w-64 flex-shrink-0 sm:self-start rounded-2xl object-cover border border-gray-200
+				class="w-full sm:w-96 sm:float-left sm:mr-6 mb-4 rounded-2xl object-cover border border-gray-200
 					bg-white" loading="lazy">
 
-			<div>
-				<p class="text-sm text-gray-600 leading-relaxed">
-					<% $C->txt('content', $lang, 'custom/algonetic/html/info_help') %>
-				</p>
-			</div>
+			<p class="text-sm text-gray-600 leading-relaxed">
+				<% $C->txt('content', $lang, 'custom/algonetic/html/info_help') %>
+			</p>
 		</div>
 
 	</div>
