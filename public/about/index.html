@@ -9,6 +9,9 @@
 	my $perm = $C->get_user_perm();
 	my $lang = $C->getSessData('_current_lang') || 'de';
 
+	my $prp_id = $C->query(
+		"select id from properties where `key`='content_de' and page LIKE '%\/html\/info_help' limit 1")->[0];
+
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
@@ -43,7 +46,7 @@
 	<& partials/left_nav.html, A => $A, C => $C &>
 
 	<section>
-		<& parts/main.html, C => $C &>
+		<& parts/main.html, perm => $perm, prp_id => $prp_id, C => $C &>
 	</section>
 
 </div>
