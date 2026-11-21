@@ -57,10 +57,7 @@
 				<br>
 
 %			if ($consent->{decision}) {
-				Einwilligung: <b><% $consent->{decision} %></b><br>
-%			}
-%			foreach (sort keys %$consent) {
-% # XXX				XX <% $_ %> = <% $consent->{$_} %><br>
+				<p>Einwilligung: <% $consent->{decision} %></p>
 %			}
 
 			<!-- Unternehmen -->
