@@ -10,6 +10,9 @@
 	my $lang = $C->getSessData('_current_lang') || 'de';
 	my $this = $C->this();
 
+	my $prp_id = $C->query(
+		"select id from properties where `key`='content_$lang' and page LIKE '%\/html\/info-services' limit 1")->[0];
+
 	my $cgi = $C->{CGI};
 
 	my $debug = $cgi->param('debug');
@@ -19,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>&Uuml;ber uns | <% $C->{CONFIG}->{site_title} %></title>
+<title><% $C->lbl('about', $lang) %> | <% $C->{CONFIG}->{site_title} %></title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -44,10 +47,9 @@
 	<& partials/left_nav.html, this => $this, A => $A, C => $C &>
 
 	<section>
-		<& parts/main.html, C => $C &>
+		<& parts/main.html, lang => $lang, perm => $perm, prp_id => $prp_id, C => $C &>
 	</section>
 
-% # XX	<& partials/daily_offer.html, C => $C, A => $A &>
 </div>
 
 <& partials/footer.html, C => $C &>
