@@ -1,0 +1,202 @@
+<%init>
+	my %args = $m->caller_args(0);
+
+	my $C    = $args{C};
+	my $id   = $args{id};
+	my $lang = $args{lang};
+
+	my $cgi = $C->{CGI};
+
+	my $cb_global = $cgi->param('cb_global');
+
+	my $page = $cb_global ? '_global' : $cgi->param('page');
+	my $key  = $cgi->param('key');
+	my $val  = my $val_orig = $cgi->param('val');
+
+	my $prop_inf = $C->get_table_infos( schema => $ENV{db_name}, table => 'properties' );
+	my %prp_len = ();
+	foreach (@{$prop_inf}) {
+		my ($col, $type, $len) = split /\t/;
+		$prp_len{$col} = $len;
+	}
+
+	if ($args{bUpdate}) {
+		$page = 'tbd' if !$cb_global && $page eq '_global';
+		(my $val_enc = $val) =~ s/'/''/g;
+		$C->{dbh}->do("update properties SET page='$page', `key`='$key', val='$val_enc' WHERE id=$id")
+			or $m->out("ERR $DBI::errstr<hr>");
+	}
+
+	($page, $key, $val, my $last_mod) = @{$C->query("select page, `key`, val, tstamp FROM properties WHERE id=$id")};
+	 my $val_text_field_raw = $val;
+	(my $val_text_field = $val) =~ s/"/&quot;/g;
+
+	(my $page_url = $page) =~ s/^custom\/$C->{CONFIG}->{theme}\/html\///;
+
+	my $width_label = '44';
+	my $width_page  = '29';
+	my $length_text = length($val_text_field);
+
+	if ($length_text < 10) {
+		$width_label = 24;
+		$width_page  = 49;
+	}
+
+	if ($page eq '_global') {
+		$width_page  -= 10;
+		$width_label += 10;
+	}
+
+	(my $key_no_lang = $key) =~ s/\_$lang$//;
+
+	# XXX my $page_result = $C->search_property(key=>$key_no_lang);
+	my $result = $C->search_property_v2(key=>$key_no_lang);
+	my $page_result = $result->{arr};
+</%init>
+% # -- CKEditor
+<script src="ckeditor.js"></script>
+<script src="assets/uilanguages/languages.js"></script>
+<script type="text/javascript">
+	CKEDITOR.config.height = '480px';
+% #	CKEDITOR.config.extraAllowedContent = 'u;span{color}';
+	CKEDITOR.config.allowedContent = true;
+</script>
+% # -- /CKEditor
+
+<div class="pull-right" style="margin-top:10px">
+	[<%$lang%>]
+</div>
+<h2><span style='font-size:30px; margin-right:5px' 
+	class="icon-comment-alt pull-left text-info"></span>Property: <b><% $key_no_lang %></b> <span
+		style="font-size:13px; color:#b1b1b1">&ndash; (ID <%$id%>)</span></h2>
+
+<form method="post">
+<input type=hidden name=id value="<%$id%>">
+
+	<div style="margin-bottom:20px" class="controls">
+		<div class="input-prepend">
+			<span class="add-on">Key</span>
+			<input style="width:50%; font-weight:bold" placeholder="max. <% $prp_len{key} %> chars" name="key"
+				id="prependedInput" type="text" value="<%$key%>">
+		</div>
+	</div>
+
+% 	if ($key =~ /^content.+/ or $length_text > 300) {
+		<textarea id="editor1" stylx="margin-left:30px !important" name="val"><% $val_text_field %></textarea>
+		<& adm_inc_ckeditor_js.html, C=>$C, noBootsTr=>$args{noBootsTr} &>
+% 	}
+% 	else {
+		<textarea name=val style="width:98%; height:150px"><%$val_text_field%></textarea>
+% 	}
+% if ($page eq '_global') {
+	<input type="hidden" name="page" value="_global">
+% }
+
+	<div class="controls pull-right" style="margin-top:15px; margin-right:2px">
+	  <label class="checkbox">
+		<input type="checkbox" style="margin-top:2px" name=cb_global value="1"<%$page eq '_global' ? ' checked' : ''%>>
+		Global
+	  </label>
+	</div>
+
+% unless ($page eq '_global') {
+    <div class="pull-right" style="margin-top:21px; margin-right:20px">
+	<a target="_blank" href="<%$page_url%>.html"><i style="font-size:16px" class="icon-link"></i></a>
+    </div>
+
+<%doc>
+%  if ($key =~ /^content.+/) {
+    <div class="pull-right" style="margin-top:21px; margin-right:20px">
+%	if ($args{noBootsTr}) {
+	<a href="adm_property.html?id=<%$id%>">&rarr; BT</a>
+%	}
+%	else {
+	<a rel="tooltip" data-placement="left" data-original-title="Without Bootstrap Style"
+		href="adm_property.html?id=<%$id%>&noBootsTr=1">&rarr; No BT</a>
+%	}
+    </div>
+%  }
+</%doc>
+
+    <div style="margin-top:20px; margin-bottom:20px" class="control-group">
+	<div class="controls">
+		<div class="input-prepend">
+			<span class="add-on">Page</span>
+			<input style="width:50%" placeholder="Page reference or _global (max. <% $prp_len{page} %> chars)" name="page"
+				id="prependedInput" type="text" value="<%$page%>">
+		</div>
+	</div>
+    </div>
+% }
+
+	<input type=submit name=bUpdate class="btn btn-primary" value="Update">
+	<input type=submit name="bDelete<% $args{bDelete} ? 'Do' : ''%>" class="btn btn-danger" value="Delete">
+	<input type=button class="btn"
+		onclick='JavaScript:document.location="adm_properties.html<% $key =~ /^content/ ? '?filter=content' : '' %>"'
+			value="Cancel">
+
+	<div style="margin-top:5px; margin-bottom:0px; color:#cccccc; margin-right:<% $page eq '_global' ? '20' : '0' %>px">
+		<small>Last Mod. <% $C->trans_date_short($last_mod) %> &ndash; Length: <% $length_text %> chars</small>
+	</div>
+</form>
+
+% if ($args{bUpdate}) {
+	<div class="alert alert-success fade in">
+	<button type="button" class="close" data-dismiss="alert">×</button>
+	<strong>Success.</strong> Property has been updated.
+	</div>
+% }
+% elsif ($args{bDelete}) {
+	<% $C->bootstrap_alert('<b>WARNING</b>&nbsp;&nbsp;
+		To delete this property, press &lsaquo;Delete&rsaquo; again.', 'danger') %>
+% }
+
+% if (@$page_result) {
+	<hr style="border-top:1px dotted #b0b0b0;color:#b0b0b0;background-color:#fff;height:1px;width:100%;" />
+	<h5>In use in following template(s)</h5>
+
+%	if ($page && $page ne '_global') {
+%		if ($args{debug}) {
+			<% $C->html_debug("Not global. Derived from $page") %>
+%		}
+		<a target="_blank" href="<% $page_url %>.html"><% $page_url %>.html</a><br />
+%	}
+% 	else {
+%   		foreach (@$page_result) {
+%			if (/ \(Mail Template\)$/ or /^include/ or / \(Function/) {
+				&bull; <% $_ %><br>
+%			}
+%			else {
+				&bull; <a target="_blank" href="<%$_%>"><% $_ %></a><br>
+%			}
+%   		}
+% 	}
+% }
+
+% if ($args{debug}) {
+	X Debug<br>
+%	foreach (keys %{$result}) {
+%		next if $_ eq 'areas' or $_ eq 'arr';
+		<% $_ %> = <% $result->{$_} %><br>
+%	}
+%	foreach (@{$result->{areas}}) {
+		Area: <% $_ %><br>
+%	}
+	<% $C->get_site_perl() %><br>
+% }
+
+% if (@$page_result) {
+	<br />
+% }
+
+% if ($prp_len{val} < 10000) {
+	Max. Length: <% $prp_len{val} %><br>
+	<b>Tip:</b> Max length of content can be expanded with data type &lsaquo;text&rsaquo; &rarr; up to 65535 chars
+% }
+
+% unless ($C->is_admin()) {
+	<table id='table_list2'></table>
+% }
+<%doc>
+	__METACLONING__
+</%doc>
