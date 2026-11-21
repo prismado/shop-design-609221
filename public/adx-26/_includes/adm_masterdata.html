@@ -109,7 +109,7 @@
 %			my $fileinf = $C->get_file_info("$ENV{DOCUMENT_ROOT}/produkte/docs/$file");
 %			my $age_min = $C->age_of_timestamp_min($fileinf->{mod});
 			<tr>
-			<td style="width:35%"><a target="_blank" href="produkte/docs/<% $file %>"><% $file %></a></td>
+			<td style="width:35%"><a target="_blank" href="/produkte/docs/<% $file %>"><% $file %></a></td>
 			<td><% uc $fileinf->{ext} %></td>
 			<td style="padding-left:120px;">
 %				if ($age_min < 10) {
