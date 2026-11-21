@@ -66,7 +66,7 @@
     <div>
       <h3 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Newsletter</h3>
 % # -- Erhalte exklusive Angebote direkt in dein Postfach
-      <p class="text-sm text-gray-400 mb-3"><% $C->lbl('receive_exclusive_offers_into_your_mailbox') %></p>
+      <p class="text-sm text-gray-400 mb-3"><% $C->lbl('receive_exclusive_offers_into_your_mailbox', $lang) %></p>
       <form class="flex items-center gap-2" onsubmit="event.preventDefault(); subscribeNewsletter(this);">
         <div class="relative flex-1">
           <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
