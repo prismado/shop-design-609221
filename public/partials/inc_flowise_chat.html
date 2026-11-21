@@ -4,6 +4,7 @@
 	# -- https://s3.algonetic.ch/public-604102/flowise-611171/inc_flowise_chat.html
 
 	use utf8;
+	use JSON;
 
 	my $C    = $args{C};
 	my $cookie_consent = $args{cookie_consent};
@@ -40,6 +41,11 @@
 	my $openDelaySec = $cookie_consent->{decision} ? 360 : 3600;
 
 	my $hello = $C->get_random_hello(lang => $lang);
+
+	# -- $hello->{hello}/{follow} sind mehrsprachige Freitexte (z. B. Französisch mit Apostrophen
+	#    wie "Qu'est-ce que...") und werden unten in einfache JS-String-Literale eingesetzt. Über
+	#    JSON sauber escapen statt roh zu interpolieren, sonst bricht ein Apostroph das Script.
+	my $js = JSON->new->allow_nonref;
 </%init>
 
 <script type="module">
@@ -74,7 +80,7 @@
             tooltip: {
                 showTooltip: true,
 % #		tooltipMessage: 'Hallo 👋!',
-		tooltipMessage: '<% $hello->{hello} %>',
+		tooltipMessage: <% $js->encode($hello->{hello}) %>,
 % #		Sprechplase vor öffnen:
 		tooltipBackgroundColor: '#1c1512',
 		tooltipTextColor: 'white',
@@ -116,7 +122,7 @@
 		titleAvatarSrc: '<% $titleIconSrc %>',
 % #		titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
 % #		welcomeMessage: 'Hallo und herzlich willkommen!',
-		welcomeMessage: '<% $hello->{follow} %>',
+		welcomeMessage: <% $js->encode($hello->{follow}) %>,
                 errorMessage: 'Damit kann ich Ihnen im Augenblick leider nicht dienen.',
 		backgroundColor: '<% $bot_window_color %>',
                 backgroundImage: 'enter image path or link',
