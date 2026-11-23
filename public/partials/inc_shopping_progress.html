@@ -11,7 +11,7 @@
 		{ key => 'basket',   label => $C->txt('basket', $lang) },
 		{ key => 'checkout', label => $C->lbl('payment_options', $lang) }, # -- Bezahloptionen
 		{ key => 'summary',  label => $C->txt('delivery_method', $lang) }, # -- Versandart
-		{ key => 'payment',  label => 'Kasse' },
+		{ key => 'payment',  label => $C->txt('order_finalize', $lang) }, # -- Kasse
 	);
 
 	my ($cur_idx) = grep { $steps[$_]{key} eq $step } 0 .. $#steps;
