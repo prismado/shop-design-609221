@@ -14,8 +14,7 @@
 	my $remarks   = $args{remarks};
 	my $appmsgs   = $args{appmsgs};
 	my $terms_ack = $args{terms_accepted};
-
-	my $lang = 'de';
+	my $lang      = $args{lang};
 
 	my $uaddr_bill;
 	my $uaddr_deliv;
@@ -48,7 +47,7 @@
 <div class="max-w-6xl mx-auto w-full">
 <div class="flex flex-col gap-6">
 	<div>
-		<& ../partials/inc_shopping_progress.html, step => 'summary', C => $C &>
+		<& ../partials/inc_shopping_progress.html, step => 'summary', lang => $lang, C => $C &>
 	</div>
 
 	<div>
