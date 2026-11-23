@@ -26,7 +26,8 @@
 	<div>
 % #		Ihre Auswahl
 		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('your_selection', $lang) %></h2>
-		<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
+		<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> <% $C->lbl('article', $lang) %></p>
+		<br />
 
 %		if ($bsk_itms->{item_count}) {
 			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
