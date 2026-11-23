@@ -6,6 +6,7 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
+	my $lang = $C->getSessData('_current_lang') || 'de';
 	my $perm = $C->get_user_perm();
 
 	my $cgi = $C->{CGI};
@@ -36,7 +37,7 @@
 		my ($rc, $msg) = $A->add2basket_details(
 			id    => $redo,
 			count => 1,
-			lang  => 'de'
+			lang  => $lang
         	);
 		unless ($rc) {
 			push(@msgs, 'Artikel wurde wieder zum Warenkorb hinzugefügt.');
@@ -73,7 +74,7 @@
 </head>
 <body class="bg-white text-gray-800 antialiased min-h-screen flex flex-col">
 
-<& partials/header.html, perm => $perm, A => $A, C => $C &>
+<& partials/header.html, lang => $lang, perm => $perm, A => $A, C => $C &>
 
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
@@ -120,7 +121,7 @@
 	</script>
 % }
 
-<& partials/footer.html, C => $C &>
+<& partials/footer.html, lang => $lang, C => $C &>
 <& partials/footer_js.html, C => $C &>
 
 </body>
