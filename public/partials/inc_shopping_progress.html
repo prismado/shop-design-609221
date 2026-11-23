@@ -4,9 +4,11 @@
 	my %args = $m->caller_args(0);
 
 	my $step = $args{step};
+	my $C    = $args{C};
+	my $lang = $args{lang} || 'de';
 
 	my @steps = (
-		{ key => 'basket',   label => 'Warenkorb' },
+		{ key => 'basket',   label => $C->txt('basket', $lang) },
 		{ key => 'checkout', label => 'Bezahloptionen' },
 		{ key => 'summary',  label => 'Versand' },
 		{ key => 'payment',  label => 'Kasse' },
