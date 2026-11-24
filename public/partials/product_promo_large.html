@@ -43,7 +43,8 @@
         </div>
 
         <div class="p-6 flex flex-col flex-1">
-		<a href="/product?id=<% $id %>&te=<% $prod->{title_enc} %>">
+% #		/product?id=<% $id %>
+		<a href="/product/<% $prod->{title_enc} %>/<% $id %>">
 			<h3 class="font-semibold text-gray-900 text-base sm:text-lg md:text-xl leading-snug mb-2">
 				<% $prod->{title} %>
 			</h3>
