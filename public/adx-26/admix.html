@@ -100,8 +100,10 @@
 %		}
 %	}
 %	elsif ($func eq 'orders') {
-%		if ($C->{CGI}->param('id') or $C->{CGI}->param('delrefid')) {
-			<& _includes/admix_order_detail.html, CORE => $C, A => $A &>
+%		my $order_id = $C->{CGI}->param('id') + 0; # -- 24Nov2026
+%		if ($order_id or $C->{CGI}->param('delrefid')) {
+%			$m->redirect("order.html?id=$order_id"); # -- 24Nov2026
+% # XX			<& _includes/admix_order_detail.html, CORE => $C, A => $A &>
 %		}
 %		else {
 			<& _includes/admix_orders.html, CORE => $C, A => $A &>
