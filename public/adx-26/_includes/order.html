@@ -476,7 +476,8 @@ Pay Method <b><%$pay_meth%> &middot; <% ucfirst $pay_meth_hr{$pay_meth} %></b> &
 % }
 
 <a href='sendmail.html?order_id=<% $id %>'>Send E-Mail</a> ... &mdash;
-	<a href='adm_order_detail.html?id=<%$id%>'>Merchant E-Mail</a> &mdash;
+	<a href='order-detail.html?id=<%$id%>'>Merchant E-Mail</a> &mdash;
+% # XXX	<a href='adm_order_detail.html?id=<%$id%>'>Merchant E-Mail</a> &mdash;
 	<a href='adm_order_detail_cust.html?id=<% $id %><% $debug ? '&debug=1' : ''%>'>Customer View</a>
 
 % if (@appmsgs) {
