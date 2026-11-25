@@ -14,8 +14,17 @@
 		{ key => 'payment',  label => $C->txt('order_finalize', $lang) },  # -- Kasse
 	);
 
-	my ($cur_idx) = grep { $steps[$_]{key} eq $step } 0 .. $#steps;
-	$cur_idx = 0 unless defined $cur_idx;
+	# -- step 'completed' (z. B. order_detail nach Kauf-Abschluss) ist kein eigener Schritt in
+	# @steps, sondern "danach": cur_idx eins hinter den letzten Index, damit alle vier Schritte
+	# is_done (Haken) sind und keiner mehr als is_active gilt.
+	my $cur_idx;
+	if ($step eq 'completed') {
+		$cur_idx = scalar @steps;
+	}
+	else {
+		($cur_idx) = grep { $steps[$_]{key} eq $step } 0 .. $#steps;
+		$cur_idx = 0 unless defined $cur_idx;
+	}
 </%init>
 <div class="flex items-start w-full">
 %	for my $i (0 .. $#steps) {
