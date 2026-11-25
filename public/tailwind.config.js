@@ -5,7 +5,9 @@ module.exports = {
 	'./src/**/*.{html,js}',
 	'./*.html',
 	'./partials/*.html',
-	'./adx/*.html'
+	'./adx/*.html',
+	'./parts/*.html',	// -- z. B. parts/main_order_detail.html
+	'./*/parts/*.html'	// -- z. B. about/parts/main.html, order_detail/parts/main_order_detail.html
   ],
   theme: {
     extend: {
