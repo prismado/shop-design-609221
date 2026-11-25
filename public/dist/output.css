@@ -10992,6 +10992,9 @@
     .sm\:max-w-none {
       max-width: none;
     }
+    .sm\:flex-1 {
+      flex: 1;
+    }
     .sm\:flex-shrink-0 {
       flex-shrink: 0;
     }
