@@ -11322,7 +11322,7 @@
 }
 @layer base {
   a {
-    color: var(--color-blue-500);
+    color: var(--color-neutral-700);
     &:hover {
       @media (hover: hover) {
         color: var(--color-blue-200);
