@@ -10340,9 +10340,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  .accent-\[\#1c1512\] {
-    accent-color: #1c1512;
-  }
   .opacity-0 {
     opacity: 0%;
   }
@@ -10709,6 +10706,13 @@
   }
   .odd\:bg-gray-50:nth-child(odd) {
     background-color: var(--color-gray-50);
+  }
+  .checked\:border-\[5px\]:checked {
+    border-style: var(--tw-border-style);
+    border-width: 5px;
+  }
+  .checked\:border-\[\#1c1512\]:checked {
+    border-color: #1c1512;
   }
   @media (hover: hover) {
     .hover\:scale-110:hover {
