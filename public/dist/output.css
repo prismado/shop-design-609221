@@ -9715,6 +9715,9 @@
   .bg-fixed {
     background-attachment: fixed;
   }
+  .\[background-clip\:content-box\] {
+    background-clip: content-box;
+  }
   .bg-center {
     background-position: center;
   }
@@ -9768,6 +9771,9 @@
   }
   .p-11 {
     padding: calc(var(--spacing) * 11);
+  }
+  .p-\[3px\] {
+    padding: 3px;
   }
   .p-\[18px\] {
     padding: 18px;
@@ -10707,12 +10713,11 @@
   .odd\:bg-gray-50:nth-child(odd) {
     background-color: var(--color-gray-50);
   }
-  .checked\:border-\[5px\]:checked {
-    border-style: var(--tw-border-style);
-    border-width: 5px;
-  }
   .checked\:border-\[\#1c1512\]:checked {
     border-color: #1c1512;
+  }
+  .checked\:bg-\[\#1c1512\]:checked {
+    background-color: #1c1512;
   }
   @media (hover: hover) {
     .hover\:scale-110:hover {
