@@ -7,14 +7,12 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
-	# XXX my $SID  = $C->getSID();
-
-	my $cgi = $C->{CGI};
+	my $cgi  = $C->{CGI};
+	my $lang = $C->getSessData('_current_lang') || 'de';
 
 	my $order_id = $cgi->param('id') + 0; # -- Optional. Latest Order-ID from session will be used if empty
 	my $debug    = $cgi->param('debug');
 
-	my $lang = $C->getSessData('_current_lang') || 'de';
 	my @msgs = ();
 
 	my $age_min = my $rating_asked = 0;
