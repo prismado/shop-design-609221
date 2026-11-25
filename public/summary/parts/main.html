@@ -220,12 +220,11 @@
 
 			<& ../partials/inc_modal.html, id => 'edit-address', title => 'Adresse bearbeiten' &>
 
-			<form method="post" action="/payment/">
-% # XX			<input type="hidden" name="bogus_pid" value="<% $$ %>">
 % #			============================================================================================================
+			<form method="post" action="/payment/">
+
 			<& ../../basket/parts/inc_total_area.html, lang => $lang, total => $grand_tot->{grand_total}, bsk_itms => $bsk_itms, C => $C &>
 
-% #			----------------------------------------------------------------------------------------------------
 			<div class="flex flex-col sm:flex-row sm:justify-end gap-3 mt-5">
 				<a href="/checkout"
 					class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border
