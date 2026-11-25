@@ -60,7 +60,7 @@
 			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('voucher', $lang) %>
 %				if ($ENV{NODE_ENV} eq 'development' or $ENV{NODE_ENV} eq 'preproduction') {
 %					my $vcode = $C->query("select vcode from vouchers where status=1 order by id desc limit 1")->[0];
-					XX -- <% $ENV{NODE_ENV} %> &rarr; <% $vcode %>
+					<span class="text-xs text-blue-400">(<% $ENV{NODE_ENV} %> &rarr; <% $vcode %>)</span>
 %				}
 			</h2>
 			<div class="flex flex-wrap items-center gap-3 max-w-md">
