@@ -6,7 +6,7 @@
 	my $bsk_itms = $args{bsk_itms};
 	my $lang     = $args{lang};
 	my $C        = $args{C};
-	my $total    = $args{total} // $C->decimal_mark($bsk_itms->{basket_total});
+	my $total    = $args{total} // $bsk_itms->{basket_total};
 </%init>
 <div class="flex items-center gap-4 sm:flex-1 rounded-xl border border-[#1c1512] bg-gray-50 px-5 py-3">
 		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -21,7 +21,8 @@
 % #			Total inkl. MwSt.
 			<% $C->txt('mail_total_incl_tax', $lang) %>:
 			<span class="ml-3 text-lg font-bold text-gray-900">
-				CHF <% $total %>
+				CHF <% $C->decimal_mark($total) %>
+% # XXX				CHF <% $total %>
 % # XXX				CHF <% $C->decimal_mark($bsk_itms->{basket_total}) %>
 			</span>
 		</span>

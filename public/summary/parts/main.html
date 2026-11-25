@@ -223,7 +223,7 @@
 			<form method="post" action="/payment/">
 			<input type="hidden" name="bogus_pid" value="<% $$ %>">
 % #			============================================================================================================
-			<& ../../basket/parts/inc_total_area.html, lang => $lang, total => $C->decimal_mark($grand_tot->{grand_total}), bsk_itms => $bsk_itms, C => $C &>
+			<& ../../basket/parts/inc_total_area.html, lang => $lang, total => $grand_tot->{grand_total}, bsk_itms => $bsk_itms, C => $C &>
 <%doc>
 XXX:
 			<div class="flex items-center gap-4 mt-8 rounded-xl border border-gray-200 bg-gray-50
