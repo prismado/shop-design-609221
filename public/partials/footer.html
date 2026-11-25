@@ -6,6 +6,7 @@
 	my $lang = $args{lang};
 	my $home = $args{home};
 	   $home = '.' if $args{is_index};
+	my $suppress_ai_chat = $args{suppress_ai_chat} // 0;
 
 	my $cookie_consent = $args{cookie_consent}; # -- 18Nov2026
 </%init>
@@ -168,7 +169,7 @@
 	}
 </script>
 
-% if ($C->{CONFIG}->{chat_bot_enabled} == 1) {
+% if ($C->{CONFIG}->{chat_bot_enabled} == 1 && !$suppress_ai_chat) {
 	<& inc_flowise_chat.html, C => $C, lang => $lang, perm => $perm, cookie_consent => $cookie_consent &>
 % }
 
