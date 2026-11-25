@@ -36,7 +36,7 @@
 				class="flex flex-col items-center flex-shrink-0 min-w-0 max-w-[6.5rem] sm:max-w-none
 					no-underline hover:opacity-70 transition-opacity">
 			<div class="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-full text-sm font-bold
-					<% $lit ? 'bg-[#1c1512] text-white' : 'bg-gray-200 text-gray-400' %>">
+					<% $is_active ? 'bg-red-600 text-white' : $lit ? 'bg-[#1c1512] text-white' : 'bg-gray-200 text-gray-400' %>">
 %			if ($is_done) {
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
 					stroke="currentColor" class="w-4 h-4">
