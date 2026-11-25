@@ -104,7 +104,8 @@
 
 %			if ($remarks) {
 			<div class="mt-8">
-				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bemerkungen</h2>
+%				# -- Bemerkungen
+				<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->txt('remarks', $lang) %></h2>
 				<p><% $remarks %></p>
 			</div>
 %			}
