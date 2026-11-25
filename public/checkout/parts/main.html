@@ -112,31 +112,8 @@
 		})();
 		</script>
 
-		<div class="mt-8">
-% #			Ihr Einkauf
-			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('your_purchase', $lang) %></h2>
-			<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
-
-%			if ($bsk_itms->{item_count}) {
-			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
-				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
-			</div>
-%			}
-%			else {
-				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
-%			}
-		</div>
-
-		<div class="mt-8">
-			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->txt('remarks') %></h2>
-			<textarea name="checkout_bemerkungen" rows="3" placeholder="Bemerkungen (optional)"
-				class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800
-					placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500
-					transition resize-none"><% $remarks %></textarea>
-		</div>
-
 		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-5 pt-4
-				border-t border-gray-200">
+				border-t border-gray-200" stylx="border:3px red solid !important;">
 			<div class="flex items-center justify-between sm:gap-6">
 				<span class="text-base text-gray-900">
 					<% $C->txt('mail_total_incl_tax', $lang) %>:
@@ -173,6 +150,30 @@
 				</button>
 			</div>
 		</div>
+
+		<div class="mt-8">
+% #			Ihr Einkauf
+			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('your_purchase', $lang) %></h2>
+			<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
+
+%			if ($bsk_itms->{item_count}) {
+			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
+				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
+			</div>
+%			}
+%			else {
+				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
+%			}
+		</div>
+
+		<div class="mt-8">
+			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->txt('remarks') %></h2>
+			<textarea name="checkout_bemerkungen" rows="3" placeholder="Bemerkungen (optional)"
+				class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800
+					placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500
+					transition resize-none"><% $remarks %></textarea>
+		</div>
+
 	</div>
 	</form>
 </div>
