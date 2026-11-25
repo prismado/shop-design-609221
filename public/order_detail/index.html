@@ -7,7 +7,7 @@
 	my $A = ScreenPoint::Auctionline->new($C);
 
 	my $perm = $C->get_user_perm();
-	my $SID  = $C->getSID();
+	# XXX my $SID  = $C->getSID();
 
 	my $cgi = $C->{CGI};
 
@@ -33,7 +33,7 @@
 	}
 	else {
 		($order_id, $age_min) = @{$C->query(
-			"select id, TIMESTAMPDIFF(MINUTE, instime, NOW()) from orders where sid=$SID ORDER BY 1 DESC LIMIT 1")};
+		"select id, TIMESTAMPDIFF(MINUTE, instime, NOW()) from orders where sid=$perm->{sid} ORDER BY 1 DESC LIMIT 1")};
 		push(@msgs, "Eine Bestellbest&auml;tigung per E-Mail ist unterwegs zu Ihnen");
 	}
 
