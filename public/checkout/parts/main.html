@@ -63,9 +63,11 @@
 					value="<% $args{voucher_code} %>"
 					class="flex-1 min-w-0 rounded-full border border-gray-300 px-4 py-2.5 text-sm text-gray-800
 					placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+%				# -- Einlösen
 				<button type="button" id="voucher-submit"
 					class="flex-shrink-0 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium
-						text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition">Einlösen</button>
+						text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition">
+					<% $C->lbl('redeem', $lang) %></button>
 				<span id="voucher-result" class="text-sm font-medium"></span>
 			</div>
 		</div>
