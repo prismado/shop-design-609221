@@ -18,10 +18,10 @@
 				.75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
 		</svg>
 		<span class="w-px h-6 bg-gray-200 flex-shrink-0"></span>
-		<span class="flex-1 flex items-center justify-between text-base text-gray-900">
+		<span class="flex-1 flex items-center justify-between text-base text-gray-600">
 % #			Total inkl. MwSt.
 			<% $C->txt('mail_total_incl_tax', $lang) %>:
-			<span class="ml-3 font-bold">
+			<span class="ml-3 font-bold text-gray-900">
 				CHF <% $C->decimal_mark($bsk_itms->{basket_total}) %>
 			</span>
 		</span>
