@@ -8,7 +8,7 @@
 
 @layer base {
 	a {
-		@apply text-neutral-700 hover:text-neutral-900 duration-200;
+		@apply text-neutral-600 hover:text-neutral-900 duration-200;
 	}
 
 	h2 {
