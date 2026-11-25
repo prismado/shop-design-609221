@@ -37,8 +37,12 @@
 	}
 	else {
 		my $dlv_city = $deliv->{city} || 'n/a';
-		push(@msgs, qq~Ein Einkauf für $perm->{profile_firstname} $perm->{profile_lastname}.
-				Die Lieferung nach <b>$dlv_city</b> erfolgt am Folge-Werktag.~);
+		my $hint_order_delivery_info = $C->lbl('hint_order_delivery_info', $lang);
+		   $hint_order_delivery_info =~ s/\{\{firstname\}\}/$perm->{profile_firstname}/;
+		   $hint_order_delivery_info =~ s/\{\{lastname\}\}/$perm->{profile_lastname}/;
+		   $hint_order_delivery_info =~ s/\{\{deliv_city\}\}/XX tbd/;
+		# -- Ein Einkauf für Hans Muster. Die Lieferung nach Zürich erfolgt am Folge-Werktag.
+		push(@msgs, $hint_order_delivery_info);
 	}
 
 	if ($deliv->{city}) {
