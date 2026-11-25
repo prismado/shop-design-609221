@@ -113,8 +113,9 @@
 					Kundennummer <% $perm->{uid} %>
 				</h3>
 				<p>
+					<% join "<br>\n", @$msgs %>
 %					foreach (@$msgs) {
-						<% $_ %><br>
+% # XXX						<% $_ %><br>
 %					}
 				</p>
 			</div>
