@@ -112,9 +112,9 @@
 				<h3 class="text-sm mt-4 font-bold uppercase tracking-wider text-gray-400 mb-3">
 					Kundennummer <% $perm->{uid} %>
 				</h3>
-				<p>
-					<% join "<br>\n", @$msgs %>
-				</p>
+%				if (@$msgs) {
+					<& /partials/inc_alert.html, type => 'success', msg => (join "<br>\n", @$msgs) &>
+%				}
 			</div>
 		</div>
 
