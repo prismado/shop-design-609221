@@ -7,83 +7,14 @@
 }
 
 @layer base {
-	a {
-		@apply text-neutral-600 hover:text-neutral-900 duration-200;
-	}
-
-	h2 {
-		@apply text-2xl font-bold mt-4 mb-3;
-	}
-
-	h3 {
-		@apply text-xl font-semibold mb-3;
-	}
-
-	h4 {
-		@apply text-lg font-semibold mt-3 mb-1;
-	}
-
-	code {
-		@apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded font-mono text-sm;
-	}
-
-	p {
-		@apply mt-4;
-	}
-
-	ol {
-		 @apply mt-3 list-decimal list-outside pl-6;
-	}
-
-	ol li {
-		@apply mt-2;
-	}
-
-	ul {
-		@apply mt-3 list-disc ml-4;
-	}
-
-	.x-modified {
-		@apply text-teal-500;
-	}
-
-	input[type="checkbox"] {
-		@apply h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500
-	}
-
-	input[type="text"],
-	input[type="email"],
-	input[type="password"] {
-		@apply
-      w-full
-      rounded-md
-      border border-gray-300
-      bg-white
-      px-3 py-2
-      text-gray-900
-      shadow-sm
-
-      placeholder:text-gray-400
-
-      focus:border-blue-500
-      focus:ring-2
-      focus:ring-blue-500/20
-      focus:outline-none
-
-      disabled:bg-gray-100
-      disabled:text-gray-500
-      disabled:cursor-not-allowed
-
-      dark:bg-gray-800
-      dark:border-gray-700
-      dark:text-gray-100
-      dark:placeholder:text-gray-500
-
-      dark:focus:border-blue-400
-      dark:focus:ring-blue-400/20;
-	}
-
-	/* tt { @apply text-gray-600 text-base font-semibold; } */
+	/* -- Die Tag-Resets (p/h2/h3/h4/ul/ol/code/a/input) einer früheren Theme-Generation wurden
+	   entfernt: Sie überschrieben Tailwinds Preflight-Defaults (z. B. margin:0 auf <p>) mit
+	   Werten eines anderen Design-Systems (Barlow Condensed, --accent/--bg-Variablen), die im
+	   aktuellen ElectroNova-Theme nirgends referenziert werden. Unter Play-CDN (davor) hatten
+	   diese Regeln nie Wirkung, da Play CDN nur Tailwind-Vanilla-Defaults liefert und diese Datei
+	   gar nicht kennt — nach dem Wechsel auf den lokalen Build griffen sie plötzlich überall dort,
+	   wo das aktuelle Theme bewusst auf Tailwinds margin:0-Reset setzt und Abstände explizit per
+	   Utility-Klasse am jeweiligen Element setzt (siehe z. B. partials/inc_alert.html). */
 
 	/* ── Design-System-Grundlagen ── */
 	html { scroll-behavior: smooth; overflow-x: hidden; }
