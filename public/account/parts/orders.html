@@ -114,10 +114,15 @@
 					</div>
 					<p class="flex-1 text-center text-xs">
 % #						Lieferschein
-						<a href="/<% $d->{odat}->{delivery_note_file_name} %>"
-							class="text-gray-500 underline decoration-gray-300 underline-offset-2
-								hover:text-red-600 hover:decoration-red-600 transition-colors">
-							<% $C->lbl('delivery_note', $lang) %></a>
+%						if ($d->{odat}->{delivery_note_file_name}) {
+							<a href="/<% $d->{odat}->{delivery_note_file_name} %>"
+								class="text-gray-500 underline decoration-gray-300 underline-offset-2
+									hover:text-red-600 hover:decoration-red-600 transition-colors">
+								<% $C->lbl('delivery_note', $lang) %></a>
+%						}
+%						else {
+							In Bearbeitung
+%						}
 					</p>
 					<span class="flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full
 							text-xs font-semibold <% $status_cls %>">
