@@ -80,23 +80,39 @@
 
 % #		--------------------------------------------------------------------------------------------- Gutschein
 		<div class="mt-8">
-			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('voucher', $lang) %>
+			<input type="checkbox" id="voucher-toggle" class="peer hidden"<% $args{voucher_code} ? ' checked' : '' %>>
+			<label for="voucher-toggle"
+					class="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider
+						text-gray-400 hover:text-gray-600 cursor-pointer transition mb-3">
+				<% $C->lbl('voucher', $lang) %>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+						stroke="currentColor"
+						class="w-3.5 h-3.5 transition-transform duration-300 peer-checked:rotate-180">
+					<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+				</svg>
 %				if ($ENV{NODE_ENV} eq 'development' or $ENV{NODE_ENV} eq 'preproduction') {
 %					my $vcode = $C->query("select vcode from vouchers where status=1 order by id desc limit 1")->[0];
-					<span class="text-xs text-blue-400 ml-3">(<% $ENV{NODE_ENV} %> &rarr; <% $vcode %>)</span>
+					<span class="text-xs text-blue-400 normal-case tracking-normal font-normal">
+						(<% $ENV{NODE_ENV} %> &rarr; <% $vcode %>)</span>
 %				}
-			</h2>
-			<div class="flex flex-wrap items-center gap-3 max-w-md">
-				<input type="text" name="voucher" id="voucher-input" placeholder="Gutschein-Code"
-					value="<% $args{voucher_code} %>"
-					class="flex-1 min-w-0 rounded-full border border-gray-300 px-4 py-2.5 text-sm text-gray-800
-					placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
-%				# -- Einlösen
-				<button type="button" id="voucher-submit"
-					class="flex-shrink-0 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium
-						text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition">
-					<% $C->lbl('redeem', $lang) %></button>
-				<span id="voucher-result" class="text-sm font-medium"></span>
+			</label>
+
+			<div class="grid grid-rows-[0fr] peer-checked:grid-rows-[1fr] transition-[grid-template-rows]
+					duration-300 ease-out">
+				<div class="overflow-hidden">
+					<div class="flex flex-wrap items-center gap-3 max-w-md">
+						<input type="text" name="voucher" id="voucher-input" placeholder="Gutschein-Code"
+							value="<% $args{voucher_code} %>"
+							class="flex-1 min-w-0 rounded-full border border-gray-300 px-4 py-2.5 text-sm text-gray-800
+							placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+%						# -- Einlösen
+						<button type="button" id="voucher-submit"
+							class="flex-shrink-0 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium
+								text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition">
+							<% $C->lbl('redeem', $lang) %></button>
+						<span id="voucher-result" class="text-sm font-medium"></span>
+					</div>
+				</div>
 			</div>
 		</div>
 % #		--------------------------------------------------------------------------------------------- /Gutschein
