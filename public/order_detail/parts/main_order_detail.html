@@ -10,14 +10,11 @@
 	my $C    = $args{C};
 	my $A    = $args{A};
 
-	my $SID = $C->getSID();
+	# XXX my $SID = $C->getSID();
 
 	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
-	my $cgi = $C->{CGI};
-
-	# XXX my $sth = $C->{dbh}->prepare(qq~
-	# XXX	select distinct `key` from session where sid=$SID order by `key` limit 999~);
+	# XXX my $cgi = $C->{CGI};
 </%init>
 
 <style>
