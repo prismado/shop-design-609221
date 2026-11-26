@@ -121,7 +121,6 @@
 								<% $C->lbl('delivery_note', $lang) %></a>
 %						}
 %						else {
-% # XXX							In Bearbeitung
 							Expected: <% $d->{odat}->{delivery_date} %>
 %						}
 					</p>
@@ -135,10 +134,6 @@
 					<p><% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %></p>
 					<p>Lieferort: <% $d->{odat}->{deliv_city} %></p>
 				</div>
-% foreach (sort keys %{$d->{odat}}) {
-%	next unless /deliv/;
-% # XXX	XX <% $_ %> = <% $d->{odat}->{$_} %><br>
-% }
 
 %			if (length($d->{odat}->{remarks})) {
 				<p class="text-xs text-gray-400 italic mb-3"><% $d->{odat}->{remarks} %></p>
