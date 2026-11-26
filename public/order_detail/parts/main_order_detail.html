@@ -13,7 +13,8 @@
 
 	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
-	my $delivery_prep_lbl = "Lieferung nach $order_stmt->{odat}->{deliv_city} wird vorbereitet";
+	# -- Lieferung nach Zürich wird vorbereitet
+	(my $delivery_prep_lbl = $C->lbl('delivery_prep_label', $lang)) =~ s/\{\{city\}\}/$order_stmt->{odat}->{deliv_city}/;
 	my $delivery_prep_txt = 'In Bearbeitung';
 
 	my $delivery_state_lbl = 'Geliefert';
