@@ -16,6 +16,9 @@
 	my $delivery_prep_lbl = "Lieferung nach $order_stmt->{odat}->{deliv_city} wird vorbereitet";
 	my $delivery_prep_txt = 'In Bearbeitung';
 
+	my $delivery_state_lbl = 'Gelieferx';
+	my $delivery_state_txt = 'uuuNoch ausstehend';
+
 	if ($order_stmt->{odat}->{delivery_note_file_name}) {
 		$delivery_prep_lbl = 'Lieferung wurde vorbereitet';
 		$delivery_prep_txt = qq~<a target="_blank" href="/$order_stmt->{odat}->{delivery_note_file_name}">Lieferschein</a>~;
@@ -119,8 +122,8 @@
 %				{ title => "Bestellung $order_stmt->{odat}->{firstname} $order_stmt->{odat}->{lastname} eingegangen",
 %					detail => "Bestellung Nr. $order_id eingegangen am $order_stmt->{odat}->{instime_swiss}",
 %					done => 1 },
-%				{ title => $delivery_prep_lbl, detail => $delivery_prep_txt, active => 1 },
-%				{ title => 'Geliefert',         detail => "Noch ausstehend $track->{status}" },
+%				{ title => $delivery_prep_lbl,  detail => $delivery_prep_txt, active => 1 },
+%				{ title => $delivery_state_lbl, detail => "$delivery_state_txt $track->{status}" },
 %			);
 %			for my $i (0 .. $#delivery_steps) {
 %				my $s        = $delivery_steps[$i];
