@@ -7,6 +7,7 @@
 	my $perm = $args{perm};
 	my $lang = $args{lang};
 	my $msgs = $args{msgs};
+	my $track= $args{track};
 	my $C    = $args{C};
 	my $A    = $args{A};
 
@@ -169,6 +170,9 @@
 			</div>
 		</div>
 
+% foreach (sort keys %$track) {
+	XX <% $_ %> = <% $track->{$_} %><br>
+% }
 		<div class="mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden">
 			<div class="overflow-x-auto">
 				<table class="order-table w-full">
