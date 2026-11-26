@@ -3,9 +3,13 @@
 	use ScreenPoint::Core;
 	use ScreenPoint::Auctionline;
 
+	my $prism_error;
 	my $prism_shop_available = eval {
 		require Prismado::Shop;
 		1;
+	} || do {
+		$prism_error = $@;
+		0;
 	};
 
 	my $C = ScreenPoint::Core->new($r, $m);
@@ -20,7 +24,7 @@
 	my $debug    = $cgi->param('debug');
 
 	my @msgs = ();
-	push(@msgs, 'W611261: Prismado::Shop missing') unless $prism_shop_available;
+	push(@msgs, "W611261: Prismado::Shop missing $prism_error") unless $prism_shop_available;
 
 	my $age_min = my $rating_asked = 0;
 
