@@ -88,7 +88,8 @@
 		</div>
 
 		<div class="relative bg-white rounded-2xl border border-gray-200 p-6">
-			<h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pr-10">Bestellungen</h2>
+% #			Ihre Bestellungen
+			<h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pr-10"><% $C->lbl('your_orders', $lang) %></h2>
 			<p class="text-sm text-gray-600 leading-relaxed">
 				<% $#{$orders} + 1 %> Bestellungen<br>
 %				if ($#{$orders} + 1) {
