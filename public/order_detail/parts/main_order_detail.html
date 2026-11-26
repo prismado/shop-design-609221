@@ -13,12 +13,12 @@
 
 	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
-	my $delivery_state_lbl = "Lieferung nach $order_stmt->{odat}->{deliv_city} wird vorbereitet";
-	my $delivery_state_txt = 'In Bearbeitung';
+	my $delivery_prep_lbl = "Lieferung nach $order_stmt->{odat}->{deliv_city} wird vorbereitet";
+	my $delivery_prep_txt = 'In Bearbeitung';
 
 	if ($order_stmt->{odat}->{delivery_note_file_name}) {
-		$delivery_state_lbl = 'Lieferung wurde vorbereitet';
-		$delivery_state_txt = qq~<a target="_blank" href="/$order_stmt->{odat}->{delivery_note_file_name}">Lieferschein</a>~;
+		$delivery_prep_lbl = 'Lieferung wurde vorbereitet';
+		$delivery_prep_txt = qq~<a target="_blank" href="/$order_stmt->{odat}->{delivery_note_file_name}">Lieferschein</a>~;
 	}
 </%init>
 
@@ -119,7 +119,7 @@
 %				{ title => "Bestellung $order_stmt->{odat}->{firstname} $order_stmt->{odat}->{lastname} eingegangen",
 %					detail => "Bestellung Nr. $order_id eingegangen am $order_stmt->{odat}->{instime_swiss}",
 %					done => 1 },
-%				{ title => $delivery_state_lbl, detail => $delivery_state_txt, active => 1 },
+%				{ title => $delivery_prep_lbl, detail => $delivery_prep_txt, active => 1 },
 %				{ title => 'Geliefert',         detail => "Noch ausstehend $track->{status}" },
 %			);
 %			for my $i (0 .. $#delivery_steps) {
