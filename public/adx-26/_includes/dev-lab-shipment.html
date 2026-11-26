@@ -62,6 +62,7 @@
 	<tr></tr>
 %	foreach (sort keys %$track) {
 %		next if $_ eq 'tracking' or $_ eq 'account_no' or $_ eq 'cached' or $_ eq 'user' or $_ eq 'API_URL' or $_ eq 'VERSION' or
+%			$_ eq 'delivery_time' or
 %			$_ eq 'tracking_number' or /^cache\_.+/ or $_ eq 'delivered_time' or $_ eq 'tracking_piece' or $_ eq 'actualDimensions';
 %		next if $_ eq 'content' && !$track->{error};
 %		next if $_ eq 'http_status' && $track->{http_status} == 200;
