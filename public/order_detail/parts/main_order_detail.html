@@ -24,7 +24,7 @@
 		$delivery_prep_txt = qq~<a target="_blank" href="/$order_stmt->{odat}->{delivery_note_file_name}">Lieferschein</a>~;
 	}
 
-	my $order_status = 'In Bearbeitunx';
+	my $order_status = $order_stmt->{odat}->{order_status} == 3 ? 'Storniert' : 'In Bearbeitung';
 </%init>
 
 <style>
