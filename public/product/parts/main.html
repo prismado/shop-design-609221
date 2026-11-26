@@ -47,7 +47,8 @@
 			</p>
 
 %			if (@{$imgs->{pics}}) {
-				<h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mt-6 mb-3">Weitere Bilder</h3>
+				<h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mt-6 mb-3">
+					<% $C->lbl('more_images', $lang) %></h3>
 				<div id="gallery-<% $id %>" class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
 %				foreach (@{$imgs->{pics}}) {
 					<button type="button"
