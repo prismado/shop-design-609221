@@ -3,6 +3,12 @@
 	use ScreenPoint::Core;
 	use ScreenPoint::Auctionline;
 
+	my $prism_shop_available = eval {
+		require Prismado::Shop;
+		Prismado::Shop->import();
+		1;
+	};
+
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
@@ -14,6 +20,7 @@
 	my $debug    = $cgi->param('debug');
 
 	my @msgs = ();
+	push(@msgs, 'W611261: Prismado::Shop missing') unless $prism_shop_available;
 
 	my $age_min = my $rating_asked = 0;
 
@@ -42,7 +49,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Order-Detail | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
+<title>Order-Detail <% $order_id %> | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
 <link rel="preconnect" href="https://placehold.co">
 <link rel="stylesheet" href="/dist/output.min.css">
