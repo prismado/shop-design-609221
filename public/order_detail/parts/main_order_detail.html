@@ -177,6 +177,12 @@
 			</div>
 		</div>
 
+% my $last_event = $track->{events}->[$#{$track->{events}}];
+% foreach (sort keys %$last_event) {
+	XX -- <b><% $_ %></b> = <% $last_event->{$_} %><br>
+% }
+% use Data::Dumper;
+<% Dumper $last_event->{serviceArea} %><br>
 % foreach (sort keys %$track) {
 % # XXX	XX <% $_ %> = <% $track->{$_} %><br>
 % }
