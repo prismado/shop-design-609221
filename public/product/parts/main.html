@@ -4,6 +4,7 @@
 
 	my $C    = $args{C};
 	my $A    = $args{A};
+	my $lang = $args{lang};
 	my $perm = $args{perm};
 	my $prod = $args{prod};
 	my $imgs = $args{imgs};
@@ -34,7 +35,8 @@
 		</button>
 
 		<div class="mt-6">
-			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Beschreibung</h2>
+			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">
+				<% $C->lbl('product_description', $lang) %></h2>
 			<p class="text-sm text-gray-600 leading-relaxed">
 %				if ($prod->{_rc}) {
 					<div class="mt-6 mb-6">
