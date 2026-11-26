@@ -13,7 +13,7 @@
 
 	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
-	my $delivery_state_lbl = 'Lieferung wird vorbereitet';
+	my $delivery_state_lbl = "Lieferung nach $order_stmt->{odat}->{deliv_city} wird vorbereitet";
 	my $delivery_state_txt = 'In Bearbeitung';
 
 	if ($order_stmt->{odat}->{delivery_note_file_name}) {
