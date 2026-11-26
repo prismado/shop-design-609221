@@ -26,6 +26,8 @@
 	my @msgs = ();
 	push(@msgs, "W611261: Prismado::Shop missing $prism_error") unless $prism_shop_available;
 
+	my $track = $P->get_shipment_tracking(order_id => $order_id) if $prism_shop_available; # -- 26Nov2026
+
 	my $age_min = my $rating_asked = 0;
 
 	if ($order_id) {
