@@ -11,6 +11,7 @@
 
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
+	my $P = Prismado::Shop->new(dbh => $C->{dbh}) if $prism_shop_available;
 
 	my $perm = $C->get_user_perm();
 	my $cgi  = $C->{CGI};
