@@ -25,6 +25,7 @@
 	}
 
 	my $order_status = $order_stmt->{odat}->{order_status} == 3 ? 'Storniert' : 'In Bearbeitung';
+	   $order_status = 'Zugestellt' if $track->{status} eq 'Delivered';
 </%init>
 
 <style>
