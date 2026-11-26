@@ -114,7 +114,8 @@
 					</div>
 					<p class="flex-1 text-center text-xs">
 % #						Lieferschein
-						<a href="#!" class="text-gray-500 underline decoration-gray-300 underline-offset-2
+						<a href="/<% $d->{odat}->{delivery_note_file_name} %>"
+							class="text-gray-500 underline decoration-gray-300 underline-offset-2
 								hover:text-red-600 hover:decoration-red-600 transition-colors">
 							<% $C->lbl('delivery_note', $lang) %></a>
 					</p>
@@ -128,6 +129,10 @@
 					<p><% $d->{firstname} %> <% $d->{lastname} %>, <% $d->{city} %></p>
 					<p>Lieferort: <% $d->{odat}->{deliv_city} %></p>
 				</div>
+% foreach (sort keys %{$d->{odat}}) {
+%	next unless /deliv/;
+% # XXX	XX <% $_ %> = <% $d->{odat}->{$_} %><br>
+% }
 
 %			if (length($d->{odat}->{remarks})) {
 				<p class="text-xs text-gray-400 italic mb-3"><% $d->{odat}->{remarks} %></p>
