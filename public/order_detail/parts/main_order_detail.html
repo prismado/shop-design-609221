@@ -17,7 +17,7 @@
 
 	if ($order_stmt->{odat}->{delivery_note_file_name}) {
 		$delivery_state_lbl = 'Lieferung wurde vorbereitet';
-		$delivery_state_txt = "XX -- $order_stmt->{odat}->{delivery_note_file_name}";
+		$delivery_state_txt = qq~<a target="_blank" href="/$order_stmt->{odat}->{delivery_note_file_name}">Lieferschein</a>~;
 	}
 </%init>
 
