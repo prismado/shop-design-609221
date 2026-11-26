@@ -99,7 +99,8 @@
 
 	<!-- Bestellungen -->
 	<div class="mt-10">
-		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Bestellungen</h2>
+%		# -- Ihre Bestellungen
+		<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('your_orders', $lang) %></h2>
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 %		foreach my $d (@$orders) {
