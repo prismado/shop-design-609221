@@ -119,7 +119,7 @@
 %				{ title => 'Bestellung eingegangen', detail => "Bestellung Nr. $order_id eingegangen am $order_stmt->{odat}->{instime_swiss}",
 %					done => 1 },
 %				{ title => $delivery_state_lbl, detail => $delivery_state_txt, active => 1 },
-%				{ title => 'Geliefert',         detail => 'Noch ausstehend' },
+%				{ title => 'Geliefert',         detail => "Noch ausstehend $track->{status}" },
 %			);
 %			for my $i (0 .. $#delivery_steps) {
 %				my $s        = $delivery_steps[$i];
@@ -171,7 +171,7 @@
 		</div>
 
 % foreach (sort keys %$track) {
-	XX <% $_ %> = <% $track->{$_} %><br>
+% # XXX	XX <% $_ %> = <% $track->{$_} %><br>
 % }
 		<div class="mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden">
 			<div class="overflow-x-auto">
