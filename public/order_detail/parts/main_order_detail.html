@@ -12,8 +12,13 @@
 
 	my $order_stmt = $A->get_order_statement(order_id => $order_id, add_vat => 1);
 
-	my $delivery_state = 'In Bearbeitung';
-	   $delivery_state = "XX tbd $order_stmt->{odat}->{delivery_note_file_name}" if $order_stmt->{odat}->{delivery_note_file_name};
+	my $delivery_state_lbl = 'Lieferung wird vorbereitet';
+	my $delivery_state_txt = 'In Bearbeitung';
+
+	if ($order_stmt->{odat}->{delivery_note_file_name}) {
+		$delivery_state_lbl = 'Lieferung wurde vorbereitet';
+		$delivery_state_txt = "XX -- $order_stmt->{odat}->{delivery_note_file_name}";
+	}
 </%init>
 
 <style>
@@ -112,8 +117,8 @@
 %			my @delivery_steps = (
 %				{ title => 'Bestellung eingegangen', detail => "Bestellung Nr. $order_id eingegangen am $order_stmt->{odat}->{instime_swiss}",
 %					done => 1 },
-%				{ title => 'Lieferung wird vorbereitet', detail => $delivery_state, active => 1 },
-%				{ title => 'Geliefert',                  detail => 'Noch ausstehend' },
+%				{ title => $delivery_state_lbl, detail => $delivery_state_txt, active => 1 },
+%				{ title => 'Geliefert',         detail => 'Noch ausstehend' },
 %			);
 %			for my $i (0 .. $#delivery_steps) {
 %				my $s        = $delivery_steps[$i];
