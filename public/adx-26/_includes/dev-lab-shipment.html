@@ -55,6 +55,7 @@
 			&rarr; Tracking Number: <b><% $P->get_shipment_tracking_number(order_id => $order_id)->{tracking_number} %></b>
 %		if ($track->{status} eq 'Delivered') {
 			&rarr; 📦✓
+			<% $C->trans_date_short($track->{delivery_time}) %>
 %		}
 	</p>
 
