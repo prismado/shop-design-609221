@@ -17,7 +17,10 @@
 	my $delivery_prep_txt = 'In Bearbeitung';
 
 	my $delivery_state_lbl = 'Geliefert';
-	my $delivery_state_txt = $track->{status} eq 'Delivered' ? "Geliefert" : 'Noch ausstehend';
+	my $delivery_state_txt = 'Noch ausstehend';
+	if ($track->{status} eq 'Delivered') {
+		 $delivery_state_txt = 'Geliefert';
+	}
 
 	if ($order_stmt->{odat}->{delivery_note_file_name}) {
 		$delivery_prep_lbl = 'Lieferung wurde vorbereitet';
