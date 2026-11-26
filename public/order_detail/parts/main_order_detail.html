@@ -19,7 +19,8 @@
 	my $delivery_state_lbl = 'Geliefert';
 	my $delivery_state_txt = 'Noch ausstehend';
 	if ($track->{status} eq 'Delivered') {
-		 $delivery_state_txt = 'Geliefert';
+		my $deliv_time = $C->trans_date_short($track->{delivery_time});
+		 $delivery_state_txt = "Geliefert am $deliv_time";
 	}
 
 	if ($order_stmt->{odat}->{delivery_note_file_name}) {
