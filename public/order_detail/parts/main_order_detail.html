@@ -130,7 +130,7 @@
 %					detail => "Bestellung Nr. $order_id eingegangen am $order_stmt->{odat}->{instime_swiss}",
 %					done => 1 },
 %				{ title => $delivery_prep_lbl,  detail => $delivery_prep_txt, active => 1 },
-%				{ title => $delivery_state_lbl, detail => "$delivery_state_txt $track->{status}" },
+%				{ title => $delivery_state_lbl, detail => $delivery_state_txt },
 %			);
 %			for my $i (0 .. $#delivery_steps) {
 %				my $s        = $delivery_steps[$i];
