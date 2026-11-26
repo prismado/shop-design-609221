@@ -21,6 +21,23 @@
 		<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><% $C->txt('mail_payment_method', $lang) %></h1>
 	</div>
 
+% #		===========================================================================================================================
+		<div class="mt-8">
+% #			Ihr Einkauf
+			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('your_purchase', $lang) %></h2>
+			<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
+
+%			if ($bsk_itms->{item_count}) {
+			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
+				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
+			</div>
+%			}
+%			else {
+				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
+%			}
+		</div>
+% #		===========================================================================================================================
+
 	<form method="post" action="/summary/">
 	<div>
 		<div class="mt-6">
@@ -172,23 +189,6 @@
 				</button>
 			</div>
 		</div>
-
-% #		===========================================================================================================================
-		<div class="mt-8">
-% #			Ihr Einkauf
-			<h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3"><% $C->lbl('your_purchase', $lang) %></h2>
-			<p class="text-sm text-gray-600 leading-relaxed"><% $bsk_itms->{item_count} %> Artikel</p><br />
-
-%			if ($bsk_itms->{item_count}) {
-			<div class="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
-				<& ../../basket/parts/basket_summary.html, bsk_itms => $bsk_itms, C => $C, A => $A &>
-			</div>
-%			}
-%			else {
-				<& ../partials/inc_alert.html, msg => 'Ihr Warenkorb ist leer', type => 'info' &>
-%			}
-		</div>
-% #		===========================================================================================================================
 
 	</div>
 	</form>
