@@ -9127,6 +9127,9 @@
   .grid-cols-\[repeat\(auto-fit\,minmax\(340px\,1fr\)\)\] {
     grid-template-columns: repeat(auto-fit,minmax(340px,1fr));
   }
+  .grid-rows-\[0fr\] {
+    grid-template-rows: 0fr;
+  }
   .flex-col {
     flex-direction: column;
   }
@@ -10500,6 +10503,11 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .transition-\[grid-template-rows\] {
+    transition-property: grid-template-rows;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
   .transition-all {
     transition-property: all;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
@@ -10695,6 +10703,12 @@
     .group-hover\:opacity-100:is(:where(.group):hover *) {
       opacity: 100%;
     }
+  }
+  .peer-checked\:rotate-180:is(:where(.peer):checked ~ *) {
+    rotate: 180deg;
+  }
+  .peer-checked\:grid-rows-\[1fr\]:is(:where(.peer):checked ~ *) {
+    grid-template-rows: 1fr;
   }
   .peer-checked\:font-bold:is(:where(.peer):checked ~ *) {
     --tw-font-weight: var(--font-weight-bold);
@@ -11025,9 +11039,6 @@
     }
     .sm\:gap-3 {
       gap: calc(var(--spacing) * 3);
-    }
-    .sm\:gap-6 {
-      gap: calc(var(--spacing) * 6);
     }
     .sm\:gap-8 {
       gap: calc(var(--spacing) * 8);
