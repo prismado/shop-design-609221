@@ -23,6 +23,8 @@
 		$delivery_prep_lbl = 'Lieferung wurde vorbereitet';
 		$delivery_prep_txt = qq~<a target="_blank" href="/$order_stmt->{odat}->{delivery_note_file_name}">Lieferschein</a>~;
 	}
+
+	my $order_status = 'In Bearbeitunx';
 </%init>
 
 <style>
@@ -115,7 +117,7 @@
 			<div class="flex items-center justify-between mb-5">
 				<h4 class="text-sm font-bold uppercase tracking-wider text-gray-400">Lieferstatus</h4>
 				<span class="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
-					In Bearbeitung</span>
+					<% $order_status %></span>
 			</div>
 
 %			my @delivery_steps = (
