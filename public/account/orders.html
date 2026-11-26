@@ -6,6 +6,7 @@
 	my $C = ScreenPoint::Core->new($r, $m);
 	my $A = ScreenPoint::Auctionline->new($C);
 
+	my $lang = $C->getSessData('_current_lang') || 'de';
 	my $perm = $C->get_user_perm();
 	my $uinf = $A->get_user_info();
 
@@ -48,12 +49,12 @@
 </head>
 <body class="bg-white text-gray-800 antialiased min-h-screen flex flex-col">
 
-<& partials/header.html, perm => $perm, A => $A, C => $C &>
+<& partials/header.html, lang => $lang, perm => $perm, A => $A, C => $C &>
 
 <!-- ===== HAUPTBEREICH: Navigation / Konto ===== -->
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_85fr] lg:gap-6 lg:items-start">
 
-	<& parts/left_nav_account.html, A => $A, C => $C &>
+	<& parts/left_nav_account.html, lang => $lang, A => $A, C => $C &>
 
 	<section>
 		<& parts/orders.html, orders => \@orders, perm => $perm, uinf => $uinf, C => $C, A => $A &>
