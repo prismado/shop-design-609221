@@ -49,6 +49,8 @@
 	}
 
 	$m->redirect('/') unless $order_id;
+
+	my $conv_track_on = $C->get_property('google_conv_tracking_on', '_global', 'sys'); # -- 27Nov2026
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -57,7 +59,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Order-Detail <% $order_id %> | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
-<link rel="preconnect" href="https://placehold.co">
+% if ($conv_track_on) {
+%	# -- adx/manage-property.html?area=google_conv_tracking
+	<% $C->get_property('google_conv_tracking_head', '_global', 'sys') %>
+% }
+% # XX <link rel="preconnect" href="https://placehold.co">
 <link rel="stylesheet" href="/dist/output.min.css">
 <style>
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
