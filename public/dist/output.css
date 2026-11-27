@@ -11426,6 +11426,9 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
+  .\[\&_\.max-w-3xl\]\:max-w-none\! .max-w-3xl {
+    max-width: none !important;
+  }
 }
 @layer base {
   html {
