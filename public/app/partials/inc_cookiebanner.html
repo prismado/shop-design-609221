@@ -14,10 +14,13 @@
   #cookie-panel { padding: 1.25rem 1.1rem 1.75rem; }
 }
 </style>
+
 <div data-theme="light">
 
 <button onclick="closeCookiePanel()" type="button" aria-label="Schliessen"
-	style="position:absolute; top:1rem; right:1.25rem; background:none; border:none; cursor:pointer; color:var(--muted); font-size:1.1rem; line-height:1; padding:0.25rem 0.4rem; border-radius:3px; transition:color 0.2s;"
+	style="position:absolute; top:1rem; right:1.25rem; background:none; border:none;
+		cursor:pointer; color:var(--muted); font-size:1.1rem; line-height:1;
+		padding:0.25rem 0.4rem; border-radius:3px; transition:color 0.2s;"
 	onmouseover="this.style.color='var(--txt)'" onmouseout="this.style.color='var(--muted)'">✕</button>
 
 <h5 class="mt-0 text-lg font-semibold text-gray-900">🍪 <span class="ml-1">Cookies &amp; Datenschutz auf dieser Seite</span></h5>
@@ -66,13 +69,15 @@
 		hx-swap="none"
 		hx-on::after-request="closeCookiePanel()">Alles akzeptieren</button>
 
-	<button class="btn btn-soft btn-primary" style="padding:0.55rem 1.5rem; text-transform:none;" name="decision" value="accept_recommendation"
+	<button class="btn btn-soft btn-primary" style="padding:0.55rem 1.5rem; text-transform:none;"
+										name="decision" value="accept_recommendation"
 		hx-post="/app/_update_cookie_consent"
 		hx-include="closest form"
 		hx-swap="none"
 		hx-on::after-request="closeCookiePanel()">Ohne Werbung</button>
 
-	<button class="btn btn-ghost btn-sm" style="opacity:0.55; text-transform:none; align-self:center;" name="decision" value="deny_all"
+	<button class="btn btn-ghost btn-sm" style="opacity:0.55; text-transform:none; align-self:center;"
+										name="decision" value="deny_all"
 		hx-post="/app/_update_cookie_consent"
 		hx-include="closest form"
 		hx-swap="none"
