@@ -9,14 +9,14 @@
 
 	my $checked = $args{checked} // $C->getSessData($name);
 </%init>
-<div class="checkbox XXXmt-1">
+<div class="checkbox">
     <label class="form-switch form-switch-success d-block">
 
 	<input type="checkbox" id="<% $name %>" name="<% $name %>" <% $args{disabled} ? 'disabled' : '' %>
 		onclick="click_cb_<% $name %>()" <% $checked ? 'checked' : '' %> value="<% $choices[0] %>">
 	<i data-on="&#10004; Ja" data-off="&#10005;"></i>
 
-	<label clasx="ml-2" for="<% $name %>">
+	<label for="<% $name %>">
 		<% $args{label} %><span class="font-weight-bold ml-2" id="cur_choice_<% $name %>"></span>
 	</label>
 
