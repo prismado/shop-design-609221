@@ -109,6 +109,7 @@
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
     --font-weight-black: 900;
+    --tracking-normal: 0em;
     --tracking-wide: 0.025em;
     --tracking-wider: 0.05em;
     --tracking-widest: 0.1em;
@@ -10101,6 +10102,10 @@
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
   }
+  .tracking-normal {
+    --tw-tracking: var(--tracking-normal);
+    letter-spacing: var(--tracking-normal);
+  }
   .tracking-wide {
     --tw-tracking: var(--tracking-wide);
     letter-spacing: var(--tracking-wide);
@@ -10313,6 +10318,9 @@
   }
   .lowercase {
     text-transform: lowercase;
+  }
+  .normal-case {
+    text-transform: none;
   }
   .uppercase {
     text-transform: uppercase;
@@ -10576,11 +10584,6 @@
     }
     .select-info:open {
       --input-color: var(--color-info);
-    }
-    .btn-accent {
-      --btn-color: var(--color-accent);
-      --btn-fg: var(--color-accent-content);
-      --btn-soft-bg: initial;
     }
     .btn-info {
       --btn-color: var(--color-info);
