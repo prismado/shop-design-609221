@@ -17,7 +17,6 @@
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><% $C->lbl('privacy', $lang) %>
 %				if ($perm->{is_admin}) {
 					<a href="/adx/property.html?id=<% $prp_id %>">&#128393;</a>
-% # XXX					<a href="/adx/manage-property.html?area=site">&#128393;</a>
 %				}
 			</h1>
 		</div>
@@ -32,7 +31,6 @@
 					Grundsätze und Rechtmässigkeit der Datenverarbeitung,
 					Erhebung, Umfang und Nutzung pesonenbezogener Daten
 				</h2>
-% # XXX				<p class="text-sm text-gray-600 leading-relaxed">Kontakt zu <% $C->txt('site_company') %></p>
 
 				<% $C->txt('content', $lang, 'custom/algonetic/html/info_datenschutz') %>
 			</div>
