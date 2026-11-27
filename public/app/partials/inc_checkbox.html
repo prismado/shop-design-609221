@@ -9,6 +9,7 @@
 
 	my $checked = $args{checked} // $C->getSessData($name);
 </%init>
+<%doc>
 <div class="checkbox">
     <label class="form-switch form-switch-success d-block">
 
@@ -22,6 +23,19 @@
 
     </label>
 </div>
+</%doc>
+
+<label class="flex items-start gap-3 cursor-pointer ZZselect-none">
+	<input type="checkbox" class="toggle shrink-0" id="<% $name %>" name="<% $name %>"
+		value="<% $choices[0] %>"
+		<% $checked ? 'checked' : '' %>
+		<% $args{disabled} ? 'disabled' : '' %>
+	>
+	<span class="text-sm text-gray-800 leading-snug">
+		<% $args{label} %><span class="font-weight-bold ml-2" id="cur_choice_<% $name %>"></span>
+		<span class="text-xs text-gray-500">(immex aktiv)</span>
+	</span>
+</label>
 
 <script language="JavaScript">
 	var checked_<% $name %> = <% $checked ? 1 : 0 %>
