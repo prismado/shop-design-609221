@@ -21,19 +21,17 @@
 			</h1>
 		</div>
 
-		<div class="flex flex-col sm:flex-row gap-6">
+		<div class="flow-root">
 			<img src="/assets/images/banner-privacy.webp" loading="lazy"
-				class="w-full sm:w-64 flex-shrink-0 sm:self-start rounded-2xl object-cover border border-gray-200
-					bg-white">
+				class="w-full sm:w-64 sm:float-left mb-6 sm:mb-2 sm:mr-6 rounded-2xl object-cover
+					border border-gray-200 bg-white">
 
-			<div class="flex-1 min-w-0 [&_.max-w-3xl]:max-w-none!">
-				<h2 class="text-sm font-bold ZZuppercase tracking-wider text-gray-400 mb-3">
-					Grundsätze und Rechtmässigkeit der Datenverarbeitung,
-					Erhebung, Umfang und Nutzung pesonenbezogener Daten
-				</h2>
+			<h2 class="text-sm font-bold ZZuppercase tracking-wider text-gray-400 mb-3">
+				Grundsätze und Rechtmässigkeit der Datenverarbeitung,
+				Erhebung, Umfang und Nutzung pesonenbezogener Daten
+			</h2>
 
-				<% $C->txt('content', $lang, 'custom/algonetic/html/info_datenschutz') %>
-			</div>
+			<% $C->txt('content', $lang, 'custom/algonetic/html/info_datenschutz') %>
 		</div>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -8534,6 +8534,9 @@
   .flex {
     display: flex;
   }
+  .flow-root {
+    display: flow-root;
+  }
   .grid {
     display: grid;
   }
@@ -11025,6 +11028,9 @@
     .sm\:mr-6 {
       margin-right: calc(var(--spacing) * 6);
     }
+    .sm\:mb-2 {
+      margin-bottom: calc(var(--spacing) * 2);
+    }
     .sm\:line-clamp-6 {
       overflow: hidden;
       display: -webkit-box;
@@ -11112,9 +11118,6 @@
     }
     .sm\:self-center {
       align-self: center;
-    }
-    .sm\:self-start {
-      align-self: flex-start;
     }
     .sm\:p-0 {
       padding: 0px;
@@ -11425,9 +11428,6 @@
     .xl\:grid-cols-4 {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-  }
-  .\[\&_\.max-w-3xl\]\:max-w-none\! .max-w-3xl {
-    max-width: none !important;
   }
 }
 @layer base {
