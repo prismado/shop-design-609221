@@ -67,7 +67,6 @@
 
 	my $ship_meth     = $C->{CGI}->param('ship_meth')            || $C->getSessData('ship_meth');
 	my $remarks       = $C->getSessData('checkout_bemerkungen') // '';
-	# XXX my $remarks       = $C->{CGI}->param('checkout_bemerkungen') || $C->getSessData('checkout_bemerkungen');
 	   $remarks       =~ s/\&/&amp;/g;
 	   $remarks       =~ s/\</&lt;/g;
 	   $remarks       =~ s/\>/&gt;/g;
@@ -130,6 +129,8 @@
 		$voucher{val5} = $C->round_amount( $voucher{val5} * (1 + $voucher{tax_perc} / 100) );
 	}
 	# ------------- /Summary -------------------------------------------------------------------------------
+
+	my $conv_track_on = $C->get_property('google_conv_tracking_on', '_global', 'sys'); # -- 27Nov2026
 </%init>
 <!DOCTYPE html>
 <html lang="de" class="scroll-smooth">
@@ -139,7 +140,11 @@
 <title>Summary | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description"
 	content="ElectroNova: Elektronik, Occasion-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
-<link rel="preconnect" href="https://placehold.co">
+% if ($conv_track_on) {
+%	# -- adx/manage-property.html?area=google_conv_tracking
+	<% $C->get_property('google_conv_tracking_head', '_global', 'sys') %>
+% }
+% # XX <link rel="preconnect" href="https://placehold.co">
 <link rel="stylesheet" href="/dist/output.min.css">
 <style>
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
