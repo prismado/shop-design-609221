@@ -16,8 +16,8 @@
 			<p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Privacy</p>
 			<h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><% $C->lbl('privacy', $lang) %>
 %				if ($perm->{is_admin}) {
-					<a href="/adx/property.html?id=<% $prp_id %>">Edit</a> &middot;
-					<a href="/adx/manage-property.html?area=site">&#128393;</a>
+					<a href="/adx/property.html?id=<% $prp_id %>">&#128393;</a>
+% # XXX					<a href="/adx/manage-property.html?area=site">&#128393;</a>
 %				}
 			</h1>
 		</div>
