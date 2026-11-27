@@ -28,6 +28,8 @@
 	}
 
 	my $options_total = $A->get_cur_options_from_session($id); # -- Betrag / $id = Prod-ID
+
+	my $conv_track_on  = $C->get_property('google_conv_tracking_on', '_global', 'sys'); # -- 27Nov2026
 </%init>
 <!DOCTYPE html>
 <html lang="<% $lang %>" class="scroll-smooth">
@@ -36,7 +38,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><% $prod->{title} %> | <% $C->{CONFIG}->{site_title} %> – Elektronik & Occasion-Geräte online kaufen</title>
 <meta name="description" content="Elektronik, Refurbished-Geräte und Zubehör mit 12 Monaten Garantie. Versand am Folge-Werktag.">
-<link rel="preconnect" href="https://placehold.co">
+% if ($conv_track_on) {
+%	# -- adx/manage-property.html?area=google_conv_tracking
+	<% $C->get_property('google_conv_tracking_head', '_global', 'sys') %>
+% }
+% # XX <link rel="preconnect" href="https://placehold.co">
 <link rel="stylesheet" href="/dist/output.min.css">
 <base href="//<% $ENV{HTTP_HOST} %>/">
 <style>
