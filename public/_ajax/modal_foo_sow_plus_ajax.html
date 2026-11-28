@@ -1,0 +1,143 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	my $css_id   = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $order_id = ($C->{CGI}->param('order_id') + 0) || $C->query('select max(id) from orders where status=4')->[0];
+	my $id       = $C->{CGI}->param('id') + 0;
+	my $sig      = $C->md5_secret($SID);
+
+	my @paras = ();
+	foreach ($C->{CGI}->all_parameters) {
+		push(@paras, "$_=" . $C->{CGI}->param($_));
+	}
+
+	my $info = join ', ', @paras;
+
+	$C->create_toast_note(body=>$info, title=>'Foo Service', width=>'600px', delay=>9999);
+</%init>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/assets/css/prism_swal.css">
+
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Foo</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<form method="post" name="f308281" action="/_sub.html">
+	<input type="hidden" name="sig"    value="<% $sig %>">
+	<input type="hidden" name="action" value="tbd">
+
+	<p>Adsf <% $C->now(2) %> / <span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span></p>
+	<p><code><% $this %></code> &ndash; SID: <% $SID %> &rarr; <% $sig %></p>
+
+	<& ../include/inc_text_edit.html, label=>'Test Action', value_enc=>'dhl_send_shipment', info=>'Actions: dhl_send_shipment / mail_pdf_bill', id=>50 &>
+	<& ../include/inc_text_edit.html, label=>'Test Param Order-ID', value_enc=>"$order_id", info=>'Info', id=>70 &>
+	<& ../include/inc_text_edit.html, label=>'E-Mail', value_enc=>'foo@eshop.pub', info=>'Info', id=>80 &>
+	<& ../include/inc_text_edit.html, label=>'Debug', value_enc=>0, info=>'Debug', id=>98 &>
+
+	<p>
+		Dyn. Klick:
+		<a href="#" onclick="load_labels('de')">DE</a> / <a href="#" onclick="load_labels('en')">EN</a>
+	</p>
+
+	<p>
+		<a href="#" onclick="delClick(9999)">Test Delete</a>
+	</p>
+
+	<p><% $info %></p>
+
+	<div id="div_404241_49"></div>
+
+	<p>
+%	foreach (sort keys %{$perm}) {
+%		next if /^\_.+/;
+		[ perm ] &middot; <b><% $_ %></b> = <code><% $perm->{$_} %></code><br>
+%	}
+	</p>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Close
+			</button>
+			<button type="button" class="btn btn-primary btn-sm btn-soft" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> Save changes
+			</button>
+		</div>
+
+	</form>
+</div>
+
+<span id="del_404080_49"></span>
+
+<script language="JavaScript">
+function load_labels(lang) {
+	if (lang == 'de') {
+		$('#div_404241_49').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_de&inp_val=<% $C->uri_esc('hoe hulo') %>&r=<% rand() %>');
+	}
+	else if (lang == 'en') {
+		$('#div_404241_49').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_en&inp_val=<% $C->uri_esc('hoe en hulo') %>&r=<% rand() %>');
+	}
+}
+
+% # ------------------------------ Delete
+var det_id_to_del;
+document.getElementById('del_404080_49').addEventListener('click', function() {
+  Swal.fire({
+    title: '<% $C->txt('delete') %>?',
+    text: "Dies kann nicht rückgängig gemacht werden!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor:  '#f1f3f3',
+    confirmButtonText: 'Ja, löschen!',
+    cancelButtonText:  'Abbrechen',
+  customClass: {
+    confirmButton: 'btn w--150 btn-primary',
+    cancelButton:  'btn w--150 text-dark',
+    container: 'custom-swal-alert',
+    popup: 'custom-popup'
+  }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire(
+	'Gelöscht!',
+	'Der Eintrag wurde geloescht.',
+	'success'
+      )
+      // Fuehre hier die Loeschoperation aus
+	$.ajax({
+		url: '/adx/_ajax/proc_del_opt_sel.html?del_det_id=' + det_id_to_del,
+		type: 'GET',
+		dataType: 'html',
+		success: function(response) {
+			setTimeout(function() {
+				document.location = '/adx/options.html?open=<% $id %>';
+			}, 1250);
+		},
+		error: function(xhr, status, error) {
+			console.error(error);
+		}
+	});
+    }
+  })
+});
+
+function delClick(det_id) {
+	det_id_to_del = det_id;
+	document.getElementById('del_404080_49').click();
+}
+% # ------------------------------ /Delete
+</script>
+
+<%doc>
+	Created: 24Apr2024
+</%doc>

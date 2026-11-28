@@ -1,0 +1,24 @@
+<%init>
+	use ScreenPoint::Core;
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Allgemeine Gesch&auml;ftsbedingungen</h2>
+
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+
+	<% $C->txt('content', 'de', "custom/$C->{CONFIG}->{theme}/html/info_agb") %>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+			<i class="fi fi-close"></i> Cancel
+		</button>
+	</div>
+
+</div>

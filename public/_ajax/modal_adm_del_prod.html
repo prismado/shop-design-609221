@@ -1,0 +1,69 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	# -- Created: 28Jul2024 -- #
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	unless ($perm->{is_admin}) {
+		$r->status(403);  # Forbidden
+		return;
+	}
+
+	my $css_id   = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $id       = $C->{CGI}->param('id') + 0;
+	my $sig      = $C->md5_secret($SID);
+
+	my @paras = ();
+	foreach ($C->{CGI}->all_parameters) {
+		push(@paras, "$_=" . $C->{CGI}->param($_));
+	}
+
+	my $sth = $C->{dbh}->prepare("SELECT order_id FROM orders_products where prod_id=$id order by id desc limit 3");
+	   $sth->execute();
+
+	my $info = join ', ', @paras;
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Artikel l&ouml;schen</h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<form method="post" name="f308281" action="edit-product.html">
+
+	<input type="hidden" name="id"     value="<% $id %>">
+	<input type="hidden" name="action" value="del_product">
+
+	<p>
+		Produkt-ID <% $id %> wirklich l&ouml;schen?
+%		# <span data-toggle="tooltip" data-placement="bottom" data-original-title="asdf">Tooltip</span>
+	</p>
+
+%	if ($sth->rows()) {
+		<input type="hidden" name="has_orders" value="1">
+		<h4>Achtung!</h4>
+%		while(my $r = $sth->fetch()) {
+			&bull; Order-ID <% $r->[0] %><br>
+%		}
+%	}
+
+% #	<& ../include/inc_text_edit.html, label=>'Test Action', value_enc=>'dhl_send_shipment', info=>'Actions: dhl_send_shipment / mail_pdf_bill', id=>50 &>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Abbrechen
+			</button>
+			<button type="button" class="btn btn-danger btn-sm btn-soft" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> L&ouml;schen
+			</button>
+		</div>
+
+	</form>
+</div>

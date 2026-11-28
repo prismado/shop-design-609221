@@ -1,0 +1,29 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $debug    = $C->getSessData('debug');
+
+	my $cgi = $C->{CGI};
+	my $inp_name = $cgi->param('inp_name') || 'tbd_9999';
+	my $inp_val  = $cgi->param('inp_val')  || 'val_9999';
+	my $noscript = $cgi->param('noscript');
+
+	my $cookie  = $C->get_cookies_simple(); # -- 23Oct2023
+	my $uid_dec = $C->{CRYPT}->decrypt($cookie->{uid_e}, 'secrex');
+</%init>
+<!DOCTYPE html>
+DN404201-18: tbd <% $$ %> / <% $uid_dec %><br />
+% foreach ($cgi->all_parameters) {
+	&bull; <% $_ %> = "<code><% $cgi->param($_) %></code>"<br>
+% }
+% unless ($noscript) {
+<script language="JavaScript">
+	alert('XX asdf');
+</script>
+% }
+
+<& ../include/inc_text_input.html, label=>"Auswahl ID 9999 - de ($inp_name)", value_enc=>$inp_val, write=>1,
+	name=>$inp_name, class=>'', tx_class=>'font-weight-bold fs--15', XXXid=>"tbd_9999" &>

@@ -1,0 +1,60 @@
+<%init>
+	# sleep 5;
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+{
+    "iTotalRecords": 6,
+    "iTotalDisplayRecords": 5,
+    "data": [
+% for (1 .. 3) {
+		[
+			"<b>invoice_113459471.pdf</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> reto@publigate.com",
+			"Wingo Test A und B",
+			"7",
+			"<nobr>06.11.2019</nobr>",
+			"<div class='float-right'>36</div>"
+		],
+		[
+			"<b>Angelika Miczulska</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> dmsd@ch2.be",
+			"RG tesx 07.02.2021 10:46",
+			"85",
+			"<nobr>25.01.2021</nobr>",
+			"<div class='float-right'>160</div>"
+		],
+		[
+			"<b>Hans Muster</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> dmsd@ch2.be",
+			"RG tesx 07.02.2021 10:46",
+			"85",
+			"<nobr>25.01.2021</nobr>",
+			"<div class='float-right'>160</div>"
+		],
+		[
+			"<b>Hans Muster</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> dmsd@ch2.be",
+			"RG tesx 07.02.2021 10:46",
+			"85",
+			"<nobr>25.01.2021</nobr>",
+			"<div class='float-right'>160</div>"
+		],
+		[
+			"<b>Beat Muster</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> dmsd@ch2.be",
+			"RG tesx 07.02.2021 10:46",
+			"85",
+			"<nobr>25.01.2021</nobr>",
+			"<div class='float-right'>160</div>"
+		],
+% }
+		[
+			"<b>Cesar Muster</b>",
+			"<i class='fi fi-envelope-2 fs--20'></i> dmsd@ch2.be",
+			"RG tesx 07.02.2021 10:46",
+			"85",
+			"<nobr>25.01.2021</nobr>",
+			"<div class='float-right'>160</div>"
+		]
+    ]
+}

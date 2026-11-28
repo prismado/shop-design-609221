@@ -1,0 +1,89 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	$m->redirect('/_error.html') unless $perm->{is_admin};
+
+	my $css_id   = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $id       = $C->{CGI}->param('id') + 0;
+
+	my $sth = $C->{dbh}->prepare(qq~select id, code, created, uid, service, action from products_history where prod_id=$id order by id desc limit 25~);
+	   $sth->execute() or $m->out("ERR $DBI::errstr<hr>");
+</%init>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/assets/css/prism_swal.css">
+<style>
+	.prism-limit-len-250 {
+		max-width: 250px !important;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
+
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">History / Verlauf &ndash; <small>Produkt-ID <% $id %></small></h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<input type="hidden" name="id"     value="<% $id %>">
+
+% #	<p><span data-toggle="tooltip" data-placement="bottom"
+% #		data-original-title="Die Zeilenumbr&uuml;che sind wichtig f&uuml;r die Darstellung auf dem PDF!">Tooltip</span></p>
+
+	<div style="overflow-x:auto;">
+	<table class="table table-sm table-hover">
+
+	<tr>
+		<th>Zeit</th>
+		<th>Code</th>
+		<th style="width:360px">Ereignis</th>
+		<th>Quelle</th>
+		<th clasx="float-end"><span class="float-end">UID</span></th>
+	</tr>
+
+%	while(my $r = $sth->fetch()) {
+%		my ($id, $code, $created, $uid, $service, $action) = @{$r};
+		<tr>
+			<td nowrap><% $C->trans_date_short($created) %></td>
+			<td><span class="badge badge-primary"><% $code %></span></td>
+			<td nowrap><% $action %></td>
+			<td class="prism-limit-len-250"><% $service %></td>
+			<td class="pl-3 XXXfloat-end"><span class="float-end"><% $uid || '&ndash;' %></span></td>
+		</tr>
+%	}
+
+	</table>
+	</div>
+
+%	if ($perm->{is_devel}) {
+		<p><a class="fs--10" href="/adm_edit_product.html?id=<% $id %>&stay=1">Tempor&auml;r</a></p>
+%	}
+
+	<div id="div_404241_49"></div>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Schliessen
+			</button>
+<%doc>
+</%doc>
+		</div>
+
+</div>
+
+<%doc>
+XXX:
+/XXX
+</%doc>
+
+<%doc>
+	Created: 01Jul2024
+</%doc>

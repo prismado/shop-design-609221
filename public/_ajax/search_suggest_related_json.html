@@ -1,0 +1,35 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new($r, $m);
+
+	my $cgi = $C->{CGI};
+
+	my $lang = $cgi->param('lang') || 'de';
+
+	$r->content_type("text/plain; charset=utf-8");
+</%init>
+[
+  {
+    "label": "<% $C->txt('about', $lang) %>",
+    "url": "/info_help.html"
+  },
+  {
+    "label": "Services",
+    "url": "/info-services.html"
+  },
+  {
+    "label": "R&uuml;ckgaben, Garantieabwicklung",
+    "url": "/info-warranty.html"
+  },
+  {
+    "label": "FAQ &middot; Frequently Asked Questions",
+    "url": "/info-faq.html"
+  },{
+    "label": "Freie Stellen",
+    "url": "/info-career.html"
+  },{
+    "label": "<% $C->txt('contact', $lang) %>",
+    "url": "/contact.html"
+  }
+]

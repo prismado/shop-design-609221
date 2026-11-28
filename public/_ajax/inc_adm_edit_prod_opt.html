@@ -1,0 +1,41 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $debug    = $C->getSessData('debug');
+
+	my $cgi = $C->{CGI};
+
+	my $id   = $cgi->param('id');
+	my $lang = $cgi->param('lang') || 'de';
+
+	my $det = $A->get_opt_details( $id, $lang );
+</%init>
+<!DOCTYPE html>
+
+% if ($debug > 1) {
+	DN404201-18: PID <% $$ %><br />
+%	foreach ($cgi->all_parameters) {
+		[ CGI ] &bull; <% $_ %> = "<code><% $cgi->param($_) %></code>"<br>
+%	}
+% }
+
+<table class="table table-sm">
+% foreach (@{ $det }) {
+%	my ($id, $style, $label, $desc, $ref, $amount, $stock, $feat_id) = split /\t/;
+	<tr>
+	<td>
+		<& ../include/inc_text_input.html, label=>"Auswahl-Text ID $feat_id - $lang", value_enc=>$desc, write=>1,
+			name=>"sel_$feat_id", tx_class=>'font-weight-bold fs--15', id=>"sel_$feat_id" &>
+	</td>
+	<td class="pt-3"><% $ref %></td>
+	<td>
+		<& ../include/inc_text_input.html, label=>"Kosten", value_enc=>$amount, write=>1,
+			name=>"amount_$feat_id", tx_class=>'font-weight-bold fs--15', id=>"amount_$feat_id" &>
+	</td>
+	</tr>
+% }
+</table>

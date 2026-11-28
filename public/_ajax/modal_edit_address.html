@@ -1,0 +1,93 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $debug = $C->getSessData('debug') || 0;
+
+	my $THIS = '';
+	if ($debug) {
+		($THIS = $C->this()) =~ s/^custom\/algonetic\///;
+	}
+
+	my $addr_type = $C->{CGI}->param('addr_type') + 0;
+	my $addr      = $A->get_address($addr_type);
+
+	my %addr_type_hr = (
+		1 => 'Rechnungsadresse',
+		2 => 'Lieferadresse'
+	);
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0"><% $addr_type_hr{$addr_type} %></h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<form method="post" action="/_update_customer_address.html">
+<input type=hidden name="type" value="<% $addr_type %>">
+
+<div class="modal-body" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+%	if ($debug) {
+		<div class="row">
+			<div class="col-12">
+				<div class="float-right"><code><% $THIS %></code></div>
+			</div>
+		</div>
+%	}
+
+
+	<div class="form-label-group mb-3">
+		<select id="select_options" class="form-control bs-select" name="gender" data-style="select-form-control border-gray-400" tabindex="-98">
+		<option value="1">Herr</option>
+		<option value="2"<% $addr->{gender} == 2 ? ' selected' : '' %>>Frau</option>
+		<option value="3"<% $addr->{gender} == 3 ? ' selected' : '' %>>Firma</option>
+		<option value="4"<% $addr->{gender} == 4 ? ' selected' : '' %>>Keine Angabe</option>
+		</select>
+		<label for="select_options">Anrede</label>
+	</div>
+
+	<small class="form-text text-muted">Vorname</small>
+	<input type=text class="form-control mb-2" value="<% $addr->{firstname} %>" name="firstname" placeholder="Vorname">
+
+	<small class="form-text text-muted">Nachname</small>
+	<input type=text class="form-control mb-2" value="<% $addr->{lastname} %>" name="lastname" placeholder="Nachname">
+
+	<small class="form-text text-muted"><% $C->prop('company') %></small>
+	<input type=text class="form-control mb-2" value="<% $addr->{company} %>" name="company" placeholder="<% $C->prop('company') %>">
+
+	<small class="form-text text-muted">Strasse / Nr.</small>
+	<input type=text class="form-control mb-2" value="<% $addr->{street} %>" name="street">
+
+	<small class="form-text text-muted">PLZ</small>
+	<input type=text class="form-control mb-2" value="<% $addr->{zip} %>" name="zip">
+
+	<small class="form-text text-muted">Ort</small>
+	<input type=text class="form-control mb-2" value="<% $addr->{city} %>" name="city">
+
+	<small class="form-text text-muted">Tel.</small>
+	<input type=text class="form-control mb-2" value="<% $addr->{phone} %>" name="phone">
+
+	<br />
+
+%	foreach (keys %{$addr}) {
+%		next if $_ eq 'lastname' or $_ eq 'firstname' or $_ eq 'street' or $_ eq 'zip' or $_ eq 'city'
+%			or $_ eq 'country' or $_ eq 'phone' or $_ eq 'company' or $_ eq 'gender';
+		X -- <% $_ %> = <% $addr->{$_} %><br>
+%	}
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-sm btn-soft btn-secondary" data-dismiss="modal">
+			<i class="fi fi-close"></i> Cancel
+		</button>
+		<button type="submit" class="btn btn-sm btn-primary">
+			<i class="fi fi-check"></i> Speichern
+		</button>
+	</div>
+
+</div>
+
+</form>

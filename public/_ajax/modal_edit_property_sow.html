@@ -1,0 +1,141 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+
+	$m->redirect('/_error.html') unless $perm->{is_admin};
+
+	my $css_id   = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $id       = $C->{CGI}->param('id') + 0;
+	my $p        = $C->{CGI}->param('p');
+	my $bUpdate  = $C->{CGI}->param('bUpdate');
+
+	$id ||= $C->query("select id from properties where `key` = '$p\_de' limit 1")->[0];
+
+	my @paras = ();
+	foreach ($C->{CGI}->all_parameters) {
+		push(@paras, "$_=" . $C->{CGI}->param($_));
+	}
+
+	if ($bUpdate) {
+		# XXX my $info = join ', ', @paras;
+	}
+</%init>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/assets/css/prism_swal.css">
+
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0">Edit Property &ndash; <small>ID <% $id %></small></h2>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<form method="post" name="f308281" action="/_sub.html">
+	<input type="hidden" name="id"     value="<% $id %>">
+	<input type="hidden" name="p"      value="<% $p %>">
+	<input type="hidden" name="sig"    value="<% $C->md5_secret($C->getSID()) %>">
+	<input type="hidden" name="action" value="update_property">
+
+	<p><span data-toggle="tooltip" data-placement="bottom"
+		data-original-title="Die Zeilenumbr&uuml;che sind wichtig f&uuml;r die Darstellung auf dem PDF!">Tooltip</span></p>
+
+	<textarea rows="9" name="prop_val" class="form-control"><% $C->txt($p, 'de') %></textarea><br>
+
+% if ($perm->{is_devel}) {
+	<& ../include/inc_text_edit.html, label=>'Test Action', value_enc=>'dhl_send_shipment', info=>'Actions: dhl_send_shipment / mail_pdf_bill', id=>50 &>
+	<& ../include/inc_text_edit.html, label=>'Debug', value_enc=>0, info=>'Debug', id=>98 &>
+
+	<p>
+		Dyn. Klick:
+		<a href="#" onclick="load_labels('de')">DE</a> / <a href="#" onclick="load_labels('en')">EN</a>
+	</p>
+
+	<p>
+		<a href="#" onclick="delClick(9999)">Test Delete</a>
+	</p>
+% }
+
+	<div id="div_404241_49"></div>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+				<i class="fi fi-close"></i> Abbrechen
+			</button>
+			<button type="button" class="btn btn-success btn-sm btn-soft" onclick="document.f308281.submit()">
+				<i class="fi fi-check"></i> Speichern
+			</button>
+		</div>
+
+	</form>
+</div>
+
+<span id="del_404080_49"></span>
+
+<script language="JavaScript">
+function load_labels(lang) {
+	if (lang == 'de') {
+		$('#div_404241_49').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_de&inp_val=<% $C->uri_esc('hoe hulo') %>&r=<% rand() %>');
+	}
+	else if (lang == 'en') {
+		$('#div_404241_49').load('/_ajax/inc_foo.html?noscript=1&inp_name=label_en&inp_val=<% $C->uri_esc('hoe en hulo') %>&r=<% rand() %>');
+	}
+}
+
+% # ------------------------------ Delete
+var det_id_to_del;
+document.getElementById('del_404080_49').addEventListener('click', function() {
+  Swal.fire({
+    title: '<% $C->txt('delete') %>?',
+    text: "Dies kann nicht rückgängig gemacht werden!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor:  '#f1f3f3',
+    confirmButtonText: 'Ja, löschen!',
+    cancelButtonText:  'Abbrechen',
+  customClass: {
+    confirmButton: 'btn w--150 btn-primary',
+    cancelButton:  'btn w--150 text-dark',
+    container: 'custom-swal-alert',
+    popup: 'custom-popup'
+  }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire(
+	'Gelöscht!',
+	'Der Eintrag wurde geloescht.',
+	'success'
+      )
+      // Fuehre hier die Loeschoperation aus
+	$.ajax({
+		url: '/adx/_ajax/proc_del_opt_sel.html?del_det_id=' + det_id_to_del,
+		type: 'GET',
+		dataType: 'html',
+		success: function(response) {
+			setTimeout(function() {
+				document.location = '/adx/options.html?open=<% $id %>';
+			}, 1250);
+		},
+		error: function(xhr, status, error) {
+			console.error(error);
+		}
+	});
+    }
+  })
+});
+
+function delClick(det_id) {
+	det_id_to_del = det_id;
+	document.getElementById('del_404080_49').click();
+}
+% # ------------------------------ /Delete
+</script>
+
+<%doc>
+	Created: 30Jun2024
+</%doc>

@@ -1,0 +1,86 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $cgi   = $C->{CGI};
+	my $id    = $cgi->param('id') + 0; # -- Product-ID
+	my $perm  = $C->get_user_perm(); # -- $perm->{uid}
+	my $debug = $C->getSessData('debug');
+
+	my $t = $cgi->param('t'); # -- db table
+
+	unless ($perm->{is_admin}) {
+		$C->create_toast_note(body=>'Not Auth', title=>'Fehler', type=>'danger', width=>'600px', delay=>9999);
+		$m->abort();
+	}
+
+	my $upd_count = 0;
+	if ($t eq 'products_feat') {
+		my $key = $cgi->param('key');
+		my $val = $cgi->param('val');
+
+		if ($key =~ /^\((.+)\)$/) {
+			my $key_final = $1;
+			   $key_final .= ($C->now(10) . (int(rand(900)) + 100)) unless ($key_final eq 'GTIN' or $key_final eq 'raw_weight');
+			my $weight = $key_final eq 'raw_weight' ? -2 : -1;
+			$A->set_feature_v2(
+				id          => $id,
+				key         => $key_final,
+				name        => '_exclude',
+				description => $val,
+				weight      => $weight,
+				lang        => 'de'
+			);
+			$C->create_toast_note(body=>"Exclude $1: $val");
+			$upd_count = 1;
+			$key = '';
+		}
+
+		for my $lang (qw(de en fr)) {
+			next unless $key;
+			my $name = $C->query("SELECT val FROM properties WHERE `key` = 'label_{$key}_$lang'")->[0] ||
+					$C->query("SELECT xval FROM categ_meta WHERE xkey='$key' AND lang='$lang'")->[0] || $key;
+
+			$A->set_feature_v2(
+				id          => $id,
+				key         => $key,
+				name        => $name,
+				description => $val,
+				lang        => $lang
+			);
+
+			$upd_count++;
+		}
+	}
+
+	my @infos = ();
+
+	if ($upd_count) {
+		push(@infos, 'Aktualisiert');
+	}
+	else {
+		push(@infos, 'Keine &Auml;nderung');
+	}
+
+	if ($debug) {
+		foreach ($C->{CGI}->all_parameters) {
+			push(@infos, "[ CGI ] &middot; <b>$_</b> = " . $C->{CGI}->param($_));
+		}
+	}
+
+	my $info = join '<br>', @infos;
+
+	$C->create_toast_note(body=>$info, title=>'Update Product', width=>'500px', XXXdelay=>9999);
+
+	$r->content_type('text/plain; charset=utf-8');
+</%init>
+OK
+
+<%doc>
+	Created: 06Apr2024
+
+	This macro is called by an Ajax call
+</%doc>

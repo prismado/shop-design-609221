@@ -1,0 +1,57 @@
+<%init>
+	use ScreenPoint::Core;
+	use ScreenPoint::Auctionline;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new( $C );
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+	my $debug = $C->getSessData('debug') || 0;
+	my $cgi  = $C->{CGI};
+
+	# my $sig      = $C->md5_secret($SID);
+
+	$m->abort() unless $perm->{is_admin};
+
+	my $id = $cgi->param('id') + 0;
+
+	my @paras = ();
+
+	if ($debug) {
+		foreach ($C->{CGI}->all_parameters) {
+			push(@paras, "[ CGI ] - $_ = " . $C->{CGI}->param($_));
+		}
+	}
+
+	my %act = ();
+	foreach ($C->{CGI}->all_parameters) {
+		next unless /^cb_opt_(\d+)$/;
+		my $opt_id = $1;
+		$act{$opt_id} = 1;
+		my $res = $A->set_product_option(id=>$id, opt_id=>$opt_id);
+		push(@paras, "Option-ID $opt_id aktiviert");
+	}
+
+	my $sth = $C->{dbh}->prepare(q~select option_id from options_desc where lang='de'~);
+	   $sth->execute();
+
+	while(my $r = $sth->fetch()) {
+		my $active = $act{$r->[0]} || 0;
+		my $res = $A->set_product_option(id=>$id, opt_id=>$r->[0], active=>$active);
+		# XXX $C->create_toast_note(body=>"XXX Opt-ID $r->[0]: $res->{msg}", width=>'600px', delay=>8000);
+	}
+
+	my $info = join '<br>', @paras;
+
+	$C->create_toast_note(body=>$info, title=>"Produkte-Optionen ID $id", width=>'600px', delay=>8000);
+
+	$r->content_type('text/plain; charset=utf-8');
+</%init>
+OK
+<%doc>
+	Created: 08Apr2024
+
+	This macro is called by an Ajax call
+</%doc>

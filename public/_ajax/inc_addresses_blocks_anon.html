@@ -1,0 +1,130 @@
+<%init>
+	use ScreenPoint::Auctionline;
+	use ScreenPoint::Core;
+	use utf8; # -- 10Mar2026
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+	my $A = ScreenPoint::Auctionline->new($C);
+
+	my $lang     = $C->getSessData('_current_lang') || 'de';
+	my $anon_uid = $C->getSessData('_anon_uid') + 0;
+	my $debug    = $C->getSessData('debug');
+
+	$A->{uid} = $anon_uid;
+
+	my $cookie  = $C->get_cookies_simple(); # -- 23Oct2023
+	my $uid_dec = $C->{CRYPT}->decrypt($cookie->{uid_e}, 'secrex');
+
+	$anon_uid ||= $uid_dec if $uid_dec > 0;
+
+	$A->{uid} = $anon_uid;
+
+	my $custdat = $C->get_user(id=>$anon_uid);
+	   $custdat->{email} = '' if $custdat->{email} =~ /^\* .+/;
+
+	my %addr_label = (
+		1 => 'Rechnungsadresse',
+		2 => 'Lieferadresse'
+	);
+
+	my $diff_billing_addr = $C->prp('diff_billing_addr');
+
+	$C->saveSessData('flag_anon_buy', 1);
+</%init>
+<h5><% $C->prop('adress_input') %></h5>
+<p><small><% $C->prop('fillout_all') %></small></p>
+
+<label class="input_tag" XXfox="email">E-Mail<em>*</em></label>
+<input class="form-control mb-2 col-6" type="text" name="email" required="required" id="email"
+		placeholder="E-Mail *" value="<% $custdat->{email} || $C->getSessData('cust_email') %>">
+
+<label class="input_tag"><% $C->prop('phone') %> (optional) &ndash;
+	<small>Hilft dem Zusteller bei Rückfragen für eine reibungslose Lieferung</small>
+</label>
+<input class="form-control col-6" ZZrequired="required" type="text" value="<% $custdat->{phone} %>" name="phone_2" placeholder="Telefon" id="phone">
+
+% for (my $i = 2; $i > 0; $i--) {
+%	my $addr = $A->get_address($i);
+	<% $i == 1 ? qq~<input type="button" class="btn btn-grey" style="height:50px!important;width:auto!important;" id="show_rech" name="show_rech" value="$diff_billing_addr" onClick="expandIt(invoice_addr);"><div id="invoice_addr">~ : '' %>
+
+	<h5 class="mt-3"><% $addr_label{$i} %></h5>
+
+	<% $C->prop('gender') %>
+	<select name="gender_<%$i%>" class="form-control col-3 mb-2">
+		<option value="1"><% $C->prop('male') %></option>
+		<option value="2"<% $C->getSessData('cust_gender') == 2 ? ' selected' : '' %>><% $C->prop('female') %></option>
+		<option value="0"><% $C->prop('company') %></option>
+	</select>
+
+	<div class="row">
+	    <div class="col-6">
+		<% $C->prop('surname') %>
+		<input class="form-control" <% $i==2 ? 'required="required"' : '' %> type="text"
+			name="firstname_<% $i %>" placeholder="<% $C->prop('surname') %>" value="<% $addr->{firstname} || $C->getSessData('cust_name') %>">
+	    </div>
+
+	    <div class="col-6">
+		<% $C->prop('lastname') %>
+		<input class="form-control" type="text"
+			name="lastname_<% $i %>" placeholder="<% $C->prop('lastname') %>" value="<% $addr->{lastname} || $C->getSessData('cust_surname') %>">
+	    </div>
+	</div>
+
+	<input  type="text" value="<% $addr->{company} %>" class="form-control mt-2 mb-2"
+		placeholder="<% $C->prop('company') %>" name="company_<% $i %>">
+
+	<% $C->prop('adress') %> *
+		<input class="form-control mb-2" <%$i==2 ? 'required="required"' : ''%> type="text"
+			name="street_<%$i%>" placeholder="<% $C->prop('adress') %>" value="<%$addr->{street}%>">
+
+	<div class="row mb-2">
+	    <div class="col-4">
+		<% $C->prop('zip') %> *
+		<input class="form-control" <% $i==2 ? 'required="required"' : '' %> type="text"
+			name="zip_<% $i %>" placeholder="<% $C->prop('zip') %>" value="<% $addr->{zip} %>">
+	    </div>
+
+	    <div class="col-8">
+		<% $C->prop('city') %> *
+		<input class="form-control" <% $i==2 ? 'required="required"' : '' %> type="text"
+			name="city_<% $i %>" placeholder="<% $C->prop('city') %>" value="<% $addr->{city} %>">
+	    </div>
+	</div>
+
+	<% $C->prop('country') %>
+	<select class="form-control" name="country_<%$i%>" <%$i==2 ? 'required="required"' : ''%> tabindex="1">
+		<option value="">Bitte Wählen..</option>
+		<option value="CH" selected >Schweiz</option>
+		<option value="LI">Lichtenstein</option>
+	</select>
+
+	<% $i == 1 ? '</div>' : '' %>
+% }
+
+<div class="checkbox mt-4">
+	<label class="form-switch form-switch-success d-block">
+		<input type="checkbox" id="agb_check" name="agb_check" value="accept">
+		<i data-on="&#10004;" data-off="&#10005;"></i>
+		<label for="agb_check"><% $C->prop('agb_info') %> <a target="_new" href="info_agb.html"><% $C->prop('agbs_long') %></a></label>
+	</label>
+</div>
+
+<div class="float-end">
+	<input id="return" class="btn btn-grey" type="button" name="return"  onclick="javascript:history.back()" value="Zur&uuml;ck">
+	<input id="submit_summary" class="btn btn-success btn-lg" type="submit" name="submit_summary" value="<% $C->prp('btn_continue_payment') %>">
+</div>
+
+<script language="JavaScript">
+  invoice_addr.style.display = "none";
+  function expandIt(whichEl) {
+	whichEl.style.display = (whichEl.style.display == "none" ) ? "" : "none";
+     show_rech.style.display = "none";
+      }
+  function dynCollapse() {
+	elTwo.style.display = "none";
+  }
+</script>
+
+% if ($debug) {
+	<p>[ Debug ] &middot; Bottom of <code>_ajax/inc_addresses_blocks_anon.html</code></p>
+% }

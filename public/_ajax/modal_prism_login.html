@@ -1,0 +1,68 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+	my $title  = $C->{CGI}->param('title')  || 'Login';
+</%init>
+<div class="modal fade" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+	<div class="modal-dialog modal-md modal-dialog-centered" role="document">
+
+		<div class="modal-content" style="min-height:28vh">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabelFull"><% $title %></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="fi fi-close fs--18" aria-hidden="true"></span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+
+			    <div class="row justify-content-center">
+				<div class="col-7">
+					<form method="post" action="/_sign_in.html" id="f401172_24" name="fo401172_24">
+					<input type="text"     class="form-control"      name="user" placeholder="Benutzername" required="required">
+					<input type="password" class="form-control mt-2" name="pass" placeholder="Passwort">
+
+					<input class="btn btn-primary mt-3 float-left w-100" type="submit" value="Login">
+					</form>
+
+					<form method="post" action="/_resend_login.html" id="f401172_31" style="display:none">
+					<input type="text"     class="form-control"      name="user" placeholder="Benutzername" required="required">
+					<input class="btn btn-primary mt-3 float-left w-100" type="submit" value="Passwort zusenden">
+					</form>
+				</div>
+			    </div>
+
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-soft btn-info w-50" onclick="this.style.display='none'; forgotPW401172()">
+					<i class="fi fi-round-question-full"></i> Passwort vergessen
+				</button>
+
+				<button type="button" class="btn btn-sm btn-soft btn-secondary w-50" data-dismiss="modal">
+					<i class="fi fi-close"></i> Abbrechen
+				</button>
+<%doc>
+				<button type="button" class="btn btn-soft btn-primary">
+					<i class="fi fi-check"></i> Login
+				</button>
+</%doc>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script language="JavaScript">
+	setTimeout(function() {
+		document.fo401172_24.user.focus()
+	}, 750)
+
+	function forgotPW401172 () {
+		document.getElementById('f401172_24').style.display='none'
+		document.getElementById('f401172_31').style.display=''
+	}
+</script>

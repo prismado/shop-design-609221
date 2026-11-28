@@ -1,0 +1,33 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $id = $C->{CGI}->param('id') + 0;
+
+	my ($last_nl_id, $last_nl_time, $subj, $mailtext) = @{$C->query(
+		"select id, last_mod, subject, mailtext from newsletter WHERE id=$id")};
+	# XXX my ($last_nl_id, $last_nl_time, $subj, $mailtext) = @{$C->query(
+	# XXX 	'select id, last_mod, subject, mailtext from newsletter order by id desc limit 1')};
+
+	my $css_id = $C->{CGI}->param('css_id') || 'exampleModalFull';
+</%init>
+<div class="modal-header">
+	<h2 class="modal-title fs--18 m-0"><% $subj %></h2>
+	&mdash; Newsletter ID <% $id %>
+	<button type="button" class="close pointer" data-dismiss="modal" aria-label="Close">
+		<span class="fi fi-close fs--18" aria-hidden="true"></span>
+	</button>
+</div>
+
+<div class="modal-body" id="<% $css_id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelFull" aria-hidden="true">
+
+	<% $mailtext %>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
+			<i class="fi fi-close"></i> Close
+		</button>
+	</div>
+
+</div>

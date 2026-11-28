@@ -1,0 +1,38 @@
+<%init>
+	use ScreenPoint::Core;
+
+	my $C = ScreenPoint::Core->new( $r, $m );
+
+	my $this = $C->this();
+	my $SID  = $C->getSID();
+	my $perm = $C->get_user_perm(); # -- $perm->{uid}
+	my $debug = $C->getSessData('debug') || 0;
+	my $cgi  = $C->{CGI};
+
+	# my $sig      = $C->md5_secret($SID);
+
+	my @paras = ();
+	if ($debug) {
+	foreach ($C->{CGI}->all_parameters) {
+		push(@paras, "$_ = " . $C->{CGI}->param($_));
+	}
+	}
+
+	my $f_id_de = $cgi->param('f_id_de') + 0;
+	my $f_id_en = $cgi->param('f_id_en') + 0;
+	my $f_id_fr = $cgi->param('f_id_fr') + 0;
+
+	my ($f_name, $f_key, $f_val) = @{$C->query("select featname, featkey, `description` from products_feat where id=$f_id_de")};
+	push(@paras, "$f_name / $f_key ($f_val) wurde entfernt");
+
+	$C->{dbh}->do("delete from products_feat where id IN ($f_id_de, $f_id_en, $f_id_fr)");
+
+	my $info = join '<br>', @paras;
+	$C->create_toast_note(body=>$info, title=>'Eigenschaft entfernt', width=>'550px', delay=>7000);
+</%init>
+
+<%doc>
+	Created: 08Apr2024
+
+	This macro is called by an Ajax call
+</%doc>
