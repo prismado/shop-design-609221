@@ -123,7 +123,7 @@
 %			}
 %			if ($d->{status_id} == 400 && $odat->{dhl_shipmentTrackingNumber}) {
 				/ <% $odat->{dhl_shipmentTrackingNumber} %>
-				&middot; <a href="<% $odat->{dhl_doc_path} %>">Express Label <% $odat->{deliv_city} %></a>
+				&middot; <a href="../<% $odat->{dhl_doc_path} %>">Express Label <% $odat->{deliv_city} %></a>
 				&middot; <a target="_blank" rel="noopener noreferrer"
 			href="<% $dhl_track_url %>&tracking-id=<% $odat->{dhl_shipmentTrackingNumber} %>"><% $C->get_safe_property('unicode_truck_9951', 'sys') %></a>
 				&middot; <a style="font-size:0.66rem;" href="/adx/dev-lab-shipment.html?order_id=<% $id %>">Tracking</a>
