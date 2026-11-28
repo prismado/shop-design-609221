@@ -38,18 +38,12 @@
 
 <%doc>
 XXX:
-	<p>
-%	foreach (sort keys %{$perm}) {
-%		next if /^\_.+/;
-		&bull; <% $_ %> = <% $perm->{$_} %><br>
-%	}
-	</p>
 /XXX
 </%doc>
 
 		<div class="modal-footer">
 			<button type="button" class="btn btn-secondary btn-sm btn-soft" data-dismiss="modal">
-				<i class="fi fi-close"></i> Close
+				<i class="fi fi-close"></i> Cancel
 			</button>
 			<button type="button" class="btn btn-primary btn-sm btn-soft" onclick="document.f308281.submit()">
 				<i class="fi fi-check"></i> DHL-Bestellung Senden
