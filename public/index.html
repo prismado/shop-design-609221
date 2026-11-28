@@ -54,6 +54,11 @@
 
 <& partials/header.html, is_index => 1, perm => $perm, lang => $lang, A => $A, C => $C &>
 
+% if ($C->txt('content_top_notch_status', 'de') == 1) {
+	<% $C->txt('content_top_notch', 'de') %>
+% # XXX <marquee class="mt-1 fs--20" behavior="scroll" direction="left" scrollamount="6"><span stylx="background-color:#1A1A2E; color:#f0f0f0; padding:4px;">⚠  <b>Warm Standby</b> – Dieses System ist nicht produktiv. Bitte bestellen Sie auf <a style="color:#4FC3F7;" href="https://www.auctionline.ch">auctionline.ch</a></span></marquee>
+% }
+
 <!-- ===== HAUPTBEREICH: Navigation / Produkte / Tagesangebote ===== -->
 <div class="flex-1 w-full max-w-[1800px] mx-auto px-4 md:px-6 py-8 lg:grid lg:grid-cols-[15fr_70fr_15fr] lg:gap-6 lg:items-start">
 
